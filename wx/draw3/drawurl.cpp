@@ -160,9 +160,11 @@ bool decode_url(wxString surl, wxString& prefix, wxString &window, PeriodType& p
 	else if (pstr == _T("10M"))
 		period = PERIOD_T_30MINUTE;
 	else if (pstr == _T("5M"))
-		period = PERIOD_T_3MINUTE;
+		period = PERIOD_T_5MINUTE;
 	else if (pstr == _T("MIN"))
 		period = PERIOD_T_MINUTE;
+	else if (pstr == _T("30SEC"))
+		period = PERIOD_T_30SEC;
 	else
 		return false;
 

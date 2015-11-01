@@ -105,7 +105,7 @@ public:
 		if (m_data.size())
 			return m_data[m_data.size() - 1].time;
 		else
-			return time_trait<time_type>::invalid_value;
+			return m_start_time;
 	}
 
 	typename value_time_vector::iterator search_entry_for_time(const time_type& time) {

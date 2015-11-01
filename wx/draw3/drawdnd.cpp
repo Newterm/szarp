@@ -138,11 +138,14 @@ wxString SetInfoDataObject::GetUrl() const {
 		case PERIOD_T_30MINUTE:
 			url << _T("10M");
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			url << _T("5M");
 			break;
 		case PERIOD_T_MINUTE:
 			url << _T("MIN");
+			break;
+		case PERIOD_T_30SEC:
+			url << _T("3SEC");
 			break;
 		default:
 			assert(false);

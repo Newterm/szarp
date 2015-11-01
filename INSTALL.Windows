@@ -52,15 +52,15 @@ cross-compiler on Debian.
 
 Now create directories for libraries, headers and tools:
 
-# mkdir -p /usr/local/i586-mingw32msvc/bin
-# mkdir  /usr/local/i586-mingw32msvc/lib
-# mkdir  /usr/local/i586-mingw32msvc/include
+# mkdir -p /usr/local/win32/bin
+# mkdir  /usr/local/win32/lib
+# mkdir  /usr/local/win32/include
 
 Copy mingw DLL library to bin directory, so it's easier for programs to find 
 it:
 
-# cp /usr/share/doc/mingw32-runtime/mingwm10.dll.gz /usr/local/i586-mingw32msvc/bin
-# gunzip /usr/local/i586-mingw32msvc/bin/mingwm10.dll
+# cp /usr/share/doc/mingw32-runtime/mingwm10.dll.gz /usr/local/win32/bin
+# gunzip /usr/local/win32/bin/mingwm10.dll
 
 2.3. Testing compiler.
 
@@ -75,7 +75,7 @@ int main(void)
 
 Compile it:
 
-# i586-mingw32msvc-gcc hello.c -o hello.exe
+# i686-w64-mingw32-gcc hello.c -o hello.exe
 
 File hello.exe should be created. Check type of this file:
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
 Compilation:
 
-# i586-mingw32msvc-gcc hellowin.c -o hellowin.exe
+# i686-w64-mingw32-gcc hellowin.c -o hellowin.exe
 
 Checking file type:
 
@@ -127,15 +127,15 @@ Versions of libraries can change, of course.
 wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz
 tar xzvf libiconv-1.13.1.tar.gz
 cd libiconv-1.13.1
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 \
+        --prefix=/usr/local/win32
 make
 make install
-cp lib/.libs/libiconv-2.dll /usr/local/i586-mingw32msvc/lib/
+cp lib/.libs/libiconv-2.dll /usr/local/win32/lib/
 
 Now test it:
 
-wine /usr/local/i586-mingw32msvc/bin/iconv.exe --help
+wine /usr/local/win32/bin/iconv.exe --help
 
 You should see iconv usage instructions.
 
@@ -145,12 +145,12 @@ You should see iconv usage instructions.
 wget http://downloads.sourceforge.net/project/expat/expat/2.0.1/expat-2.0.1.tar.gz
 tar xzvf expat-2.0.1.tar.gz
 cd expat-2.0.1
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc \
-        CPPFLAGS=-I/usr/local/i586-mingw32msvc/include
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 \
+        --prefix=/usr/local/win32 \
+        CPPFLAGS=-I/usr/local/win32/include
 make
 make install
-cp .libs/libexpat-1.dll /usr/local/i586-mingw32msvc/lib/
+cp .libs/libexpat-1.dll /usr/local/win32/lib/
 
 
 3.3. zlib library.
@@ -158,24 +158,24 @@ cp .libs/libexpat-1.dll /usr/local/i586-mingw32msvc/lib/
 wget http://sourceforge.net/projects/libpng/files/zlib/1.2.3/zlib-1.2.3.tar.gz
 tar xzvf zlib-1.2.3.tar.gz
 cd zlib-1.2.3
-CC=/usr/bin/i586-mingw32msvc-gcc \
-	AR="/usr/bin/i586-mingw32msvc-ar -r" \
-	RANLIB=/usr/bin/i586-mingw32msvc-ranlib  \
-	./configure --prefix=/usr/local/i586-mingw32msvc
+CC=/usr/bin/i686-w64-mingw32-gcc \
+	AR="/usr/bin/i686-w64-mingw32-ar -r" \
+	RANLIB=/usr/bin/i686-w64-mingw32-ranlib  \
+	./configure --prefix=/usr/local/win32
 make
 make install
-i586-mingw32msvc-gcc -Wall -shared adler32.o compress.o crc32.o gzio.o uncompr.o deflate.o trees.o zutil.o inflate.o infback.o inftrees.o inffast.o  -o libz.dll
-cp libz.dll /usr/local/i586-mingw32msvc/lib
+i686-w64-mingw32-gcc -Wall -shared adler32.o compress.o crc32.o gzio.o uncompr.o deflate.o trees.o zutil.o inflate.o infback.o inftrees.o inffast.o  -o libz.dll
+cp libz.dll /usr/local/win32/lib
 
 3.4. zip library.
 
 wget http://nih.at/libzip/libzip-0.9.tar.bz2
 tar xvfj libzip-0.9.tar.bz2
 cd libzip-0.9
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc \
-	--with-zlib=/usr/local/i586-mingw32msvc \
-	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 \
+        --prefix=/usr/local/win32 \
+	--with-zlib=/usr/local/win32 \
+	LDFLAGS=-L/usr/local/win32/lib
 make
 make install
 
@@ -185,27 +185,9 @@ make install
 wget http://prdownloads.sourceforge.net/wxwindows/wxMSW-2.8.10.zip
 unzip wxMSW-2.8.10.zip
 cd wxMSW-2.8.10
-./configure --host=i586-mingw32msvc \
-	--target=i586-mingw32msvc \
-	--enable-shared \
-	--enable-intl \
-	--enable-unicode \
-	--with-msw \
-	--with-libpng \
-	--with-expat=sys \
-	--with-zlib=sys \
-	--with-opengl \
-	--prefix=/usr/local/i586-mingw32msvc \
-	CPPFLAGS=-I/usr/local/i586-mingw32msvc/include \
-	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib
-make
-make install
-
-
-3.5.1 wxWidgets library with wxGraphicsContext
 
 Compilation of the wxWidgets library with wxGraphicsContext feature 
-is much more complicated. It is because:
+is complicated. It is because:
 - it needs a Gdiplus library;
 - some modifications of this library should be introduced;
 - some modifications of the source and configuration files of the wxWidgets 
@@ -221,49 +203,56 @@ patch operations (of Gdiplus files) will be failed.
 
 workaround steps:
 tar -xzvf INSTALL.wxWidgets.sh.tgz
-./INSTALL.wxWidgets.sh
-cp wxWidgets-2.8.10/lib/libgdiplus.a /usr/local/i586-mingw32msvc/lib/
+apply patches: ./INSTALL.wxWidgets.sh
+cp wxWidgets-2.8.10/lib/libgdiplus.a /usr/local/win32/lib/
 rm -rf wxWidgets-2.8.10*
-./INSTALL.wxWidgets.sh
+and compile wxWidgets with libgidplus configured properly: ./INSTALL.wxWidgets.sh
+adjust ./configure in the scrip to your needs.
 
 3.6. libxml2 library.
 
 wget ftp://xmlsoft.org/libxml2/libxml2-2.7.3.tar.gz
 tar xzvf libxml2-2.7.3.tar.gz
 cd libxml2-2.7.3
-./configure --host=i586-mingw32msvc \
-	--prefix=/usr/local/i586-mingw32msvc \
-        --target=i586-mingw32msvc \
+./configure --host=i686-w64-mingw32 \
+	--prefix=/usr/local/win32 \
+        --target=i686-w64-mingw32 \
 	--enable-ipv6=no \
-	--with-iconv=/usr/local/i586-mingw32msvc \
-	--with-zlib=/usr/local/i586-mingw32msvc \
+	--with-iconv=/usr/local/win32 \
+	--with-zlib=/usr/local/win32 \
 	--without-python
 make
 make install
-cp .libs/libxml2-2.dll /usr/local/i586-mingw32msvc/lib
+cp .libs/libxml2-2.dll /usr/local/win32/lib
+
+if the library doesn't compile, try using i586-mingw32msvc as the host
 
 Testing:
 
-wine /usr/local/i586-mingw32msvc/bin/xmllint.exe --version
+wine /usr/local/win32/bin/xmllint.exe --version
 
 
-3.7. libxslt library.
+3.7. libxslt library. 
+
+first, make sure libxml2 is installed properly
 
 wget ftp://xmlsoft.org/libxml2/libxslt-1.1.24.tar.gz
 tar xzvf libxslt-1.1.24.tar.gz
 cd libxslt-1.1.24
-./configure --host=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc \
-        --target=i586-mingw32msvc \
-	--with-libxml-prefix=/usr/local/i586-mingw32msvc \
+./configure --host=i686-w64-mingw32 \
+        --prefix=/usr/local/win32 \
+        --target=i686-w64-mingw32 \
+	--with-libxml-prefix=/usr/local/win32 \
 	--without-python \
 	--without-crypto
 make
 make install
 
+if the library doesn't compile, try using i586-mingw32msvc as the host
+
 Testing:
 
-wine /usr/local/i586-mingw32msvc/bin/xsltproc.exe --version
+wine /usr/local/win32/bin/xsltproc.exe --version
 
 
 3.8. OpenSSL library.
@@ -273,7 +262,7 @@ is as simple as:
 wget http://openssl.org/source/openssl-1.0.0g.tar.gz
 tar -zxvf openssl-1.0.0g.tar.gz
 cd openssl-1.0.0g
-./Configure --prefix=/usr/local/i586-mingw32msvc/ --cross-compile-prefix=i586-mingw32msvc- shared mingw zlib -I/usr/local/i586-mingw32msvc/include -L/usr/local/i586-mingw32msvc/lib
+./Configure --prefix=/usr/local/win32/ --cross-compile-prefix=i686-w64-mingw32- shared mingw zlib -I/usr/local/win32/include -L/usr/local/win32/lib
 make install
 
 
@@ -282,11 +271,11 @@ make install
 wget http://c-ares.haxx.se/download/c-ares-1.6.0.tar.gz
 tar xzvf c-ares-1.6.0.tar.gz
 cd c-ares-1.6.0
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --enable-shared \
- --prefix=/usr/local/i586-mingw32msvc/ --without-random
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 --enable-shared \
+ --prefix=/usr/local/win32/ --without-random
 make
 make install
-cp .libs/libcares-2.dll /usr/local/i586-mingw32msvc/lib/
+cp .libs/libcares-2.dll /usr/local/win32/lib/
 
 3.10 librsync library.
 
@@ -322,13 +311,13 @@ diff -ur ../../librsync-0.9.7/Makefile.am ./Makefile.am
 EOF
 
 ./autogen.sh
-./configure --prefix=/usr/local/i586-mingw32msvc \
-	--enable-shared --host=i586-mingw32msvc \
+./configure --prefix=/usr/local/win32 \
+	--enable-shared --host=i686-w64-mingw32 \
 	--with-gnu-ld
 make
 make install
-cp .libs/librsync* /usr/local/i586-mingw32msvc/lib/
-cp librsync*.h /usr/local/i586-mingw32msvc/include/
+cp .libs/librsync* /usr/local/win32/lib/
+cp librsync*.h /usr/local/win32/include/
 
 3.11. Lua (LuaJIT) library.
 
@@ -338,18 +327,18 @@ cd LuaJIT-1.1.5
 
 Now edit src/Makefile and set values:
 
-CC= i586-mingw32msvc-gcc
-RANLIB= i586-mingw32msvc-strip
+CC= i686-w64-mingw32-gcc
+RANLIB= i686-w64-mingw32-strip
 (RANLIB is set in mingw target section)
 
 Compile and copy files:
 
 make mingw
-cp src/*.h etc/lua.hpp /usr/local/i586-mingw32msvc/include/
-cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/liblua.dll
-cp src/lua51.dll /usr/local/i586-mingw32msvc/lib/lua51.dll
-mkdir -p /usr/local/i586-mingw32msvc/lib/pkgconfig/
-cp etc/*.pc /usr/local/i586-mingw32msvc/lib/pkgconfig/
+cp src/*.h etc/lua.hpp /usr/local/win32/include/
+cp src/lua51.dll /usr/local/win32/lib/liblua.dll
+cp src/lua51.dll /usr/local/win32/lib/lua51.dll
+mkdir -p /usr/local/win32/lib/pkgconfig/
+cp etc/*.pc /usr/local/win32/lib/pkgconfig/
 
 3.12. curl library.
 (you should install c-ares first see 3.9)
@@ -357,16 +346,21 @@ cp etc/*.pc /usr/local/i586-mingw32msvc/lib/pkgconfig/
 wget http://curl.haxx.se/download/curl-7.19.5.tar.gz
 tar xzvf curl-7.19.5.tar.gz
 cd curl-7.19.5
-./configure --host=i586-mingw32msvc \
-	--prefix=/usr/local/i586-mingw32msvc \
-	--target=i586-mingw32msvc \
-	--with-zlib=/usr/local/i586-mingw32msvc \
-	--with-ssl=/usr/local/i586-mingw32msvc \
+./configure --host=i686-w64-mingw32 \
+	--prefix=/usr/local/win32 \
+	--target=i686-w64-mingw32 \
+	--with-zlib=/usr/local/win32 \
+	--with-ssl=/usr/local/win32 \
 	--enable-ares \
 	--without-random
 make
 make install
-cp src/curl.exe /usr/local/i586-mingw32msvc/bin/
+cp src/curl.exe /usr/local/win32/bin/
+
+
+
+if the library doesn't compile, edit the src/main.c file: remove static keyword in line that causes error.
+if the issue remais, downgrade your autotools, automake, autoconf, libtools, autoconf-archive to version from 2014.12.01
 
 3.13. xmlrpc-epi library.
 
@@ -375,41 +369,37 @@ tar xzvf xmlrpc-epi-0.54.1.tar.gz
 cd xmlrpc
 ./autogen.sh
 CONFIG_SHELL=/bin/bash ./configure \
-	--host=i586-mingw32msvc --target=i586-mingw32msvc \
-	--prefix=/usr/local/i586-mingw32msvc \
-	--includedir=/usr/local/i586-mingw32msvc/include/xmlrpc-epi \
-	--with-expat=/usr/local/i586-mingw32msvc \
-	CPPFLAGS="-I/usr/local/i586-mingw32msvc/include -D_MSC_VER" \
-	LDFLAGS=-L/usr/local/i586-mingw32msvc/lib \
+	--host=i686-w64-mingw32 --target=i686-w64-mingw32 \
+	--prefix=/usr/local/win32 \
+	--includedir=/usr/local/win32/include/xmlrpc-epi \
+	--with-expat=/usr/local/win32 \
+	CPPFLAGS="-I/usr/local/win32/include -D_MSC_VER" \
+	LDFLAGS=-L/usr/local/win32/lib \
 	LIBS="-liconv"
 make
 make install
 
+if the library complains about libxml2: make distclean and configure again. Also, try adding -lxml2 to flags.
 
 3.14. boost libraries.
 
-In order to build a boost libraries, bjam utility is required. It is
-available in Debian packages.
-
 Download and unpack boost source distribution:
-wget http://downloads.sourceforge.net/project/boost/boost/1.42.0/boost_1_42_0.tar.gz
-tar -zxf boost_1_42_0.tar.gz
+wget http://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.gz
+tar -zxf boost_1_55_0.tar.gz
 
 enter boost source main directory and:
-cd boost_1_42_0
+cd boost_1_55_0
+
+check your gcc version:
+i686-w64-mingw32 -v
 
 * add line
-using gcc : m : i586-mingw32msvc-g++ ;
+using gcc : <version> : i686-w64-mingw32-g++ ;
 somethere to tools/build/v2/user-config.jam
 
-* download and apply patch:
-cd tools/build/
-wget https://svn.boost.org/trac/boost/raw-attachment/ticket/4735/build-v2-build-system-jam.patch
-patch -p0 < build-v2-build-system-jam.patch 
-cd ../../
 
 * issue command:
-bjam --layout=system --without-mpi --without-graph --without-graph_parallel --without-iostreams --without-python --without-math  variant=release threading=multi link=shared runtime-link=shared toolset=gcc-mingw target-os=windows threadapi=win32 stage
+./b2 --layout=system --without-mpi --without-graph --without-graph_parallel --without-iostreams --without-python --without-math  variant=release threading=multi link=shared runtime-link=shared toolset=gcc target-os=windows threadapi=win32 stage
 
 and that's it. Headers are located in boost directory, compiled libraries 
 in stages/lib. Copy headers to /usr/local/boost/include and librarires to 
@@ -424,8 +414,8 @@ cp -a stage/lib/ /usr/local/boost/
 wget http://www.sqlite.org/sqlite-amalgamation-3.6.16.tar.gz
 tar xzvf sqlite-amalgamation-3.6.16.tar.gz
 cd sqlite-3.6.16
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc \
-        --prefix=/usr/local/i586-mingw32msvc 
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 \
+        --prefix=/usr/local/win32 
 make
 make install
 
@@ -434,7 +424,7 @@ make install
 wget http://downloads.sourceforge.net/project/freetype/freetype2/2.4.4/freetype-2.4.4.tar.gz
 tar -zxvf freetype-2.4.4.tar.gz
 cd freetype-2.4.4
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --prefix=/usr/local/i586-mingw32msvc
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 --prefix=/usr/local/win32
 make
 make install
 
@@ -501,7 +491,7 @@ save following patch into file:
 
 patch sources: patch -p0 < file
 ./autogen.sh
-./configure --host=i586-mingw32msvc --target=i586-mingw32msvc --with-ft-prefix=/usr/local/i586-mingw32msvc --without-x --prefix=/usr/local/i586-mingw32msvc --disable-freetypetest
+./configure --host=i686-w64-mingw32 --target=i686-w64-mingw32 --with-ft-prefix=/usr/local/win32 --without-x --prefix=/usr/local/win32 --disable-freetypetest
 make ECHO=echo
 make ECHO=echo install
 
@@ -512,6 +502,17 @@ Example content of file 'version':
 3.1.526 2011-04-13
 
 4.2 Compiling SZARP.
+
+make sure you have following packages:
+python2.7
+jade
+convert
+autoconf-archive
+docbook
+docbook-dsssl
+
+or issue: apt-get build-dep szarp
+with szarp's repo in sources.
 
 In SZARP source directory run:
 
@@ -525,29 +526,35 @@ cd winbuild
 
 Running configure:
 
-../configure --host=i586-mingw32msvc  \
-  --target=i586-mingw32msvc \
-  --with-xml-prefix=/usr/local/i586-mingw32msvc \
-  --with-xslt-prefix=/usr/local/i586-mingw32msvc \
-  --with-curl-prefix=/usr/local/i586-mingw32msvc \
-  --with-wx-config=/usr/local/i586-mingw32msvc/lib/wx/config/msw-unicode-release-2.8 \
-  --with-ssl-prefix=/usr/local/i586-mingw32msvc \
-  --with-rsync-prefix=/usr/local/i586-mingw32msvc \
-  --with-xmprpc-epi-prefix=/usr/local/i586-mingw32msvc \
-  --with-lua-prefix=/usr/local/i586-mingw32msvc \
-  LDFLAGS=-L/usr/local/i586-mingw32msvc/lib    LIBS="-liconv -lexpat" \
-  CPPFLAGS="-O2  -I/usr/local/i586-mingw32msvc/include  -I/usr/local/i586-mingw32msvc/include/freetype2"  \
-  CFLAGS="-DCURL_STATICLIB"    CXXFLAGS="-DCURL_STATICLIB"  \
-  PKG_CONFIG_PATH=/usr/local/i586-mingw32msvc/lib/pkgconfig \
-  --with-xml-exec-prefix=/usr/local/i586-mingw32msvc \
-  --with-boost=/usr/local/boost \
-  --with-boost-thread=boost_thread_win32 \
-  --with-boost-program-options=boost_program_options \
-  --with-boost-date-time=boost_date_time \
-  --with-boost-filesystem=boost_filesystem \
-  --with-boost-system=boost_system  \
-  --disable-xmltest \
-  --with-mingw32
+
+./configure --host=i686-w64-mingw32  \
+	--target=i686-w64-mingw32  \
+	--with-xml-prefix=/usr/local/win32  \
+	--with-xslt-prefix=/usr/local/win32 \
+	--with-curl-prefix=/usr/local/win32 \
+	--with-wx-config=/usr/local/win32/lib/wx/config/i686-w64-mingw32-msw-unicode-release-2.8 \
+	--with-ssl-prefix=/usr/local/win32/ssl \
+	--with-rsync-prefix=/usr/local/win32 \  --with-xmprpc-epi-prefix=/usr/local/win32  \
+	--with-lua-prefix=/usr/local/win32 \
+	LDFLAGS="-L/usr/local/win32/lib"   \
+	LIBS="-lexpat -liconv -lxml2" \
+	CPPFLAGS="-fpermissive -O2  -I/usr/local/win32/include -I/usr/local/win32/include/freetype2"  \
+	CFLAGS="-DCURL_STATICLIB"  \
+	CXXFLAGS="-I/usr/local/win32/include -DCURL_STATICLIB -std=gnu++0x -fpermissive"  \
+	PKG_CONFIG_PATH=/usr/local/win32/lib/pkgconfig/ \
+	--with-xml-exec-prefix=/usr/local/win32/ \
+	--with-boost=/usr/local/win32/boost-1.55 \
+	--with-boost-thread=boost_thread_win32   \
+	--with-boost-program-options=boost_program_options \
+	--with-boost-date-time=boost_date_time \
+	--with-boost-filesystem=boost_filesystem \
+	--with-boost-system=boost_system.dll \
+	--disable-xmltest \
+	--with-mingw32 \
+	--with-ssl-dll-eay-name=libeay32 \
+	--with-ssl-dll-name=ssl \
+	--with-python
+
 
 Output should end with something like:
 
@@ -586,6 +593,10 @@ Configured for .deb build:         no
 Source directory:             ..
 Install prefix:               /opt/szarp
 Subdirs to include:           libSzarp libSzarp2 extern wx utils resources script
+
+
+if configure doesn't find boost, check if headers are in /usr/local/boost/include/boost. Also try changing version of autoconf-archive.
+
 
 Compilation:
 

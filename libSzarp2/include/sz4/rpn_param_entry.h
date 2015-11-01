@@ -34,7 +34,6 @@ public:
 	virtual ~empty_fetch_functor() {}
 };
 
-
 template<class types> class rpn_calculate {
 	base_templ<types>* m_base;
 	TParam* m_param;
@@ -91,6 +90,7 @@ template<class value_type, class time_type, class types> class rpn_param_entry_i
 public:
 	rpn_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>(_base, param, path) {}
 };
+
 
 }
 

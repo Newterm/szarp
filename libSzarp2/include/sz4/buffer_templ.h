@@ -58,8 +58,22 @@ template<template <typename DT, typename TT, class BT> class param_entry_type, c
 template<class types> generic_param_entry* param_entry_build(base_templ<types> *base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetSz4Type()) {
 		case TParam::SZ4_REAL:
-		case TParam::SZ4_COMBINED:
 			return param_entry_build_t_1<real_param_entry_in_buffer, types>(base, param, buffer_directory);
+		case TParam::SZ4_COMBINED: {
+			param->SetDataType(TParam::INT);
+
+			generic_param_entry* entry = param_entry_build_t_1<combined_param_entry_in_buffer, types>(base, param, buffer_directory);
+
+			TParam **f_cache = param->GetFormulaCache();
+			int num_of_params = param->GetNumParsInFormula();
+			for (int i = 0; i < num_of_params; i++) {
+				generic_param_entry* refferred_entry = base->get_param_entry(f_cache[i]);
+				refferred_entry->add_refferring_param(entry);
+				entry->add_refferred_param(refferred_entry);
+			}
+
+			return entry;
+		}
 		case TParam::SZ4_LUA_OPTIMIZED: {
 			param->SetDataType(TParam::DOUBLE);
 

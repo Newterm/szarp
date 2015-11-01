@@ -12,10 +12,10 @@
 #include "conversion.h"
 #include "szarp_config.h"
 
-#include "sz4/defs.h"
-#include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
+#include "sz4/defs.h"
+#include "sz4/time.h"
 #include "sz4/path.h"
 #include "sz4/buffer.h"
 #include "sz4/base.h"
@@ -55,10 +55,10 @@ void Sz4BaseTestCase::setUp() {
 		ls << l;
 
 		boost::filesystem::create_directories(path / ls.str() / L"config");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/a/a/a");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/b/b/b");
-		boost::filesystem::create_directories(path / ls.str() / L"sz4/Status/Meaner4/Heartbeat");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/a/a/a");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/b/b/b");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/Status/Meaner3/program_uruchomiony");
 
 #if BOOST_FILESYSTEM_VERSION == 3
 		std::ofstream ofs((path / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
@@ -95,9 +95,9 @@ void Sz4BaseTestCase::setUp() {
 
 				boost::filesystem::wpath param_path;
 				if (s != L'd')
-					param_path = path / ls.str() / L"sz4" / ss.str() / ss.str() / ss.str();
+					param_path = path / ls.str() / L"szbase" / ss.str() / ss.str() / ss.str();
 				else
-					param_path = path / ls.str() / L"sz4" / L"Status" / L"Meaner4" / L"Heartbeat";
+					param_path = path / ls.str() / L"szbase" / L"Status" / L"Meaner3" / L"program_uruchomiony";
 				std::wstringstream file_name;
 				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
 #if BOOST_FILESYSTEM_VERSION == 3
@@ -141,9 +141,9 @@ void Sz4BaseTestCase::smokeTest1() {
 	sz4::weighted_sum<short, sz4::second_time_t> sum;
 	sz4::weighted_sum<short, sz4::second_time_t>::time_diff_type weight;
 	base.get_weighted_sum(p11, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<short>::type(100), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<short>::type(5000), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
 
 }
 
@@ -165,7 +165,7 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
 	base.get_weighted_sum(pl, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_l);
-	CPPUNIT_ASSERT_DOUBLES_EQUAL(sz4::value_sum<double>::type(100), sum_l.sum(weight), 0.5);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(double(1000), double(sum_l.sum(weight)), 0.5);
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);

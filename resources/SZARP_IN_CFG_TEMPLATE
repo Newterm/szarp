@@ -63,7 +63,7 @@ datadir=$datadir$
 
 parcook_socket_uri=tcp://127.0.0.1:4567
 
-$sz4dir$:="$szarp_root$/$prefix$/sz4"
+$sz4dir$:="$szarp_root$/$prefix$/szbase"
 sz4dir=$sz4dir$
 
 # szbase stamp file

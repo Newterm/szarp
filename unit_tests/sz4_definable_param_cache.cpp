@@ -13,11 +13,11 @@
 #include "conversion.h"
 
 #include "szarp_base_common/defines.h"
+#include "sz4/block.h"
+#include "sz4/block_cache.h"
 #include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/path.h"
-#include "sz4/block.h"
-#include "sz4/block_cache.h"
 #include "sz4/definable_param_cache.h"
 
 #include "test_serach_condition.h"

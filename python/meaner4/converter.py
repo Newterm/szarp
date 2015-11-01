@@ -109,17 +109,10 @@ class Converter:
 		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
 
 	def convert_param(self, sp, pname):
-		combined = sp.param.combined
-		if combined:
-			lsp = self.s_params[sp.param.lsw_param.param_name]
-			msp = self.s_params[sp.param.msw_param.param_name]
-		else:
-			lsp = sp
-
-		lsp_param_path = lsp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
+		param_path = sp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
 
 		try:
-			szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, lsp_param_path)) if x.endswith(".szb")]
+			szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".szb")]
 		except OSError:
 			print "No values stored in db for that param"
 			return	
@@ -136,18 +129,10 @@ class Converter:
 			time = calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
 			ntime = calendar.timegm(datetime.datetime(nyear, nmonth, 1).utctimetuple())
 
-			f = open(os.path.join(self.szbase_dir, lsp_param_path, szbase_path)).read()
-			if combined:
-				f2 = open(os.path.join(self.szbase_dir, msp.param_path.param_path, szbase_path)).read()
+			f = open(os.path.join(self.szbase_dir, param_path, szbase_path)).read()
 			try: 
 				l = len(f) / 2
-				if combined:
-					l = min(l, len(f2) / 2)
-					vlsw = struct.unpack_from(("<%dH" % (l,)), f)
-					vmsw = struct.unpack_from(("<%dh" % (l,)), f2)
-					values = [ (m << 16) + l for l, m in zip(vlsw, vmsw) ]
-				else:
-					values = struct.unpack_from(("<%dh" % (l,)), f)
+				values = struct.unpack_from(("<%dh" % (l,)), f)
 
 			except struct.error as e:
 				print e
@@ -182,10 +167,6 @@ class Converter:
 		for pname in self.s_params.iterkeys():
 			if pno % self.count == self.offset:
 				sp = self.s_params[pname]
-				if sp.param.msw_combined_referencing_param is not None or sp.param.lsw_combined_referencing_param is not None:
-					pno += 1
-					continue
-
 				print
 				print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(self.s_params))
 				try:

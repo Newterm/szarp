@@ -128,9 +128,6 @@ public:
 	 * @param h height of view*/
 	virtual void SetSize(int w, int h) = 0;
 
-        /** This table describes shifts for time marks on time axis. */
-	static const int PeriodMarkShift[PERIOD_T_LAST];
-
 	virtual ~View() {}
 
 protected:

@@ -20,7 +20,7 @@
 
 import param
 
-heartbeat_param_name = "Meaner4:Status:Heartbeat"
+heartbeat_param_name = "Meaner3:Status:program_uruchomiony"
 
 def create_hearbeat_param():
-	return param.Param("Status:Meaner4:Heartbeat", "short", 0, 4, True)
+	return param.Param("Status:Meaner3:program_uruchomiony", "short", 0, 4, True)

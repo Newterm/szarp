@@ -137,7 +137,7 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 			max = 50;
 			text = _("Select number of displayed minutes");
 			break;
-		case PERIOD_T_3MINUTE:
+		case PERIOD_T_5MINUTE:
 			min = 1;
 			max = 50;
 			text = _("Select number of displayed 10-seconds periods");
@@ -146,6 +146,11 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 			min = 1;
 			max = 50;
 			text = _("Select number of displayed 3-seconds periods");
+			break;
+		case PERIOD_T_30SEC:
+			min = 1;
+			max = 60;
+			text = _("Select number of displayed seconds");
 			break;
 		case PERIOD_T_SEASON:
 			min = 1;
@@ -735,10 +740,12 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 		pt = PERIOD_T_DAY;
 	else if (id == XRCID("30MINUTE_RADIO"))
 		pt = PERIOD_T_30MINUTE;
-	else if (id == XRCID("3MINUTE_RADIO"))
-		pt = PERIOD_T_3MINUTE;
+	else if (id == XRCID("5MINUTE_RADIO"))
+		pt = PERIOD_T_5MINUTE;
 	else if (id == XRCID("MINUTE_RADIO"))
 		pt = PERIOD_T_MINUTE;
+	else if (id == XRCID("30SEC_RADIO"))
+		pt = PERIOD_T_30SEC;
 	else
 		pt = PERIOD_T_SEASON;
 
@@ -1298,6 +1305,9 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     LOG_EVT_MENU(XRCID("WEEK_RADIO"), DrawFrame , OnAverageChange, "drawfrm:week" )
     LOG_EVT_MENU(XRCID("DAY_RADIO"), DrawFrame , OnAverageChange, "drawfrm:day" )
     LOG_EVT_MENU(XRCID("30MINUTE_RADIO"), DrawFrame , OnAverageChange, "drawfrm:30min" )
+    LOG_EVT_MENU(XRCID("5MINUTE_RADIO"), DrawFrame , OnAverageChange, "drawfrm:5min" )
+    LOG_EVT_MENU(XRCID("MINUTE_RADIO"), DrawFrame , OnAverageChange, "drawfrm:min" )
+    LOG_EVT_MENU(XRCID("30SEC_RADIO"), DrawFrame , OnAverageChange, "drawfrm:30sec" )
     LOG_EVT_MENU(XRCID("SEASON_RADIO"), DrawFrame , OnAverageChange, "drawfrm:season" )
     LOG_EVT_MENU(XRCID("Copy"), DrawFrame , OnCopy, "drawfrm:copy" )
     LOG_EVT_MENU(XRCID("Paste"), DrawFrame , OnPaste, "drawfrm:paste" )

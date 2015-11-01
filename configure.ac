@@ -770,7 +770,7 @@ fi
 
 has_boost_base="no"
 ac_boost_path="${lib_prefix}"
-AX_BOOST_BASE([1.48.0], [has_boost_base="yes"], [has_boost_base="no"])
+AX_BOOST_BASE_LOCAL([1.54.0], [has_boost_base="yes"], [has_boost_base="no"])
 if test "x$has_boost_base" = "xyes" ; then
 	AX_BOOST_FILESYSTEM
 	AX_BOOST_DATE_TIME
@@ -1203,6 +1203,7 @@ AC_OUTPUT( \
 	python/protobuf/Makefile \
 	python/meaner4/Makefile \
 	python/meaner4/unittests/Makefile \
+	python/parhub/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \

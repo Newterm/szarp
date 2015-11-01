@@ -24,6 +24,8 @@
 #define directory_iterator wdirectory_iterator
 #endif
 
+#include <fstream>
+
 #include "decode_file.h"
 
 namespace sz4 {
@@ -31,6 +33,7 @@ namespace sz4 {
 template<class V, class T, class types> class real_param_entry_in_buffer;
 
 template<class V, class T, class types> class file_block_entry : public block_entry<V, T> {
+protected:
 	const boost::filesystem::wpath m_block_path;
 	real_param_entry_in_buffer<V, T, types>* m_param_entry;
 public:
@@ -44,23 +47,85 @@ public:
 			m_param_entry(param_entry)
 		{}
 
+	virtual void refresh_if_needed() = 0;
+
+	virtual ~file_block_entry() {
+		m_param_entry->remove_block(this);
+	}
+};
+
+template<class V, class T, class types> class sz4_file_block_entry : public file_block_entry<V, T, types> {
+public:
+	typedef file_block_entry<V, T, types> parent;
+	sz4_file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache,
+			real_param_entry_in_buffer<V, T, types>* param_entry)
+		:
+			parent(start_time, block_path, cache, param_entry)
+		{}
+
 	void refresh_if_needed() {
 		if (!this->m_needs_refresh)
 			return;
 
-		size_t size = boost::filesystem::file_size(m_block_path);
+		size_t size = boost::filesystem::file_size(this->m_block_path);
 		std::vector<unsigned char> buffer(size);
 
-		if (load_file_locked(m_block_path, &buffer[0], buffer.size())) {
+		if (load_file_locked(this->m_block_path, &buffer[0], buffer.size())) {
 			std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->m_block.start_time());
 			this->m_block.set_data(values);
 			this->m_needs_refresh = false;
 		}
-
 	}
+};
 
-	~file_block_entry() {
-		m_param_entry->remove_block(this);
+template<class V, class T, class types> class szbase_file_block_entry : public file_block_entry<V, T, types> {
+	size_t m_read_so_far;
+public:
+	typedef file_block_entry<V, T, types> parent;
+
+	szbase_file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache,
+			real_param_entry_in_buffer<V, T, types>* param_entry)
+		:
+			parent(start_time, block_path, cache, param_entry),
+			m_read_so_far(0)
+		{}
+
+	void refresh_if_needed() {
+		if (!this->m_needs_refresh)
+			return;
+
+		size_t size = boost::filesystem::file_size(this->m_block_path);
+		size_t shorts_to_read = (size > this->m_read_so_far)
+						? (size - this->m_read_so_far) / 2 : 0;
+
+		if (shorts_to_read) {
+			std::vector<short> buffer(shorts_to_read);
+			std::ifstream ifs(
+#if BOOST_FILESYSTEM_VERSION == 3
+					this->m_block_path.string().c_str(),
+#else
+					this->m_block.path.external_file_string().c_str(),
+#endif
+					std::ios::binary | std::ios::in);
+
+			if (!ifs.seekg(m_read_so_far, std::ios_base::beg))
+				return;
+
+			if (!ifs.read((char*)&buffer[0], 2 * shorts_to_read))
+				return;
+
+			T t = szb_move_time(this->block().end_time(), 1, PT_MIN10);
+			for (size_t i = 0; i < buffer.size(); i++, t = szb_move_time(t, 1, PT_MIN10))
+				this->block().append_entry(buffer[i], t);
+
+			this->m_read_so_far += 2 * shorts_to_read;
+		}
+
+		this->m_needs_refresh = false;
 	}
 };
 
@@ -82,8 +147,10 @@ private:
 
 	bool m_refresh_file_list;
 	bool m_has_paths_to_update;
+
+	T m_first_sz4_date;
 public:
-	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true), m_has_paths_to_update(false)
+	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir) : m_base(_base), m_param(param), m_param_dir(param_dir), m_refresh_file_list(true), m_has_paths_to_update(false), m_first_sz4_date(time_trait<T>::invalid_value)
 		{}
 	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum)  {
 		refresh_if_needed();
@@ -206,15 +273,18 @@ public:
 
 	
 	void refresh_file(const std::string& path) {
-		T time = path_to_date<T>(path);
+		bool sz4_file;
+		T time = path_to_date<T>(path, sz4_file);
 		if (!time_trait<T>::is_valid(time))
 			return;
 
 		typename map_type::iterator i = m_blocks.find(time);
 		if (i != m_blocks.end())
 			i->second->set_needs_refresh();
-		else
-			m_refresh_file_list = true;
+		else {
+			if (sz4_file == true || !time_trait<T>::is_valid(m_first_sz4_date))
+				m_refresh_file_list = true;
+		}
 	}
 
 	void remove_block(file_block_entry_type* block) {
@@ -240,14 +310,24 @@ public:
 			std::wstring file_path = i->path().file_string();
 #endif
 
-			T file_time = path_to_date<T>(file_path);
+			bool sz4;
+			T file_time = path_to_date<T>(file_path, sz4);
 			if (!time_trait<T>::is_valid(file_time))
 				continue;
 
 			if (m_blocks.find(file_time) != m_blocks.end())
 				continue;
+			
+			if (sz4 && m_first_sz4_date > file_time)
+				m_first_sz4_date = file_time;
 
-			m_blocks.insert(std::make_pair(file_time, new file_block_entry_type(file_time, file_path, m_base->cache(), this)));
+			file_block_entry<V, T, types> *entry;
+			if (sz4)
+				entry = new sz4_file_block_entry<V, T, types>(file_time, file_path, m_base->cache(), this);
+			else
+				entry = new szbase_file_block_entry<V, T, types>(file_time, file_path, m_base->cache(), this);
+
+			m_blocks.insert(std::make_pair(file_time, entry));
 		}
 	}
 

@@ -101,6 +101,7 @@ template<class FT, class TT> struct probe_adapter {
 template<> struct probe_adapter<nanosecond_time_t, second_time_t> {
 	void operator()(SZARP_PROBE_TYPE &probe) {
 		switch (probe) {
+			case PT_MSEC10:
 			case PT_HALFSEC:
 				probe = PT_SEC;
 				break;

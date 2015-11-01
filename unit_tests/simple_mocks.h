@@ -42,14 +42,14 @@ public:
 		m_heartbeat_param.SetParamId(m_next_free_param_id++);
 		m_heartbeat_param.SetDataType(TParam::SHORT);
 		m_heartbeat_param.SetParentSzarpConfig(&m_config);
-		m_heartbeat_param.SetName(L"Status:Meaner4:Heartbeat");
+		m_heartbeat_param.SetName(L"Status:Meaner3:program_uruchomiony");
 		m_config.SetName(L"BASE", L"BASE");
 	}
 
 	TSzarpConfig* GetConfig(const std::wstring& prefix) { return &m_config; }
 
 	TParam* GetParam(const std::wstring& name) {
-		if (name.find(L":Status:Meaner4:Heartbeat") != std::wstring::npos)
+		if (name.find(L":Status:Meaner3:program_uruchomiony") != std::wstring::npos)
 			return &m_heartbeat_param;
 		else
 			return DoGetParam(name);
@@ -110,7 +110,7 @@ struct mock_param_factory {
 		typename types
 	>
 	sz4::generic_param_entry* create(sz4::base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-		if(param->GetName() == L"Status:Meaner4:Heartbeat") {
+		if(param->GetName() == L"Status:Meaner3:program_uruchomiony") {
 			return new sz4::param_entry_in_buffer<fake_entry_type, data_type, time_type, types>(base, param, buffer_directory);
 		} else {
 			return new sz4::param_entry_in_buffer<entry_type, data_type, time_type, types>(base, param, buffer_directory);

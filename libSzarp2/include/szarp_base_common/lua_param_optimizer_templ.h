@@ -678,6 +678,7 @@ template<class container_type> void ParamConverterTempl<container_type>::Initali
 	AddVariable(L"PT_SEC10");
 	AddVariable(L"PT_SEC");
 	AddVariable(L"PT_HALFSEC");
+	AddVariable(L"PT_MSEC10");
 }
 
 template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKContainerType* container) {

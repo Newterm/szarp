@@ -291,13 +291,18 @@
                         <radio>1</radio>
                     </item>
                     <item>
-                        <label>3 Minutes\tAlt+3</label>
-                        <name>3MINUTE_RADIO</name>
+                        <label>5 Minutes\tAlt+4</label>
+                        <name>5MINUTE_RADIO</name>
                         <radio>1</radio>
                     </item>
                     <item>
-                        <label>Minute\tAlt+3</label>
+                        <label>Minute\tAlt+5</label>
                         <name>MINUTE_RADIO</name>
+                        <radio>1</radio>
+                    </item>
+                    <item>
+                        <label>30 Seconds\tAlt+6</label>
+                        <name>30SEC_RADIO</name>
                         <radio>1</radio>
                     </item>
                     <item>

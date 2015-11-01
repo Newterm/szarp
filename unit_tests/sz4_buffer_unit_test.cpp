@@ -15,9 +15,9 @@
 #include "szarp_base_common/defines.h"
 #include "szarp_base_common/lua_param_optimizer.h"
 #include "szarp_base_common/lua_param_optimizer_templ.h"
-#include "sz4/defs.h"
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
+#include "sz4/defs.h"
 #include "sz4/lua_interpreter_templ.h"
 
 #include "sz4/time.h"
@@ -29,6 +29,7 @@
 #include "sz4/lua_optimized_param_entry.h"
 #include "sz4/lua_param_entry.h"
 #include "sz4/rpn_param_entry.h"
+#include "sz4/combined_param_entry.h"
 #include "sz4/buffer_templ.h"
 #include "sz4/load_file_locked.h"
 
@@ -93,43 +94,43 @@ void Sz4BufferTestCase::test1() {
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(100), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(10), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(5000), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(0), sz4::second_time_t(1000), PT_SEC10, sum);
 	sum.sum(weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1000), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(2000), sz4::second_time_t(2050), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1050), sz4::second_time_t(1100), PT_SEC10, sum);
 	sum.sum(weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1050), sz4::second_time_t(1150), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(10), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(500), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer->get_weighted_sum(&param, sz4::second_time_t(1025), sz4::second_time_t(1175), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(30), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(3), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(3), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(30 * 25), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(75), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(75), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
@@ -181,9 +182,9 @@ void Sz4BufferTestCase::test2() {
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(10), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), weight);
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1), sum.no_data_weight());
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(500), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(50), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	TestObserver o;
@@ -201,8 +202,8 @@ void Sz4BufferTestCase::test2() {
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(30), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(2), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(1500), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(100), weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
@@ -221,8 +222,8 @@ void Sz4BufferTestCase::test2() {
 
 	sum = sz4::weighted_sum<int, sz4::second_time_t>();
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(3000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(630), sum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(22), weight);
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<int>::type(31500), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(1100), weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum.no_data_weight());
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 

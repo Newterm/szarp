@@ -23,6 +23,7 @@ namespace sz4 {
 
 SZARP_PROBE_TYPE get_probe_type_step(SZARP_PROBE_TYPE pt) {
 	switch (pt) {
+		case PT_MSEC10:
 		case PT_HALFSEC:
 		case PT_SEC10:
 		case PT_SEC:

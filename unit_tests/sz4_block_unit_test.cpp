@@ -10,10 +10,10 @@
 
 #include "conversion.h"
 
-#include "sz4/defs.h"
 #include "sz4/time.h"
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
+#include "sz4/defs.h"
 #include "sz4/path.h"
 #include "sz4/block_cache.h"
 #include "sz4/load_file_locked.h"
@@ -79,51 +79,51 @@ void Sz4BlockTestCase::weigthedSumTest() {
 
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 	block.get_weighted_sum(0u, sz4::second_time_t(1), wsum);
-	CPPUNIT_ASSERT_EQUAL(1ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(1), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(1l, weight);
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 2u, wsum);
-	CPPUNIT_ASSERT_EQUAL(4ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(4), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(2l, weight);
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 4u, wsum);
-	CPPUNIT_ASSERT_EQUAL(12ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(12), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(4l, weight);
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 100u, wsum);
-	CPPUNIT_ASSERT_EQUAL(1ll + 2ll * (3ll + 5ll + 7ll + 9ll), wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(1 + 2 * (3 + 5 + 7 + 9)), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(9l, weight);
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(2u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(3ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(3), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(1l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(1u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(3ll, wsum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL(1l, weight);
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(6), wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(2l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(1u, 1u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(0), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(0l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(2u, 2u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(0), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(0l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 
 	wsum = sz4::weighted_sum<int, sz4::second_time_t>();
 	block.get_weighted_sum(0u, 0u, wsum);
-	CPPUNIT_ASSERT_EQUAL(0ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(0), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(0l, weight);
 	CPPUNIT_ASSERT_EQUAL(0l, wsum.no_data_weight());
 }
@@ -141,19 +141,20 @@ void Sz4BlockTestCase::weigthedSumTest2() {
 	block.set_data(v);
 
 	block.get_weighted_sum(0u, 3u, wsum);
-	CPPUNIT_ASSERT_EQUAL(2ll, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(2), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(2l, weight);
 }
 
 void Sz4BlockTestCase::pathParseTest() {
-	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(21), sz4::path_to_date<sz4::second_time_t>(L"0000000021.sz4"));
-	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), sz4::path_to_date<sz4::second_time_t>(L"0000000001.sz4"));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, sz4::path_to_date<sz4::second_time_t>(L"000000001.sz4"));
+	bool sz4;
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(21), sz4::path_to_date<sz4::second_time_t>(L"0000000021.sz4", sz4));
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), sz4::path_to_date<sz4::second_time_t>(L"0000000001.sz4", sz4));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, sz4::path_to_date<sz4::second_time_t>(L"000000001.sz4", sz4));
 
 	sz4::nanosecond_time_t t[] = { sz4::nanosecond_time_t(1, 1), sz4::nanosecond_time_t(2, 2 ), sz4::time_trait<sz4::nanosecond_time_t>::invalid_value };
-	CPPUNIT_ASSERT(t[0] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000010000000001.sz4"));
-	CPPUNIT_ASSERT(t[1] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000000002.sz4"));
-	CPPUNIT_ASSERT(t[2] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000.sz4"));
+	CPPUNIT_ASSERT(t[0] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000010000000001.sz4", sz4));
+	CPPUNIT_ASSERT(t[1] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000000002.sz4", sz4));
+	CPPUNIT_ASSERT(t[2] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000.sz4", sz4));
 }
 
 void Sz4BlockTestCase::blockLoadTest() {
@@ -193,7 +194,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 	sz4::weighted_sum<short, unsigned> wsum;
 	sz4::weighted_sum<short, unsigned>::time_diff_type weight;
 	block.get_weighted_sum(0u, 7u, wsum);
-	CPPUNIT_ASSERT_EQUAL(1ll + 2 + 3 + 4 + 5 + 7, wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(1 + 2 + 3 + 4 + 5 + 7), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(6l, weight);
 
 	unlink(SC::S2A(file_name.str()).c_str());
@@ -210,8 +211,8 @@ void Sz4BlockTestCase::testBigNum() {
 	sz4::weighted_sum<short, unsigned> wsum;
 	sz4::weighted_sum<short, unsigned>::time_diff_type weight;
 	block.get_weighted_sum(10000000u, 10000000u + 1 * 3600 * 24 * 31, wsum);
-	CPPUNIT_ASSERT_EQUAL(1500ll, wsum.sum(weight));
-	CPPUNIT_ASSERT_EQUAL((sz4::weighted_sum<short, unsigned>::time_diff_type(1)), weight);
+	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(4017600000), wsum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL((sz4::weighted_sum<short, unsigned>::time_diff_type(2678400)), weight);
 }
 
 void Sz4BlockTestCase::searchDataTest() {

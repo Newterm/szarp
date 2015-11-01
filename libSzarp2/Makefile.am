@@ -197,6 +197,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/lua_interpreter.h \
 			$(INCLUDE_DIR)/sz4/lua_param_entry.h \
 			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
+			$(INCLUDE_DIR)/sz4/combined_param_entry.h \
 			$(INCLUDE_DIR)/sz4/base.h \
 			$(INCLUDE_DIR)/sz4/defs.h \
 			$(INCLUDE_DIR)/sz4/util.h \

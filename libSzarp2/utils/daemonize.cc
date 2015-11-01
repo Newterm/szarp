@@ -22,6 +22,7 @@
  * MA 02110-1301, USA.
  *
  */
+#include <config.h>
 #ifndef MINGW32
 
 #include <stdlib.h>

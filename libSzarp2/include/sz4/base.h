@@ -26,14 +26,14 @@
 #include <lua.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/container/flat_set.hpp>
 #include <boost/optional.hpp>
 
-#include "sz4/defs.h"
 #include "sz4/types.h"
+#include "sz4/block.h"
+#include "sz4/block_cache.h"
 #include "sz4/buffer.h"
 #include "sz4/lua_interpreter.h"
-#include "sz4/block_cache.h"
+#include "sz4/defs.h"
 #include "sz4/param_observer.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
@@ -104,9 +104,9 @@ public:
 		if (buf == NULL) {
 			std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
 #if BOOST_FILESYSTEM_VERSION == 3
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").wstring());
+			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").wstring());
 #else
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"sz4").file_string());
+			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").file_string());
 #endif
 		}
 		return buf;

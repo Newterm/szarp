@@ -68,7 +68,7 @@ class ParamPath:
 
 	def find_latest_path(self):
 		try:
-			file_names = os.listdir(self.param_dir())
+			file_names = [ f for f in os.listdir(self.param_dir()) if f.endswith(".sz4") ]
 			file_names.sort()
 
 			if len(file_names) > 0:

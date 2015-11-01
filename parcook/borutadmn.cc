@@ -1127,6 +1127,8 @@ void tcp_server_manager::starting_new_cycle() {
 		event_add(&port._event, NULL);
 		event_base_set(m_boruta->get_event_base(), &port._event);
 	}
+	for (auto* server_driver : m_drivers)
+		server_driver->starting_new_cycle();
 }
 
 void tcp_server_manager::finished_cycle() {

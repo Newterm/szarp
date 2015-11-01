@@ -206,11 +206,6 @@ void GCDCGraphs::DrawXAxis(wxGraphicsContext &dc) {
     
 }
 
-namespace {
-const int PeriodMarkShift[PERIOD_T_LAST] = {0, 0, 0, 1, 3, 3, 5, 5, 0};
-}
-
-
 void GCDCGraphs::DrawUnit(wxGraphicsContext &dc) {
 	Draw* draw = m_draws_wdg->GetSelectedDraw();
 	if (draw == NULL) 
@@ -451,8 +446,9 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	bool draw_circle =
 		d->GetPeriod() != PERIOD_T_DAY
 		&& d->GetPeriod() != PERIOD_T_30MINUTE
-		&& d->GetPeriod() != PERIOD_T_3MINUTE
-		&& d->GetPeriod() != PERIOD_T_MINUTE;
+		&& d->GetPeriod() != PERIOD_T_5MINUTE
+		&& d->GetPeriod() != PERIOD_T_MINUTE
+		&& d->GetPeriod() != PERIOD_T_30SEC;
 
 	for (int i = 0; i < pc; i++) {
 		if (!d->GetValuesTable().at(i).IsData()) {
