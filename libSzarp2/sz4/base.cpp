@@ -29,7 +29,10 @@
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
 #include "sz4/base.h"
+#include "sz4/base_templ.h"
 
 namespace sz4 {
+
+template class base_templ<base_types>;
 
 }

@@ -61,9 +61,7 @@ private:
 
 	boost::optional<SZARP_PROBE_TYPE> m_read_ahead;
 public:
-	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
-		m_interperter.initialize(this, m_ipk_container);
-	}
+	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container);
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum) {
 		buffer_for_param(param)->get_weighted_sum(param, start, end, probe_type, sum);
@@ -93,72 +91,29 @@ public:
 		buffer_for_param(param)->get_heartbeat_last_time(t);
 	}
 
-	boost::optional<SZARP_PROBE_TYPE>& read_ahead() { return m_read_ahead; }
+	boost::optional<SZARP_PROBE_TYPE>& read_ahead();
 
-	buffer_templ<types>* buffer_for_param(TParam* param) {
-		buffer_templ<types>* buf;
-		if (param->GetConfigId() >= m_buffers.size())
-			m_buffers.resize(param->GetConfigId() + 1, NULL);
-		buf = m_buffers[param->GetConfigId()];
+	buffer_templ<types>* buffer_for_param(TParam* param);
 
-		if (buf == NULL) {
-			std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
-#if BOOST_FILESYSTEM_VERSION == 3
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").wstring());
-#else
-			buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").file_string());
-#endif
-		}
-		return buf;
-	}
+	generic_param_entry* get_param_entry(TParam* param);
 
-	generic_param_entry* get_param_entry(TParam* param) {
-		return buffer_for_param(param)->get_param_entry(param);
-	}
+	void remove_param(TParam* param);
 
-	void remove_param(TParam* param) {
-		if (param->GetConfigId() >= m_buffers.size())
-			return;
+	void register_observer(param_observer *observer, const std::vector<TParam*>& params);
 
-		buffer_templ<types>* buf = m_buffers[param->GetConfigId()];
-		if (buf == NULL)
-			return;
+	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params);
 
-		buf->remove_param(param);
-	}
+	fixed_stack_type& fixed_stack();
 
-	void register_observer(param_observer *observer, const std::vector<TParam*>& params) {
-		for (std::vector<TParam*>::const_iterator i = params.begin(); i != params.end(); i++) {
-			generic_param_entry *entry = get_param_entry(*i);
-			if (entry)
-				entry->register_observer(observer);
-		}
-	}
+	SzbParamMonitor& param_monitor();
 
-	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params) {
-		for (std::vector<TParam*>::const_iterator i = params.begin(); i != params.end(); i++) {
-			generic_param_entry *entry = get_param_entry(*i);
-			if (entry)
-				entry->deregister_observer(observer);
-		}
-	}
+	lua_interpreter<types>& get_lua_interpreter();
 
-	fixed_stack_type& fixed_stack() { return m_fixed_stack; }
+	ipk_container_type* get_ipk_container();
 
-	SzbParamMonitor& param_monitor() { return m_monitor; }
+	block_cache* cache();
 
-	lua_interpreter<types>& get_lua_interpreter() { return m_interperter; }
-
-	ipk_container_type* get_ipk_container() { return m_ipk_container; }
-
-	block_cache* cache() { return &m_cache; }
-
-	~base_templ() {
-		for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
-			delete *i;
-		m_monitor.terminate();
-	}
-
+	~base_templ();
 };
 
 typedef base_templ<base_types> base;
