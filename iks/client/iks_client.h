@@ -6,14 +6,19 @@
 
 class IksClient : public std::enable_shared_from_this<IksClient>, public TcpClientSocket::Handler {
 public:
-	enum class error : int {
+	enum class Error : int {
 		no_error = 0 ,
 		connection_error ,
-		connection_terminated_on_timeout	
+		connection_timeout
+	};
+
+	enum CmdStatus {
+		cmd_done,
+		cmd_cont
 	};
 
 	typedef int CmdId;
-	typedef std::function<void( error , const std::string& , std::string & )> CmdCallback;
+	typedef std::function<CmdStatus( Error , const std::string& , std::string & )> CmdCallback;
 
 private:
 	std::unordered_map<CmdId, CmdCallback> commands;

@@ -197,6 +197,7 @@ std::ostream& get_data( sz4::base*       base ,
 					  SZARP_PROBE_TYPE pt ,
 					  std::ostream&    os )
 {
+	bool first = true;
 
 	while ( from < to )
 	{
@@ -204,7 +205,13 @@ std::ostream& get_data( sz4::base*       base ,
 
 		sz4::weighted_sum< value_time, time_type > sum;
 		base->get_weighted_sum( param , from , next , pt , sum );
-		os << sum._sum() << " " << sum.weight() << " " << sum.no_data_weight() << " " << sum.fixed() << std::endl;
+
+		if (first)
+			first = false;
+		else
+			os << " ";
+	
+		os << sum._sum() << " " << sum.weight() << " " << sum.no_data_weight() << " " << sum.fixed();
 
 		from = next;
 	}
