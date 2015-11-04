@@ -1027,7 +1027,7 @@ int main(int argc, char *argv[]) {
 	go_daemon();
 
 	InitSSL();
-	SSL_CTX* ctx = SSL_CTX_new(SSLv23_server_method());
+	SSL_CTX* ctx = SSL_CTX_new(TLSv1_2_server_method());
 	SSL_CTX_set_mode(ctx, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
         if (SSL_CTX_use_certificate_chain_file(ctx, ca_file) == 0) {
 		sz_log(0, "Failed to load cert chain file , error %s", ERR_error_string(ERR_get_error(),NULL));
