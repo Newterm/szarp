@@ -1186,6 +1186,7 @@ AC_OUTPUT( \
 	extern/Makefile \
 	extern/wxscintilla/Makefile \
 	iks/Makefile \
+	iks/common/Makefile \
 	iks/server/Makefile \
 	iks/server/locations/Makefile \
 	iks/server/utils/Makefile \

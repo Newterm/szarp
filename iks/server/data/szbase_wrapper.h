@@ -6,8 +6,7 @@
 #include "sz4/base.h"
 
 #include "utils/exception.h"
-
-#include "probe_type.h"
+#include "data/probe_type.h"
 
 class SzbaseObserverImpl;
 typedef std::shared_ptr<SzbaseObserverImpl> SzbaseObserverToken;
