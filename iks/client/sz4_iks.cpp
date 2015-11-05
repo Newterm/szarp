@@ -1,26 +1,28 @@
+#include <unordered_set>
+
 #include "sz4_iks.h"
 #include "sz4_iks_templ.h"
 
 namespace sz4 {
 
 IksClient* iks::client_for_param(TParam *param) {
-	auto i = cients.find(param->GetSzarpConfig()->GetPrefix());
-	return i != cients.end() ? client.second : NULL;
+	auto i = m_clients.find(param->GetSzarpConfig()->GetPrefix());
+	return i != m_clients.end() ? i->second : nullptr;
 }
 
-void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(error&) > cb) {
+void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb) {
 	auto count = std::make_shared<int>(0);
 	for (auto p : params) {
 		auto c = client_for_param(p);
 		if (!c)
 			continue;
 
-		std::basic_string<unsigned char> uname(p->GetName());
+		std::basic_string<unsigned char> uname(SC::S2U(p->GetName()));
 		std::string name(uname.begin(), uname.end());
 
-		bool p_registered = std::any_of(m_registrations.begin(), m_registrations.end(),
-				[&i] (registration& e) { return e.param == i->param; });
-		observers.emplace_back({ c , name , p , observer });
+		bool p_registered = std::any_of(m_observer_regs.begin(), m_observer_regs.end(),
+				[&p] (observer_reg& e) { return e.param == p; });
+		m_observer_regs.push_back(observer_reg({ c , name , p , observer }));
 
 		if (p_registered)
 			continue;
@@ -28,9 +30,9 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 		*count += 1;
 
 		std::stringstream ss;
-		ss << "\"" << SC::S2U(reg.second->GetName()) << "\"";
+		ss << "\"" << SC::S2U(p->GetName()) << "\"";
 
-		c->send_command("subscribe_param", ss.str(), [count] (IksClient::error, const std::string& , std::string&) {
+		c->send_command("subscribe_param", ss.str(), [count, cb] (IksClient::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
@@ -43,29 +45,29 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 
 }
 
-void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& , std::function<void(error&) > cb) {
-	auto end = std::remove_if(m_registrations.begin(), m_registrations.end(),
-			[observer] (registration& e) { return e.observer == observer });
+void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& , std::function<void(const error&) > cb) {
+	auto end = std::remove_if(m_observer_regs.begin(), m_observer_regs.end(),
+			[observer] (observer_reg& e) { return e.observer == observer; });
 
 	std::unordered_set<TParam*> params_to_deregister;
-	for (auto i = end; i != m_registrations.end(); i++)
-		if (std::none_of(m_registrations.begin(), m_registrations.end(),
-				[&i] (registration& e) { return e.param == i->param; })) 
+	for (auto i = end; i != m_observer_regs.end(); i++)
+		if (std::none_of(m_observer_regs.begin(), m_observer_regs.end(),
+				[&i] (observer_reg& e) { return e.param == i->param; })) 
 			params_to_deregister.insert(i->param);	
 
 	auto count = std::make_shared<int>(0);
 
 	for (auto& i : params_to_deregister) {
-		auto c = client_for_param(*i);
+		auto c = client_for_param(&*i);
 		if (!c)
 			continue;
 
 		*count += 1;
 		
 		std::stringstream ss;
-		ss << "\"" << SC::S2U(reg.second->GetName()) << "\"";
+		ss << "\"" << SC::S2U(i->GetName()) << "\"";
 
-		c->send_command("unsubscribe_param", ss.str(), [count] (IksClient::error, const std::string& , std::string&) {
+		c->send_command("unsubscribe_param", ss.str(), [count, cb] (IksClient::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
@@ -78,13 +80,15 @@ void iks::deregister_observer(param_observer *observer, const std::vector<TParam
 
 }
 
-void iks::add_param(TParam* param, std::function<void(error&) > result) {
+/*
+void iks::add_param(TParam* param, std::function<void(const error&) > result) {
 //	m_impl->add_param(param, result);
 }
 
-void iks::remove_param(TParam* param, std::function<void(error&) > result) {
+void iks::remove_param(TParam* param, std::function<void(const error&) > result) {
 //	m_impl->remove_param(param, result);
 }
+*/
 
 
 }
