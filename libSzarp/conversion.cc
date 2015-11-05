@@ -425,3 +425,10 @@ namespace SC {	/* Szarp Conversions */
 	}
 }
 
+namespace std {
+
+ostream& operator<<(ostream& os, const std::basic_string<unsigned char> &us) {
+	return os << std::string(us.begin(), us.end());
+}
+
+}
