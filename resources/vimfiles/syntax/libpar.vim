@@ -1,9 +1,7 @@
 " Vim syntax file
-" Language:	SZARP config file
-" Maintainer:	Pawe³ Pa³ucha <pawel@praterm.com.pl>
-" Last change:	2001 May 15
-"
-" $Id: libpar.vim 1258 2004-01-21 16:11:19Z pawel $
+" Language:     SZARP config file
+" Maintainer:   Pawel Palucha <pawel@praterm.com.pl>
+" Last_change:  6 Nov 2015
 "
 " To jest plik definicji dla pod¶wietlania sk³adni plików konfiguracyjnych
 " SZARPA w edytorze Vim. Dzia³a, choæ miejscami jest bardziej restrykcyjny
@@ -12,15 +10,17 @@
 " nastêpuj±ce komendy:
 "   :au! Syntax szarp so libpar.vim
 "   :set syntax=szarp
-"
 
-" Usuwamy ewentualne ¶mieci
+if exists("b:current_syntax")
+    finish
+endif
+
 syn clear
 
 if ("version" >= 610)
-	syn sync fromstart
+    syn sync fromstart
 else
-	syn sync minlines=1000
+    syn sync minlines=1000
 endif
 
 syn match ddolar "\$\$"
@@ -64,31 +64,29 @@ syn match var "\$[a-zA-Z_][a-zA-Z0-9_]*\$"
 
 syn match blueones "[a-zA-Z_0-9]+"
 
-" Kolorki jakie s±, ka¿dy widzi - mo¿na zmieniaæ
 if !exists("did_szarp_syntax_inits")
-  let did_szarp_syntax_inits = 1
-  hi link d_include	Special
-  hi link szarpKeyword  Special
-  hi link szarpComment	Comment
-  hi link adaCharacter	Character
-  hi link paramName	PreProc
-  hi link blueones	PreProc
-  hi link paramContent  String
-  hi link commentSpecial Special
-  hi link paramSpecial	Special
-  hi link szarpFormula	Error
-  hi link dolar		Special
-  hi link szarpFunction PreProc
-  hi link szarpString   String
-  hi link szarpParams   Keyword
-  hi link stringSpecial Special
-  hi link ddolar	Special
-  hi link szarpOp	Operator
-  hi link unknownCharacter Error
-  hi link szarpSection  Label
-  hi link var		Type
+    let did_szarp_syntax_inits = 1
+    hi link d_include        Special
+    hi link szarpKeyword     Special
+    hi link szarpComment     Comment
+    hi link adaCharacter     Character
+    hi link paramName        PreProc
+    hi link blueones         PreProc
+    hi link paramContent     String
+    hi link commentSpecial   Special
+    hi link paramSpecial     Special
+    hi link szarpFormula     Error
+    hi link dolar            Special
+    hi link szarpFunction    PreProc
+    hi link szarpString      String
+    hi link szarpParams      Keyword
+    hi link stringSpecial    Special
+    hi link ddolar           Special
+    hi link szarpOp          Operator
+    hi link unknownCharacter Error
+    hi link szarpSection     Label
+    hi link var              Type
 endif
 
 let b:current_syntax = "szarp"
 
-" vim: ts=8
