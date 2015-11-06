@@ -1,7 +1,7 @@
 #include "sz4/defs.h"
 #include "sz4/api.h"
 
-#include "iks_client.h"
+#include "iks_location_connection.h"
 
 class TParam;
 
@@ -12,16 +12,16 @@ class param_observer;
 class iks {
 
 	struct observer_reg {
-		IksClient* client;
+		IksLocationConnection* client;
 		std::string name;
 		TParam* param;
 		param_observer* observer;
 	};
 
-	std::unordered_map<std::wstring, IksClient*> m_clients;
+	std::unordered_map<std::wstring, IksLocationConnection*> m_connections;
 	std::vector<observer_reg> m_observer_regs;
 
-	IksClient* client_for_param(TParam *param);
+	IksLocationConnection* connection_for_param(TParam *param);
 
 	template<class T> void search_data(TParam* param, const std::string& dir, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
 

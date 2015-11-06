@@ -5,15 +5,15 @@
 
 namespace sz4 {
 
-IksClient* iks::client_for_param(TParam *param) {
-	auto i = m_clients.find(param->GetSzarpConfig()->GetPrefix());
-	return i != m_clients.end() ? i->second : nullptr;
+IksLocationConnection * iks::connection_for_param(TParam *param) {
+	auto i = m_connections.find(param->GetSzarpConfig()->GetPrefix());
+	return i != m_connections.end() ? i->second : nullptr;
 }
 
 void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb) {
 	auto count = std::make_shared<int>(0);
 	for (auto p : params) {
-		auto c = client_for_param(p);
+		auto c = connection_for_param(p);
 		if (!c)
 			continue;
 
@@ -32,11 +32,11 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(p->GetName()) << "\"";
 
-		c->send_command("subscribe_param", ss.str(), [count, cb] (IksClient::Error, const std::string& , std::string&) {
+		c->send_command("subscribe_param", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		});
 	}
 
@@ -58,7 +58,7 @@ void iks::deregister_observer(param_observer *observer, const std::vector<TParam
 	auto count = std::make_shared<int>(0);
 
 	for (auto& i : params_to_deregister) {
-		auto c = client_for_param(&*i);
+		auto c = connection_for_param(&*i);
 		if (!c)
 			continue;
 
@@ -67,11 +67,11 @@ void iks::deregister_observer(param_observer *observer, const std::vector<TParam
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(i->GetName()) << "\"";
 
-		c->send_command("unsubscribe_param", ss.str(), [count, cb] (IksClient::Error, const std::string& , std::string&) {
+		c->send_command("unsubscribe_param", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		});
 	}
 

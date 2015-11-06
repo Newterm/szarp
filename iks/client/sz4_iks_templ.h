@@ -9,7 +9,7 @@ const auto value_type_2_name = boost::fusion::make_map<short , int , float , dou
 const auto time_type_2_name  = boost::fusion::make_map<second_time_t, nanosecond_time_t>("second_t", "nanosecond_t");
 
 template<class T> void iks::search_data(TParam* param, const std::string& dir, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&) > cb) {
-	auto client = client_for_param(param);
+	auto client = connection_for_param(param);
 	if (!client) {
 		result(error::not_configured, T());
 		return;
@@ -21,15 +21,15 @@ template<class T> void iks::search_data(TParam* param, const std::string& dir, c
 		<< boost::fusion::at_key<T>(time_type_2_name) << " "
 		<< start << " " << end;
 
-	client->send_command("search_data", ss.str(), [cb] (IksClient::Error _error, const std::string& status, std::string& data) {
+	client->send_command("search_data", ss.str(), [cb] (IksConnection::Error _error, const std::string& status, std::string& data) {
 		if (_error) {
 			cb(error::connection_error, T());
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		}
 
 		if (status != "k") {
 			cb(error::invalid_response, T());
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		}
 
 		T result;
@@ -38,14 +38,14 @@ template<class T> void iks::search_data(TParam* param, const std::string& dir, c
 		else
 			cb(error::invalid_response, result);
 
-		return IksClient::cmd_done;
+		return IksConnection::cmd_done;
 	});
 }
 
 template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const error& , const std::vector< weighted_sum<V , T> >& ) > cb) {
 	typedef std::vector< weighted_sum<V , T> > result_t;
 
-	auto client = client_for_param(param);
+	auto client = connection_for_param(param);
 	if (!client) {
 		result(error::not_configured, result_t());
 		return;
@@ -58,15 +58,15 @@ template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& st
 		<< ProbeType(probe_type).to_string() << " "
 		<< start << " " << end;
 	  
-	client->send_command("get_data", ss.str(), [cb] (IksClient::Error _error, const std::string& status, std::string& data) {
+	client->send_command("get_data", ss.str(), [cb] (IksConnection::Error _error, const std::string& status, std::string& data) {
 		if (_error) {
 			cb(error::connection_error, result_t());
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		}
 
 		if (status != "k") {
 			cb(error::invalid_response, result_t());
-			return IksClient::cmd_done;
+			return IksConnection::cmd_done;
 		}
 
 		class _wsum : public weighted_sum<V , T> {
@@ -90,7 +90,7 @@ template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& st
 		else
 			cb(error::invalid_response, result_t());
 
-		return IksClient::cmd_done;
+		return IksConnection::cmd_done;
 	});
 	
 }

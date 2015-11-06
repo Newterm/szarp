@@ -13,6 +13,8 @@ public:
 	public:
 		virtual void handle_read_line( boost::asio::streambuf& line ) = 0;
 		virtual void handle_error( const boost::system::error_code& ec ) = 0;
+		virtual void handle_connected( ) = 0;
+		virtual void handle_disconnected( ) = 0;
 		virtual ~Handler();
 	};
 
@@ -29,7 +31,7 @@ private:
 
 	Handler& handler;
 
-	void handle_error(const boost::system::error_code& ec );
+	void handle_error( const boost::system::error_code& ec );
 
 	void do_read();
 

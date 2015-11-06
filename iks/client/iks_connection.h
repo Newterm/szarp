@@ -1,10 +1,12 @@
-#ifndef IKS_CLIENT_H
-#define IKS_CLIENT_H
+#ifndef IKS_CONNECTION_H
+#define IKS_CONNECTION_H
 #include <unordered_map>
 
 #include "tcp_client_socket.h"
 
-class IksClient : public std::enable_shared_from_this<IksClient>, public TcpClientSocket::Handler {
+class IksCmdReceiver;
+
+class IksConnection : public std::enable_shared_from_this<IksConnection>, public TcpClientSocket::Handler {
 public:
 	enum class Error : int {
 		no_error = 0 ,
@@ -26,8 +28,13 @@ private:
 	CmdId next_cmd_id;
 
 	std::shared_ptr<TcpClientSocket> socket;	
+
+	IksCmdReceiver* receiver;
 public:
-	IksClient( boost::asio::io_service& io , const std::string& server, const std::string& port );
+	IksConnection( boost::asio::io_service& io
+		 , const std::string& server
+		 , const std::string& port
+		 , IksCmdReceiver *receiver);
 
 	CmdId send_command(
 		const std::string& cmd,
@@ -46,7 +53,20 @@ public:
 
 	void handle_error( const boost::system::error_code& ec );
 
-	~IksClient();
+	void handle_connected();
+
+	void handle_disconnected();
+
+	~IksConnection();
 };
+
+class IksCmdReceiver {
+public:	
+	virtual void on_cmd(const std::string& status, IksConnection::CmdId id, std::string& data) = 0;
+
+	virtual void on_connected() = 0;
+	virtual void on_connection_error(const boost::system::error_code& ec) = 0;
+};
+
 
 #endif

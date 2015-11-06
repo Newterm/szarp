@@ -17,12 +17,12 @@ LDADD = @PTHREAD_CFLAGS@ \
 lib_LIBRARIES = libiks-client.a
 
 noinst_HEADERS = \
-	iks_client.h
+	iks_connection.h
 	tcp_client_socket.h \
 	sz4_iks.h \
 	sz4_iks_templ.h
 
 libiks_client_a_SOURCES = \
-	iks_client.cpp \
+	iks_connection.cpp \
 	tcp_client_socket.cpp \
 	sz4_iks.cpp

@@ -1,15 +1,17 @@
-#include "iks_client.h"
+#include "iks_connection.h"
 
-IksClient::IksClient( boost::asio::io_service& io
+IksConnection::IksConnection( boost::asio::io_service& io
 		    , const std::string& server
-		    , const std::string& port )
+		    , const std::string& port
+		    , IksCmdReceiver* receiver )
 		    : next_cmd_id(0)
 		    , socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
+		    , receiver( receiver )
 {
 
 }
 
-IksClient::CmdId IksClient::send_command(
+IksConnection::CmdId IksConnection::send_command(
 		const std::string& cmd,
 		const std::string& data,
 		CmdCallback callback )
@@ -22,28 +24,33 @@ IksClient::CmdId IksClient::send_command(
 	return id;
 }
 
-void IksClient::send_command( CmdId id
+void IksConnection::send_command( CmdId id
 			    , const std::string& cmd
 			    , const std::string& data )
 {
 	std::ostringstream os;
-	os << cmd << " " << id << " " << data << "\n";
+
+	os << cmd << " " << id;
+	if ( data.size() )
+		os << " " << data;
+	os << "\n";
+
 	socket->write( os.str() );
 }
 
-void IksClient::remove_command(CmdId id)
+void IksConnection::remove_command(CmdId id)
 {
 	commands.erase(id);
 }
 
-void IksClient::handle_read_line( boost::asio::streambuf& buf )
+void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 {
 	std::istream is( &buf );
-	std::string status;
+	std::string tag;
 	std::string data;
 	CmdId id;
 
-	std::getline(is, status, ' ');
+	std::getline(is, tag, ' ');
 	is >> id;
 	is.ignore(1);
 	std::getline(is, data);
@@ -58,12 +65,12 @@ void IksClient::handle_read_line( boost::asio::streambuf& buf )
 
 	auto i = commands.find(id);
 	if ( i != commands.end() )
-		i->second( Error::no_error , status , data );
+		i->second( Error::no_error , tag , data );
 	else
-		/*XXX: log */;
+		receiver->on_cmd(tag, id, data);
 }
 
-void IksClient::handle_error( const boost::system::error_code& ec )
+void IksConnection::handle_error( const boost::system::error_code& ec )
 {
 	std::string empty;
 	for ( auto& i : commands ) 
@@ -72,7 +79,17 @@ void IksClient::handle_error( const boost::system::error_code& ec )
 	commands.clear();
 }
 
-IksClient::~IksClient()
+void IksConnection::handle_connected()
+{
+	receiver->on_connected();	
+}
+
+void IksConnection::handle_disconnected()
+{
+//	receiver->on_connected();	
+}
+
+IksConnection::~IksConnection()
 {
 	socket->close();
 }

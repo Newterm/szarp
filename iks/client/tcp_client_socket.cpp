@@ -3,7 +3,7 @@
 namespace ba = boost::asio;
 namespace bs = boost::system;
 
-void TcpClientSocket::handle_error(const boost::system::error_code& ec )
+void TcpClientSocket::handle_error(const bs::error_code& ec )
 {
 	if ( ec == ba::error::operation_aborted)
 		return;
@@ -37,9 +37,9 @@ void TcpClientSocket::do_write()
 	
 	auto self = shared_from_this();
 	
-	std::vector<boost::asio::const_buffer> buf_v;
+	std::vector<ba::const_buffer> buf_v;
 	for ( auto& s : o_buf_cur )
-		buf_v.emplace_back( boost::asio::buffer( s ) );
+		buf_v.emplace_back( ba::buffer( s ) );
 
 	ba::async_write( socket , buf_v , [self] ( const bs::error_code& ec , const std::size_t& ) {
 		if ( ec )
@@ -96,6 +96,8 @@ void TcpClientSocket::connect()
 				self->handle_error( ec );
 				return;
 			}
+
+			self->handler.handle_connected();
 
 			self->do_write();
 			self->do_read();
