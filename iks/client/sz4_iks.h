@@ -1,31 +1,54 @@
 #include "sz4/defs.h"
 #include "sz4/api.h"
+#include "sz4_connection_mgr.h"
 
-#include "iks_location_connection.h"
+#include "sz4_location_connection.h"
 
 class TParam;
 
 namespace sz4 {
 
 class param_observer;
+class connection_mgr;
 
-class iks {
+class iks : std::enable_shared_from_this<iks> {
+	boost::asio::io_service& m_io;
+	std::shared_ptr<connection_mgr> m_connection_mgr;
 
 	struct observer_reg {
-		IksLocationConnection* client;
+		connection_mgr::loc_connection_ptr connection;
 		std::string name;
 		TParam* param;
 		param_observer* observer;
+
+		boost::signals2::scoped_connection error_sig_c;
+		boost::signals2::scoped_connection cmd_sig_c;
+
+		observer_reg(connection_mgr::loc_connection_ptr connection, const std::string& name,
+			TParam* param, param_observer* observer);
+
+		void on_error(boost::system::error_code ec);
+		void on_cmd(const std::string& tag, IksConnection::CmdId, const std::string &);
 	};
 
-	std::unordered_map<std::wstring, IksLocationConnection*> m_connections;
-	std::vector<observer_reg> m_observer_regs;
+	std::list<observer_reg> m_observer_regs;
 
-	IksLocationConnection* connection_for_param(TParam *param);
+	connection_mgr::loc_connection_ptr connection_for_param(TParam *p);
 
-	template<class T> void search_data(TParam* param, const std::string& dir, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
+	template<class T> void search_data(TParam* param, std::string dir, const T start, const T end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
+
+	template<class V, class T> void _get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
+
+	void _register_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb);
+
+	void _deregister_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb);
+	template<class T> void _get_first_time(TParam* param, std::function<void(const error&, T&) > cb);
+
+	template<class T> void _get_last_time(TParam* param, std::function<void(const error&, T&) > cb);
 
 public:
+	iks(boost::asio::io_service &io, std::shared_ptr<connection_mgr> connection_mgr);
+
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
 
 	template<class T> void search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
@@ -40,13 +63,8 @@ public:
 
 	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb);
 
-/*
-	void add_param(TParam* param, std::function<void(const error&) > cb);
-
-	void remove_param(TParam* param, std::function<void(const error&) > cb);
-*/
-
 };
 
 }
 
+/* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */

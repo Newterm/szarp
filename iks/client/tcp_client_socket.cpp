@@ -5,9 +5,6 @@ namespace bs = boost::system;
 
 void TcpClientSocket::handle_error(const bs::error_code& ec )
 {
-	if ( ec == ba::error::operation_aborted)
-		return;
-
 	handler.handle_error( ec );
 }
 
@@ -15,7 +12,7 @@ void TcpClientSocket::do_read()
 {
 	auto self = shared_from_this();
 	ba::async_read_until( socket , i_buf , '\n'
-			    , [self] ( const bs::error_code& ec , std::size_t bytes_read ) {
+						, [self] ( const bs::error_code& ec , std::size_t bytes_read ) {
 		if ( ec ) {
 			self->handle_error( ec );
 			return;
@@ -59,14 +56,14 @@ void TcpClientSocket::do_write()
 }
 
 TcpClientSocket::TcpClientSocket( boost::asio::io_service& io 
-					, const std::string& address
-					, const std::string& port
-					, Handler& handler )
-					: resolver( io )
-					, socket( io )
-					, address( address )
-					, port( port )
-					, handler( handler )
+								, const std::string& address
+								, const std::string& port
+								, Handler& handler )
+								: resolver( io )
+								, socket( io )
+								, address( address )
+								, port( port )
+								, handler( handler )
 {
 	connect();
 }
@@ -83,7 +80,7 @@ void TcpClientSocket::connect()
 
 	auto self = shared_from_this();
 	resolver.async_resolve ( bip::tcp::resolver::query( address , port ) 
-			       , [self] ( const bs::error_code& ec , bip::tcp::resolver::iterator i ) {
+						   , [self] ( const bs::error_code& ec , bip::tcp::resolver::iterator i ) {
 		if ( ec )
 		{
 			self->handle_error( ec );
@@ -129,3 +126,4 @@ void TcpClientSocket::close()
 	if (socket.is_open()) 
 		socket.close();
 }
+/* vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab : */

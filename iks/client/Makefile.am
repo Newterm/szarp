@@ -25,4 +25,6 @@ noinst_HEADERS = \
 libiks_client_a_SOURCES = \
 	iks_connection.cpp \
 	tcp_client_socket.cpp \
-	sz4_iks.cpp
+	sz4_connection_mgr.cpp \
+	sz4_iks.cpp \
+	sz4_location_connection.cpp 

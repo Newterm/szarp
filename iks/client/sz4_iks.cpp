@@ -1,18 +1,35 @@
 #include <unordered_set>
-
 #include "sz4_iks.h"
 #include "sz4_iks_templ.h"
 
 namespace sz4 {
 
-IksLocationConnection * iks::connection_for_param(TParam *param) {
-	auto i = m_connections.find(param->GetSzarpConfig()->GetPrefix());
-	return i != m_connections.end() ? i->second : nullptr;
+iks::observer_reg::observer_reg(connection_mgr::loc_connection_ptr c, const std::string& name,
+				TParam* param, param_observer* observer)
+				: connection(c), name(name), param(param), observer(observer)
+{
+	error_sig_c = c->connection_error_sig.connect(std::bind(&observer_reg::on_error, this, std::placeholders::_1));
+	cmd_sig_c = c->cmd_sig.connect(std::bind(&observer_reg::on_cmd, this, std::placeholders::_1
+						, std::placeholders::_2, std::placeholders::_3));
 }
 
-void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb) {
+void iks::observer_reg::on_cmd(const std::string& tag, IksConnection::CmdId, const std::string &data) {
+	if (tag == "n" && data == name)
+		observer->param_data_changed(param);
+}
+
+void iks::observer_reg::on_error(boost::system::error_code ec) {
+	///notify connection error to observer
+}
+
+connection_mgr::loc_connection_ptr iks::connection_for_param(TParam *p) {
+	return m_connection_mgr->connection_for_param(p);
+}
+
+void iks::_register_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb) {
 	auto count = std::make_shared<int>(0);
 	for (auto p : params) {
+
 		auto c = connection_for_param(p);
 		if (!c)
 			continue;
@@ -22,7 +39,8 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 
 		bool p_registered = std::any_of(m_observer_regs.begin(), m_observer_regs.end(),
 				[&p] (observer_reg& e) { return e.param == p; });
-		m_observer_regs.push_back(observer_reg({ c , name , p , observer }));
+
+		m_observer_regs.emplace_back(c, name, p, observer);
 
 		if (p_registered)
 			continue;
@@ -45,19 +63,25 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 
 }
 
-void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& , std::function<void(const error&) > cb) {
-	auto end = std::remove_if(m_observer_regs.begin(), m_observer_regs.end(),
-			[observer] (observer_reg& e) { return e.observer == observer; });
+void iks::_deregister_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb) {
+	std::unordered_set<TParam*> maybe_deregister, deregister;
+	m_observer_regs.remove_if([observer, &maybe_deregister] (observer_reg& e) {
+		if (e.observer == observer) {
+			maybe_deregister.insert(e.param);
+			return true;
+		} else
+			return false;
+	});
 
-	std::unordered_set<TParam*> params_to_deregister;
-	for (auto i = end; i != m_observer_regs.end(); i++)
+	for (auto& p : maybe_deregister) {
 		if (std::none_of(m_observer_regs.begin(), m_observer_regs.end(),
-				[&i] (observer_reg& e) { return e.param == i->param; })) 
-			params_to_deregister.insert(i->param);	
+				[&p] (observer_reg& e) { return e.param == p; })) 
+			deregister.insert(p);
+	}
 
 	auto count = std::make_shared<int>(0);
 
-	for (auto& i : params_to_deregister) {
+	for (auto& i : deregister) {
 		auto c = connection_for_param(&*i);
 		if (!c)
 			continue;
@@ -77,18 +101,18 @@ void iks::deregister_observer(param_observer *observer, const std::vector<TParam
 
 	if (*count == 0)
 		cb(error::no_error);
-
 }
 
-/*
-void iks::add_param(TParam* param, std::function<void(const error&) > result) {
-//	m_impl->add_param(param, result);
+
+iks::iks(boost::asio::io_service &io, std::shared_ptr<connection_mgr> connection_mgr) : m_io(io), m_connection_mgr(connection_mgr) {}
+
+void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb) {
+	m_io.post(std::bind(&iks::_register_observer, shared_from_this(), observer, params, cb));
 }
 
-void iks::remove_param(TParam* param, std::function<void(const error&) > result) {
-//	m_impl->remove_param(param, result);
+void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& v, std::function<void(const error&) > cb) {
+	m_io.post(std::bind(&iks::_deregister_observer, shared_from_this(), observer, v, cb));
 }
-*/
-
 
 }
+/* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */

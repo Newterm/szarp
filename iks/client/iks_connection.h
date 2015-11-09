@@ -1,14 +1,14 @@
 #ifndef IKS_CONNECTION_H
 #define IKS_CONNECTION_H
+
 #include <unordered_map>
+#include <boost/signals2.hpp>
 
 #include "tcp_client_socket.h"
 
-class IksCmdReceiver;
-
 class IksConnection : public std::enable_shared_from_this<IksConnection>, public TcpClientSocket::Handler {
 public:
-	enum class Error : int {
+	enum Error {
 		no_error = 0 ,
 		connection_error ,
 		connection_timeout
@@ -28,24 +28,18 @@ private:
 	CmdId next_cmd_id;
 
 	std::shared_ptr<TcpClientSocket> socket;	
-
-	IksCmdReceiver* receiver;
 public:
 	IksConnection( boost::asio::io_service& io
-		 , const std::string& server
-		 , const std::string& port
-		 , IksCmdReceiver *receiver);
+				 , const std::string& server
+				 , const std::string& port );
 
-	CmdId send_command(
-		const std::string& cmd,
-		const std::string& data,
-		CmdCallback callback );
+	CmdId send_command( const std::string& cmd
+					  , const std::string& data
+					  , CmdCallback callback );
 
-	void send_command(
-		CmdId id,
-		const std::string& cmd,
-		const std::string& data
-		);
+	void send_command( CmdId id
+					 , const std::string& cmd
+					 , const std::string& data );
 
 	void remove_command(CmdId id);
 
@@ -57,16 +51,16 @@ public:
 
 	void handle_disconnected();
 
+	void disconnect();
+
 	~IksConnection();
+
+	boost::signals2::signal<void( )>							connected_sig;
+	boost::signals2::signal<void( boost::system::error_code )>	connection_error_sig;
+	boost::signals2::signal<void( const std::string&
+							    , CmdId
+								, const std::string& )>			cmd_sig;
 };
-
-class IksCmdReceiver {
-public:	
-	virtual void on_cmd(const std::string& status, IksConnection::CmdId id, std::string& data) = 0;
-
-	virtual void on_connected() = 0;
-	virtual void on_connection_error(const boost::system::error_code& ec) = 0;
-};
-
 
 #endif
+/* vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab : */

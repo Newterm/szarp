@@ -2,13 +2,14 @@
 
 #include "conversion.h"
 #include "data/probe_type.h"
+#include "sz4/defs.h"
 
 namespace sz4 {
 
 const auto value_type_2_name = boost::fusion::make_map<short , int , float , double>("short", "int", "float", "double");
 const auto time_type_2_name  = boost::fusion::make_map<second_time_t, nanosecond_time_t>("second_t", "nanosecond_t");
 
-template<class T> void iks::search_data(TParam* param, const std::string& dir, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&) > cb) {
+template<class T> void iks::search_data(TParam* param, std::string dir, T start, T end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&) > cb) {
 	auto client = connection_for_param(param);
 	if (!client) {
 		result(error::not_configured, T());
@@ -42,7 +43,7 @@ template<class T> void iks::search_data(TParam* param, const std::string& dir, c
 	});
 }
 
-template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const error& , const std::vector< weighted_sum<V , T> >& ) > cb) {
+template<class V, class T> void iks::_get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb) {
 	typedef std::vector< weighted_sum<V , T> > result_t;
 
 	auto client = connection_for_param(param);
@@ -95,12 +96,16 @@ template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& st
 	
 }
 
+template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const error& , const std::vector< weighted_sum<V , T> >& ) > cb) {
+	m_io.post(std::bind(&iks::get_weighted_sum<V,T>, shared_from_this(), param, start, end, probe_type, cb));
+}
+
 template<class T> void iks::search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&) > cb) {
-	search_data(param, "right", start, end, probe_type, condition, cb);
+	m_io.post(std::bind(&iks::search_data, param, "right", start, end, probe_type, condition, cb));
 }
 
 template<class T> void iks::search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&) > cb) {
-	search_data(param, "left", start, end, probe_type, condition, cb);
+	m_io.post(std::bind(&iks::search_data, param, "left", start, end, probe_type, condition, cb));
 }
 
 template<class T> void iks::get_first_time(TParam* param, std::function<void(const error&, T&) > result) {

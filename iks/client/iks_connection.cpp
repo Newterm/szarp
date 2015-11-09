@@ -1,20 +1,17 @@
 #include "iks_connection.h"
 
 IksConnection::IksConnection( boost::asio::io_service& io
-		    , const std::string& server
-		    , const std::string& port
-		    , IksCmdReceiver* receiver )
-		    : next_cmd_id(0)
-		    , socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
-		    , receiver( receiver )
+							, const std::string& server
+							, const std::string& port)
+							: next_cmd_id(0)
+							, socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
 {
 
 }
 
-IksConnection::CmdId IksConnection::send_command(
-		const std::string& cmd,
-		const std::string& data,
-		CmdCallback callback )
+IksConnection::CmdId IksConnection::send_command( const std::string& cmd
+												, const std::string& data
+												, IksConnection::CmdCallback callback )
 {
 	CmdId id = next_cmd_id++;
 
@@ -25,8 +22,8 @@ IksConnection::CmdId IksConnection::send_command(
 }
 
 void IksConnection::send_command( CmdId id
-			    , const std::string& cmd
-			    , const std::string& data )
+								, const std::string& cmd
+								, const std::string& data )
 {
 	std::ostringstream os;
 
@@ -67,7 +64,7 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	if ( i != commands.end() )
 		i->second( Error::no_error , tag , data );
 	else
-		receiver->on_cmd(tag, id, data);
+		cmd_sig( tag, id, data );
 }
 
 void IksConnection::handle_error( const boost::system::error_code& ec )
@@ -77,19 +74,27 @@ void IksConnection::handle_error( const boost::system::error_code& ec )
 		i.second( Error::connection_error , "" , empty );
 
 	commands.clear();
+
+	connection_error_sig(ec);
 }
 
 void IksConnection::handle_connected()
 {
-	receiver->on_connected();	
+	connected_sig();
 }
 
 void IksConnection::handle_disconnected()
 {
-//	receiver->on_connected();	
+	///XXX:
+}
+
+void IksConnection::disconnect() {
+	socket->close();		
 }
 
 IksConnection::~IksConnection()
 {
 	socket->close();
 }
+
+/* vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab : */
