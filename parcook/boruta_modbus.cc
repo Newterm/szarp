@@ -2529,6 +2529,9 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 				break;
 			m_log->log(8, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
 			m_state = FUNC_CODE;
+
+			m_data_read = 0;
+			m_sdu.pdu.data.resize(max_frame_size - 2);
 		case FUNC_CODE:
 			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
 				start_read_timer(m_timeout_1_5_c);
@@ -2536,8 +2539,6 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 			}
 			m_log->log(8, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
 			m_state = DATA;
-			m_data_read = 0;
-			m_sdu.pdu.data.resize(max_frame_size - 2);
 		case DATA:
 			r = bufferevent_read(bufev, &m_sdu.pdu.data[m_data_read], m_sdu.pdu.data.size() - m_data_read);
 			m_data_read += r;
