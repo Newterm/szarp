@@ -536,6 +536,8 @@ protected:
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
+	bool waiting_for_data();
+	void drain_buffer(struct bufferevent* event);
 
 	void schedule_send_query();
 	static void next_query_cb(int fd, short event, void* thisptr);
@@ -2115,6 +2117,15 @@ void modbus_client::timeout() {
 	}
 }
 
+bool modbus_client::waiting_for_data() {
+	return !evtimer_pending(&m_next_query_timer, NULL);
+}
+
+void modbus_client::drain_buffer(struct bufferevent* bufev) {
+	char c;
+	while (bufferevent_read(bufev, &c, 1));
+}
+
 
 void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
@@ -2240,7 +2251,10 @@ void modbus_tcp_client::scheduled(struct bufferevent* bufev, int fd) {
 }
 
 void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
-	m_parser->read_data(bufev);
+	if (waiting_for_data())
+		m_parser->read_data(bufev);
+	else
+		drain_buffer(bufev);
 }
 
 int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
@@ -2296,7 +2310,10 @@ void modbus_serial_client::scheduled(struct bufferevent* bufev, int fd) {
 }
 
 void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
-	m_parser->read_data(bufev);
+	if (waiting_for_data())
+		m_parser->read_data(bufev);
+	else
+		drain_buffer(bufev);
 }
 
 int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
