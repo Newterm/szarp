@@ -57,10 +57,6 @@ case "$1" in
 	    python /opt/szarp/lib/python/parhub.py start
 	    log_end_msg $?
 	fi
-	
-	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
-		supervisorctl start iks-server
-	fi
 
 	if [ x$PROBES_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
@@ -173,10 +169,6 @@ case "$1" in
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
-	fi
-
-	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
-		supervisorctl stop iks-server
 	fi
 
 	if [ x$PROBER = x1 ]; then
@@ -303,9 +295,19 @@ case "$1" in
 		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
 	fi
 
+	###
+	# If iks server is installed restart it with other szarp daemons.
+	###
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		supervisorctl stop iks-server
+	fi
+
 	$0 stop
 	$0 start
-	
+
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		supervisorctl start iks-server
+	fi
 	;;
   status)
 	echo "SZARP programs run: "
