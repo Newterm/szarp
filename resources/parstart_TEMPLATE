@@ -72,6 +72,10 @@ case "$1" in
 	    log_end_msg $?
 	fi
 
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		supervisorctl start iks-server
+	fi
+
 	if [ x$MEANER4 = x1 ]; then
 	    DAEMON='meaner4'
 	    szlog
@@ -169,6 +173,10 @@ case "$1" in
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
+	fi
+
+	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
+		supervisorctl stop iks-server
 	fi
 
 	if [ x$PROBER = x1 ]; then
