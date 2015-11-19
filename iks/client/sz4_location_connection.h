@@ -20,7 +20,7 @@ class location_connection : public std::enable_shared_from_this<location_connect
 			std::tuple<std::string, std::string, IksConnection::CmdCallback>,
 			std::tuple<std::string, IksConnection::CmdId, IksConnection::CmdCallback>> cached_entry;
 
-	void connect();
+	void connect_to_location();
 public:
 	location_connection(IPKContainer* ipk, boost::asio::io_service& io,
 			const std::string& location, const std::string& server,
@@ -32,6 +32,8 @@ public:
 	void on_connected();
 	void on_connection_error(const boost::system::error_code& ec);
 	void on_cmd(const std::string& status, IksConnection::CmdId id, const std::string& data);
+
+	void start_connecting();
 
 	void disconnect();
 

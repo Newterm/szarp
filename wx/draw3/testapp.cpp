@@ -154,6 +154,7 @@ bool TestApp::OnInit() {
 	//m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, new SzbaseBase(
+						m_dbmgr,
 						GetSzarpDataDir().c_str(),
 						NULL,
 						wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L)));

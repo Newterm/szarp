@@ -31,6 +31,8 @@
 
 #include "szbase/szbbase.h"
 #include "sz4/base.h"
+#include "sz4_iks.h"
+#include "sz4_connection_mgr.h"
 
 
 /**Query to the database*/
@@ -42,8 +44,6 @@ struct DatabaseQuery {
 		SEARCH_DATA,
 		/*Data retrieval query*/
 		GET_DATA,
-		/*Cleaning*/
-		CLEANER,
 		/**Reset buffer*/
 		RESET_BUFFER,
 		/**Clear cache*/
@@ -188,29 +188,44 @@ struct DatabaseQuery {
 class SzbExtractor;
 
 class Draw3Base {
-public:
-	virtual void RemoveConfig(const std::wstring& prefix,
-			bool poison_cache) = 0;
+protected:
+	wxEvtHandler *m_response_receiver;
+
+	virtual void RemoveConfig(const std::wstring& prefix, bool poison_cache) = 0;
+
+	virtual void NotifyAboutConfigurationChanges() = 0;
 
 	virtual bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) = 0;
 
 	virtual void AddExtraParam(const std::wstring& prefix, TParam *param) = 0;
 
-	virtual void RemoveExtraParam(const std::wstring& prefix, TParam *param) = 0;
-
-	virtual void NotifyAboutConfigurationChanges() = 0;
-
 	virtual void SetProberAddress(const std::wstring& prefix,
 			const std::wstring& address,
-			const std::wstring& port) = 0 ;
+			const std::wstring& port);
 
-	void ExtractParameters(DatabaseQuery::ExtractionParameters &pars);
+	virtual void RemoveExtraParam(const std::wstring& prefix, TParam *param) = 0;
+public:
+	Draw3Base(wxEvtHandler* response_receiver);
+
+	virtual void RemoveConfig(DatabaseQuery *query);
+
+	virtual void CompileLuaFormula(DatabaseQuery *query);
+
+	virtual void AddExtraParam(DatabaseQuery *query);
+
+	virtual void RemoveExtraParam(DatabaseQuery *query);
+
+	virtual void NotifyAboutConfigurationChanges(DatabaseQuery *query);
+
+	virtual void SetProberAddress(DatabaseQuery* query);
+
+	void ExtractParameters(DatabaseQuery *query);
 
 	virtual SzbExtractor* CreateExtractor() = 0;
 
 	virtual void SearchData(DatabaseQuery* query) = 0;
 
-	virtual void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) = 0;
+	virtual void GetData(DatabaseQuery* query) = 0;
 
 	virtual void ResetBuffer(DatabaseQuery* query) = 0;
 
@@ -218,9 +233,7 @@ public:
 
 	virtual void StopSearch() = 0;
 
-	virtual void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) = 0;
-
-	virtual void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) = 0;
+	virtual void RegisterObserver(DatabaseQuery* query);
 
 	virtual ~Draw3Base() {}
 };
@@ -237,7 +250,7 @@ class SzbaseBase : public Draw3Base {
 	void maybeSetCancelHandle(TParam* param);
 	void releaseCancelHandle(TParam* param);
 public:
-	SzbaseBase(const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
+	SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
 
 	~SzbaseBase();	
 
@@ -260,7 +273,7 @@ public:
 
 	void SearchData(DatabaseQuery* query);
 
-	void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver);
+	void GetData(DatabaseQuery* query);
 
 	void ResetBuffer(DatabaseQuery* query);
 
@@ -268,9 +281,6 @@ public:
 	
 	void StopSearch();
 
-	void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {};
-
-	void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {};
 };
 
 class Sz4Base : public Draw3Base {
@@ -279,11 +289,52 @@ class Sz4Base : public Draw3Base {
 	IPKContainer* ipk_container;
 
 	template<class time_type> void GetValue(DatabaseQuery::ValueData::V& v,
-			const time_type& time, TParam* p, SZARP_PROBE_TYPE pt);
+			time_t second, time_t nanosecond, TParam* p, SZARP_PROBE_TYPE pt);
 public:
-	Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner);
+	Sz4Base(wxEvtHandler* response_receiver, const std::wstring& data_path, IPKContainer* ipk_container);
 
 	~Sz4Base();	
+
+	void RemoveConfig(const std::wstring& prefix,
+			bool poison_cache) ;
+
+	bool CompileLuaFormula(const std::wstring& formula, std::wstring& error) ;
+
+	void AddExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void RemoveExtraParam(const std::wstring& prefix, TParam *param) ;
+
+	void NotifyAboutConfigurationChanges() ;
+
+	SzbExtractor* CreateExtractor();
+
+	void SearchData(DatabaseQuery* query);
+
+	void GetData(DatabaseQuery* query);
+
+	void ResetBuffer(DatabaseQuery* query);
+
+	void ClearCache(DatabaseQuery* query);
+	
+	void StopSearch();
+
+	virtual void RegisterObserver(DatabaseQuery* query);
+};
+
+class Sz4ApiBase : public Draw3Base {
+	boost::asio::io_service io;
+	std::shared_ptr<sz4::connection_mgr> connection_mgr;
+	std::shared_ptr<sz4::iks> base;
+	IPKContainer* ipk_container;
+	boost::thread io_thread;
+
+	template<class time_type> void DoGetData(DatabaseQuery *query);
+public:
+	Sz4ApiBase(wxEvtHandler* response_receiver,
+			const std::wstring& address, const std::wstring& port,
+			IPKContainer *ipk_conatiner);
+
+	~Sz4ApiBase();	
 
 	void RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) ;
@@ -304,7 +355,7 @@ public:
 
 	void SearchData(DatabaseQuery* query);
 
-	void GetData(DatabaseQuery* query, wxEvtHandler *response_receiver);
+	void GetData(DatabaseQuery* query);
 
 	void ResetBuffer(DatabaseQuery* query);
 
@@ -312,9 +363,7 @@ public:
 	
 	void StopSearch();
 
-	void RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params);
-
-	void DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params);
+	void RegisterObserver(DatabaseQuery* query);
 };
 
 /**Query execution thread*/
@@ -326,17 +375,6 @@ class QueryExecutor : public wxThread {
 	/**base object*/
 	Draw3Base *base;
 
-	/**Peforms a query for a parametr values
-	 * @param base buffer that operation shall be performed upon */
-	void ExecuteDataQuery(szb_buffer_t* szb, TParam *p, DatabaseQuery *q);
-
-	/**Peforms a query for a data
-	 * @param base buffer that operation shall be performed upon
-	 * @param p ipk param to get data from
-	 * @param sd output param @see DatabaseQuery::SearchData*/
-	void ExecuteSearchQuery(szb_buffer_t *szb, TParam *p, DatabaseQuery::SearchData &sd);
-
-	void ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &extract_parameters);
 public:
 	void StopSearch();
 

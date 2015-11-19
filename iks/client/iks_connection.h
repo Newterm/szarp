@@ -51,6 +51,8 @@ public:
 
 	void handle_disconnected();
 
+	void connect();
+
 	void disconnect();
 
 	~IksConnection();

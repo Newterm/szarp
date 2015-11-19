@@ -30,6 +30,7 @@ public:
 	};
 
 	ProbeType( Type pt = Type::LIVE , unsigned len = 0 );
+	ProbeType( SZARP_PROBE_TYPE pt  , unsigned len = 0 );
 	ProbeType( const std::string& id );
 
 	Type get_type() const { return pt; }

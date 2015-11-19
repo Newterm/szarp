@@ -2,6 +2,7 @@
 
 namespace ba = boost::asio;
 namespace bs = boost::system;
+namespace bae = boost::asio::error;
 
 void TcpClientSocket::handle_error(const bs::error_code& ec )
 {
@@ -29,9 +30,15 @@ void TcpClientSocket::do_write()
 {
 	if ( !socket.is_open() )
 		return;
-
-	assert( o_buf_cur.size() );
 	
+	if ( o_buf_cur.size()  != 0)
+		return;
+
+	if ( o_buf_nxt.size()  == 0)
+		return;
+
+	std::swap( o_buf_cur , o_buf_nxt );
+
 	auto self = shared_from_this();
 	
 	std::vector<ba::const_buffer> buf_v;
@@ -47,11 +54,7 @@ void TcpClientSocket::do_write()
 
 		self->o_buf_cur.clear();
 
-		if ( self->o_buf_nxt.size() )
-		{
-			std::swap( self->o_buf_cur , self->o_buf_nxt );
-			self->do_write();
-		}
+		self->do_write();
 	});
 }
 
@@ -65,7 +68,6 @@ TcpClientSocket::TcpClientSocket( boost::asio::io_service& io
 								, port( port )
 								, handler( handler )
 {
-	connect();
 }
 
 void TcpClientSocket::connect()
@@ -79,13 +81,16 @@ void TcpClientSocket::connect()
 	namespace bip = boost::asio::ip;
 
 	auto self = shared_from_this();
-	resolver.async_resolve ( bip::tcp::resolver::query( address , port ) 
+	resolver.async_resolve ( bip::tcp::resolver::query( bip::tcp::v4() , address , port ) 
 						   , [self] ( const bs::error_code& ec , bip::tcp::resolver::iterator i ) {
 		if ( ec )
 		{
-			self->handle_error( ec );
+			if ( ec != bae::operation_aborted )
+				self->handle_error( ec );
 			return;
 		}
+
+		self->resolver.cancel();
 
 		self->socket.async_connect( *i , [self] ( const bs::error_code& ec ) {
 			if ( ec )
@@ -107,10 +112,7 @@ void TcpClientSocket::write(const std::string& string)
 {
 	o_buf_nxt.push_back(string);
 
-	if ( o_buf_cur.size() == 0 ) {
-		std::swap( o_buf_cur , o_buf_nxt );
-		do_write();
-	}
+	do_write();
 }
 
 void TcpClientSocket::restart()

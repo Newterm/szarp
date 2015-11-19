@@ -50,7 +50,7 @@ void iks::_register_observer(param_observer *observer, std::vector<TParam*> para
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(p->GetName()) << "\"";
 
-		c->send_command("subscribe_param", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
+		c->send_command("param_subscribe", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
@@ -91,7 +91,7 @@ void iks::_deregister_observer(param_observer *observer, std::vector<TParam*> pa
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(i->GetName()) << "\"";
 
-		c->send_command("unsubscribe_param", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
+		c->send_command("param_unsubscribe", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
@@ -113,6 +113,27 @@ void iks::register_observer(param_observer *observer, const std::vector<TParam*>
 void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& v, std::function<void(const error&) > cb) {
 	m_io.post(std::bind(&iks::_deregister_observer, shared_from_this(), observer, v, cb));
 }
+
+template void iks::search_data_right(TParam*, const nanosecond_time_t&, const nanosecond_time_t&, SZARP_PROBE_TYPE, std::function<void(const error&, const nanosecond_time_t&)>);
+
+template void iks::search_data_right(TParam*, const second_time_t&, const second_time_t&, SZARP_PROBE_TYPE, std::function<void(const error&, const second_time_t&)>);
+
+template void iks::search_data_left(TParam*, const nanosecond_time_t&, const nanosecond_time_t&, SZARP_PROBE_TYPE, std::function<void(const error&, const nanosecond_time_t&)>);
+
+template void iks::search_data_left(TParam*, const second_time_t&, const second_time_t&, SZARP_PROBE_TYPE, std::function<void(const error&, const second_time_t&)>);
+
+
+template void iks::get_weighted_sum(TParam* param, const nanosecond_time_t&, const nanosecond_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<int, nanosecond_time_t> >&) > cb);
+
+template void iks::get_weighted_sum(TParam* param, const nanosecond_time_t&, const nanosecond_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<short, nanosecond_time_t> >&) > cb);
+
+template void iks::get_weighted_sum(TParam* param, const nanosecond_time_t&, const nanosecond_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<double, nanosecond_time_t> >&) > cb);
+
+template void iks::get_weighted_sum(TParam* param, const second_time_t&, const second_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<int, second_time_t> >&) > cb);
+
+template void iks::get_weighted_sum(TParam* param, const second_time_t&, const second_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<short, second_time_t> >&) > cb);
+
+template void iks::get_weighted_sum(TParam* param, const second_time_t&, const second_time_t& , SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<double, second_time_t> >&) > cb);
 
 }
 /* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */

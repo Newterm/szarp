@@ -31,6 +31,7 @@ private:
 	Set::const_ptr current_set;
 
 	boost::signals2::scoped_connection conn_param;
+	boost::signals2::scoped_connection conn_param_value;
 
 	ParamsUpdater::Subscription sub_set;
 

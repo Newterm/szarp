@@ -11,7 +11,7 @@ namespace sz4 {
 class param_observer;
 class connection_mgr;
 
-class iks : std::enable_shared_from_this<iks> {
+class iks : public std::enable_shared_from_this<iks> {
 	boost::asio::io_service& m_io;
 	std::shared_ptr<connection_mgr> m_connection_mgr;
 
@@ -35,7 +35,7 @@ class iks : std::enable_shared_from_this<iks> {
 
 	connection_mgr::loc_connection_ptr connection_for_param(TParam *p);
 
-	template<class T> void search_data(TParam* param, std::string dir, const T start, const T end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
+	template<class T> void search_data(TParam* param, std::string dir, const T start, const T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
 
 	template<class V, class T> void _get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
 
@@ -51,9 +51,9 @@ public:
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
 
-	template<class T> void search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
+	template<class T> void search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
 
-	template<class T> void search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition, std::function<void(const error&, T&)> cb);
+	template<class T> void search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
 
 	template<class T> void get_first_time(TParam* param, std::function<void(const error&, T&) > cb);
 

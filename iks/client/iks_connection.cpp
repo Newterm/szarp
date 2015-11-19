@@ -6,7 +6,6 @@ IksConnection::IksConnection( boost::asio::io_service& io
 							: next_cmd_id(0)
 							, socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
 {
-
 }
 
 IksConnection::CmdId IksConnection::send_command( const std::string& cmd
@@ -61,9 +60,10 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	}
 
 	auto i = commands.find(id);
-	if ( i != commands.end() )
-		i->second( Error::no_error , tag , data );
-	else
+	if ( i != commands.end() ) {
+		if ( i->second( Error::no_error , tag , data ) == cmd_done)
+			commands.erase(i);
+	} else
 		cmd_sig( tag, id, data );
 }
 
@@ -86,6 +86,11 @@ void IksConnection::handle_connected()
 void IksConnection::handle_disconnected()
 {
 	///XXX:
+}
+
+void IksConnection::connect() 
+{
+	socket->connect();
 }
 
 void IksConnection::disconnect() {

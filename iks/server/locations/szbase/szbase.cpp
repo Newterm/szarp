@@ -34,10 +34,15 @@ namespace p = std::placeholders;
 SzbaseProt::SzbaseProt( Vars& vars )
 	: vars(vars)
 {
-	conn_param = vars.get_params().on_param_value_changed(
+	conn_param_value = vars.get_params().on_param_value_changed(
 		std::bind(
 			&SzbaseProt::on_param_value_changed,
 			this,p::_1,p::_2,p::_3) );
+
+	conn_param = vars.get_params().on_param_changed(
+		std::bind(
+			&SzbaseProt::on_param_changed,
+			this,p::_1) );
 }
 
 SzbaseProt::~SzbaseProt()
@@ -62,8 +67,8 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "get_summary"       , GetSummaryRcv       );
 	MAP_CMD_TAG( "search_data"       , SearchDataRcv       );
 	MAP_CMD_TAG( "get_data"          , GetDataRcv          );
-	MAP_CMD_TAG( "param_subsrcibe"   , ParamSubscribeRcv   );
-	MAP_CMD_TAG( "param_unsubsrcibe" , ParamUnsubscribeRcv );
+	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
+	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
 	return NULL;
 }
 
@@ -103,7 +108,7 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 	}
 
 	/** Prevent from sending values double if they values changed on subscribe */
-	boost::signals2::shared_connection_block block(conn_param);
+	boost::signals2::shared_connection_block block(conn_param_value);
 
 	sub_set = vars.get_updater().subscribe_params( *s , pt );
 

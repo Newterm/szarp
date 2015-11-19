@@ -11,11 +11,11 @@ namespace bsec = boost::system::errc;
 
 namespace sz4 {
 
-void location_connection::connect() 
+void location_connection::connect_to_location() 
 {
 	auto self = shared_from_this();
 
-	m_connection->send_command("connect" , "\"" + m_location + "\"",
+	m_connection->send_command("connect" , m_location,
 			[self] ( IksConnection::Error error, const std::string& status, std::string& data ) {
 		if ( error )
 			return IksConnection::cmd_done;
@@ -31,6 +31,8 @@ void location_connection::connect()
 		self->connected_sig();
 		self->m_connected = true;
 
+		return IksConnection::cmd_done;
+
 	});
 }
 
@@ -41,13 +43,6 @@ location_connection::location_connection(IPKContainer* container, boost::asio::i
 					m_connection(std::make_shared<IksConnection>(io, server, port)),
 					m_connected(false)
 {
-	namespace p = std::placeholders;
-
-	auto self = shared_from_this();
-
-	m_connection->connected_sig.connect(std::bind(&location_connection::on_connected, self));
-	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connected, self));
-	m_connection->cmd_sig.connect( std::bind(&location_connection::on_cmd, self, p::_1, p::_2, p::_3));
 }
 
 void location_connection::send_command(const std::string& cmd, const std::string& data, IksConnection::CmdCallback callback )
@@ -69,12 +64,24 @@ void location_connection::on_cmd(const std::string& tag, IksConnection::CmdId id
 
 void location_connection::on_connected()
 {
-	connect();
+	connect_to_location();
 }
 
 void location_connection::on_connection_error(const boost::system::error_code& ec) 
 {
 	connection_error_sig(ec);	
+}
+
+void location_connection::start_connecting() {
+	namespace p = std::placeholders;
+
+	auto self = shared_from_this();
+
+	m_connection->connected_sig.connect(std::bind(&location_connection::on_connected, self));
+	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connected, self));
+	m_connection->cmd_sig.connect( std::bind(&location_connection::on_cmd, self, p::_1, p::_2, p::_3));
+
+	m_connection->connect();
 }
 
 void location_connection::disconnect() {
