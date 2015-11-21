@@ -1,8 +1,10 @@
 if MINGW32_OPT
-SUBDIRS = common client
+EX_SUBDIRS = 
 else
-SUBDIRS = common server client
+EX_SUBDIRS = server
 endif
+
+SUBDIRS = common client $(EX_SUBDIRS)
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in
