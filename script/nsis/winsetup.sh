@@ -228,7 +228,7 @@ function PrepareScript() {
 		> "`GetTmp`/require.ini"
 	cat "$CURDIR"/../../gpl-2.0-pl-win.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
-		| $ICONV -f utf-8 -t cp1250 \ 
+		| $ICONV -f utf-8 -t cp1250 \
 		> "`GetTmp`/license.pl"
 	cat "$CURDIR"/../../gpl-2.0.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
