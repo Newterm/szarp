@@ -1,7 +1,8 @@
 #include "sz4/defs.h"
 #include "sz4/api.h"
-#include "sz4_connection_mgr.h"
 
+#include "iks_cmd_id.h"
+#include "sz4_connection_mgr.h"
 #include "sz4_location_connection.h"
 
 class TParam;
@@ -12,7 +13,7 @@ class param_observer;
 class connection_mgr;
 
 class iks : public std::enable_shared_from_this<iks> {
-	boost::asio::io_service& m_io;
+	std::shared_ptr<boost::asio::io_service> m_io;
 	std::shared_ptr<connection_mgr> m_connection_mgr;
 
 	struct observer_reg {
@@ -28,7 +29,7 @@ class iks : public std::enable_shared_from_this<iks> {
 			TParam* param, param_observer* observer);
 
 		void on_error(boost::system::error_code ec);
-		void on_cmd(const std::string& tag, IksConnection::CmdId, const std::string &);
+		void on_cmd(const std::string& tag, IksCmdId, const std::string &);
 	};
 
 	std::list<observer_reg> m_observer_regs;
@@ -47,7 +48,7 @@ class iks : public std::enable_shared_from_this<iks> {
 	template<class T> void _get_last_time(TParam* param, std::function<void(const error&, T&) > cb);
 
 public:
-	iks(boost::asio::io_service &io, std::shared_ptr<connection_mgr> connection_mgr);
+	iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr);
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
 

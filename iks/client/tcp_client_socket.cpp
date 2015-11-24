@@ -1,3 +1,5 @@
+#include <boost/asio.hpp>
+
 #include "tcp_client_socket.h"
 
 namespace ba = boost::asio;

@@ -1,3 +1,5 @@
+#include <boost/asio.hpp>
+
 #include "iks_connection.h"
 
 IksConnection::IksConnection( boost::asio::io_service& io
@@ -8,11 +10,11 @@ IksConnection::IksConnection( boost::asio::io_service& io
 {
 }
 
-IksConnection::CmdId IksConnection::send_command( const std::string& cmd
+IksCmdId IksConnection::send_command( const std::string& cmd
 												, const std::string& data
-												, IksConnection::CmdCallback callback )
+												, IksCmdCallback callback )
 {
-	CmdId id = next_cmd_id++;
+	IksCmdId id = next_cmd_id++;
 
 	send_command( id , cmd , data );
 	commands[id] = callback;
@@ -20,7 +22,7 @@ IksConnection::CmdId IksConnection::send_command( const std::string& cmd
 	return id;
 }
 
-void IksConnection::send_command( CmdId id
+void IksConnection::send_command( IksCmdId id
 								, const std::string& cmd
 								, const std::string& data )
 {
@@ -34,7 +36,7 @@ void IksConnection::send_command( CmdId id
 	socket->write( os.str() );
 }
 
-void IksConnection::remove_command(CmdId id)
+void IksConnection::remove_command(IksCmdId id)
 {
 	commands.erase(id);
 }
@@ -44,7 +46,7 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	std::istream is( &buf );
 	std::string tag;
 	std::string data;
-	CmdId id;
+	IksCmdId id;
 
 	std::getline(is, tag, ' ');
 	is >> id;
@@ -54,14 +56,14 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	if ( !is ) {
 		std::string empty;
 		for ( auto i : commands )
-			i.second( Error::connection_error , "" , empty );
+			i.second( IksError::connection_error , "" , empty );
 		socket->connect();
 		return;
 	}
 
 	auto i = commands.find(id);
 	if ( i != commands.end() ) {
-		if ( i->second( Error::no_error , tag , data ) == cmd_done)
+		if ( i->second( IksError::no_error , tag , data ) == cmd_done)
 			commands.erase(i);
 	} else
 		cmd_sig( tag, id, data );
@@ -71,7 +73,7 @@ void IksConnection::handle_error( const boost::system::error_code& ec )
 {
 	std::string empty;
 	for ( auto& i : commands ) 
-		i.second( Error::connection_error , "" , empty );
+		i.second( IksError::connection_error , "" , empty );
 
 	commands.clear();
 

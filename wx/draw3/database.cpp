@@ -17,22 +17,28 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "cconv.h"
+
 #include "classes.h"
+#include "szarp_config.h"
 #include "database.h"
 #include "cfgmgr.h"
 #include "dbmgr.h"
 #include "conversion.h"
 #include "szbextr/extr.h"
+#include "sz4/api.h"
 #include "sz4/util.h"
 #include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"
+#include "ikssetup.h"
+#include "sz4_iks.h"
 
 #include <cmath>
 
 #include <algorithm>
 #include <iostream>
 #include <limits>
-#include <thread>
+
 
 Draw3Base::Draw3Base(wxEvtHandler *response_receiver) : m_response_receiver(response_receiver)
 {}
@@ -631,21 +637,10 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			: Draw3Base(response_receiver)
 			, ipk_container(ipk_container) {
 
-	connection_mgr = std::make_shared<sz4::connection_mgr>(
-			ipk_container,
-			(const char*)SC::S2U(address).c_str(),
-			(const char*)SC::S2U(port).c_str(),
-			io);
+	std::tie(connection_mgr, base, io) =
+		build_iks_client(ipk_container, address, port);
 
-	base = std::make_shared<sz4::iks>(io, connection_mgr);
-
-	auto c = connection_mgr;
-	io_thread = boost::thread([c]() {
-			uselocale(newlocale(LC_ALL_MASK, "C", 0));
-			c->run();
-		}
-	);
-
+	io_thread = start_connection_manager(connection_mgr);
 }
 
 void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,

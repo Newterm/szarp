@@ -1,4 +1,5 @@
 #include <unordered_set>
+#include <boost/asio.hpp>
 #include "sz4_iks.h"
 #include "sz4_iks_templ.h"
 
@@ -13,7 +14,7 @@ iks::observer_reg::observer_reg(connection_mgr::loc_connection_ptr c, const std:
 						, std::placeholders::_2, std::placeholders::_3));
 }
 
-void iks::observer_reg::on_cmd(const std::string& tag, IksConnection::CmdId, const std::string &data) {
+void iks::observer_reg::on_cmd(const std::string& tag, IksCmdId, const std::string &data) {
 	if (tag == "n" && data == name)
 		observer->param_data_changed(param);
 }
@@ -50,11 +51,11 @@ void iks::_register_observer(param_observer *observer, std::vector<TParam*> para
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(p->GetName()) << "\"";
 
-		c->send_command("param_subscribe", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
+		c->send_command("param_subscribe", ss.str(), [count, cb] (IksError, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		});
 	}
 
@@ -91,11 +92,11 @@ void iks::_deregister_observer(param_observer *observer, std::vector<TParam*> pa
 		std::stringstream ss;
 		ss << "\"" << SC::S2U(i->GetName()) << "\"";
 
-		c->send_command("param_unsubscribe", ss.str(), [count, cb] (IksConnection::Error, const std::string& , std::string&) {
+		c->send_command("param_unsubscribe", ss.str(), [count, cb] (IksError, const std::string& , std::string&) {
 			if (--*count == 0)
 				cb(error::no_error);
 
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		});
 	}
 
@@ -104,14 +105,14 @@ void iks::_deregister_observer(param_observer *observer, std::vector<TParam*> pa
 }
 
 
-iks::iks(boost::asio::io_service &io, std::shared_ptr<connection_mgr> connection_mgr) : m_io(io), m_connection_mgr(connection_mgr) {}
+iks::iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr) : m_io(io), m_connection_mgr(connection_mgr) {}
 
 void iks::register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb) {
-	m_io.post(std::bind(&iks::_register_observer, shared_from_this(), observer, params, cb));
+	m_io->post(std::bind(&iks::_register_observer, shared_from_this(), observer, params, cb));
 }
 
 void iks::deregister_observer(param_observer *observer, const std::vector<TParam*>& v, std::function<void(const error&) > cb) {
-	m_io.post(std::bind(&iks::_deregister_observer, shared_from_this(), observer, v, cb));
+	m_io->post(std::bind(&iks::_deregister_observer, shared_from_this(), observer, v, cb));
 }
 
 template void iks::search_data_right(TParam*, const nanosecond_time_t&, const nanosecond_time_t&, SZARP_PROBE_TYPE, std::function<void(const error&, const nanosecond_time_t&)>);

@@ -1,9 +1,12 @@
+#include <boost/asio.hpp>
+
 #include <sstream>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 #include "szarp_config.h"
+#include "iks_connection.h"
 #include "sz4_location_connection.h"
 
 namespace bp = boost::property_tree;
@@ -16,13 +19,13 @@ void location_connection::connect_to_location()
 	auto self = shared_from_this();
 
 	m_connection->send_command("connect" , m_location,
-			[self] ( IksConnection::Error error, const std::string& status, std::string& data ) {
+			[self] ( IksError error, const std::string& status, std::string& data ) {
 		if ( error )
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 
 		if ( status != "k" ) {
 			self->connection_error_sig(bsec::make_error_code(bsec::not_connected));
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		}
 
 		///XXX: 1. send defined params
@@ -31,7 +34,7 @@ void location_connection::connect_to_location()
 		self->connected_sig();
 		self->m_connected = true;
 
-		return IksConnection::cmd_done;
+		return IksCmdStatus::cmd_done;
 
 	});
 }
@@ -45,19 +48,19 @@ location_connection::location_connection(IPKContainer* container, boost::asio::i
 {
 }
 
-void location_connection::send_command(const std::string& cmd, const std::string& data, IksConnection::CmdCallback callback )
+void location_connection::send_command(const std::string& cmd, const std::string& data, IksCmdCallback callback )
 {
 	///XXX: cache if not connected
 	m_connection->send_command(cmd, data, callback);
 }
 
-void location_connection::send_command(IksConnection::CmdId id, const std::string& cmd, const std::string& data)
+void location_connection::send_command(IksCmdId id, const std::string& cmd, const std::string& data)
 {
 	///XXX: cache if not connected
 	m_connection->send_command(id, cmd, data);
 }
 
-void location_connection::on_cmd(const std::string& tag, IksConnection::CmdId id, const std::string& data)
+void location_connection::on_cmd(const std::string& tag, IksCmdId id, const std::string& data)
 {
 	cmd_sig(tag, id, data);	
 }

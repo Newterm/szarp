@@ -31,8 +31,6 @@
 
 #include "szbase/szbbase.h"
 #include "sz4/base.h"
-#include "sz4_iks.h"
-#include "sz4_connection_mgr.h"
 
 
 /**Query to the database*/
@@ -321,8 +319,18 @@ public:
 	virtual void RegisterObserver(DatabaseQuery* query);
 };
 
+namespace sz4 {
+	class iks;
+	class connection_mgr;
+}
+
+namespace boost { namespace asio {
+	class io_service;
+}}
+
+
 class Sz4ApiBase : public Draw3Base {
-	boost::asio::io_service io;
+	std::shared_ptr<boost::asio::io_service> io;
 	std::shared_ptr<sz4::connection_mgr> connection_mgr;
 	std::shared_ptr<sz4::iks> base;
 	IPKContainer* ipk_container;

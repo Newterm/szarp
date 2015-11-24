@@ -24,15 +24,15 @@ template<class T> void iks::search_data(TParam* param, std::string dir, T start,
 		<< boost::fusion::at_key<T>(time_type_2_name) << " "
 		<< start << " " << end;
 
-	client->send_command("search_data", ss.str(), [cb] (IksConnection::Error _error, const std::string& status, std::string& data) {
+	client->send_command("search_data", ss.str(), [cb] (IksError _error, const std::string& status, std::string& data) {
 		if (_error) {
 			cb(error::connection_error, T());
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		}
 
 		if (status != "k") {
 			cb(error::invalid_response, T());
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		}
 
 		T result;
@@ -41,7 +41,7 @@ template<class T> void iks::search_data(TParam* param, std::string dir, T start,
 		else
 			cb(error::invalid_response, result);
 
-		return IksConnection::cmd_done;
+		return IksCmdStatus::cmd_done;
 	});
 }
 
@@ -61,15 +61,15 @@ template<class V, class T> void iks::_get_weighted_sum(TParam* param, T start, T
 		<< boost::fusion::at_key<T>(time_type_2_name) << " "
 		<< start << " " << end;
 	  
-	client->send_command("get_data", ss.str(), [cb] (IksConnection::Error _error, const std::string& status, std::string& data) {
+	client->send_command("get_data", ss.str(), [cb] (IksError _error, const std::string& status, std::string& data) {
 		if (_error) {
 			cb(error::connection_error, result_t());
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		}
 
 		if (status != "k") {
 			cb(error::invalid_response, result_t());
-			return IksConnection::cmd_done;
+			return IksCmdStatus::cmd_done;
 		}
 
 		class _wsum : public weighted_sum<V , T> {
@@ -93,22 +93,22 @@ template<class V, class T> void iks::_get_weighted_sum(TParam* param, T start, T
 		else
 			cb(error::invalid_response, result_t());
 
-		return IksConnection::cmd_done;
+		return IksCmdStatus::cmd_done;
 	});
 	
 }
 
 template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const error& , const std::vector< weighted_sum<V , T> >& ) > cb) {
-	m_io.post(std::bind(&iks::_get_weighted_sum<V,T>, shared_from_this(), param, start, end, probe_type, cb));
+	m_io->post(std::bind(&iks::_get_weighted_sum<V,T>, shared_from_this(), param, start, end, probe_type, cb));
 }
 
 template<class T> void iks::search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&) > cb) {
-	m_io.post(
+	m_io->post(
 		std::bind(&iks::search_data<T>, shared_from_this(), param, "right", start, end, probe_type, cb));
 }
 
 template<class T> void iks::search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&) > cb) {
-	m_io.post(std::bind(&iks::search_data<T>, shared_from_this(), param, "left", start, end, probe_type, cb));
+	m_io->post(std::bind(&iks::search_data<T>, shared_from_this(), param, "left", start, end, probe_type, cb));
 }
 
 template<class T> void iks::get_first_time(TParam* param, std::function<void(const error&, T&) > result) {

@@ -103,6 +103,7 @@ draw3_SOURCES = \
 		drawtreedialog.h drawtreedialog.cpp \
 		delqitem.h delqitem.cpp \
 		seteditctrl.h parameditctrl.h \
+		ikssetup.h ikssetup.cpp \
 		GUI/resource.cpp
 
 draw3test_SOURCES = \
@@ -130,6 +131,7 @@ draw3test_SOURCES = \
 		GUI/resource.cpp \
 		testapp.cpp testapp.h \
 		testrunner.cpp testrunner.h \
+		ikssetup.h ikssetup.cpp \
 		test.cpp 
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON)

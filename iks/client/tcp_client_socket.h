@@ -3,7 +3,6 @@
 #include "config.h"
 
 #include <functional>
-#include <boost/asio.hpp>
 
 class TcpClientSocket : public std::enable_shared_from_this<TcpClientSocket>
 {
