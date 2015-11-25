@@ -135,5 +135,6 @@ void SzbaseProt::subscribe_param( Param::const_ptr p )
 void SzbaseProt::unsubscribe_param( Param::const_ptr p )
 {
 	auto it = sub_params.find( p->get_name() );
-	sub_params.erase( it );
+	if( it != sub_params.end() )
+		sub_params.erase( it );
 }
