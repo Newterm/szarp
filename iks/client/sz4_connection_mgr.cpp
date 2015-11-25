@@ -16,8 +16,10 @@ namespace bsec = boost::system::errc;
 namespace sz4 {
 
 class connection_mgr::timer : public ba::deadline_timer {
-	using ba::deadline_timer::deadline_timer;
- };
+public:
+	timer(ba::io_service& io) : ba::deadline_timer(io) 
+	{}
+};
 
 bool connection_mgr::parse_remotes(const std::string &data, std::vector<remote_entry>& remotes) {
 
