@@ -530,7 +530,7 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 			m_iks_server = m_base;
 
 		if (!parser.Found(_T("iks-server-port"), &m_iks_port))
-			m_iks_port = _T("21739"); /**XXX:*/
+			m_iks_port = _T("9002");
 	}
 
 	return true;
