@@ -30,10 +30,19 @@ bool connection_mgr::parse_remotes(const std::string &data, std::vector<remote_e
 		bp::ptree json;
 		bp::json_parser::read_json(ss , json);
 		for (auto itr = json.begin(); itr!=json.end(); ++itr)
-			if (itr->second.get<std::string>("type") == "szbase")
+			if (itr->second.get<std::string>("type") == "szbase") {
+				auto& loc = itr->first;
+				std::string prefix(
+					std::find(
+						loc.rbegin(),
+						loc.rend(),
+						':').base(),
+					loc.end());
+
 				remotes.emplace_back(
-					SC::U2S((unsigned char*)(itr->second.get<std::string>("name").c_str())),
-					itr->first);
+					SC::U2S((unsigned char*)prefix.c_str()),
+					loc);
+			}
 	} catch (const bp::ptree_error& e) {
 		return false;
 	}
