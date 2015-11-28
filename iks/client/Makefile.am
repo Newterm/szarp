@@ -18,6 +18,7 @@ lib_LIBRARIES = libiks-client.a
 
 noinst_HEADERS = \
 	iks_connection.h
+	iks_cmd_id.h \
 	tcp_client_socket.h \
 	sz4_iks.h \
 	sz4_iks_templ.h
@@ -27,4 +28,5 @@ libiks_client_a_SOURCES = \
 	tcp_client_socket.cpp \
 	sz4_connection_mgr.cpp \
 	sz4_iks.cpp \
-	sz4_location_connection.cpp 
+	sz4_location_connection.cpp \
+	iks_cmd_id.cpp

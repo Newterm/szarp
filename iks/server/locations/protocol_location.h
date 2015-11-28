@@ -7,7 +7,7 @@
 #include "location.h"
 #include "command.h"
 #include "protocol.h"
-#include "error_codes.h"
+#include "locations/error_codes.h"
 
 #include "net/connection.h"
 

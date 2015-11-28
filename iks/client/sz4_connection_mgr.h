@@ -45,11 +45,11 @@ private:
 	void schedule_reconnect();
 
 	void on_connected();
-	void on_error(boost::system::error_code ec);
+	void on_error(const boost::system::error_code& ec);
 	void on_cmd(const std::string&, IksCmdId, const std::string&);
 
 	void on_location_connected(std::wstring);
-	void on_location_error(std::wstring, boost::system::error_code ec);
+	void on_location_error(std::wstring, const boost::system::error_code& ec);
 
 public:
 	connection_mgr(IPKContainer* conatiner, const std::string& address, const std::string& port, std::shared_ptr<boost::asio::io_service> io);
@@ -58,11 +58,11 @@ public:
 	void run();
 
 	boost::signals2::signal<void()> connected_sig;
-	boost::signals2::signal<void(boost::system::error_code)> connection_error_sig;
+	boost::signals2::signal<void(const boost::system::error_code &)> connection_error_sig;
 
 	boost::signals2::signal<void(std::wstring)> connected_location_sig;
 	boost::signals2::signal<void(std::wstring)> disconnected_location_sig;
-	boost::signals2::signal<void(std::wstring, boost::system::error_code)> error_location_sig;
+	boost::signals2::signal<void(std::wstring, const boost::system::error_code &)> error_location_sig;
 };
 
 }

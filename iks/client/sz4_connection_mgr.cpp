@@ -8,6 +8,8 @@
 #include "sz4_connection_mgr.h"
 #include "sz4_location_connection.h"
 
+#include "locations/error_codes.h"
+
 namespace ba = boost::asio;
 namespace bs = boost::system;
 namespace bae = ba::error;
@@ -129,31 +131,34 @@ void connection_mgr::on_connected() {
 
 	auto self = shared_from_this();
 
-	m_connection->send_command("list_remotes", "" , [self] ( IksError error , const std::string& status , std::string& data ) {
-		if (error)
-			return IksCmdStatus::cmd_done;
+	m_connection->send_command("list_remotes", "" , [self] ( const bs::error_code &ec
+								, const std::string& status
+								, std::string& data ) {
 
-		if (status != "k") {
-			self->on_error(bsec::make_error_code(bsec::protocol_error));
-			self->schedule_reconnect();
-			return IksCmdStatus::cmd_done;
+		bs::error_code _ec = ec;
+	
+		if (!_ec && status != "k")
+			_ec = make_iks_error_code(data);
+
+		if (!_ec) {
+			std::vector<remote_entry> remotes;
+			if (self->parse_remotes(data, remotes))
+				for (auto& e : remotes)
+					self->connect_location(e.first, e.second);
+			else
+				_ec = make_error_code(iks_client_error::invalid_server_response);
 		}
 
-		std::vector<remote_entry> remotes;
-		if (!self->parse_remotes(data, remotes)) {
-			self->on_error(bsec::make_error_code(bsec::protocol_error));
+		if (_ec) {
+			self->on_error(_ec);
 			self->schedule_reconnect();
-			return IksCmdStatus::cmd_done;
 		}
-
-		for (auto& e : remotes)
-			self->connect_location(e.first, e.second);
 
 		return IksCmdStatus::cmd_done;
 	});
 }
 
-void connection_mgr::on_error(boost::system::error_code ec) {
+void connection_mgr::on_error(const boost::system::error_code& ec) {
 	if (ec != ba::error::operation_aborted) {
 		connection_error_sig(ec);
 		schedule_reconnect();
@@ -192,7 +197,7 @@ void connection_mgr::on_location_connected(std::wstring name) {
 	connected_location_sig(name);
 }
 
-void connection_mgr::on_location_error(std::wstring name, bs::error_code ec) {
+void connection_mgr::on_location_error(std::wstring name, const bs::error_code& ec) {
 	error_location_sig(name, ec);
 
 	auto locr = std::find_if(m_remotes.begin(), m_remotes.end(),

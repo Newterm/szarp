@@ -691,9 +691,9 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 		return;
 	}
 
-	auto cb = [query, this] (const sz4::error& error, const sz4::nanosecond_time_t& t) {
+	auto cb = [query, this] (const boost::system::error_code& ec, const sz4::nanosecond_time_t& t) {
 		DatabaseQuery::SearchData& sd = query->search_data;
-		if (error == sz4::error::no_error) {
+		if (!ec) {
 			sz4_nanonsecond_to_pair(t, sd.response_second, sd.response_nanosecond);
 			sd.ok = true;
 		} else {
@@ -741,7 +741,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 			query->param,
 			time, szb_move_time(time, 1, pt), pt,
 			[query_ptr, time, this, v]
-			(const sz4::error& error, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
+			(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
 				auto& vd = query_ptr->value_data;
 				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
 							vd.period_type, query_ptr->draw_no);
@@ -749,7 +749,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 				rq->value_data.vv->push_back(v);
 				auto &nv = rq->value_data.vv->back();
 
-				if (error == sz4::error::no_error) {
+				if (!ec) {
 					wsum_to_value(nv, sums.at(0),
 							PeriodToProbeType(query_ptr->value_data.period_type),
 							query_ptr->param);
@@ -793,11 +793,11 @@ void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
 	base->deregister_observer(
 		query->observer_registration_parameters.observer,
 		*query->observer_registration_parameters.params_to_deregister,
-		[] (const sz4::error&) { /*XXX*/ });
+		[] (const boost::system::error_code&) { /*XXX*/ });
 	base->register_observer(
 		query->observer_registration_parameters.observer,
 		*query->observer_registration_parameters.params_to_register,
-		[] (const sz4::error&) { /*XXX*/ });
+		[] (const boost::system::error_code&) { /*XXX*/ });
 }
 
 Sz4ApiBase::~Sz4ApiBase() {}

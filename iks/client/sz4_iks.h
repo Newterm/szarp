@@ -1,3 +1,5 @@
+#include <boost/system/error_code.hpp>
+
 #include "sz4/defs.h"
 #include "sz4/api.h"
 
@@ -28,7 +30,7 @@ class iks : public std::enable_shared_from_this<iks> {
 		observer_reg(connection_mgr::loc_connection_ptr connection, const std::string& name,
 			TParam* param, param_observer* observer);
 
-		void on_error(boost::system::error_code ec);
+		void on_error(const boost::system::error_code& ec);
 		void on_cmd(const std::string& tag, IksCmdId, const std::string &);
 	};
 
@@ -36,33 +38,33 @@ class iks : public std::enable_shared_from_this<iks> {
 
 	connection_mgr::loc_connection_ptr connection_for_param(TParam *p);
 
-	template<class T> void search_data(TParam* param, std::string dir, const T start, const T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
+	template<class T> void search_data(TParam* param, std::string dir, const T start, const T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&)> cb);
 
-	template<class V, class T> void _get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
+	template<class V, class T> void _get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const std::vector< weighted_sum<V, T> >&) > cb);
 
-	void _register_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb);
+	void _register_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const boost::system::error_code&) > cb);
 
-	void _deregister_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const error&) > cb);
-	template<class T> void _get_first_time(TParam* param, std::function<void(const error&, T&) > cb);
+	void _deregister_observer(param_observer *observer, std::vector<TParam*> params, std::function<void(const boost::system::error_code&) > cb);
+	template<class T> void _get_first_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > cb);
 
-	template<class T> void _get_last_time(TParam* param, std::function<void(const error&, T&) > cb);
+	template<class T> void _get_last_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > cb);
 
 public:
 	iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr);
 
-	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const std::vector< weighted_sum<V, T> >&) > cb);
+	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const std::vector< weighted_sum<V, T> >&) > cb);
 
-	template<class T> void search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
+	template<class T> void search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&)> cb);
 
-	template<class T> void search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const error&, const T&)> cb);
+	template<class T> void search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&)> cb);
 
-	template<class T> void get_first_time(TParam* param, std::function<void(const error&, T&) > cb);
+	template<class T> void get_first_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > cb);
 
-	template<class T> void get_last_time(TParam* param, std::function<void(const error&, T&) > cb);
+	template<class T> void get_last_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > cb);
 
-	void register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb);
+	void register_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const boost::system::error_code&) > cb);
 
-	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const error&) > cb);
+	void deregister_observer(param_observer *observer, const std::vector<TParam*>& params, std::function<void(const boost::system::error_code&) > cb);
 
 };
 
