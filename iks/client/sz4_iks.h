@@ -6,27 +6,14 @@
 #include "iks_cmd_id.h"
 #include "sz4_connection_mgr.h"
 #include "sz4_location_connection.h"
+#include "sz4_iks_param_observer.h"
+#include "sz4_iks_param_info.h"
 
 namespace sz4 {
 
 class connection_mgr;
 
-class param_observer_ {
-public:
-	virtual void operator()() const = 0;
-	virtual ~param_observer_() {}
-};
-
 typedef std::shared_ptr<param_observer_> param_observer_f;
-
-class param_info : public std::pair<std::wstring, std::wstring> {
-public:
-	param_info(const std::wstring& prefix, const std::wstring& name)
-		 : std::pair<std::wstring, std::wstring>(prefix, name) {}
-
-	const std::wstring& prefix() const { return this->first; }
-	const std::wstring& name() const { return this->second; }
-};
 
 class iks : public std::enable_shared_from_this<iks> {
 	std::shared_ptr<boost::asio::io_service> m_io;

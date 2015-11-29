@@ -21,6 +21,8 @@ noinst_HEADERS = \
 	iks_cmd_id.h \
 	tcp_client_socket.h \
 	sz4_iks.h \
+	sz4_iks_param_observer.h \
+	sz4_iks_param_info.h \
 	sz4_iks_templ.h
 
 libiks_client_a_SOURCES = \
