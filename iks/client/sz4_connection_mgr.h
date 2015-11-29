@@ -53,7 +53,7 @@ private:
 
 public:
 	connection_mgr(IPKContainer* conatiner, const std::string& address, const std::string& port, std::shared_ptr<boost::asio::io_service> io);
-	loc_connection_ptr connection_for_param(TParam* p);
+	loc_connection_ptr connection_for_base(const std::wstring& prefix);
 
 	void run();
 

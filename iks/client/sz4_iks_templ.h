@@ -16,15 +16,15 @@ namespace ie = iks_client_error;
 const auto value_type_2_name = boost::fusion::make_map<short , int , float , double>("short", "int", "float", "double");
 const auto time_type_2_name  = boost::fusion::make_map<second_time_t, nanosecond_time_t>("second_t", "nanosecond_t");
 
-template<class T> void iks::search_data(TParam* param, std::string dir, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
-	auto client = connection_for_param(param);
+template<class T> void iks::search_data(param_info param, std::string dir, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
+	auto client = connection_for_base(param.prefix());
 	if (!client) {
 		cb(make_error_code(ie::not_connected_to_peer), T());
 		return;
 	}
 
 	std::ostringstream ss;
-	ss << "\"" << SC::S2U(param->GetName()) << "\" "
+	ss << "\"" << SC::S2U(param.name()) << "\" "
 		<< ProbeType(probe_type).to_string() << " "
 		<< dir << " "
 		<< boost::fusion::at_key<T>(time_type_2_name) << " "
@@ -51,17 +51,17 @@ template<class T> void iks::search_data(TParam* param, std::string dir, T start,
 	});
 }
 
-template<class V, class T> void iks::_get_weighted_sum(TParam* param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const std::vector< weighted_sum<V, T> >&) > cb) {
+template<class V, class T> void iks::_get_weighted_sum(param_info param, T start, T end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const std::vector< weighted_sum<V, T> >&) > cb) {
 	typedef std::vector< weighted_sum<V , T> > result_t;
 
-	auto client = connection_for_param(param);
+	auto client = connection_for_base(param.prefix());
 	if (!client) {
 		cb(make_error_code(ie::not_connected_to_peer), result_t());
 		return;
 	}
 
 	std::ostringstream ss;
-	ss << "\"" << SC::S2U(param->GetName()) << "\" "
+	ss << "\"" << SC::S2U(param.name()) << "\" "
 		<< ProbeType(probe_type).to_string() << " "
 		<< boost::fusion::at_key<V>(value_type_2_name) << " "
 		<< boost::fusion::at_key<T>(time_type_2_name) << " "
@@ -104,24 +104,24 @@ template<class V, class T> void iks::_get_weighted_sum(TParam* param, T start, T
 	
 }
 
-template<class V, class T> void iks::get_weighted_sum(TParam* param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const boost::system::error_code& , const std::vector< weighted_sum<V , T> >& ) > cb) {
+template<class V, class T> void iks::get_weighted_sum(const param_info& param ,const T& start ,const T& end, SZARP_PROBE_TYPE probe_type, std::function< void( const boost::system::error_code& , const std::vector< weighted_sum<V , T> >& ) > cb) {
 	m_io->post(std::bind(&iks::_get_weighted_sum<V,T>, shared_from_this(), param, start, end, probe_type, cb));
 }
 
-template<class T> void iks::search_data_right(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
+template<class T> void iks::search_data_right(const param_info& param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
 	m_io->post(
 		std::bind(&iks::search_data<T>, shared_from_this(), param, "right", start, end, probe_type, cb));
 }
 
-template<class T> void iks::search_data_left(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
+template<class T> void iks::search_data_left(const param_info& param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, std::function<void(const boost::system::error_code&, const T&) > cb) {
 	m_io->post(std::bind(&iks::search_data<T>, shared_from_this(), param, "left", start, end, probe_type, cb));
 }
 
-template<class T> void iks::get_first_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > result) {
+template<class T> void iks::get_first_time(const param_info& param, std::function<void(const boost::system::error_code&, T&) > result) {
 //TODO
 }
 
-template<class T> void iks::get_last_time(TParam* param, std::function<void(const boost::system::error_code&, T&) > result) {
+template<class T> void iks::get_last_time(const param_info& param, std::function<void(const boost::system::error_code&, T&) > result) {
 //TODO
 }
 

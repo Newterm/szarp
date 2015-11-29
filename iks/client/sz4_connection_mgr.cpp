@@ -221,8 +221,8 @@ connection_mgr::connection_mgr(IPKContainer *conatiner,
 
 }
 
-connection_mgr::loc_connection_ptr connection_mgr::connection_for_param(TParam* p) {
-	auto i = m_location_connections.find(p->GetSzarpConfig()->GetPrefix());
+connection_mgr::loc_connection_ptr connection_mgr::connection_for_base(const std::wstring& prefix) {
+	auto i = m_location_connections.find(prefix);
 	return i != m_location_connections.end() ? i->second : loc_connection_ptr();
 }
 
