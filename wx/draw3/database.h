@@ -28,9 +28,12 @@
 #include <ids.h>
 #include <boost/thread/thread.hpp>
 #include <tr1/tuple>
+#include <unordered_map>
 
 #include "szbase/szbbase.h"
 #include "sz4/base.h"
+#include "sz4_iks_param_info.h"
+#include "sz4_iks_param_observer.h"
 
 
 /**Query to the database*/
@@ -330,14 +333,30 @@ namespace boost { namespace asio {
 
 
 class Sz4ApiBase : public Draw3Base {
+private:
+	class ObserverWrapper : public sz4::param_observer_ {
+		sz4::param_observer* obs;
+		TParam *param;
+		std::wstring prefix;
+		int version;
+	public:
+		ObserverWrapper(TParam* param, sz4::param_observer* obs);
+		virtual void operator()();
+	};
+
 	std::shared_ptr<boost::asio::io_service> io;
 	std::shared_ptr<sz4::connection_mgr> connection_mgr;
 	std::shared_ptr<sz4::iks> base;
 	IPKContainer* ipk_container;
 	boost::thread io_thread;
 
+	std::map<std::pair<sz4::param_observer*, sz4::param_info>, std::shared_ptr<ObserverWrapper>> observers;
+
+	sz4::param_info ParamInfoFromParam(TParam* p);
+
 	template<class time_type> void DoGetData(DatabaseQuery *query);
 public:
+
 	Sz4ApiBase(wxEvtHandler* response_receiver,
 			const std::wstring& address, const std::wstring& port,
 			IPKContainer *ipk_conatiner);

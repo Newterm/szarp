@@ -398,7 +398,8 @@ template<class time_type>
 void wsum_to_value(DatabaseQuery::ValueData::V& v,
 		const sz4::weighted_sum<double, time_type>& wsum,
 		SZARP_PROBE_TYPE pt,
-		TParam *p) {
+		TParam::DataType dt,
+		int prec) {
 	typedef sz4::weighted_sum<double, time_type> wsum_type;
 
 	typename wsum_type::sum_type sum;
@@ -417,8 +418,8 @@ void wsum_to_value(DatabaseQuery::ValueData::V& v,
 			break;
 	}
 
-	v.response = sz4::scale_value(wsum.avg(), p);
-	v.sum = sz4::scale_value(double(sum), p) / scale;
+	v.response = sz4::scale_value(wsum.avg(), dt, prec);
+	v.sum = sz4::scale_value(double(sum), dt, prec) / scale;
 
 	if (weight && v.count)
 		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
@@ -574,7 +575,7 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 	wsum_type wsum;
 	base->get_weighted_sum(p, time, end_time, pt, wsum);
 
-	wsum_to_value(v, wsum, pt, p);
+	wsum_to_value(v, wsum, pt, p->GetDataType(), p->GetPrec());
 }
 
 void Sz4Base::GetData(DatabaseQuery* query) {
@@ -630,6 +631,7 @@ void Sz4Base::RegisterObserver(DatabaseQuery *query) {
 		query->observer_registration_parameters.observer,
 		*query->observer_registration_parameters.params_to_register);
 }
+
 
 Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			const std::wstring& address, const std::wstring& port,
@@ -698,7 +700,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 			sd.ok = true;
 		} else {
 			sd.ok = false;
-			sd.error_str = wcsdup(L"search error");
+			sd.error_str = wcsdup(SC::L2S(ec.message()).c_str());
 		}
 
 		DatabaseResponse dr(query);
@@ -707,7 +709,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 
 	if (sd.direction > 0) {
 		base->search_data_right<sz4::nanosecond_time_t>(
-			p,
+			ParamInfoFromParam(p),
 			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
 			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
 			PeriodToProbeType(sd.period_type),
@@ -720,7 +722,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 			end.nanosecond = 0;
 		}
 		base->search_data_left<sz4::nanosecond_time_t>(
-			p,
+			ParamInfoFromParam(p),
 			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
 			end,
 			PeriodToProbeType(sd.period_type),
@@ -729,18 +731,64 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 	}
 }
 
+sz4::param_info Sz4ApiBase::ParamInfoFromParam(TParam* p) {
+	return sz4::param_info(p->GetSzarpConfig()->GetPrefix(), p->GetName());
+}
+
+namespace {
+
+void dummy_prepare_sz4_param(TParam* param) {
+	if (param->GetSz4Type() != TParam::SZ4_NONE)
+		return;
+
+	if (param->GetType() == TParam::P_REAL) {
+		param->SetSz4Type(TParam::SZ4_REAL);
+		return;
+	}
+
+	if (param->IsDefinable())
+		param->PrepareDefinable();
+
+	if (param->GetType() == TParam::P_COMBINED) {
+		param->SetSz4Type(TParam::SZ4_COMBINED);
+		param->SetDataType(TParam::INT);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_DEFINABLE) {
+		param->SetSz4Type(TParam::SZ4_DEFINABLE);
+		param->SetDataType(TParam::DOUBLE);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_LUA) {
+		param->SetSz4Type(TParam::SZ4_LUA);
+		param->SetDataType(TParam::DOUBLE);
+	}
+
+}
+
+
+}
+
+
 template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 	auto query_ptr = std::shared_ptr<DatabaseQuery>(query);
 
 	DatabaseQuery::ValueData &vd = query->value_data;
 	SZARP_PROBE_TYPE pt = PeriodToProbeType(vd.period_type);
 
+	dummy_prepare_sz4_param(query->param);
+
+	TParam::DataType dt = query->param->GetDataType();
+	int prec = query->param->GetPrec();
+
 	for (auto v : *vd.vv) {
 		time_type time = pair_to_sz4_type<time_type>()(v.time_second, v.time_nanosecond);
 		base->get_weighted_sum<double, time_type>(
-			query->param,
+			ParamInfoFromParam(query->param),
 			time, szb_move_time(time, 1, pt), pt,
-			[query_ptr, time, this, v]
+			[query_ptr, time, this, v, dt, prec]
 			(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
 				auto& vd = query_ptr->value_data;
 				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
@@ -752,11 +800,11 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 				if (!ec) {
 					wsum_to_value(nv, sums.at(0),
 							PeriodToProbeType(query_ptr->value_data.period_type),
-							query_ptr->param);
+							dt, prec);
 					nv.ok = true;
 				} else {
 					nv.error = 1;
-					nv.error_str = wcsdup(L"error"); //XXX
+					nv.error_str = wcsdup(SC::L2S(ec.message()).c_str());
 					nv.count = 0;
 					nv.ok = false;
 				}
@@ -789,15 +837,45 @@ void Sz4ApiBase::StopSearch() {
 
 }
 
+Sz4ApiBase::ObserverWrapper::ObserverWrapper(TParam* param, sz4::param_observer* obs)
+			: obs(obs), param(param) {
+	prefix = param->GetSzarpConfig()->GetPrefix();
+}
+
+void Sz4ApiBase::ObserverWrapper::operator()() {
+	obs->param_data_changed(param);
+}
+
 void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
-	base->deregister_observer(
-		query->observer_registration_parameters.observer,
-		*query->observer_registration_parameters.params_to_deregister,
-		[] (const boost::system::error_code&) { /*XXX*/ });
-	base->register_observer(
-		query->observer_registration_parameters.observer,
-		*query->observer_registration_parameters.params_to_register,
-		[] (const boost::system::error_code&) { /*XXX*/ });
+	auto observer = query->observer_registration_parameters.observer;
+	auto& to_dereg = *query->observer_registration_parameters.params_to_deregister;
+	auto& to_reg = *query->observer_registration_parameters.params_to_deregister;
+
+	for (auto& p : to_dereg) {
+		auto pi = ParamInfoFromParam(p);
+		auto i = observers.find(std::make_pair(observer, pi));
+		if (i == observers.end())
+			continue;
+
+		base->deregister_observer(
+			i->second,
+			std::vector<sz4::param_info>(1, pi),
+			[] (const boost::system::error_code&) { /*XXX*/ });
+
+		observers.erase(i);
+	}
+
+	for (auto& p : to_reg) {
+		auto pi = ParamInfoFromParam(p);
+		auto ow = std::make_shared<ObserverWrapper>(p, observer);
+		observers[std::make_pair(observer, pi)] = ow;
+
+		base->register_observer(
+			ow,
+			std::vector<sz4::param_info>(1 , pi),
+			[] (const boost::system::error_code&) { /*XXX*/ });
+	}
+
 }
 
 Sz4ApiBase::~Sz4ApiBase() {}
