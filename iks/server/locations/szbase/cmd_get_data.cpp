@@ -1,5 +1,6 @@
 #include <boost/algorithm/string.hpp>
 
+#include "../../../config.h"
 #include "data/szbase_wrapper.h"
 #include "utils/tokens.h"
 #include "szbase.h"

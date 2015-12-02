@@ -14,6 +14,8 @@
 
 #include <liblog.h>
 
+#include "../../config.h"
+
 #include "net/tcp_server.h"
 
 #include "locations/manager.h"

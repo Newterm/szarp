@@ -1,5 +1,7 @@
+#include "../../../config.h"
 #include "szbase_wrapper.h"
 #include "sz4/exceptions.h"
+#include "sz4/util.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -105,7 +107,7 @@ double SzbaseWrapper::get_avg(
 		throw szbase_get_value_error( "Cannot get value from param " + param + ": " + e.what() );
 	}
 
-	return sum.avg();
+	return sz4::scale_value(sum.avg(), tparam);
 }
 
 namespace {
