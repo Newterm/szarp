@@ -1,0 +1,243 @@
+#!/usr/bin/env python
+# -*- coding: utf-8
+
+from sys import argv
+import sys
+
+script, filename = argv
+
+print "#***********___Params_Creator___***********#\nv1.01\t A:Spychy\tMail:spychy@newterm.pl"
+
+#Zmienne tekstowe do paramsa
+speed = ""
+tcpport = ""
+tcpadres = ""
+modbusinfo = ""
+idadres = ""
+trybmodbus = ""
+Rack = ""
+Slot = ""
+efr = ""
+dbrodzaj = ""
+dbnr = ""
+drawdefinable = ""
+toddble = ""
+modbusextra = ""
+floatorder = ""
+doubleorder = ""
+tryb = ""
+yesno = ""
+stopbit = ""
+parity = ""
+
+#Tworzenie pliku params UWAGA:Nadpisuje stary plik!!!
+params = open("params.xml",'w')
+
+#Naglowek
+print "Podaj tytuł konfiguracji:"
+
+conftitle = raw_input()
+
+print "Wybierz swojego Demona!\n[0]:\tsnap7dmn\n[1]:\tborutadmn\n"
+
+dm = raw_input()
+
+#Wprowadzanie zmiennych dla s7dmn
+if dm == "0":
+	dmn="/opt/szarp/bin/s7dmn"
+	tryb = "extra"
+	print "Podaj exec:frequency:[help-> http://szarp.org/szarp/doc/ipk/html/daemon-snap7dmn.html]"
+	wejscie = raw_input()
+	efr='exec:frequency="%s"' % wejscie
+	print "Podaj adres ip:"
+	wejscie = raw_input()
+	if len(wejscie.split(".")) !=4:
+		sys.exit("Zły adres IP!")
+	adres = 'extra:address="%s" ' % wejscie
+	print "Podaj wartość Rack:"
+	wejscie = raw_input()
+	Rack = 'extra:rack="%s" ' % wejscie
+	print "Podaj wartość Slot:"
+	wejscie = raw_input()
+	Slot = 'extra:slot="%s" ' % wejscie
+
+#Wprowadzanie zmiennych dl borutadmn
+elif dm == "1":
+	dmn="/opt/szarp/bin/borutadmn"
+	tryb = "modbus"
+	modbusextra = 'xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra" '
+	print "Podaj prędkość BD:"
+	wejscie = raw_input()
+	if int(wejscie)%300 != 0:
+		sys.exit("Zla wartość prędkości BD")
+	speed ='extra:speed="%s" ' % wejscie
+	print "Podaj adres id(To nie adres IP!):"
+	wejscie = raw_input()
+	if len(wejscie.split("."))>1:
+				sys.exit("To nie adres IP!")
+	idadres ='extra:id="%s" ' % wejscie
+	print "Kolejność znaczących bitów dla formatu float:\n[0]:\tlsbmsb\n[1]:\tmsblsb"
+	wejscie = raw_input()
+	if wejscie=="0":
+		floatorder = 'extra:FloatOrder="lsbmsb" '
+	elif wejscie=="1":
+		floatorder = 'extra:FloatOrder="msblsb" '
+	else:
+		sys.exit("Zła opcja")
+	print "Kolejność znaczących bitów dla formatu double:\n[0]:\tlsdmsd\n[1]:\tmsdlsd"
+	wejscie = raw_input()
+	if wejscie=="0":
+		doubleorder = 'extra:FloatOrder="lsdmsd" '
+	elif wejscie=="1":
+		doubleorder = 'extra:FloatOrder="msdlsd" '
+	else:
+		sys.exit("Zła opcja")
+	print "Tryb:\n[0]:\tTCP\n[1]:\tRTU"
+	wejscie = raw_input()
+	#tryb TCP
+	if wejscie=="0":
+		print "Podaj adres ip:"
+		wejscie = raw_input()
+		if len(wejscie.split(".")) !=4:
+			sys.exit("Zły adres IP!")
+		adres = 'extra:tcp-address="%s" ' % wejscie
+		tryb = "tcp"
+		print "Podaj port TCP:"
+		wejscie = raw_input()
+		tcpport ='extra:tcp-port="%s" ' % wejscie
+		print "Tryb:\n[0]:\tKlient\n[1]:\tSerwer"
+		wejscie = raw_input()
+		if wejscie=="0":
+			trybmodbus = 'extra:mode="client" '
+		elif wejscie=="1":
+			trybmodbus = 'extra:mode="server" '
+		else:
+			sys.exit("Zła opcja")
+		print "Tryb RTU over TCP?\n[0]:\tTak\n[1]:\tNie"
+		wejscie = raw_input()
+		if wejscie=="0":
+			yesno = 'yes'
+		elif wejscie=="1":
+			yesno = 'no'
+		else:
+			sys.exit("Zła opcja")
+
+	#tryb RTU
+	elif wejscie=="1":
+		tryb = "seral"
+		yesno = "no"
+		print "Podaj ścieżkę do urządzenia:"
+		wejscie = raw_input()
+		tcpport ='extra:path="%s" ' % wejscie
+		print "Stop Bit:[1/2]"
+		wejscie = raw_input()
+		stopbit ='extra:stopbits="%s" ' % wejscie
+		print "Parity:\n[0]:\tNo parity\n[1]:\teven\n[2]:\tOdd"
+		wejscie = raw_input()
+		if wejscie=="0":
+			parity = 'extra:parity="none" '
+		elif wejscie=="1":
+			parity = 'extra:parity="even" '
+		elif wejscie=="2":
+			parity = 'extra:parity="odd" '
+		else:
+			sys.exit("Zła opcja")	
+
+	else:
+		sys.exit("Zła opcja")
+
+	modbusinfo = 'extra:proto="modbus" extra:use_tcp_2_serial_proxy="%s" extra:medium="%s" ' % (yesno, tryb)
+else:
+	sys.exit("Zła opcja")
+print "Podaj nazwę raportu:"
+
+Rname = raw_input()
+
+Naglowek = '<?xml version="1.0" encoding="UTF-8"?>\n<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" %sxmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:doc="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" version="1.0" read_freq="10" send_freq="10" title="%s" documentation_base_url="http://www.szarp.com">\n\t<device daemon="%s" path="/dev/null" speed="9600" %s%s%s>\n\t\t<unit id="1" type="1" subtype="1" bufsize="1" %s%s%s%s%s%s%s%sextra:path="/dev/null" %sextra:read-timeout="5000">\n\n' % (modbusextra, conftitle, dmn, Rack, Slot, efr, modbusinfo, stopbit, adres, idadres, trybmodbus, floatorder, doubleorder, tcpport, speed)
+
+#zapisanie naglowka do pliku params.xml
+params.write(Naglowek)
+
+#param
+txt = open(filename)
+
+print "Rozpoczynam czytanie z pliku: %r i zapisywanie sformatowanych danych do pliku params.xml" % filename
+
+#Podzielenie na tekstu na linijki
+linie = txt.readlines()
+
+Rnr = 1 #Licznik nr. w raporcie
+bitnr = ""
+for y in range(1,len(linie)):
+	toddble = ""
+	linijka = linie[y]
+
+	element = linijka.split(",")
+
+#Dopelnianie elementow do liczby niezbednej dla dalszej pracy programu
+	Koncowka="-,"*(8-len(element))
+	Koncowka=Koncowka[:-1]
+	koncowka=Koncowka.split(",")
+	element=element+koncowka
+
+#Kasowanie \n w znakach elementow
+	for x in range(len(element)):
+		if element[x]=="":
+			element[x]="-"
+		if element[x][-1]=="\n":
+			element[x]=element[x][:-1]
+
+#Sprawdzenie wartosci precyzji i zwrocenie 0 dla -
+	if element[4]=="-":
+		element[4]=0
+
+	element[0] #krotka nazwa parametru
+	element[1]=element[1].lower() #typ parametru
+	element[2] #adres parametru
+	element[3] #pelna nazwa parametru
+	element[4] #precyzja
+	element[5] #jednostka
+	element[6] #dodatkowa dana do paramsa: snap7dmn:Rodzaj pamieci(DB,M)
+	element[7] #dodatkowa dana do paramsa: snap7dmn:nr DB
+
+	#Rozbicie adresu dla paremetru typu bool/bit
+	if element[1]=="bool":
+		element[1]="bit"
+		ADRES=element[2].split(".")
+		element[2]=ADRES[0]
+		bitnr='extra:number="%s" ' % ADRES[1]
+	
+	#Zamiana typu zmiennej int na word dla snap7
+	if (element[1]=="int") or (element[1]=="integer"):
+		element[1]="word"
+
+	#Obrobka wartosci dla snap7dmn
+	if dm == "0":
+		dbrodzaj='extra:db_type="%s" ' % element[6].lower()
+		dbnr = 'extra:db="%s" ' % element[7]
+	
+	#Sygnalizacja dzialania co 100 parametrow
+	if Rnr%100==0:
+		print "."
+	
+	if (element[1]=="real") or (element[1]=="dint"):
+		if element[1]=="dint":
+			element[1] = "word"
+		param='\t\t\t<param name="%s:%s lsw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t</param>\n\n\t\t\t<param name="%s:%s msw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb, element[2], bitnr, dbnr, dbrodzaj, tryb, element[1], conftitle, element[3], element[0], element[0], element[5], element[4], tryb, str(2.0+float(element[2])), bitnr, dbnr, dbrodzaj, tryb, element[1])
+		toddble = '\t<param name="%s:%s:%s" short_name="%s" prec="%s" draw_name="%s" unit="%s">\n\t\t<define type="DRAWDEFINABLE" formula="(%s:%s lsw) (%s:%s msw) :"/>\n\t\t\t<draw title="%s" min="0" max="10" order="%d"/>\n\t\t\t<raport title="%s" order="%d"/>\n\t</param>\n\n' % (conftitle, Rname, element[3], element[0], element[4], element[0], element[5], conftitle, element[3], conftitle, element[3], Rname, Rnr, Rname, Rnr)
+	else:
+		param='\t\t\t<param name="%s:%s" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t\t<raport title="%s" order="%d"/>\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb, element[2], bitnr, dbnr, dbrodzaj, tryb, element[1], Rname, Rnr)
+	params.write(param)
+	drawdefinable = drawdefinable + toddble
+	Rnr=Rnr+1
+params.write("\t\t</unit>\n\t</device>\n")
+
+#drawdefinable
+params.write("<drawdefinable>\n")
+params.write(drawdefinable+"\n")
+params.write("</drawdefinable>\n")
+
+#defined
+params.write("<defined>\n")
+params.write("</defined>\n")
+params.write("</params>")

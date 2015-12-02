@@ -956,6 +956,10 @@ void GCDCGraphs::OnMouseLeftDClick(wxMouseEvent& event) {
 	if (m_draws_wdg->GetNoData())
 		return;
 
+#ifdef __WXMSW__
+	SetFocus();
+#endif
+
 	/* get widget size */
 	int w, h;
 	GetClientSize(&w, &h);

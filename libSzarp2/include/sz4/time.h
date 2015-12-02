@@ -185,6 +185,8 @@ szb_round_time(nanosecond_time_t t, SZARP_PROBE_TYPE probe_type, int custom_leng
 
 std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t);
 
+std::istream& operator>>(std::istream& s, nanosecond_time_t &t);
+
 }
 
 #endif

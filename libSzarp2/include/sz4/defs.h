@@ -180,6 +180,10 @@ public:
 		return m_wsum;
 	}
 
+	sum_type _sum() const {
+		return m_wsum;
+	}
+
 	value_type avg() const {
 		if (!m_weight)
 			return no_data<value_type>();

@@ -61,7 +61,6 @@ void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 
 	try {
 		auto& vars = vars_cache.get_szarp( cfg.at("base") );
-		vars.set_szarp_prober_server( pa , p );
 
 		loc_factory.register_location<SzbaseLocation>(
 				name , draw_name , "szbase" , std::ref(vars) );

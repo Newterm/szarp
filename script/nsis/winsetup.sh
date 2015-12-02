@@ -191,6 +191,7 @@ function CopyDlls()
 	/usr/local/win32/boost-1.55/lib/libboost_chrono*.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.8/libstdc++-6.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.8/libgcc_s_sjlj-1.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.8/libquadmath-0.dll \
 	/usr/local/win32/bin/*winpthread-1.dll \
 	$MINGW"
 	

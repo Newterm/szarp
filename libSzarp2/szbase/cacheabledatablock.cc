@@ -216,7 +216,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	size_t size;
 	try {
 		size = fs::file_size(cachepath);
-	} catch (fs::filesystem_error) {
+	} catch (fs::filesystem_error&) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL,
 				"CacheableDatablock::IsCacheFileValid: cannot retrive file szie for: '%ls'",
 				this->cachepath.c_str());
@@ -226,7 +226,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t mtime;
 	try {
 		mtime = fs::last_write_time(cachepath);
-	} catch (fs::filesystem_error) {
+	} catch (fs::filesystem_error&) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date for: '%ls'", this->cachepath.c_str());
 		return false;
 	}
@@ -259,7 +259,7 @@ CacheableDatablock::IsCacheFileValid(int &probes, time_t *mdate)
 	time_t bmt;
 	try {
 		bmt = fs::last_write_time(tmp);
-	} catch (fs::filesystem_error) {
+	} catch (fs::filesystem_error&) {
 		sz_log(DATABLOCK_CACHE_ACTIONS_LOG_LEVEL, "CacheableDatablock::IsCacheFileValid: cannot retrive modification date of szbase_stamp");
 		return true;
 	}
@@ -300,7 +300,8 @@ void
 CacheableDatablock::ClearCache(szb_buffer_t *buffer)
 {
 	buffer->cachepoison = true;
-	boost::filesystem::remove_all(CacheableDatablock::GetCacheRootDirPath(buffer));
+	boost::system::error_code ec;	
+	boost::filesystem::remove_all(CacheableDatablock::GetCacheRootDirPath(buffer), ec);
 }
 
 void 
@@ -337,8 +338,8 @@ CacheableDatablock::ClearParamFromCache(szb_buffer_t *buffer, TParam *param)
 {
 	boost::filesystem::wpath tmp(CacheableDatablock::GetCacheRootDirPath(buffer));
 	tmp /= param->GetSzbaseName();
-
-	boost::filesystem::remove_all(tmp);
+	boost::system::error_code ec;	
+	boost::filesystem::remove_all(tmp, ec);
 }
 
 CacheableDatablock::~CacheableDatablock() {

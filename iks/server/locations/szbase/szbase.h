@@ -18,7 +18,11 @@ public:
 			Set::const_ptr s = Set::const_ptr() ,
 			ProbeType pt = ProbeType() );
 
+	void subscribe_param( Param::const_ptr p );
+
+	void unsubscribe_param( Param::const_ptr p );
 private:
+	void on_param_changed( Param::const_ptr p );
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
@@ -28,7 +32,9 @@ private:
 
 	boost::signals2::scoped_connection conn_param;
 
-	ParamsUpdater::Subscription sub_params;
+	ParamsUpdater::Subscription sub_set;
+
+	std::multimap<std::string , ParamsUpdater::Subscription > sub_params;
 
 };
 
