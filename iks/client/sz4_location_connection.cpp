@@ -82,7 +82,7 @@ void location_connection::start_connecting() {
 	auto self = shared_from_this();
 
 	m_connection->connected_sig.connect(std::bind(&location_connection::on_connected, self));
-	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connected, self));
+	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connection_error, self, p::_1));
 	m_connection->cmd_sig.connect( std::bind(&location_connection::on_cmd, self, p::_1, p::_2, p::_3));
 
 	m_connection->connect();
