@@ -597,6 +597,7 @@ void Sz4Base::GetData(DatabaseQuery* query) {
 			i->ok = true;
 
 		} catch (sz4::exception &e) {
+			i->response = nan("");
 			i->error = 1;
 			i->error_str = wcsdup(SC::U2S((const unsigned char*)(e.what())).c_str());
 			i->count = 0;
@@ -806,6 +807,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 					nv.error = 1;
 					nv.error_str = wcsdup(SC::L2S(ec.message()).c_str());
 					nv.count = 0;
+					nv.response = nan("");
 					nv.ok = false;
 				}
 
