@@ -299,6 +299,9 @@ public:
 
 	void refresh_file_list() {
 		namespace fs = boost::filesystem;
+
+		typedef std::tuple<T, std::wstring, bool> file_entry;
+		std::vector<file_entry> new_files;
 		
 		for (fs::directory_iterator i(m_param_dir);
 				i != fs::directory_iterator();
@@ -318,16 +321,33 @@ public:
 			if (m_blocks.find(file_time) != m_blocks.end())
 				continue;
 			
-			if (sz4 && m_first_sz4_date > file_time)
-				m_first_sz4_date = file_time;
+			new_files.push_back(file_entry(file_time, file_path, sz4));
+		}
 
-			file_block_entry<V, T, types> *entry;
-			if (sz4)
-				entry = new sz4_file_block_entry<V, T, types>(file_time, file_path, m_base->cache(), this);
-			else
-				entry = new szbase_file_block_entry<V, T, types>(file_time, file_path, m_base->cache(), this);
 
-			m_blocks.insert(std::make_pair(file_time, entry));
+		std::sort(new_files.begin(), new_files.end(),
+			[] (const file_entry& _1, const file_entry& _2) { return std::get<0>(_1) < std::get<0>(_2); });
+
+		for (auto& f : new_files) {
+			auto& file_time = std::get<0>(f);
+			auto& file_path = std::get<1>(f);
+			bool sz4 = std::get<2>(f);
+
+			file_block_entry<V, T, types> *entry(nullptr);
+			if (sz4) {
+				entry = new sz4_file_block_entry<V, T, types>(
+							file_time, file_path, m_base->cache(), this);
+				if (time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
+					m_first_sz4_date = file_time;
+			} else {
+				if (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
+					entry = new szbase_file_block_entry<V, T, types>(
+							file_time, file_path, m_base->cache(), this);
+			}
+
+			if (entry)
+				m_blocks.insert(std::make_pair(file_time, entry));
+
 		}
 	}
 
