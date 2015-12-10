@@ -407,18 +407,18 @@ void wsum_to_value(DatabaseQuery::ValueData::V& v,
 
 	sum = wsum.sum(weight);
 
+	v.response = sz4::scale_value(wsum.avg(), dt, prec);
+
 	double scale;
 	switch (pt) {
 		case PT_HALFSEC: 
 		case PT_MSEC10:
-			scale = 10 * 60.;
-			break;
-		default:
 			scale = 10 * 1000000000. * 60;
 			break;
+		default:
+			scale = 10 * 60.;
+			break;
 	}
-
-	v.response = sz4::scale_value(wsum.avg(), dt, prec);
 	v.sum = sz4::scale_value(double(sum), dt, prec) / scale;
 
 	if (weight && v.count)
