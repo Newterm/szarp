@@ -62,7 +62,7 @@ public:
 							 SearchDir dir ,
 							 ProbeType pt
 							 ) const
-		throw( szbase_init_error, szbase_error );
+		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
 
 	std::string get_data( const std::string& param ,
 						  const std::string& from ,
@@ -71,10 +71,10 @@ public:
 						  TimeType time_type ,
 						  ProbeType pt
 						  ) const
-		throw( szbase_init_error, szbase_error );
+		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
 
 	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> )
-		throw( szbase_init_error, szbase_error );
+		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
 
 private:
 	std::wstring convert_string( const std::string& param ) const;
