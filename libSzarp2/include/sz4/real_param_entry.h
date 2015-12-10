@@ -69,7 +69,12 @@ public:
 		if (!this->m_needs_refresh)
 			return;
 
-		size_t size = boost::filesystem::file_size(this->m_block_path);
+
+		boost::system::error_code ec;
+		size_t size = boost::filesystem::file_size(this->m_block_path, ec);
+		if (ec)
+			return;
+
 		std::vector<unsigned char> buffer(size);
 
 		if (load_file_locked(this->m_block_path, &buffer[0], buffer.size())) {
@@ -98,7 +103,11 @@ public:
 		if (!this->m_needs_refresh)
 			return;
 
-		size_t size = boost::filesystem::file_size(this->m_block_path);
+		boost::system::error_code ec;
+		size_t size = boost::filesystem::file_size(this->m_block_path, ec);
+		if (ec)
+			return;
+
 		size_t shorts_to_read = (size > this->m_read_so_far)
 						? (size - this->m_read_so_far) / 2 : 0;
 
