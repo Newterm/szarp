@@ -44,11 +44,11 @@ public:
 
 	~IksConnection();
 
-	boost::signals2::signal<void( )>							connected_sig;
-	boost::signals2::signal<void( boost::system::error_code )>	connection_error_sig;
+	boost::signals2::signal<void( )>									connected_sig;
+	boost::signals2::signal<void( const boost::system::error_code &)>	connection_error_sig;
 	boost::signals2::signal<void( const std::string&
 							    , IksCmdId
-								, const std::string& )>			cmd_sig;
+								, const std::string& )>					cmd_sig;
 };
 
 #endif

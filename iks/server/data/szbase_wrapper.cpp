@@ -1,5 +1,7 @@
+#include "../../../config.h"
 #include "szbase_wrapper.h"
 #include "sz4/exceptions.h"
+#include "sz4/util.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -105,7 +107,7 @@ double SzbaseWrapper::get_avg(
 		throw szbase_get_value_error( "Cannot get value from param " + param + ": " + e.what() );
 	}
 
-	return sum.avg();
+	return sz4::scale_value(sum.avg(), tparam);
 }
 
 namespace {
@@ -151,11 +153,15 @@ template<class T> std::string search_data_helper( sz4::base* base,
 		throw szbase_error( "Invalid time specification from: " + from + " to: " + to );
 	}
 
-	T result = ( dir == SearchDir::LEFT ) ?
-			   base->search_data_left ( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) :
-			   base->search_data_right( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) ;
+	try{
+		T result = ( dir == SearchDir::LEFT ) ?
+				   base->search_data_left ( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) :
+				   base->search_data_right( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) ;
 
-	return boost::lexical_cast<std::string>(result);
+		return boost::lexical_cast<std::string>(result);
+	} catch( sz4::exception& e ) {
+		throw szbase_error( "Search failed : " + std::string(e.what()) );
+	}
 }
 
 }
@@ -168,12 +174,12 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 										SearchDir dir ,
 										ProbeType pt
 										) const
-	throw( szbase_init_error, szbase_error )
+	throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
 
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
-		throw szbase_error( "Param " + param + ", does not exist." );
+		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
 
 	switch (time_type) {
@@ -220,7 +226,7 @@ std::ostream& get_data( sz4::base*       base ,
 }
 
 template<class time_type>
-std::ostream& get_data( sz4::base*         base ,
+std::ostream& get_data( sz4::base*       base ,
 					  TParam*            param ,
 					  const std::string& from ,
 					  const std::string& to ,
@@ -263,13 +269,13 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 									 ValueType value_type ,
 									 TimeType time_type ,
 									 ProbeType pt ) const
-		throw( szbase_init_error, szbase_error )
+		throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
 	std::ostringstream ss;
 
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
-		throw szbase_error( "Param " + param + ", does not exist." );
+		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
 	try{
 		switch (time_type) {
@@ -294,11 +300,11 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 }
 
 SzbaseObserverToken SzbaseWrapper::register_observer( const std::string& param , std::function<void( void )> callback )
-	throw( szbase_init_error, szbase_error )
+	throw( szbase_init_error , szbase_param_not_found_error , szbase_error )
 {
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
-		throw szbase_error( "Cannot register observer for param " + param + ", param not found" );
+		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
 	return std::make_shared<SzbaseObserverImpl>( tparam , base , callback );
 }

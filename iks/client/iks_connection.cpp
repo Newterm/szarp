@@ -56,14 +56,16 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	if ( !is ) {
 		std::string empty;
 		for ( auto i : commands )
-			i.second( IksError::connection_error , "" , empty );
+			i.second( make_error_code( iks_client_error::invalid_server_response )
+					, ""
+					, empty );
 		socket->connect();
 		return;
 	}
 
 	auto i = commands.find(id);
 	if ( i != commands.end() ) {
-		if ( i->second( IksError::no_error , tag , data ) == cmd_done)
+		if ( i->second( make_error_code( boost::system::errc::success ), tag , data ) == cmd_done)
 			commands.erase(i);
 	} else
 		cmd_sig( tag, id, data );
@@ -73,7 +75,7 @@ void IksConnection::handle_error( const boost::system::error_code& ec )
 {
 	std::string empty;
 	for ( auto& i : commands ) 
-		i.second( IksError::connection_error , "" , empty );
+		i.second( ec , "" , empty );
 
 	commands.clear();
 

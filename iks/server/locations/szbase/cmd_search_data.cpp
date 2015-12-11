@@ -1,5 +1,6 @@
 #include <boost/algorithm/string.hpp>
 
+#include "../../../config.h"
 #include "data/szbase_wrapper.h"
 #include "utils/tokens.h"
 #include "szbase.h"
@@ -54,7 +55,14 @@ void SearchDataRcv::parse_command( const std::string& data )
 		return;
 	}
 		
-	apply( vars.get_szbase()->search_data ( name, tags[3] , tags[4], ttype , dir , pt ) );
+	try {
+		apply( vars.get_szbase()->search_data ( name, tags[3] , tags[4], ttype , dir , pt ) );
+	} catch ( szbase_param_not_found_error& ) {
+		fail( ErrorCodes::unknown_param );
+	} catch ( szbase_error& e ) {
+		fail( ErrorCodes::szbase_error , e.what() );
+	}
+	
 
 }
 

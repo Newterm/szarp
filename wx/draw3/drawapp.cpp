@@ -128,7 +128,7 @@ int GL_ATTRIBUTES[] = {
 	0 };
 }
 
-DrawApp::DrawApp() : DrawGLApp(), m_base_type(SZBASE_BASE) {
+DrawApp::DrawApp() : DrawGLApp(), m_base_type(SZBASE_BASE), m_iks_port(_T("9002")) {
 	m_gl_context = NULL;
 }
 
@@ -211,6 +211,24 @@ bool DrawApp::OnInit() {
 		base = libpar_getpar("", "config_prefix", 1);
 		m_base = SC::L2S(base);
 		free(base);
+	}
+
+	{
+
+		if (m_base_type != IKS_BASE) {
+			char *iks_server = libpar_getpar("draw3", "iks_server", 0);
+			if (iks_server) {
+				m_iks_server = SC::L2S(iks_server);
+				m_base_type = IKS_BASE;
+				free(iks_server);
+			}
+
+			char *iks_port = libpar_getpar("draw3", "iks_server_port", 0);
+			if (iks_port) {
+				m_iks_port = SC::L2S(iks_port);
+				free(iks_port);
+			}
+		}
 	}
 
 	m_probers_from_szarp_cfg = get_probers_addresses();
@@ -529,8 +547,7 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 		if (!parser.Found(_T("iks-server"), &m_iks_server))
 			m_iks_server = m_base;
 
-		if (!parser.Found(_T("iks-server-port"), &m_iks_port))
-			m_iks_port = _T("21739"); /**XXX:*/
+		parser.Found(_T("iks-server-port"), &m_iks_port);
 	}
 
 	return true;

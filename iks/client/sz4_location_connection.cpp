@@ -6,11 +6,12 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "szarp_config.h"
+#include "locations/error_codes.h"
 #include "iks_connection.h"
 #include "sz4_location_connection.h"
 
 namespace bp = boost::property_tree;
-namespace bsec = boost::system::errc;
+namespace bs = boost::system;
 
 namespace sz4 {
 
@@ -19,12 +20,12 @@ void location_connection::connect_to_location()
 	auto self = shared_from_this();
 
 	m_connection->send_command("connect" , m_location,
-			[self] ( IksError error, const std::string& status, std::string& data ) {
-		if ( error )
+			[self] ( const bs::error_code& ec, const std::string& status, std::string& data ) {
+		if ( ec )
 			return IksCmdStatus::cmd_done;
 
 		if ( status != "k" ) {
-			self->connection_error_sig(bsec::make_error_code(bsec::not_connected));
+			self->connection_error_sig( make_iks_error_code( data ) );
 			return IksCmdStatus::cmd_done;
 		}
 
@@ -81,7 +82,7 @@ void location_connection::start_connecting() {
 	auto self = shared_from_this();
 
 	m_connection->connected_sig.connect(std::bind(&location_connection::on_connected, self));
-	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connected, self));
+	m_connection->connection_error_sig.connect(std::bind(&location_connection::on_connection_error, self, p::_1));
 	m_connection->cmd_sig.connect( std::bind(&location_connection::on_cmd, self, p::_1, p::_2, p::_3));
 
 	m_connection->connect();

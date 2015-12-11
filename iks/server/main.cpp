@@ -14,6 +14,8 @@
 
 #include <liblog.h>
 
+#include "../../config.h"
+
 #include "net/tcp_server.h"
 
 #include "locations/manager.h"
@@ -101,20 +103,10 @@ int main( int argc , char** argv )
 	sz_log(2,"Welcome, milord");
 
 	try {
-		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
-
 		boost::asio::io_service& io_service = GlobalService::get_service();
 
 		tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
 		TcpServer ts(io_service, endpoint);
-
-		LocationsMgr lm;
-
-		lm.add_locations( locs_cfg );
-		lm.add_config( server_config );
-
-		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
-		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
 
 		ba::signal_set signals(io_service, SIGINT, SIGTERM);
 		signals.async_wait( bind(&ba::io_service::stop, &io_service) );
@@ -147,6 +139,16 @@ int main( int argc , char** argv )
 			std::ofstream pf( pid_path , std::ofstream::trunc );
 			pf << get_pid();
 		}
+
+		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
+
+		LocationsMgr lm;
+
+		lm.add_locations( locs_cfg );
+		lm.add_config( server_config );
+
+		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
+		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
 
 		sz_log(2,"Start serving on port %d", vm["port"].as<unsigned>() );
 
