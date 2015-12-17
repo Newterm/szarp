@@ -788,6 +788,10 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 
 void SCCMenu::Destroy(SCCMenu* m) {
 	assert(m != NULL);
+	for (auto ptr = m->hierarchy_data->exclude_expr.begin(); ptr != m->hierarchy_data->exclude_expr.end(); ) {
+		delete *ptr;
+		ptr = m->hierarchy_data->exclude_expr.erase(ptr);
+	}
 	delete m->hierarchy_data;
 	delete m;
 }
