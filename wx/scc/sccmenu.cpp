@@ -409,6 +409,9 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 			//check if given draw is not already contained within menu hierarchy
 			if (find(draws.begin(),draws.end(),d_iter->prefix) != draws.end())
 				continue;
+			//check if not a backup
+			if (wxRegEx(wxString(std::string(".*[-._]bak").c_str(), wxConvUTF8), wxRE_ICASE + wxRE_ADVANCED).Matches(d_iter->prefix, 0))
+				continue;
 			submenu->Add(CreateDrawItem(
 						d_iter->title,
 						d_iter->prefix,
