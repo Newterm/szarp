@@ -22,6 +22,8 @@
 #include "cmd_get_data.h"
 #include "cmd_param_subscribe.h"
 #include "cmd_param_unsubscribe.h"
+#include "cmd_param_add.h"
+#include "cmd_param_remove.h"
 
 namespace p = std::placeholders;
 
@@ -47,6 +49,12 @@ SzbaseProt::SzbaseProt( Vars& vars )
 
 SzbaseProt::~SzbaseProt()
 {
+	for ( auto i : user_params )
+	{
+		try{
+			vars.get_updater().remove_param( i.second );
+		} catch ( szbase_error& ) { } 
+	}
 }
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
@@ -69,6 +77,8 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "get_data"          , GetDataRcv          );
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
+	MAP_CMD_TAG( "param_add"		 , ParamAddRcv		   );
+	MAP_CMD_TAG( "param_remove"		 , ParamRemoveRcv	   );
 	return NULL;
 }
 
@@ -138,3 +148,27 @@ void SzbaseProt::unsubscribe_param( Param::const_ptr p )
 	if( it != sub_params.end() )
 		sub_params.erase( it );
 }
+
+std::string SzbaseProt::add_param( const std::string& param
+						  , const std::string& formula
+						  , const std::string& token
+						  , const std::string& type
+						  , int prec
+						  , unsigned start_time)
+{
+	std::string internal_name = vars.get_updater().add_param( param , formula , token , type , prec , start_time );
+
+	user_params.insert( std::make_pair( param , internal_name ) );
+
+	return internal_name;
+}
+
+void SzbaseProt::remove_param(const std::string& pname)
+{
+	auto i = user_params.find( pname );
+	if ( i == user_params.end() )
+		return;
+
+	vars.get_updater().remove_param( i->second );
+}
+

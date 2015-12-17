@@ -176,6 +176,8 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 										) const
 	throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
 
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
@@ -271,6 +273,9 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 									 ProbeType pt ) const
 		throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
 	std::ostringstream ss;
 
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
@@ -302,11 +307,102 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 SzbaseObserverToken SzbaseWrapper::register_observer( const std::string& param , std::function<void( void )> callback )
 	throw( szbase_init_error , szbase_param_not_found_error , szbase_error )
 {
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
 	TParam* tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
 	if( !tparam )
 		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
 	return std::make_shared<SzbaseObserverImpl>( tparam , base , callback );
+}
+
+namespace {
+
+bool create_param_name( const std::wstring& original_name , const std::wstring& token, std::wstring& new_name )
+{
+	if( std::count( original_name.begin() , original_name.end() , L':') != 3 )
+		return false;
+
+	auto i = std::find( original_name.begin() , original_name.end() , L':' ) + 1;
+	if( *i != L'*' )
+			return false;
+
+	new_name.append( original_name.begin() , i );
+	new_name.append( token );
+	new_name.append( std::find( i , original_name.end() , L':' ) , original_name.end() );
+
+	return true;
+}
+
+}
+
+std::string SzbaseWrapper::add_param( const std::string& param
+									, const std::string& formula
+									, const std::string& token
+									, const std::string& type
+									, int prec
+									, unsigned start_time)
+	throw( szbase_invalid_name , szbase_formula_invalid_syntax, szbase_init_error )
+{
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
+	std::wstring _param = convert_string( param );
+	std::wstring _token = convert_string( token );
+	std::wstring _formula = convert_string( formula );
+
+	std::wstring new_param_name;
+	if ( !create_param_name( _param , _token , new_param_name ) )
+		throw szbase_invalid_name(param + " in not valid user defined param name");
+
+	std::vector<std::wstring> strings;
+	if( !extract_strings_from_formula( _formula , strings ) )
+		throw szbase_formula_invalid_syntax("formula cannot be parsed");
+
+	for( auto& param : strings )
+	{
+		std::wstring new_name;
+		if ( !create_param_name( _param , _token , new_param_name ) )
+				continue;
+
+		auto i = _formula.find( param );
+		assert( i != std::wstring::npos );	
+
+		_formula.replace( i , i + param.size() , new_name );
+	}
+
+	TParam::FormulaType formula_type;
+	if( type == "av" )
+		formula_type = TParam::LUA_AV;
+	else if( type == "va" )
+		formula_type = TParam::LUA_VA;
+
+	auto tparam = new TParam(NULL, NULL, L"", formula_type, TParam::P_LUA);
+	tparam->SetName(new_param_name);
+	tparam->SetPrec(prec);
+	tparam->SetTimeType(TParam::NANOSECOND); ///XXX:
+	tparam->SetLuaScript(SC::S2U(_formula).c_str());
+	tparam->SetLuaStartDateTime(start_time);
+
+	IPKContainer::GetObject()->AddExtraParam( convert_string ( base_name ) , tparam );
+
+	return reinterpret_cast<const char*>(SC::S2U(new_param_name).c_str());
+}
+
+void SzbaseWrapper::remove_param(const std::string& param)
+	throw( szbase_param_not_found_error , szbase_init_error )
+{
+	if( !SzbaseWrapper::is_initialized() )
+		throw szbase_init_error("Szbase not initialized");
+
+	auto tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
+	if( !tparam )
+		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
+
+	base->remove_param( tparam );
+
+	IPKContainer::GetObject()->RemoveExtraParam( convert_string ( base_name ) , tparam );
 }
 
 time_t SzbaseWrapper::next( time_t t , ProbeType pt , int num )

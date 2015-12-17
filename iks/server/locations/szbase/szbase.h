@@ -21,6 +21,14 @@ public:
 	void subscribe_param( Param::const_ptr p );
 
 	void unsubscribe_param( Param::const_ptr p );
+
+	std::string add_param( const std::string& param
+						 , const std::string& formula
+						 , const std::string& token
+						 , const std::string& type
+						 , int prec
+						 , unsigned start_time);
+	void remove_param( const std::string& param );
 private:
 	void on_param_changed( Param::const_ptr p );
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
@@ -36,6 +44,7 @@ private:
 	ParamsUpdater::Subscription sub_set;
 
 	std::multimap<std::string , ParamsUpdater::Subscription > sub_params;
+	std::unordered_map< std::string , std::string > user_params;
 
 };
 
