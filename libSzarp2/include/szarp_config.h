@@ -2258,8 +2258,12 @@ class IPKContainer {
 	void RemoveParamFromHash(TParam* p);
 
 	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
+
+	void RemoveExtraParamImpl(const std::wstring& prefix, TParam *p);
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
+
+	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);
 
 	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
