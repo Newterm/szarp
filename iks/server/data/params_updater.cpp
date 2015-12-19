@@ -57,6 +57,7 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 }
 
 std::string ParamsUpdater::add_param( const std::string& param
+									, const std::string& base
 									, const std::string& formula
 									, const std::string& token
 									, const std::string& type
@@ -64,12 +65,12 @@ std::string ParamsUpdater::add_param( const std::string& param
 									, unsigned start_time)
 
 {
-	return data_feeder->add_param( param , formula , token, type , prec , start_time );
+	return data_feeder->add_param( param , base , formula , token, type , prec , start_time );
 }
 
-void ParamsUpdater::remove_param( const std::string& param )
+void ParamsUpdater::remove_param( const std::string& base , const std::string& param )
 {
-	return data_feeder->remove_param( param );
+	return data_feeder->remove_param( base , param );
 }
 
 ParamsUpdater::Subscription::Subscription()

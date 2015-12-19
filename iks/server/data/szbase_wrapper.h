@@ -77,6 +77,7 @@ public:
 		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
 
 	std::string add_param( const std::string& param
+						 , const std::string& base
 						 , const std::string& formula
 						 , const std::string& token
 						 , const std::string& type
@@ -84,7 +85,7 @@ public:
 						 , unsigned start_time)
 		throw( szbase_invalid_name , szbase_formula_invalid_syntax, szbase_init_error );
 
-	void remove_param(const std::string& param)
+	void remove_param(const std::string& base , const std::string& param)
 		throw( szbase_param_not_found_error, szbase_init_error );
 private:
 	std::wstring convert_string( const std::string& param ) const;

@@ -24,8 +24,11 @@ public:
 		auto r = find_quotation( line );
 		std::string name(r.begin(),r.end());
 
+		auto l = find_after_quotation( line ) ;
+		std::string base(l.begin(),l.end());
+
 		try{
-			prot.remove_param( name );
+			prot.remove_param( base , name );
 			apply();
 		} catch ( szbase_param_not_found_error& ) {
 			fail( ErrorCodes::unknown_param );

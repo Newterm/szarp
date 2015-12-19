@@ -338,6 +338,7 @@ bool create_param_name( const std::wstring& original_name , const std::wstring& 
 }
 
 std::string SzbaseWrapper::add_param( const std::string& param
+									, const std::string& base
 									, const std::string& formula
 									, const std::string& token
 									, const std::string& type
@@ -385,24 +386,22 @@ std::string SzbaseWrapper::add_param( const std::string& param
 	tparam->SetLuaScript(SC::S2U(_formula).c_str());
 	tparam->SetLuaStartDateTime(start_time);
 
-	IPKContainer::GetObject()->AddExtraParam( convert_string ( base_name ) , tparam );
+	IPKContainer::GetObject()->AddExtraParam( convert_string ( base ) , tparam );
 
 	return reinterpret_cast<const char*>(SC::S2U(new_param_name).c_str());
 }
 
-void SzbaseWrapper::remove_param(const std::string& param)
+void SzbaseWrapper::remove_param(const std::string& base, const std::string& param)
 	throw( szbase_param_not_found_error , szbase_init_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
 
-	auto tparam = IPKContainer::GetObject()->GetParam( convert_string( base_name + ":" + param ) );
-	if( !tparam )
-		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
+	auto tparam = IPKContainer::GetObject()->GetParam( convert_string( base + ":" + param ), false );
+	if( tparam )
+		this->base->remove_param( tparam );
 
-	base->remove_param( tparam );
-
-	IPKContainer::GetObject()->RemoveExtraParam( convert_string ( base_name ) , tparam );
+	IPKContainer::GetObject()->RemoveExtraParam( convert_string ( base ) , convert_string( param ) );
 }
 
 time_t SzbaseWrapper::next( time_t t , ProbeType pt , int num )

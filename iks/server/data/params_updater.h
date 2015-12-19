@@ -66,13 +66,14 @@ public:
 	};
 
 	std::string add_param( const std::string& param
+						 , const std::string& bae
 						 , const std::string& formula
 						 , const std::string& token
 						 , const std::string& type
 						 , int prec
 						 , unsigned start_time);
 
-	void remove_param( const std::string& param );
+	void remove_param( const std::string& base , const std::string& param );
 private:
 
 	class SubPar : public std::enable_shared_from_this< SubPar > {

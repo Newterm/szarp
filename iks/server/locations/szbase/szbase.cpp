@@ -52,7 +52,7 @@ SzbaseProt::~SzbaseProt()
 	for ( auto i : user_params )
 	{
 		try{
-			vars.get_updater().remove_param( i.second );
+			vars.get_updater().remove_param( i.first.first , i.second );
 		} catch ( szbase_error& ) { } 
 	}
 }
@@ -150,25 +150,26 @@ void SzbaseProt::unsubscribe_param( Param::const_ptr p )
 }
 
 std::string SzbaseProt::add_param( const std::string& param
+						  , const std::string& base
 						  , const std::string& formula
 						  , const std::string& token
 						  , const std::string& type
 						  , int prec
 						  , unsigned start_time)
 {
-	std::string internal_name = vars.get_updater().add_param( param , formula , token , type , prec , start_time );
+	std::string internal_name = vars.get_updater().add_param( param , base , formula , token , type , prec , start_time );
 
-	user_params.insert( std::make_pair( param , internal_name ) );
+	user_params.insert( std::make_pair( std::make_pair( base , param ) , internal_name ) );
 
 	return internal_name;
 }
 
-void SzbaseProt::remove_param(const std::string& pname)
+void SzbaseProt::remove_param(const std::string& base, const std::string& pname)
 {
-	auto i = user_params.find( pname );
+	auto i = user_params.find( std::make_pair( base , pname ) );
 	if ( i == user_params.end() )
 		return;
 
-	vars.get_updater().remove_param( i->second );
+	vars.get_updater().remove_param( i->first.first, i->second );
 }
 
