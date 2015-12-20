@@ -1,5 +1,6 @@
 #include <unordered_set>
 #include <boost/asio.hpp>
+#include "sz4_iks_param_info.h"
 #include "sz4_iks.h"
 #include "sz4_iks_templ.h"
 
@@ -56,7 +57,6 @@ void iks::_register_observer(param_observer_f observer, std::vector<param_info> 
 	}
 
 	cb(make_error_code(bsec::success));
-
 }
 
 void iks::_deregister_observer(param_observer_f observer, std::vector<param_info> params, std::function<void(const boost::system::error_code&) > cb) {
@@ -93,6 +93,33 @@ void iks::_deregister_observer(param_observer_f observer, std::vector<param_info
 	cb(make_error_code(bsec::success));
 }
 
+void iks::_add_param(param_info param, std::function<void(const boost::system::error_code&)> cb) {
+	auto c = connection_for_base(param.prefix());
+	if (!c) {
+		cb(make_error_code(ie::not_connected_to_peer));
+		return;
+	}
+
+	c->add_param(param, [cb] (const bs::error_code& ec, const std::string&, std::string&) {
+			cb(ec);
+			return IksCmdStatus::cmd_done;
+	});
+
+}
+
+void iks::_remove_param(param_info param, std::function<void(const boost::system::error_code&)> cb) {
+	auto c = connection_for_base(param.prefix());
+	if (!c) {
+		cb(make_error_code(ie::not_connected_to_peer));
+		return;
+	}
+
+	c->remove_param(param, [cb] (const bs::error_code& ec, const std::string&, std::string&) {
+			cb(ec);
+			return IksCmdStatus::cmd_done;
+	});
+}
+
 iks::iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr) : m_io(io), m_connection_mgr(connection_mgr) {}
 
 void iks::register_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb) {
@@ -101,6 +128,14 @@ void iks::register_observer(param_observer_f observer, const std::vector<param_i
 
 void iks::deregister_observer(param_observer_f observer, const std::vector<param_info>& v, std::function<void(const boost::system::error_code&) > cb) {
 	m_io->post(std::bind(&iks::_deregister_observer, shared_from_this(), observer, v, cb));
+}
+
+void iks::add_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb) {
+	m_io->post(std::bind(&iks::_add_param, shared_from_this(), param, cb));
+}
+
+void iks::remove_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb) {
+	m_io->post(std::bind(&iks::_remove_param, shared_from_this(), param, cb));
 }
 
 template void iks::search_data_right(const param_info&, const nanosecond_time_t&, const nanosecond_time_t&, SZARP_PROBE_TYPE, std::function<void(const boost::system::error_code&, const nanosecond_time_t&)>);

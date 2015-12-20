@@ -4,6 +4,7 @@
 
 #include "conversion.h"
 #include "szarp_config.h"
+#include "sz4_iks_param_info.h"
 #include "iks_connection.h"
 #include "sz4_connection_mgr.h"
 #include "sz4_location_connection.h"
@@ -81,7 +82,12 @@ void connection_mgr::connect_location(const std::wstring& name, const std::strin
 	else
 		m_remotes.emplace_back(name, location);	
 
-	auto c = std::make_shared<location_connection>(m_ipk_container, *m_io, location, m_address, m_port);
+	auto c = std::make_shared<location_connection>( m_ipk_container
+						      , *m_io
+						      , location
+						      , m_address
+						      , m_port
+						      , m_defined_param_prefix);
 	auto self = shared_from_this();
 
 	c->connection_error_sig.connect(std::bind(&connection_mgr::on_location_error, self, name, std::placeholders::_1));
@@ -211,11 +217,13 @@ void connection_mgr::on_location_error(std::wstring name, const bs::error_code& 
 connection_mgr::connection_mgr(IPKContainer *conatiner,
 				const std::string& address,
 				const std::string& port,
+				const std::string& defined_param_prefix,
 				std::shared_ptr<ba::io_service> io)
 				:
 				m_ipk_container(conatiner),
 				m_address(address),
 				m_port(port),
+				m_defined_param_prefix(defined_param_prefix),
 				m_reconnect_timer(std::make_shared<timer>(*io)),
 				m_io(io) {
 

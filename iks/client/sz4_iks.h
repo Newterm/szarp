@@ -50,6 +50,9 @@ class iks : public std::enable_shared_from_this<iks> {
 
 	template<class T> void _get_last_time(param_info param, std::function<void(const boost::system::error_code&, T&) > cb);
 
+	void _add_param(param_info param, std::function<void(const boost::system::error_code&)> cb);
+
+	void _remove_param(param_info param, std::function<void(const boost::system::error_code&)> cb);
 public:
 	iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr);
 
@@ -66,6 +69,10 @@ public:
 	void register_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb);
 
 	void deregister_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb);
+
+	void add_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb);
+
+	void remove_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb);
 
 };
 
