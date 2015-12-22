@@ -47,8 +47,8 @@ using namespace std;
 
 void usage(void)
 {
-	cout << "Usage: ipk2szarp [OPTION]... [INPUT_FILE [OUTPUT_DIR]]\n";
-	cout << "Converts new XML configuration format to SZARP 2.1 config files.\n\n";
+	cout << "Usage: ipk2szarp [OPTIONS] [INPUT_FILE]\n";
+	cout << "Parses params.xml and checks for errors.\n\n";
 	cout << "  INPUT_FILE          XML config file (default is params.xml) \n";
 	cout << "Options:\n";
 	cout << "  -h, --help          print this info and exit\n";
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 	xmlInitializePredefinedEntities();
 
 	input = NULL;
-	
+
 	while (argc > 1) {
 		if (!strcmp(argv[1], "--help") || (!strcmp(argv[1], "-h"))) {
 			usage();

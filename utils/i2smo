@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+# vim: set fileencoding=utf-8 :
+#
 # SZARP: SCADA software 
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -15,19 +18,94 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
-# i2smo - "ipk2szarp modified only"
-# Praterm S.A.
-# Pawe³ Pa³ucha <pawel@praterm.com.pl>
-# $Id: i2smo 4393 2007-09-13 16:37:10Z reksio $
+"""
+Wrapper for running ipk2szarp configuration parser
+and for displaying suggestions to user.
+"""
 
-BINPREFIX="/opt/szarp/bin"
+import argparse
+from subprocess import Popen, PIPE
+import pysvn
+import sys
+import os
+from clint.textui import puts, indent, colored
+from clint.textui.core import STDOUT, STDERR
 
-sh -c "$BINPREFIX/ipk2szarp $@"
+def printerr(msg, prefix="ERROR: "):
+	puts(colored.red(prefix + str(msg)), stream=STDERR)
 
-if [ $? -eq 0 ]
-then
-	echo "OK"
-else
-	echo "ERROR"
-fi
+note_count = 0
 
+def printnote(msg, prefix="NOTE: "):
+	global note_count
+	note_count = note_count + 1
+	puts(colored.yellow(prefix + "(" + str(note_count) + ") " + str(msg)))
+
+def printok(msg):
+	puts(colored.green(str(msg)))
+
+def get_szarp_uncommited():
+	# without realpath client.info() strips the symlink
+	szarp_path = os.path.realpath("/etc/szarp/default/")
+	client = pysvn.Client()
+	is_svn_repo = True
+	try:
+		client.info(szarp_path)
+	except:
+		is_svn_repo = False
+	if is_svn_repo:
+		changes = client.status(szarp_path, get_all=False)
+		interesting = set([pysvn.wc_status_kind.added, pysvn.wc_status_kind.deleted,\
+			pysvn.wc_status_kind.modified, pysvn.wc_status_kind.conflicted])
+		uncommited = [f.path for f in changes if f.text_status in interesting]
+		uncommited_present = len(uncommited) > 0
+	else:
+		uncommited_present = None
+	return is_svn_repo, uncommited_present
+
+
+conf_parser = "/opt/szarp/bin/ipk2szarp"
+iks_server = "/opt/szarp/bin/iks-server"
+
+def check_iks():
+	if os.path.isfile(iks_server):
+		printnote("if only draw configuration has changed: supervisorctl restart iks-server")
+
+def check_svn():
+	szarp_svn, szarp_uncommited = get_szarp_uncommited()
+	realpath = os.path.realpath("/etc/szarp/default")
+	if szarp_svn:
+		if szarp_uncommited:
+			printnote("uncommited changes found in " + realpath + ": /opt/szarp/bin/conf-put.sh")
+	else:
+		printnote(realpath + " is not added to svn, maybe it should?")
+
+parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
+parser.add_argument('-i', '--input-file',
+	help='XML config file (default is params.xml), passed to ipk2szarp')
+parser.add_argument('-d', '--debug', type=int,
+	help='debug level from 0 (errors only) to 9, passed to ipk2szarp')
+
+args = parser.parse_args()
+
+command = [conf_parser]
+
+if args.debug:
+	command.append('--debug=' + str(args.debug))
+
+if args.input_file:
+	command.append(args.input_file)
+
+process = Popen(command, stderr=PIPE)
+stdout, stderr = process.communicate()
+if stderr:
+	printerr(stderr.rstrip(), '')
+return_code = process.returncode
+
+if return_code == 0:
+	printok("OK")
+	printnote("if backend configuration has changed: /etc/init.d/parstart restart")
+	check_iks()
+	check_svn()
+else:
+	printerr("ERROR", '')
