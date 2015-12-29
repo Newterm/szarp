@@ -30,27 +30,86 @@
 
 namespace sz4 {
 
-template<class V, class T, class types> class real_param_entry_in_buffer;
+template<class V, class T, class types> class file_block_entry;
 
-template<class V, class T, class types> class file_block_entry : public block_entry<V, T> {
+template<class value_type, class time_type, class types> class file_block : public concrete_block<value_type, time_type> {
+public:
+	typedef file_block_entry<value_type, time_type, types> entry_type;
+	file_block(const time_type& start_time,
+			entry_type* entry,
+			block_cache* cache)
+		:
+			concrete_block<value_type, time_type>(start_time, cache),
+			m_entry(entry)
+	{}
+
+	~file_block() {
+		m_entry->block_deleted();
+	}
+
 protected:
+	entry_type *m_entry;
+};
+
+
+template<class V, class T, class types> class file_block_entry {
+protected:
+	typedef file_block<V, T, types> block_type;
+	block_type* m_block;
+
+	T m_start_time;
+	block_cache* m_cache;
+
+	bool m_needs_refresh;
 	const boost::filesystem::wpath m_block_path;
-	real_param_entry_in_buffer<V, T, types>* m_param_entry;
 public:
 	file_block_entry(const T& start_time,
 			const std::wstring& block_path,
-			block_cache* cache,
-			real_param_entry_in_buffer<V, T, types>* param_entry)
+			block_cache* cache) 
 		:
-			block_entry<V, T>(start_time, cache),
-			m_block_path(block_path),
-			m_param_entry(param_entry)
+			m_block(nullptr),
+			m_start_time(start_time),
+			m_cache(cache),
+			m_needs_refresh(true),
+			m_block_path(block_path)
 		{}
 
 	virtual void refresh_if_needed() = 0;
 
+	T start_time() {
+		return m_start_time;
+	}
+
+	T end_time() {
+		refresh_if_needed();
+		return m_block->end_time();
+	}	
+
+	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
+		refresh_if_needed();
+		m_block->get_weighted_sum(start, end, wsum);
+	}
+
+	T search_data_right(const T& start, const T& end, const search_condition& condition) {
+		refresh_if_needed();
+		return m_block->search_data_right(start, end, condition);
+	}
+
+	T search_data_left(const T& start, const T& end, const search_condition& condition) {
+		refresh_if_needed();
+		return m_block->search_data_left(start, end, condition);
+	}
+
+	void set_needs_refresh() {
+		m_needs_refresh = true;
+	}
+
+	void block_deleted() {
+		m_block = NULL;
+	}
+
 	virtual ~file_block_entry() {
-		m_param_entry->remove_block(this);
+		delete m_block;
 	}
 };
 
@@ -59,16 +118,19 @@ public:
 	typedef file_block_entry<V, T, types> parent;
 	sz4_file_block_entry(const T& start_time,
 			const std::wstring& block_path,
-			block_cache* cache,
-			real_param_entry_in_buffer<V, T, types>* param_entry)
+			block_cache* cache)
 		:
-			parent(start_time, block_path, cache, param_entry)
+			parent(start_time, block_path, cache)
 		{}
 
 	void refresh_if_needed() {
+		if (!this->m_block) {
+			this->m_block = new typename parent::block_type(this->m_start_time, this, this->m_cache);
+			this->m_needs_refresh = true;
+		}
+
 		if (!this->m_needs_refresh)
 			return;
-
 
 		boost::system::error_code ec;
 		size_t size = boost::filesystem::file_size(this->m_block_path, ec);
@@ -78,10 +140,11 @@ public:
 		std::vector<unsigned char> buffer(size);
 
 		if (load_file_locked(this->m_block_path, &buffer[0], buffer.size())) {
-			std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->m_block.start_time());
-			this->m_block.set_data(values);
-			this->m_needs_refresh = false;
+			std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->start_time());
+			this->m_block->set_data(values);
 		}
+
+		this->m_needs_refresh = false;
 	}
 };
 
@@ -92,14 +155,19 @@ public:
 
 	szbase_file_block_entry(const T& start_time,
 			const std::wstring& block_path,
-			block_cache* cache,
-			real_param_entry_in_buffer<V, T, types>* param_entry)
+			block_cache* cache)
 		:
-			parent(start_time, block_path, cache, param_entry),
+			parent(start_time, block_path, cache),
 			m_read_so_far(0)
 		{}
 
 	void refresh_if_needed() {
+		if (!this->m_block) {
+			this->m_block = new typename parent::block_type(this->m_start_time, this, this->m_cache);
+			this->m_needs_refresh = true;
+			this->m_read_so_far = 0;
+		}
+
 		if (!this->m_needs_refresh)
 			return;
 
@@ -127,9 +195,9 @@ public:
 			if (!ifs.read((char*)&buffer[0], 2 * shorts_to_read))
 				return;
 
-			T t = szb_move_time(this->block().end_time(), 1, PT_MIN10);
+			T t = szb_move_time(this->end_time(), 1, PT_MIN10);
 			for (size_t i = 0; i < buffer.size(); i++, t = szb_move_time(t, 1, PT_MIN10))
-				this->block().append_entry(buffer[i], t);
+				this->m_block->append_entry(buffer[i], t);
 
 			this->m_read_so_far += 2 * shorts_to_read;
 		}
@@ -180,19 +248,18 @@ public:
 		do {
 			file_block_entry_type* entry = i->second;
 
-			if (end < entry->block().start_time()) {
+			if (end < entry->start_time()) {
 				sum.add_no_data_weight(end - current);
 				return;
 			}
 
-			if (current < entry->block().start_time()) {
-				sum.add_no_data_weight(entry->block().start_time() - current);
+			if (current < entry->start_time()) {
+				sum.add_no_data_weight(entry->start_time() - current);
 				current = i->first;
 			}
 
-			entry->refresh_if_needed();
-			if (current < entry->block().end_time()) {
-				T end_for_block = std::min(end, entry->block().end_time());
+			if (current < entry->end_time()) {
+				T end_for_block = std::min(end, entry->end_time());
 				entry->get_weighted_sum(current, end_for_block, sum);
 
 				current = end_for_block;
@@ -219,10 +286,9 @@ public:
 
 		while (i != m_blocks.end()) {
 			file_block_entry_type* entry = i->second;
-			if (entry->block().start_time() >= end)
+			if (entry->start_time() >= end)
 				break;
 
-			entry->refresh_if_needed();
 			T t = entry->search_data_right(start, end, condition);
 			if (time_trait<T>::is_valid(t))
 				return t;
@@ -247,8 +313,7 @@ public:
 		while (true) {
 			file_block_entry_type* entry = i->second;
 
-			entry->refresh_if_needed();
-			if (entry->block().end_time() <= end)
+			if (entry->end_time() <= end)
 				break;
 
 			T t = entry->search_data_left(start, end, condition);
@@ -296,16 +361,6 @@ public:
 		}
 	}
 
-	void remove_block(file_block_entry_type* block) {
-		for (typename map_type::iterator i = m_blocks.begin();
-				i != m_blocks.end();
-				i++)
-			if (i->second == block) {
-				m_blocks.erase(i);
-				break;
-			}
-	}
-
 	void refresh_file_list() {
 		namespace fs = boost::filesystem;
 
@@ -345,13 +400,13 @@ public:
 			file_block_entry<V, T, types> *entry(nullptr);
 			if (sz4) {
 				entry = new sz4_file_block_entry<V, T, types>(
-							file_time, file_path, m_base->cache(), this);
+							file_time, file_path, m_base->cache());
 				if (time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
 					m_first_sz4_date = file_time;
 			} else {
 				if (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
 					entry = new szbase_file_block_entry<V, T, types>(
-							file_time, file_path, m_base->cache(), this);
+							file_time, file_path, m_base->cache());
 			}
 
 			if (entry)
@@ -375,7 +430,7 @@ public:
 				!time_trait<T>::is_valid(t) && i != m_blocks.rend(); i++) {
 			file_block_entry_type* entry = i->second;
 			entry->refresh_if_needed();
-			t = entry->block().end_time();
+			t = entry->end_time();
 		}
 	}
 
@@ -398,10 +453,8 @@ public:
 	}
 
 	~real_param_entry_in_buffer() {
-		while (m_blocks.size()) {
-			file_block_entry_type* entry = m_blocks.rbegin()->second;
-			delete entry;
-		}
+		for (auto kv : m_blocks)
+			delete kv.second;
 	}
 };
 

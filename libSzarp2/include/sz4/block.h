@@ -52,6 +52,8 @@ protected:
 public:
 	generic_block(block_cache* cache);
 
+	block_cache* cache();
+
 	virtual size_t block_size() const = 0;
 
 	void block_data_updated(size_t previous_size);
@@ -68,7 +70,7 @@ class cache_block_size_updater {
 	generic_block* m_block;
 	size_t m_previous_size;
 public:
-	cache_block_size_updater(block_cache* cache, generic_block* block);
+	cache_block_size_updater(generic_block* block);
 	~cache_block_size_updater();
 };
 
@@ -185,7 +187,7 @@ public:
 	}
 
 	void append_entry(const value_type& value, const time_type& time) {
-		cache_block_size_updater(m_cache, this);
+		cache_block_size_updater(this);
 		if (!m_data.size())
 			m_data.push_back(make_value_time_pair<value_time_type>(value, time));
 		else {
@@ -202,24 +204,24 @@ public:
 		if (begin == end)
 			return;
 
-		cache_block_size_updater(m_cache, this);
+		cache_block_size_updater _updater(this);
 		append_entry(begin->value, begin->time);
 		m_data.insert(m_data.end(), begin + 1, end);
 	}
 
 
 	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, const value_type& value, const time_type& time) {
-		cache_block_size_updater(m_cache, this);
+		cache_block_size_updater _updater(this);
 		return m_data.insert(i, make_value_time_pair<value_time_type>(value, time));
 	}
 
 	void set_data(value_time_vector& data) {
-		cache_block_size_updater(m_cache, this);
+		cache_block_size_updater _updater(this);
 		m_data.swap(data);
 	}
 
 	void maybe_merge_3_block_entries(typename value_time_vector::iterator i) {
-		cache_block_size_updater(m_cache, this);
+		cache_block_size_updater _updater(this);
 		if (i != m_data.begin()
 				&& (i + 1) != m_data.end()
 				&& value_cmp()((i - 1)->value, i->value)
@@ -248,7 +250,7 @@ public:
 		:
 			block_type(start_time, cache)
 	{}
-		
+
 	void get_weighted_sum(const time_type& start_time, const time_type &end_time, weighted_sum<value_type, time_type>& r) {
 		if (start_time >= end_time)
 			return;
@@ -292,6 +294,7 @@ public:
 	}
 
 };
+
 
 }
 
