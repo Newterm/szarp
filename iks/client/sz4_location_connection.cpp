@@ -61,7 +61,10 @@ void location_connection::add_defined_params() {
 	
 	for (auto& params : defined) {
 		std::string base = (const char*) SC::S2U(params.first).c_str();
-		for (auto& param : params.second)
+		for (auto& param : params.second) {
+			if (param->GetType() != TParam::P_LUA)
+				continue;
+
 			add_param(base, param.get(), [self] ( const bs::error_code& ec
 							    , const std::string& status
 							    , std::string& data) {
@@ -70,6 +73,7 @@ void location_connection::add_defined_params() {
 
 				return IksCmdStatus::cmd_done;
 			});
+		}
 	}
 }
 
