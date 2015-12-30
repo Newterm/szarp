@@ -169,7 +169,7 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);
-	CPPUNIT_ASSERT_EQUAL(size_t(20), blocks_count);
+	CPPUNIT_ASSERT_EQUAL(size_t(11), blocks_count);
 
 }
 
