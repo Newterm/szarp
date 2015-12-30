@@ -33,7 +33,7 @@ public:
 	static std::string get_dir()
 	{	return szarp_dir.string(); }
 
-	static bool init( const std::string& szarp_dir );
+	static bool init( const std::string& _szarp_dir , size_t base_high_water_mark , size_t base_low_water_mark );
 	static bool is_initialized() { return initialized; }
 
 	static time_t next( time_t t , ProbeType pt , int num = 1 );
@@ -90,11 +90,19 @@ public:
 private:
 	std::wstring convert_string( const std::string& param ) const;
 
+	static void purge_cache();
+
 	static boost::filesystem::path szarp_dir;
 	static bool initialized;
 	static sz4::base* base;
+	static size_t base_cache_low_water_mark;
+	static size_t base_cache_high_water_mark;
 
 	std::string base_name;
+
+public:
+	static const size_t BASE_CACHE_LOW_WATER_MARK_DEFAULT;
+	static const size_t BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
 
 };
 

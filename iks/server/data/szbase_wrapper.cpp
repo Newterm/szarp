@@ -2,6 +2,7 @@
 #include "szbase_wrapper.h"
 #include "sz4/exceptions.h"
 #include "sz4/util.h"
+#include "liblog.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -27,8 +28,12 @@ SzbaseObserverImpl::~SzbaseObserverImpl()
 bool SzbaseWrapper::initialized = false;
 boost::filesystem::path SzbaseWrapper::szarp_dir;
 sz4::base* SzbaseWrapper::base;
+size_t SzbaseWrapper::base_cache_low_water_mark;
+size_t SzbaseWrapper::base_cache_high_water_mark;
+const size_t SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT = 128 * 1024 * 1024;
+const size_t SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT = 192 * 1024 * 1024;
 
-bool SzbaseWrapper::init( const std::string& _szarp_dir )
+bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_high_water_mark , size_t base_low_water_mark )
 {
 	if( initialized )
 		return boost::filesystem::path(_szarp_dir) == szarp_dir;
@@ -57,6 +62,20 @@ std::wstring SzbaseWrapper::convert_string( const std::string& str ) const
 	return SC::U2S( ubp );
 }
 
+void SzbaseWrapper::purge_cache()
+{
+	size_t size_in_bytes, blocks_count;
+	auto cache = base->cache();
+
+	cache->cache_size( size_in_bytes , blocks_count );
+
+	if( size_in_bytes > base_cache_high_water_mark ) {
+		size_t to_purge = size_in_bytes - base_cache_low_water_mark;
+		sz_log(5, "Purging cache, cache size %zu, purging %zu bytes", size_in_bytes, to_purge);
+		cache->remove( to_purge );
+	}
+}
+
 time_t SzbaseWrapper::get_latest(
 			const std::string& param ,
 			ProbeType type ) const
@@ -76,6 +95,8 @@ time_t SzbaseWrapper::get_latest(
 		throw szbase_get_value_error( "Cannot get latest time of param " + param + ": " + e.what() );
 	}
 	
+	purge_cache();
+
 	/**
 	 * Round by hand because search returns probes rounded to 
 	 * either 10min or 10sec, not to exact pt
@@ -106,6 +127,8 @@ double SzbaseWrapper::get_avg(
 	} catch( sz4::exception& e ) {
 		throw szbase_get_value_error( "Cannot get value from param " + param + ": " + e.what() );
 	}
+
+	purge_cache();
 
 	return sz4::scale_value(sum.avg(), tparam);
 }
@@ -183,16 +206,20 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 	if( !tparam )
 		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
+	std::string result;
 
 	switch (time_type) {
 		case TimeType::NANOSECOND:
-			return search_data_helper<sz4::nanosecond_time_t>( base , tparam , from , to , dir , pt );
+			result = search_data_helper<sz4::nanosecond_time_t>( base , tparam , from , to , dir , pt );
+			break;
 		case TimeType::SECOND:
-			return search_data_helper<sz4::second_time_t>    ( base , tparam , from , to , dir , pt );
+			result = search_data_helper<sz4::second_time_t>    ( base , tparam , from , to , dir , pt );
+			break;
 	}
 
-	/* NOT REACHED */
-	return std::string();
+	purge_cache();
+
+	return result;
 }
 
 namespace {
@@ -300,6 +327,8 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 	} catch ( sz4::exception& e ) {
 		throw szbase_error( "Cannot get data for param " + param + ": " + e.what() );
 	}
+
+	purge_cache();
 
 	return ss.str();
 }
