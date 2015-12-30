@@ -62,10 +62,6 @@ private:
 	boost::property_tree::ptree param_desc;
 };
 
-typedef boost::signals2::signal<void (std::shared_ptr<const Param>)> sig_param;
-typedef sig_param::slot_type sig_param_slot;
-
-
 struct ParamRequest {
 	std::shared_ptr<const Param> param;
 	double value;

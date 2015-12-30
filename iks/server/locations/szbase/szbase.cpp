@@ -91,10 +91,10 @@ std::string SzbaseProt::tag_from_cmd( const Command* cmd )
 	return "";
 }
 
-void SzbaseProt::on_param_changed( Param::const_ptr p )
+void SzbaseProt::on_param_changed( const std::string& pname )
 {
-    if( sub_params.count( p->get_name() ) )
-		send_cmd( new NotifySnd(p) );
+    if( sub_params.count( pname ) )
+		send_cmd( new NotifySnd( get_client_param_name (pname )) );
 }
 
 void SzbaseProt::on_param_value_changed( Param::const_ptr p , double value , ProbeType pt )
@@ -149,19 +149,36 @@ void SzbaseProt::unsubscribe_param( Param::const_ptr p )
 		sub_params.erase( it );
 }
 
-std::string SzbaseProt::add_param( const std::string& param
+void SzbaseProt::add_param( const std::string& param
 						  , const std::string& base
 						  , const std::string& formula
-						  , const std::string& token
 						  , const std::string& type
 						  , int prec
 						  , unsigned start_time)
 {
-	std::string internal_name = vars.get_updater().add_param( param , base , formula , token , type , prec , start_time );
+	std::string internal_name = vars.get_updater().add_param( param , base , formula , "TOKEN" , type , prec , start_time );
 
 	user_params.insert( std::make_pair( std::make_pair( base , param ) , internal_name ) );
+	user_params_inverted.insert( std::make_pair( internal_name , param ) );
+}
 
-	return internal_name;
+const std::string& SzbaseProt::get_client_param_name( const std::string& name ) const 
+{
+	auto i = user_params_inverted.find( name );
+
+	return i == user_params_inverted.end() ? name : i->second;
+}
+
+const std::string& SzbaseProt::get_mapped_param_name( const std::string& name ) const 
+{
+	auto i = user_params.find( std::make_pair( vars.get_szbase()->get_base_name() , name ) );
+
+	return i == user_params.end() ? name : i->second;
+}
+
+std::shared_ptr<const Param> SzbaseProt::get_param( const std::string& name ) const
+{
+	return get_param( get_mapped_param_name( name ) );
 }
 
 void SzbaseProt::remove_param(const std::string& base, const std::string& pname)
@@ -171,5 +188,8 @@ void SzbaseProt::remove_param(const std::string& base, const std::string& pname)
 		return;
 
 	vars.get_updater().remove_param( i->first.first, i->second );
+
+	user_params_inverted.erase( i->second );
+	user_params.erase( i );
 }
 

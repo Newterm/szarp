@@ -44,7 +44,7 @@ public:
 			int prec = json.get<int>("prec");
 
 			try{
-				prot.add_param( name , base , formula , "TOKEN" /* XXX */ , type , prec , start_time );
+				prot.add_param( name , base , formula , type , prec , start_time );
 			} catch (szbase_error& e) {
 				fail( ErrorCodes::ill_formed , e.what() );
 			}

@@ -10,20 +10,20 @@
 
 class NotifySnd : public Command {
 public:
-	NotifySnd( std::shared_ptr<const Param> p ) : p(p) {}
+	NotifySnd( const std::string& p ) : p(p) {}
 	
 	virtual ~NotifySnd() {}
 
 	virtual to_send send_str()
 	{
-		return to_send( p->get_name() );
+		return to_send( p );
 	}
 
 	virtual bool single_shot()
 	{	return true; }
 
 protected:
-	std::shared_ptr<const Param> p;
+	std::string p;
 };
 
 #endif /* end of include guard: __SERVER_CMD_NOTIFY_H__ */

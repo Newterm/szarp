@@ -31,8 +31,6 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		bool update )
 {
 	Subscription sub;
-	if ( !params.has_param( name ) )
-		return sub;
 
 	auto key = SubKey( name );
 

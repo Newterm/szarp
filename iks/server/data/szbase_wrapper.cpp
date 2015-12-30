@@ -56,6 +56,11 @@ SzbaseWrapper::SzbaseWrapper( const std::string& base )
 	IPKContainer::GetObject()->GetConfig( wbp );
 }
 
+const std::string& SzbaseWrapper::get_base_name() const 
+{
+	return base_name;
+}
+
 std::wstring SzbaseWrapper::convert_string( const std::string& str ) const
 {
 	std::basic_string<unsigned char> ubp( str.begin() , str.end() );

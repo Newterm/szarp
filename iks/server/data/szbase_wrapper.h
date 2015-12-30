@@ -87,6 +87,8 @@ public:
 
 	void remove_param(const std::string& base , const std::string& param)
 		throw( szbase_param_not_found_error, szbase_init_error );
+
+	const std::string& get_base_name() const;
 private:
 	std::wstring convert_string( const std::string& param ) const;
 

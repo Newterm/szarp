@@ -22,16 +22,21 @@ public:
 
 	void unsubscribe_param( Param::const_ptr p );
 
-	std::string add_param( const std::string& param
-						 , const std::string& base
-						 , const std::string& formula
-						 , const std::string& token
-						 , const std::string& type
-						 , int prec
-						 , unsigned start_time);
+	void add_param( const std::string& param
+				  , const std::string& base
+				  , const std::string& formula
+				  , const std::string& type
+				  , int prec
+				  , unsigned start_time);
+
 	void remove_param( const std::string& base , const std::string& param );
+
+	const std::string& get_client_param_name( const std::string& name ) const;
+	const std::string& get_mapped_param_name( const std::string& name ) const;
+
+	std::shared_ptr<const Param> get_param( const std::string& name ) const;
 private:
-	void on_param_changed( Param::const_ptr p );
+	void on_param_changed( const std::string& pname );
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
@@ -46,6 +51,7 @@ private:
 
 	std::multimap<std::string , ParamsUpdater::Subscription > sub_params;
 	std::map< std::pair< std::string , std::string >, std::string> user_params;
+	std::map< std::string , std::string> user_params_inverted;
 
 };
 

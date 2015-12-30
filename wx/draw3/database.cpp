@@ -31,6 +31,7 @@
 #include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"
 #include "ikssetup.h"
+#include "sz4_iks_param_info.h"
 #include "sz4_iks.h"
 
 #include <cmath>
@@ -641,7 +642,7 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			, ipk_container(ipk_container) {
 
 	std::tie(connection_mgr, base, io) =
-		build_iks_client(ipk_container, address, port);
+		build_iks_client(ipk_container, address, port, _("User:Param:"));
 
 	io_thread = start_connection_manager(connection_mgr);
 }
@@ -657,13 +658,18 @@ bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& er
 }
 
 void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
-	///XXX:
+	sz4::param_info p(prefix, param->GetName());
+	base->add_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
 }
 
 void Sz4ApiBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
-	///XXX:
+	sz4::param_info p(prefix, param->GetName());
+	base->remove_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
 }
-
 
 void Sz4ApiBase::NotifyAboutConfigurationChanges() {
 }
