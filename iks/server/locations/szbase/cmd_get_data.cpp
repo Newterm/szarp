@@ -7,10 +7,10 @@
 
 #include "cmd_get_data.h"
 
-GetDataRcv::GetDataRcv( Vars& vars , Protocol& prot )
+GetDataRcv::GetDataRcv( Vars& vars , SzbaseProt& prot )
 	: vars(vars)
+        , prot(prot)
 {
-	(void)prot;
 	set_next( std::bind(&GetDataRcv::parse_command,this,std::placeholders::_1) );
 }
 
@@ -60,12 +60,14 @@ void GetDataRcv::parse_command( const std::string& data )
 	}
 		
 	try {
-		apply( vars.get_szbase()->get_data ( name, tags[3] , tags[4], vtype , ttype , pt ) );
+		apply( vars.get_szbase()->get_data( prot.get_mapped_param_name( name )
+						  , tags[3] , tags[4], vtype , ttype , pt ) );
 	} catch ( szbase_param_not_found_error& ) {
 		fail( ErrorCodes::unknown_param );
 	} catch ( szbase_error& e ) {
 		fail( ErrorCodes::szbase_error , e.what() );
 	}
+
 }
 
 

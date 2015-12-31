@@ -184,10 +184,10 @@ void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
 
 void IPKContainer::RemoveExtraParamImpl(const std::wstring& prefix, TParam *p) {
 	auto& tp = m_extra_params[prefix];
-	auto ei = std::remove_if(tp.begin(), tp.end(), 
+	auto ei = std::find_if(tp.begin(), tp.end(), 
 		[p] (std::shared_ptr<TParam> &_p) { return _p.get() == p; }
 	);
-	tp.erase(ei, tp.end());
+	assert(ei != tp.end());
 
 	ConfigAux& aux = config_aux[prefix];
 	if (p->GetParamId() + 1 == aux._maxParamId)
@@ -199,6 +199,7 @@ void IPKContainer::RemoveExtraParamImpl(const std::wstring& prefix, TParam *p) {
 	if (i != configs.end())
 		RemoveParamFromHash(p);
 
+	tp.erase(ei);
 }
 
 

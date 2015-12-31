@@ -3,7 +3,7 @@
 
 class SearchDataRcv : public Command {
 public:
-	SearchDataRcv( Vars& vars , Protocol& prot );
+	SearchDataRcv( Vars& vars , SzbaseProt& prot );
 
 	SearchDataRcv();
 protected:
@@ -11,6 +11,7 @@ protected:
 
 protected:
 	Vars& vars;
+	SzbaseProt& prot;
 
 };
 

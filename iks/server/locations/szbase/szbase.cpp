@@ -77,8 +77,8 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "get_data"          , GetDataRcv          );
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
-	MAP_CMD_TAG( "param_add"		 , ParamAddRcv		   );
-	MAP_CMD_TAG( "param_remove"		 , ParamRemoveRcv	   );
+	MAP_CMD_TAG( "add_param"         , ParamAddRcv         );
+	MAP_CMD_TAG( "remove_remove"     , ParamRemoveRcv      );
 	return NULL;
 }
 
@@ -133,18 +133,20 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 	}
 }
 
-void SzbaseProt::subscribe_param( Param::const_ptr p )
+void SzbaseProt::subscribe_param( const std::string& name) 
 {
+	const std::string& internal_name = get_mapped_param_name( name );
 	sub_params.insert(
-		std::make_pair( p->get_name() ,
-						vars.get_updater().subscribe_param( p->get_name() ,
+		std::make_pair( internal_name ,
+						vars.get_updater().subscribe_param( internal_name ,
 															boost::optional<ProbeType>() ,
 															false ) ) );
 }
 
-void SzbaseProt::unsubscribe_param( Param::const_ptr p )
+void SzbaseProt::unsubscribe_param( const std::string& name )
 {
-	auto it = sub_params.find( p->get_name() );
+	const std::string& internal_name = get_mapped_param_name( name );
+	auto it = sub_params.find( internal_name );
 	if( it != sub_params.end() )
 		sub_params.erase( it );
 }

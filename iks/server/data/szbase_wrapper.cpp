@@ -355,12 +355,17 @@ namespace {
 
 bool create_param_name( const std::wstring& original_name , const std::wstring& token, std::wstring& new_name )
 {
-	if( std::count( original_name.begin() , original_name.end() , L':') != 3 )
+	auto colon_count = std::count( original_name.begin() , original_name.end() , L':');
+	if (colon_count != 3 && colon_count != 2)
 		return false;
 
 	auto i = std::find( original_name.begin() , original_name.end() , L':' ) + 1;
-	if( *i != L'*' )
+	if (colon_count == 3) {
+		i = std::find(i, original_name.end(), L':') + 1;
+		if (*i != L'*')
 			return false;
+	}
+
 
 	new_name.append( original_name.begin() , i );
 	new_name.append( token );
@@ -398,7 +403,7 @@ std::string SzbaseWrapper::add_param( const std::string& param
 	for( auto& param : strings )
 	{
 		std::wstring new_name;
-		if ( !create_param_name( _param , _token , new_param_name ) )
+		if ( !create_param_name( param , _token , new_param_name ) )
 				continue;
 
 		auto i = _formula.find( param );

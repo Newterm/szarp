@@ -18,9 +18,9 @@ public:
 			Set::const_ptr s = Set::const_ptr() ,
 			ProbeType pt = ProbeType() );
 
-	void subscribe_param( Param::const_ptr p );
+	void subscribe_param( const std::string& name );
 
-	void unsubscribe_param( Param::const_ptr p );
+	void unsubscribe_param( const std::string& name );
 
 	void add_param( const std::string& param
 				  , const std::string& base

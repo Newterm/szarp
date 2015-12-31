@@ -43,10 +43,11 @@ void location_connection::add_param(const std::string& base, TParam* param, IksC
 	}
 
 	boost::property_tree::ptree out;
-	out.put( "base"    , base );
-	out.put( "prec"    , param->GetPrec() );
-	out.put( "formula" , (const char*) SC::S2U(formula).c_str() );
-	out.put( "type"    , (param->GetFormulaType() == TParam::LUA_AV) ? "av" : "va" );
+	out.put( "base"       , base );
+	out.put( "prec"       , param->GetPrec() );
+	out.put( "formula"    , (const char*) SC::S2U(formula).c_str() );
+	out.put( "type"       , (param->GetFormulaType() == TParam::LUA_AV) ? "av" : "va" );
+	out.put( "start_time" , param->GetLuaStartDateTime() );
 
 	std::stringstream data;
 	data << "\"" << SC::S2U(param->GetName()) << "\" " << ptree_to_json(out);
