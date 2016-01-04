@@ -653,8 +653,8 @@ void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
 }
 
 bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	error = L"not implemented";
-	return false;
+	///XXX: implement
+	return true;
 }
 
 void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {

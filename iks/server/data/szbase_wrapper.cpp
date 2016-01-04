@@ -8,10 +8,22 @@
 
 #include <conversion.h>
 
-SzbaseObserverImpl::SzbaseObserverImpl( TParam* param , sz4::base* base , std::function<void( void )> callback )
-									  : param( param ) , base( base ) , callback( callback )
+SzbaseObserverImpl::SzbaseObserverImpl( const std::wstring& param_name
+									  , IPKContainer* ipk
+									  , sz4::base* base
+									  , std::function<void( void )> callback )
+									  : param_name( param_name )
+									  , ipk( ipk )
+									  , base( base )
+									  , callback( callback )
 {
-	base->register_observer( this , std::vector<TParam*>{ param } );
+	TParam* tparam = ipk->GetParam( param_name );
+	if( !tparam )
+		throw szbase_param_not_found_error(
+			(const char*)SC::S2U(L"Param " + param_name + L", does not exist.").c_str()
+			);
+
+	base->register_observer( this , std::vector<TParam*>{ tparam } );
 }
 
 void SzbaseObserverImpl::param_data_changed( TParam* )
@@ -21,7 +33,9 @@ void SzbaseObserverImpl::param_data_changed( TParam* )
 
 SzbaseObserverImpl::~SzbaseObserverImpl()
 {
-	base->deregister_observer( this , std::vector<TParam*>{ param } );
+	TParam* tparam = ipk->GetParam( param_name );
+	if( tparam )
+		base->deregister_observer( this , std::vector<TParam*>{ tparam } );
 }
 
 
@@ -348,7 +362,10 @@ SzbaseObserverToken SzbaseWrapper::register_observer( const std::string& param ,
 	if( !tparam )
 		throw szbase_param_not_found_error( "Param " + param + ", does not exist." );
 
-	return std::make_shared<SzbaseObserverImpl>( tparam , base , callback );
+	return std::make_shared<SzbaseObserverImpl>( convert_string( base_name + ":" + param )
+											   , IPKContainer::GetObject()
+											   , base
+											   , callback );
 }
 
 namespace {
@@ -356,20 +373,36 @@ namespace {
 bool create_param_name( const std::wstring& original_name , const std::wstring& token, std::wstring& new_name )
 {
 	auto colon_count = std::count( original_name.begin() , original_name.end() , L':');
-	if (colon_count != 3 && colon_count != 2)
+	if (colon_count != 2)
 		return false;
 
+	
 	auto i = std::find( original_name.begin() , original_name.end() , L':' ) + 1;
-	if (colon_count == 3) {
-		i = std::find(i, original_name.end(), L':') + 1;
-		if (*i != L'*')
-			return false;
-	}
-
-
 	new_name.append( original_name.begin() , i );
 	new_name.append( token );
 	new_name.append( std::find( i , original_name.end() , L':' ) , original_name.end() );
+
+	return true;
+
+}
+
+bool create_param_name_in_formula( const std::wstring& original_name , const std::wstring& token, std::wstring& new_name )
+{
+	auto colon_count = std::count( original_name.begin() , original_name.end() , L':');
+	if (colon_count != 3)
+		return false;
+
+	auto c0 = std::find( original_name.begin() , original_name.end() , L':' ) + 1;
+	auto c1 = std::find( c0 , original_name.end() , L':' ) + 1;
+	auto c2 = std::find( c1 , original_name.end() , L':' );
+
+	if (*c0 != L'*')
+		return false;
+
+	new_name.append( original_name.begin() , c0 );
+	new_name.append( c0 + 1, c1 );
+	new_name.append( token );
+	new_name.append( c2 , original_name.end() );
 
 	return true;
 }
@@ -403,13 +436,13 @@ std::string SzbaseWrapper::add_param( const std::string& param
 	for( auto& param : strings )
 	{
 		std::wstring new_name;
-		if ( !create_param_name( param , _token , new_param_name ) )
+		if ( !create_param_name_in_formula( param , _token , new_name ) )
 				continue;
 
 		auto i = _formula.find( param );
 		assert( i != std::wstring::npos );	
 
-		_formula.replace( i , i + param.size() , new_name );
+		_formula.replace( i , param.size() , new_name );
 	}
 
 	TParam::FormulaType formula_type;

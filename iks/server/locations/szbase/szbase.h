@@ -53,6 +53,7 @@ private:
 	std::map< std::pair< std::string , std::string >, std::string> user_params;
 	std::map< std::string , std::string> user_params_inverted;
 
+	std::string def_param_uuid;
 };
 
 class SzbaseLocation : public ProtocolLocation {

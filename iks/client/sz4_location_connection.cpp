@@ -140,9 +140,9 @@ void location_connection::add_param(const param_info& param, IksCmdCallback call
 	auto defined = m_container->GetExtraParams();
 	auto i = defined.find(param.prefix());
 	if (i != defined.end()) {
-		auto j = std::find_if(i->second.begin(), i->second.end(),
+		auto j = std::find_if(i->second.rbegin(), i->second.rend(),
 					[&param] (std::shared_ptr<TParam> &p) { return p->GetName() == param.name() ; });
-		if (j != i->second.end()) {
+		if (j != i->second.rend()) {
 			add_param( (const char*) SC::S2U(i->first).c_str() , j->get(), callback );
 			return;
 		}

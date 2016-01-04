@@ -231,11 +231,30 @@ void IPKContainer::RemoveParamFromHash(TParam* p) {
 	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
 	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
 
-	m_params.erase(global_param_name);
-	m_params.erase(translated_global_param_name);
+	{
+		auto i = m_params.find(global_param_name);
+		if (i != m_params.end() && i->second == p)
+			m_params.erase(i);
+	}
 
-	m_utf_params.erase(SC::S2U(global_param_name));
-	m_utf_params.erase(SC::S2U(translated_global_param_name));
+	{
+		auto i = m_params.find(translated_global_param_name);
+		if (i != m_params.end() && i->second == p)
+			m_params.erase(i);
+	}
+
+	{
+		auto i = m_utf_params.find(SC::S2U(global_param_name));
+		if (i != m_utf_params.end() && i->second == p)
+			m_utf_params.erase(i);
+	}
+
+	{
+		auto i = m_utf_params.find(SC::S2U(translated_global_param_name));
+		if (i != m_utf_params.end() && i->second == p)
+			m_utf_params.erase(i);
+	}
+
 }
 
 void IPKContainer::AddParamToHash(TParam* p) {

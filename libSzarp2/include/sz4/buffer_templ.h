@@ -145,8 +145,15 @@ template<class types> void buffer_templ<types>::remove_param(TParam* param) {
 	if (!entry)
 		return;
 
+	while (entry->referring_params().size()) {
+		auto p = (*entry->referring_params().begin())->get_param();
+		remove_param(p);
+	}
+
 	entry->deregister_from_monitor(m_param_monitor);
 	delete entry;
+
+	param->SetSz4Type(TParam::SZ4_NONE);
 
 	m_param_ents[param->GetParamId()] = NULL;
 }

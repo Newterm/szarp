@@ -109,12 +109,16 @@ public:
 };
 
 class SzbaseObserverImpl : public sz4::param_observer {
-	TParam* param;
+	std::wstring param_name;
+	IPKContainer* ipk;
 	sz4::base* base;
 
 	std::function<void( void )> callback;
 public:
-	SzbaseObserverImpl( TParam* param , sz4::base* base , std::function<void( void )> callback );
+	SzbaseObserverImpl( const std::wstring& param_name
+					  , IPKContainer* ipk
+					  , sz4::base* base
+					  , std::function<void( void )> callback );
 
 	void param_data_changed( TParam* );
 	

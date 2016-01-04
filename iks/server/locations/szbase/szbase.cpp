@@ -1,6 +1,11 @@
 #include "szbase.h"
 
 #include <typeinfo>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
+
 
 #include <liblog.h>
 
@@ -35,6 +40,7 @@ namespace p = std::placeholders;
 
 SzbaseProt::SzbaseProt( Vars& vars )
 	: vars(vars)
+	, def_param_uuid(boost::lexical_cast<std::string>(boost::uuids::random_generator()()))
 {
 	conn_param_value = vars.get_params().on_param_value_changed(
 		std::bind(
@@ -45,6 +51,7 @@ SzbaseProt::SzbaseProt( Vars& vars )
 		std::bind(
 			&SzbaseProt::on_param_changed,
 			this,p::_1) );
+
 }
 
 SzbaseProt::~SzbaseProt()
@@ -78,7 +85,7 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
 	MAP_CMD_TAG( "add_param"         , ParamAddRcv         );
-	MAP_CMD_TAG( "remove_remove"     , ParamRemoveRcv      );
+	MAP_CMD_TAG( "remove_param"     , ParamRemoveRcv      );
 	return NULL;
 }
 
@@ -158,7 +165,7 @@ void SzbaseProt::add_param( const std::string& param
 						  , int prec
 						  , unsigned start_time)
 {
-	std::string internal_name = vars.get_updater().add_param( param , base , formula , "TOKEN" , type , prec , start_time );
+	std::string internal_name = vars.get_updater().add_param( param , base , formula , def_param_uuid , type , prec , start_time );
 
 	user_params.insert( std::make_pair( std::make_pair( base , param ) , internal_name ) );
 	user_params_inverted.insert( std::make_pair( internal_name , param ) );
@@ -187,7 +194,7 @@ void SzbaseProt::remove_param(const std::string& base, const std::string& pname)
 {
 	auto i = user_params.find( std::make_pair( base , pname ) );
 	if ( i == user_params.end() )
-		return;
+		throw szbase_param_not_found_error("param not found");
 
 	vars.get_updater().remove_param( i->first.first, i->second );
 
