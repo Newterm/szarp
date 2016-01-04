@@ -34,7 +34,7 @@ Description: SZARP server daemons
 Package: szarp-utils
 Section: misc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, szarp-base
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}, szarp-base, python-clint, python-svn
 Description: SZARP utilities
  SZARP various utilities. 
 
