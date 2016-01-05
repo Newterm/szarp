@@ -179,30 +179,35 @@ public:
 		size_t shorts_to_read = (size > this->m_read_so_far)
 						? (size - this->m_read_so_far) / 2 : 0;
 
-		if (shorts_to_read) {
-			std::vector<short> buffer(shorts_to_read);
-			std::ifstream ifs(
-#if BOOST_FILESYSTEM_VERSION == 3
-					this->m_block_path.string().c_str(),
-#else
-					this->m_block.path.external_file_string().c_str(),
-#endif
-					std::ios::binary | std::ios::in);
-
-			if (!ifs.seekg(m_read_so_far, std::ios_base::beg))
-				return;
-
-			if (!ifs.read((char*)&buffer[0], 2 * shorts_to_read))
-				return;
-
-			T t = szb_move_time(this->end_time(), 1, PT_MIN10);
-			for (size_t i = 0; i < buffer.size(); i++, t = szb_move_time(t, 1, PT_MIN10))
-				this->m_block->append_entry(buffer[i], t);
-
-			this->m_read_so_far += 2 * shorts_to_read;
+		if (!shorts_to_read) {
+			this->m_needs_refresh = false;
+			return;
 		}
 
+
+		std::vector<short> buffer(shorts_to_read);
+		std::ifstream ifs(
+#if BOOST_FILESYSTEM_VERSION == 3
+				this->m_block_path.string().c_str(),
+#else
+				this->m_block.path.external_file_string().c_str(),
+#endif
+				std::ios::binary | std::ios::in);
+
+		if (!ifs.seekg(m_read_so_far, std::ios_base::beg))
+			return;
+
+		if (!ifs.read((char*)&buffer[0], 2 * shorts_to_read))
+			return;
+
 		this->m_needs_refresh = false;
+
+		T t = szb_move_time(this->end_time(), 1, PT_MIN10);
+		for (size_t i = 0; i < buffer.size(); i++, t = szb_move_time(t, 1, PT_MIN10))
+			this->m_block->append_entry(buffer[i], t);
+
+		this->m_read_so_far += 2 * shorts_to_read;
+
 	}
 };
 
