@@ -171,7 +171,7 @@ bool SerialPort::Wait(int timeout)
 		tv.tv_usec = 0;
 		FD_ZERO(&set);
 		FD_SET(m_fd, &set);
-	
+		sleep(1);
 		ret = select(m_fd + 1, &set, NULL, NULL, &tv);
 		if (ret < 0) {
 			if (errno == EINTR) {
