@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+print "#***********___ParamsCreator___***********#\nv1.25\nProgram that creates params.xml to SCADA program Szarp.\nUsage:\narg=path/to/table.csv(look on the example tables to create your own)\nAnswer questions\nProfit :)"
+
 from sys import argv
 import sys
 
 script, filename = argv
-
-print "#***********___Params_Creator___***********#\nv1.01\t A:Spychy\tMail:spychy@newterm.pl"
 
 #Zmienne tekstowe do paramsa
 speed = ""
@@ -21,6 +21,8 @@ efr = ""
 dbrodzaj = ""
 dbnr = ""
 drawdefinable = ""
+defined = ""
+todef = ""
 toddble = ""
 modbusextra = ""
 floatorder = ""
@@ -29,6 +31,48 @@ tryb = ""
 yesno = ""
 stopbit = ""
 parity = ""
+adress7 = ""
+adres=""
+LSW=""
+MSW=""
+draw=""
+lmaddr=""
+dwyktyp=""
+send="\n<!--## Parametry wysyłane ##-->\n"
+tosend=""
+rodzajzmiennej=""
+path="/dev/null"
+extrapath='extra:path="/dev/null"'
+deklaracja=""
+iecaddr=""
+
+nrwykbool=0
+diterbool=1
+nrwykV=0
+diterV=1
+nrwykA=0
+diterA=1
+nrwyktime=0
+ditertime=1
+nrwyktemp=0
+ditertemp=1
+nrwykCis=0
+diterCis=1
+nrwykMC=0
+diterMC=1
+nrwykMB=0
+diterMB=1
+nrwykMP=0
+diterMP=1
+nrwykHz=0
+diterHz=1
+nrwykproc=0
+diterproc=1
+dnrwyk=1
+nrwyk=1
+diter=1
+dmin=0
+dmax=10
 
 #Tworzenie pliku params UWAGA:Nadpisuje stary plik!!!
 params = open("params.xml",'w')
@@ -37,33 +81,40 @@ params = open("params.xml",'w')
 print "Podaj tytuł konfiguracji:"
 
 conftitle = raw_input()
+drawdefinable = '<!--## Drawdefinable dla %s-->\n' % (conftitle)
 
-print "Wybierz swojego Demona!\n[0]:\tsnap7dmn\n[1]:\tborutadmn\n"
+print "Wybierz swojego Demona!\n[0]:\tsnap7dmn\n[1]:\tborutadmn\n[2]:\tiecdmn\n"
 
 dm = raw_input()
 
 #Wprowadzanie zmiennych dla s7dmn
 if dm == "0":
 	dmn="/opt/szarp/bin/s7dmn"
+	LSW = 'extra:val_op="lsw"'
+	MSW = 'extra:val_op="msw"'
 	tryb = "extra"
-	print "Podaj exec:frequency:[help-> http://szarp.org/szarp/doc/ipk/html/daemon-snap7dmn.html]"
-	wejscie = raw_input()
-	efr='exec:frequency="%s"' % wejscie
+	tryb2 = "extra"
+	#print "Podaj exec:frequency:[help-> http://szarp.org/szarp/doc/ipk/html/daemon-snap7dmn.html]"
+	#wejscie = raw_input()
+	#efr='exec:frequency="%s"' % wejscie
 	print "Podaj adres ip:"
 	wejscie = raw_input()
 	if len(wejscie.split(".")) !=4:
 		sys.exit("Zły adres IP!")
-	adres = 'extra:address="%s" ' % wejscie
+	adress7 = 'extra:address="%s" ' % wejscie
 	print "Podaj wartość Rack:"
 	wejscie = raw_input()
 	Rack = 'extra:rack="%s" ' % wejscie
 	print "Podaj wartość Slot:"
 	wejscie = raw_input()
 	Slot = 'extra:slot="%s" ' % wejscie
+	speed='extra:speed="9600"'
 
-#Wprowadzanie zmiennych dl borutadmn
+#Wprowadzanie zmiennych dla borutadmn
 elif dm == "1":
 	dmn="/opt/szarp/bin/borutadmn"
+	LSW = 'extra:val_op="LSW"'
+	MSW = 'extra:val_op="MSW"'
 	tryb = "modbus"
 	modbusextra = 'xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra" '
 	print "Podaj prędkość BD:"
@@ -87,9 +138,9 @@ elif dm == "1":
 	print "Kolejność znaczących bitów dla formatu double:\n[0]:\tlsdmsd\n[1]:\tmsdlsd"
 	wejscie = raw_input()
 	if wejscie=="0":
-		doubleorder = 'extra:FloatOrder="lsdmsd" '
+		doubleorder = 'extra:DoubleOrder="lsdmsd" '
 	elif wejscie=="1":
-		doubleorder = 'extra:FloatOrder="msdlsd" '
+		doubleorder = 'extra:DoubletOrder="msdlsd" '
 	else:
 		sys.exit("Zła opcja")
 	print "Tryb:\n[0]:\tTCP\n[1]:\tRTU"
@@ -102,6 +153,7 @@ elif dm == "1":
 			sys.exit("Zły adres IP!")
 		adres = 'extra:tcp-address="%s" ' % wejscie
 		tryb = "tcp"
+		tryb2 = "extra"
 		print "Podaj port TCP:"
 		wejscie = raw_input()
 		tcpport ='extra:tcp-port="%s" ' % wejscie
@@ -117,6 +169,19 @@ elif dm == "1":
 		wejscie = raw_input()
 		if wejscie=="0":
 			yesno = 'yes'
+			print "Stop Bit:[1/2]"
+			wejscie = raw_input()
+			stopbit ='extra:stopbits="%s" ' % wejscie
+			print "Parity:\n[0]:\tNo parity\n[1]:\tEven\n[2]:\tOdd"
+			wejscie = raw_input()
+			if wejscie=="0":
+				parity = 'extra:parity="none" '
+			elif wejscie=="1":
+				parity = 'extra:parity="even" '
+			elif wejscie=="2":
+				parity = 'extra:parity="odd" '
+			else:
+				sys.exit("Zła opcja")
 		elif wejscie=="1":
 			yesno = 'no'
 		else:
@@ -125,6 +190,7 @@ elif dm == "1":
 	#tryb RTU
 	elif wejscie=="1":
 		tryb = "seral"
+		tryb2="serial"
 		yesno = "no"
 		print "Podaj ścieżkę do urządzenia:"
 		wejscie = raw_input()
@@ -132,7 +198,7 @@ elif dm == "1":
 		print "Stop Bit:[1/2]"
 		wejscie = raw_input()
 		stopbit ='extra:stopbits="%s" ' % wejscie
-		print "Parity:\n[0]:\tNo parity\n[1]:\teven\n[2]:\tOdd"
+		print "Parity:\n[0]:\tNo parity\n[1]:\tEven\n[2]:\tOdd"
 		wejscie = raw_input()
 		if wejscie=="0":
 			parity = 'extra:parity="none" '
@@ -147,13 +213,32 @@ elif dm == "1":
 		sys.exit("Zła opcja")
 
 	modbusinfo = 'extra:proto="modbus" extra:use_tcp_2_serial_proxy="%s" extra:medium="%s" ' % (yesno, tryb)
+#Wprowadzanie zmiennych dla iecdmn
+elif dm == "2":
+	dmn="/opt/szarp/bin/iecdmn"
+	deklaracja = 'xmlns:iec="http://www.praterm.com.pl/SZARP/ipk-extra" '
+	extrapath = ""
+	tryb = "iec"
+	tryb2 = "iec"
+	LSW = 'iec:word="msw"'
+	MSW = 'iec:word="lsw"'
+	print "Podaj prędkość BD:"
+	wejscie = raw_input()
+	if int(wejscie)%300 != 0:
+		sys.exit("Zla wartość prędkości BD")
+	speed ='extra:speed="%s" ' % wejscie
+	print "Podaj adres iec:"
+	wejscie = raw_input()
+	iecaddr = 'iec:address="%s" ' % wejscie
+	print "Podaj scieżkę:"
+	path = raw_input()
 else:
 	sys.exit("Zła opcja")
 print "Podaj nazwę raportu:"
 
 Rname = raw_input()
 
-Naglowek = '<?xml version="1.0" encoding="UTF-8"?>\n<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" %sxmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:doc="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" version="1.0" read_freq="10" send_freq="10" title="%s" documentation_base_url="http://www.szarp.com">\n\t<device daemon="%s" path="/dev/null" speed="9600" %s%s%s>\n\t\t<unit id="1" type="1" subtype="1" bufsize="1" %s%s%s%s%s%s%s%sextra:path="/dev/null" %sextra:read-timeout="5000">\n\n' % (modbusextra, conftitle, dmn, Rack, Slot, efr, modbusinfo, stopbit, adres, idadres, trybmodbus, floatorder, doubleorder, tcpport, speed)
+Naglowek = '<?xml version="1.0" encoding="UTF-8"?>\n<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" %sxmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:doc="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" %sversion="1.0" read_freq="10" send_freq="10" title="%s" documentation_base_url="http://www.szarp.com">\n\n\t<device daemon="%s" path="%s" %s %s%s%s>\n\t\t<unit id="1" type="1" subtype="1" bufsize="1" %s%s%s%s%s%s%s%s%s%s%s %s extra:read-timeout="5000">\n\n' % (modbusextra, deklaracja, conftitle, dmn, path, speed[6:], Rack, Slot, adress7, modbusinfo, stopbit, adres, idadres, trybmodbus, floatorder, doubleorder, tcpport, parity, extrapath, iecaddr, speed)
 
 #zapisanie naglowka do pliku params.xml
 params.write(Naglowek)
@@ -165,7 +250,6 @@ print "Rozpoczynam czytanie z pliku: %r i zapisywanie sformatowanych danych do p
 
 #Podzielenie na tekstu na linijki
 linie = txt.readlines()
-
 Rnr = 1 #Licznik nr. w raporcie
 bitnr = ""
 for y in range(1,len(linie)):
@@ -175,7 +259,7 @@ for y in range(1,len(linie)):
 	element = linijka.split(",")
 
 #Dopelnianie elementow do liczby niezbednej dla dalszej pracy programu
-	Koncowka="-,"*(8-len(element))
+	Koncowka="-,"*(20-len(element))
 	Koncowka=Koncowka[:-1]
 	koncowka=Koncowka.split(",")
 	element=element+koncowka
@@ -187,57 +271,305 @@ for y in range(1,len(linie)):
 		if element[x][-1]=="\n":
 			element[x]=element[x][:-1]
 
-#Sprawdzenie wartosci precyzji i zwrocenie 0 dla -
-	if element[4]=="-":
-		element[4]=0
-
-	element[0] #krotka nazwa parametru
-	element[1]=element[1].lower() #typ parametru
-	element[2] #adres parametru
-	element[3] #pelna nazwa parametru
-	element[4] #precyzja
-	element[5] #jednostka
-	element[6] #dodatkowa dana do paramsa: snap7dmn:Rodzaj pamieci(DB,M)
-	element[7] #dodatkowa dana do paramsa: snap7dmn:nr DB
-
-	#Rozbicie adresu dla paremetru typu bool/bit
-	if element[1]=="bool":
-		element[1]="bit"
-		ADRES=element[2].split(".")
-		element[2]=ADRES[0]
-		bitnr='extra:number="%s" ' % ADRES[1]
+#Wyrzucenie rejestrow, w ktorych nic nie ma lub maja byc ignorowane
+	if ((((element[3]=="") or (element[3]=="-")) or (element[3]=="rezerwa")) or ((element[3]=="#nic") or (element[8]=="1"))):
+		element[3]="#nic#"
+	if (element[3]!="#nic#"):			
+		#Sprawdzenie wartosci precyzji i zwrocenie 0 dla -
+		if element[4]=="-":
+			element[4]=0
 	
-	#Zamiana typu zmiennej int na word dla snap7
-	if (element[1]=="int") or (element[1]=="integer"):
-		element[1]="word"
+		element[0] #krotka nazwa parametru
+		element[1]=element[1].lower() #typ parametru
+		element[2] #adres parametru
+		element[3] #pelna nazwa parametru
+		element[4] #precyzja
+		element[5] #jednostka
+		element[6] #dodatkowa dana do paramsa: snap7dmn:Rodzaj pamieci(DB,M)
+		element[7] #dodatkowa dana do paramsa: snap7dmn:nr DB
+		element[8] #dodatkowa dana dla skryptu: ignorowanie wpisu
+		element[9] #dodatkowa dana dla skryptu: zapis na urzadzenie
+		element[10] #dodatkowa dana do drawa: dolny zakres wykresu
+		element[11] #dodatkowa dana do drawa: górny zakres wykresu
+		element[12] #dodatkowa dana do drawa: nazwa zestawu wykresow
+		element[13] #dodatkowa dana do paramsa: wartość do działania
+		element[14] #dodatkowa dana do paramsa: działanie
+		element[15] #dodatkowa dana do paramsa: ignorowanie wpisu w draw
 
-	#Obrobka wartosci dla snap7dmn
-	if dm == "0":
-		dbrodzaj='extra:db_type="%s" ' % element[6].lower()
-		dbnr = 'extra:db="%s" ' % element[7]
+		#Rozbicie adresu dla paremetru typu bool/bit
+		if element[1]=="bool":
+			element[1]="bit"
+			ADRES=element[2].split(".")
+			element[2]=ADRES[0]
+			bitnr='extra:number="%s" ' % ADRES[1]
+		elif tryb=="iec":
+			element[2]=element[2]	
+		else:
+			ADRES=element[2].split(".")
+			element[2]=ADRES[0]
+			bitnr=""
+
+		#Ignorowanie drawa gdy parametr ma byc wysylany
+		if (element[9]!="1"):
+			#Rozpisywanie drawa
+			#Rozpisywanie zakresu wykresu dla temperatur
+			if ((element[5]=="C") or (element[5]=="°C")) or (element[5]=="˚C"):
+				dmin = 0
+				dmax = 400
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'temperatury '
+					ditertemp=ditertemp+1
+				dnrwyk=nrwyktemp
+				if ditertemp==13:
+					nrwyktemp=nrwyktemp+1
+					ditertemp=1
 	
-	#Sygnalizacja dzialania co 100 parametrow
-	if Rnr%100==0:
-		print "."
+			#Rozpisywanie zakresu wykresu dla cisnienia
+			elif (element[5][-2:]=="Pa") or (element[5][-3:]=="bar"):
 	
-	if (element[1]=="real") or (element[1]=="dint"):
-		if element[1]=="dint":
-			element[1] = "word"
-		param='\t\t\t<param name="%s:%s lsw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t</param>\n\n\t\t\t<param name="%s:%s msw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb, element[2], bitnr, dbnr, dbrodzaj, tryb, element[1], conftitle, element[3], element[0], element[0], element[5], element[4], tryb, str(2.0+float(element[2])), bitnr, dbnr, dbrodzaj, tryb, element[1])
-		toddble = '\t<param name="%s:%s:%s" short_name="%s" prec="%s" draw_name="%s" unit="%s">\n\t\t<define type="DRAWDEFINABLE" formula="(%s:%s lsw) (%s:%s msw) :"/>\n\t\t\t<draw title="%s" min="0" max="10" order="%d"/>\n\t\t\t<raport title="%s" order="%d"/>\n\t</param>\n\n' % (conftitle, Rname, element[3], element[0], element[4], element[0], element[5], conftitle, element[3], conftitle, element[3], Rname, Rnr, Rname, Rnr)
-	else:
-		param='\t\t\t<param name="%s:%s" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s:val_type="%s">\n\t\t\t\t<raport title="%s" order="%d"/>\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb, element[2], bitnr, dbnr, dbrodzaj, tryb, element[1], Rname, Rnr)
-	params.write(param)
-	drawdefinable = drawdefinable + toddble
+				#Rozpisywanie zakresów dla różnych jednostek
+				if element[5][-4:]=="mbar":
+					dmin = 0
+					dmax = 150
+				elif element[5][-3:]=="MPa":
+					dmin = 0
+					dmax = 1.5
+				elif element[5][-3:]=="hPa":
+					dmin = 0
+					dmax = 1500
+				elif element[5][-3:]=="bar":
+					dmin = 0
+					dmax = 15
+				else:
+					dmin = 0
+					dmax = 100
+				
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'ciśnienia '
+					diterCis=diterCis+1
+				dnrwyk=nrwykCis
+				if diterCis==13:
+					nrwykCis=nrwykCis+1
+					diterCis=1
+			
+			#Rozpisywanie zakresu wykresu dla bool
+			elif (element[1]=="bit"):
+				dmin = -0.5
+				dmax = 1.5
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'logiczne '
+					diterbool=diterbool+1
+				dnrwyk=nrwykbool
+				if diterbool==13:
+					nrwykbool=nrwykbool+1
+					diterbool=1
+	
+			#Rozpisywanie zakresu wykresu dla czasu
+			elif ((element[5]=="sek") or (element[5]=="min")) or (element[5]=="h"):
+				dmin = 0
+				dmax = 1000
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'zegary '
+					ditertime=ditertime+1
+				dnrwyk=nrwyktime
+				if ditertime==13:
+					nrwyktime=nrwyktime+1
+					ditertime=1
+	
+			#Rozpisanie zakresu wykresu dla napiec
+			elif element[5]=="V":
+				dmin = -500
+				dmax = 500
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'napięcia '
+					diterV=diterV+1
+				dnrwyk=nrwykV
+				if diterV==13:
+					nrwykV=nrwykV+1
+					diterV=1
+	
+			#Rozpisanie zakresu wykresu dla pradu
+			elif element[5]=="A":
+				dmin = 0
+				dmax = 20
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'prądy '
+					diterA=diterA+1
+				dnrwyk=nrwykA
+				if diterA==13:
+					nrwykA=nrwykA+1
+					diterA=1
+	
+			#Rozpisanie zakresu wykresu dla Mocy Czynnej
+			elif element[5][-1:]=="W":
+				dmin = 0
+				dmax = 2500
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'Mocy Czynnej '
+					diterMC=diterMC+1
+				dnrwyk=nrwykMC
+				if diterMC==13:
+					nrwykMC=nrwykMC+1
+					diterMC=1
+	
+			#Rozpisanie zakresu wykresu dla Mocy Biernej
+			elif element[5][-3:]=="var":
+				dmin = 0
+				dmax = 300
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'Mocy Biernej '
+					diterMB=diterMB+1
+				dnrwyk=nrwykMB
+				if diterMB==13:
+					nrwykMB=nrwykMB+1
+					diterMB=1
+	
+			#Rozpisanie zakresu wykresu dla Mocy Pozornej
+			elif element[5][-2:]=="VA":
+				dmin = 0
+				dmax = 3000
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'Mocy Pozornej '
+					diterMP=diterMP+1
+				dnrwyk=nrwykMP
+				if diterMP==13:
+					nrwykMP=nrwykMP+1
+					diterMP=1
+	
+			#Rozpisanie zakresu wykresu dla Czestotliwosci
+			elif element[5][-2:]=="Hz":
+				dmin = 0
+				dmax = 100
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'Częstotliwości '
+					diterHz=diterHz+1
+				dnrwyk=nrwykHz
+				if diterHz==13:
+					nrwykHz=nrwykHz+1
+					diterHz=1
+	
+			#Rozpisanie zakresu wykresu dla %
+			elif element[5]=="%":
+				dmin = 0
+				dmax = 100
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = 'procenty '
+					diterproc=diterproc+1
+				dnrwyk=nrwykproc
+				if diterproc==13:
+					nrwykproc=nrwykproc+1
+					diterproc=1
+			
+			else:
+				dmin = 0
+				dmax = 200
+				if (element[12] == '') or (element[12] == '-'):
+					dwyktyp = ''
+					diter=diter+1
+				dnrwyk=nrwyk
+				if diter==13:
+					nrwyk=nrwyk+1
+					diter=1
+
+			if (element[10] != '-') and (element[10] != ''):
+				dmin = float(element[10])
+
+			if (element[11] != '-') and (element[11] != ''):
+				dmax = float(element[11])
+
+			if (element[12] != '') and (element[12] != '-'):
+				dwyktyp = '' + element[12]
+			else:
+				if dnrwyk == 0:
+					dwyktyp = "wykres " + dwyktyp[:-1]
+				else:
+					dwyktyp = "wykres " + dwyktyp + str(dnrwyk)
+
+			if (element[15] != "1"):
+				draw='<draw title="%s %s" min="%d" max="%d" order="%d"/>' % (Rname, dwyktyp, dmin, dmax, Rnr)
+			else:
+				draw=''
+
+		#Zmiana int na integer
+		if element[1] == "int":
+			element[1]="integer"
+
+		#Zamiana typu zmiennej int na word dla snap7
+		if (dm=="0") and (element[1]=="integer"):
+			element[1]="word"
+	
+		#Obrobka wartosci dla snap7dmn
+		if dm == "0":
+			dbrodzaj='extra:db_type="%s" ' % element[6].lower()
+			dbnr = 'extra:db="%s" ' % element[7]
+		
+		#Sygnalizacja dzialania co 100 parametrow
+		if Rnr%100==0:
+			print "."
+
+		#Tworzenie defined
+		if ((element[13]!="0") and (element[13]!="")) and (element[13]!="-"):
+			todef = '\t<param name="%s:%s po przel." short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto">\n\t\t<define type="RPN" formula="null">\n\t\t<script><![CDATA[\n\t\t\tlocal b = i("%s:%s")\n\t\t\tv = b %s %s\n\t\t]]></script>\n\t\t</define>\n\t\t<raport title="%s" order="%d"/>\n\t\t%s\n\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], conftitle, element[3], element[14], element[13], Rname, Rnr, draw)
+			defined = defined + todef
+			draw = "<!--Parametr liczony w skyptem LUA-->"
+
+		#Tworzenie paramow
+		if (element[1] == "float") or ((element[1]=="real") or (element[1]=="dint")):
+			if (element[1]=="dint"):
+				if dm == "0":
+					element[1] = "word"
+				else:
+					element[1] = "integer"
+			if tryb=="tcp":
+				lmaddr=element[2]
+			if (tryb == "tcp") and (element[1] == "integer"):
+				lmaddr=str(1+int(element[2]))
+			if (tryb=="extra") or (tryb=="serial"):
+				lmaddr=str(2+int(element[2]))
+			if (tryb=="iec"):
+				rodzajzmiennej=''
+				lmaddr=element[2]
+			else:
+				rodzajzmiennej='%s:val_type="%s"' % ( tryb2, element[1])
+
+			#Rozpisywanie paramow i sendow
+			if (element[9]=="1"):
+				param = ""
+				tosend = '\t\t\t<send param="%s:%s lsw" type="probe" repeat="1" extra:prec="%s" %s%s%s:address="%s" %s%s %s/>\n\n\t\t\t<send param="%s:%s msw" type="probe" repeat="1" extra:prec="%s" %s%s%s:address="%s" %s%s %s/>\n\n' % (conftitle, element[3], element[4], dbnr, dbrodzaj, tryb2, element[2], bitnr, rodzajzmiennej, LSW, conftitle, element[3], element[4], dbnr, dbrodzaj, tryb2, lmaddr, bitnr, rodzajzmiennej, MSW)
+				send = send + tosend
+			else:
+				param='\t\t\t<param name="%s:%s lsw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s %s>\n\t\t\t</param>\n\n\t\t\t<param name="%s:%s msw" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s %s>\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb2, element[2], bitnr, dbnr, dbrodzaj, rodzajzmiennej, LSW, conftitle, element[3], element[0], element[0], element[5], element[4], tryb2, lmaddr, bitnr, dbnr, dbrodzaj, rodzajzmiennej, MSW)
+
+				if (element[15]!="1"):
+					toddble = '\t<param name="%s:%s" short_name="%s" prec="%s" draw_name="%s" unit="%s">\n\t\t<define type="DRAWDEFINABLE" formula="(%s:%s msw) (%s:%s lsw) :"/>\n\t\t\t%s\n\t\t\t<raport title="%s" order="%d"/>\n\t</param>\n\n' % (conftitle, element[3], element[0], element[4], element[0], element[5], conftitle, element[3], conftitle, element[3], draw, Rname, Rnr)
+				else:
+					toddble = ''
+		else:
+			if (tryb=="iec"):
+				rodzajzmiennej=''
+			else:
+				rodzajzmiennej='%s:val_type="%s"' % ( tryb2, element[1])
+			#Rozpisywanie paramow i sendow
+			if (element[9]=="1"):
+				param = ""
+				tosend = '\t\t\t<send param="%s:%s" type="probe" repeat="1" %s%s%s:address="%s" %s%s/>\n\n' % (conftitle, element[3], dbnr, dbrodzaj, tryb2, element[2], bitnr, rodzajzmiennej)
+				send = send + tosend
+			else:
+				param='\t\t\t<param name="%s:%s" short_name="%s" draw_name="%s" unit="%s" prec="%s" base_ind="auto" %s:address="%s" %s%s%s%s>\n\t\t\t\t<raport title="%s" order="%d"/>\n\t\t\t\t%s\n\t\t\t</param>\n\n' % (conftitle, element[3], element[0], element[0], element[5], element[4], tryb2, element[2], bitnr, dbnr, dbrodzaj, rodzajzmiennej, Rname, Rnr, draw )
+		params.write(param)
+		drawdefinable = drawdefinable + toddble
 	Rnr=Rnr+1
+params.write(send+"\n")
 params.write("\t\t</unit>\n\t</device>\n")
+
+#defined
+params.write("<defined>\n")
+params.write(defined+"\n")
+params.write("</defined>\n")
 
 #drawdefinable
 params.write("<drawdefinable>\n")
 params.write(drawdefinable+"\n")
 params.write("</drawdefinable>\n")
 
-#defined
-params.write("<defined>\n")
-params.write("</defined>\n")
 params.write("</params>")
