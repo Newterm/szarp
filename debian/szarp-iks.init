@@ -107,7 +107,7 @@ case "$1" in
 	###
 	# Restart also iks-server 
 	###
-	service szarp-iks-server restart
+	supervisorctl restart iks-server
 
 	log_daemon_msg "Restarting $DESC" "$NAME"
 	do_stop

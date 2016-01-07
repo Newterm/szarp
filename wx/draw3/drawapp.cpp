@@ -128,7 +128,7 @@ int GL_ATTRIBUTES[] = {
 	0 };
 }
 
-DrawApp::DrawApp() : DrawGLApp() {
+DrawApp::DrawApp() : DrawGLApp(), m_base_type(SZBASE_BASE), m_iks_port(_T("9002")) {
 	m_gl_context = NULL;
 }
 
@@ -211,6 +211,24 @@ bool DrawApp::OnInit() {
 		base = libpar_getpar("", "config_prefix", 1);
 		m_base = SC::L2S(base);
 		free(base);
+	}
+
+	{
+
+		if (m_base_type != IKS_BASE) {
+			char *iks_server = libpar_getpar("draw3", "iks_server", 0);
+			if (iks_server) {
+				m_iks_server = SC::L2S(iks_server);
+				m_base_type = IKS_BASE;
+				free(iks_server);
+			}
+
+			char *iks_port = libpar_getpar("draw3", "iks_server_port", 0);
+			if (iks_port) {
+				m_iks_port = SC::L2S(iks_port);
+				free(iks_port);
+			}
+		}
 	}
 
 	m_probers_from_szarp_cfg = get_probers_addresses();
@@ -305,14 +323,20 @@ bool DrawApp::OnInit() {
 	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	Draw3Base* draw_base;
-	if (m_sz4) {
-		draw_base = new Sz4Base(GetSzarpDataDir().c_str(),
-			IPKContainer::GetObject());
-	} else {
-		draw_base = new SzbaseBase(GetSzarpDataDir().c_str(),
-			&ConfigurationFileChangeHandler::handle,
-			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-
+	switch (m_base_type) {
+		case SZBASE_BASE:
+			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().c_str(),
+				&ConfigurationFileChangeHandler::handle,
+				wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
+			break;
+		case SZ4_BASE:
+			draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().c_str(),
+				IPKContainer::GetObject());
+			break;
+		case IKS_BASE:
+			draw_base = new Sz4ApiBase(m_dbmgr, m_iks_server.c_str(), m_iks_port.c_str(),
+				IPKContainer::GetObject());
+			break;
 	}
 
 	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, draw_base);
@@ -443,9 +467,16 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("4"), _T("sz4"), _("use sz4 base format"));
 
+	parser.AddSwitch(_T("i"), _T("iks"), _("use iks server"));
+
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
 	
+	parser.AddOption(wxEmptyString, _T("iks-server"), 
+		_("IKS server address"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+
+	parser.AddOption(wxEmptyString, _T("iks-server-port"),
+		_("IKS server port"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
 #if 0
 	parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString,
 		_("libparnt value initialization"));
@@ -473,9 +504,6 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	x = y = width = height = -1;
 
-	if (parser.Found(_T("geometry"), &geometry))
-		get_geometry(geometry, &x, &y, &width, &height);
-
         /* Read 'geometry' option. */
 	if (parser.Found(_T("geometry"), &geometry)) 
 		get_geometry(geometry, &x, &y, &width, &height);
@@ -485,8 +513,6 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	m_full_screen = parser.Found(_T("f"));
 	
-	m_sz4 = parser.Found(_T("4"));
-
 	m_just_print_version = parser.Found(_("V"));
 
 	parser.Found(_T("base"), &m_base);
@@ -511,6 +537,18 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 		sz_loginit((int) debug, "draw3", SZ_LIBLOG_FACILITY_APP);
 	else
 		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
+
+	if (parser.Found(_T("4")))
+		m_base_type = SZ4_BASE;
+
+	if (parser.Found(_T("i"))) {
+		m_base_type = IKS_BASE;
+
+		if (!parser.Found(_T("iks-server"), &m_iks_server))
+			m_iks_server = m_base;
+
+		parser.Found(_T("iks-server-port"), &m_iks_port);
+	}
 
 	return true;
 }

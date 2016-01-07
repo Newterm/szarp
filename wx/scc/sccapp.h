@@ -46,6 +46,7 @@
 #include "sccipc.h"
 #include "szapp.h"
 #include "singleinstance.h"
+#include "sccreloader.h"
 
 /**
  * Main application class.
@@ -108,6 +109,7 @@ protected:
 	SCCServer *server;
 
 	bool reload_menu;
+	ReloadTimer* rTimer = nullptr;
 };
 
 DECLARE_APP(SCCApp)

@@ -125,9 +125,9 @@ std::wstring utf2szarp(const std::basic_string<unsigned char>& c) {
 	if (c.size() == 0)
 		return std::wstring();
 
-	int _size = c.size() + 1;
+	int _size = c.size();
 	boost::scoped_array<wchar_t> buff(new wchar_t[_size]);
-	int res = MultiByteToWideChar(CP_UTF8, 0, (CHAR*)c.c_str(), c.size(), buff.get(), c.size() + 1);
+	int res = MultiByteToWideChar(CP_UTF8, 0, (CHAR*)c.c_str(), c.size(), buff.get(), c.size());
 
 	if (res == 0) {
 		throw std::runtime_error("Incomplete multibyte sequence encountered in convertsion");
@@ -173,8 +173,8 @@ std::wstring local2szarp(const std::basic_string<char>& c) {
 	if (c.size() == 0)
 		return std::wstring();
 
-	boost::scoped_array<wchar_t> buff(new wchar_t[c.size() + 1]);
-	int res = MultiByteToWideChar(CP_ACP, 0, c.c_str(), -1, buff.get(), (c.size() + 1) * sizeof(wchar_t));
+	boost::scoped_array<wchar_t> buff(new wchar_t[c.size()]);
+	int res = MultiByteToWideChar(CP_ACP, 0, c.c_str(), c.size(), buff.get(), c.size() * sizeof(wchar_t));
 
 	if (res == 0) {
 		throw std::runtime_error("Incomplete multibyte sequence encountered in conversion");
@@ -425,3 +425,10 @@ namespace SC {	/* Szarp Conversions */
 	}
 }
 
+namespace std {
+
+ostream& operator<<(ostream& os, const std::basic_string<unsigned char> &us) {
+	return os << std::string(us.begin(), us.end());
+}
+
+}

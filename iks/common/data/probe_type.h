@@ -14,19 +14,23 @@ class ProbeType {
 public:
 	enum class Type : unsigned {
 		LIVE   = 0 ,
-		S10    = PT_SEC10  + 1 ,
-		M10    = PT_MIN10  + 1 ,
-		HOUR   = PT_HOUR   + 1 ,
-		H8     = PT_HOUR8  + 1 ,
-		DAY    = PT_DAY    + 1 ,
-		WEEK   = PT_WEEK   + 1 ,
-		MONTH  = PT_MONTH  + 1 ,
-		YEAR   = PT_YEAR   + 1 ,
-		CUSTOM = PT_CUSTOM + 1 ,
+		MS100  = PT_MSEC10  + 1 ,
+		MS500  = PT_HALFSEC + 1 ,
+		S      = PT_SEC     + 1 ,
+		S10    = PT_SEC10   + 1 ,
+		M10    = PT_MIN10   + 1 ,
+		HOUR   = PT_HOUR    + 1 ,
+		H8     = PT_HOUR8   + 1 ,
+		DAY    = PT_DAY     + 1 ,
+		WEEK   = PT_WEEK    + 1 ,
+		MONTH  = PT_MONTH   + 1 ,
+		YEAR   = PT_YEAR    + 1 ,
+		CUSTOM = PT_CUSTOM  + 1 ,
 		MAX
 	};
 
 	ProbeType( Type pt = Type::LIVE , unsigned len = 0 );
+	ProbeType( SZARP_PROBE_TYPE pt  , unsigned len = 0 );
 	ProbeType( const std::string& id );
 
 	Type get_type() const { return pt; }

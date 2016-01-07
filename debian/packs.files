@@ -1,8 +1,10 @@
 Package: szarp-base
-Files: opt/szarp/resources/{dtd,*vim,*TEMPLATE,szarp_in.cfg,version.info}
+Files: opt/szarp/resources/{dtd,*TEMPLATE,szarp_in.cfg,version.info}
 Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer,szrsync,install_vim,config_deb}
 Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
 Files: opt/szarp/resources/{xslt,dictionary.xml}
+Files: opt/szarp/resources/vimfiles/szarp.vim
+Files: opt/szarp/resources/vimfiles/syntax/*.vim
 Files: opt/szarp/logs
 Files: var/log/szarp
 Files: etc/rsyslog.d/szarp.conf

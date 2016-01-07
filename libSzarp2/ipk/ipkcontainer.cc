@@ -163,7 +163,7 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool lo
 }
 
 void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
-	m_extra_params[prefix].push_back(n);
+	m_extra_params[prefix].emplace_back(n);
 
 	CM::iterator i = configs.find(prefix);
 	if (i == configs.end())
@@ -182,17 +182,12 @@ void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
 	AddParamToHash(n);
 }
 
-void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
-	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	AddExtraParamImpl(prefix, n);
-}
-
-void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
-	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-
-	std::vector<TParam*>& tp = m_extra_params[prefix];
-	std::vector<TParam*>::iterator ei = std::remove(tp.begin(), tp.end(), p);
-	tp.erase(ei, tp.end());
+void IPKContainer::RemoveExtraParamImpl(const std::wstring& prefix, TParam *p) {
+	auto& tp = m_extra_params[prefix];
+	auto ei = std::find_if(tp.begin(), tp.end(), 
+		[p] (std::shared_ptr<TParam> &_p) { return _p.get() == p; }
+	);
+	assert(ei != tp.end());
 
 	ConfigAux& aux = config_aux[prefix];
 	if (p->GetParamId() + 1 == aux._maxParamId)
@@ -200,19 +195,66 @@ void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
 	else
 		aux._freeIds.insert(p->GetParamId());
 
-	RemoveParamFromHash(p);
-	delete p;
+	auto i = configs.find(prefix);
+	if (i != configs.end())
+		RemoveParamFromHash(p);
+
+	tp.erase(ei);
+}
+
+
+void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
+	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+	AddExtraParamImpl(prefix, n);
+}
+
+void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
+	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+	RemoveExtraParamImpl(prefix, p);
+}
+
+void IPKContainer::RemoveExtraParam(const std::wstring& prefix, const std::wstring &name) {
+	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+
+	auto& tp = m_extra_params[prefix];
+	auto ei = std::find_if(tp.begin(), tp.end(), 
+		[&name] (std::shared_ptr<TParam> &_p) { return _p->GetName() == name; }
+	);
+
+	if (ei == tp.end())
+		return;
+
+	RemoveExtraParamImpl(prefix, ei->get());
 }
 
 void IPKContainer::RemoveParamFromHash(TParam* p) {
 	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
 	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
 
-	m_params.erase(global_param_name);
-	m_params.erase(translated_global_param_name);
+	{
+		auto i = m_params.find(global_param_name);
+		if (i != m_params.end() && i->second == p)
+			m_params.erase(i);
+	}
 
-	m_utf_params.erase(SC::S2U(global_param_name));
-	m_utf_params.erase(SC::S2U(translated_global_param_name));
+	{
+		auto i = m_params.find(translated_global_param_name);
+		if (i != m_params.end() && i->second == p)
+			m_params.erase(i);
+	}
+
+	{
+		auto i = m_utf_params.find(SC::S2U(global_param_name));
+		if (i != m_utf_params.end() && i->second == p)
+			m_utf_params.erase(i);
+	}
+
+	{
+		auto i = m_utf_params.find(SC::S2U(translated_global_param_name));
+		if (i != m_utf_params.end() && i->second == p)
+			m_utf_params.erase(i);
+	}
+
 }
 
 void IPKContainer::AddParamToHash(TParam* p) {
@@ -279,12 +321,12 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 		AddParamToHash(p);
 	}
 
-	std::vector<TParam*>& pv = m_extra_params[prefix];
-	for (std::vector<TParam*>::iterator i = pv.begin(); i != pv.end(); i++) {
+	auto& pv = m_extra_params[prefix];
+	for (auto i = pv.begin(); i != pv.end(); i++) {
 		(*i)->SetParamId(id++);
 		(*i)->SetParentSzarpConfig(ipk);
 		(*i)->SetConfigId(ca._configId);
-		AddParamToHash(*i);
+		AddParamToHash(i->get());
 	}
 
 	ca._maxParamId = id;
@@ -303,6 +345,11 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file , bool logparams) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	return AddConfig(prefix, file, logparams);
+}
+
+std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() {
+	boost::unique_lock<boost::shared_mutex> lock(m_lock);
+	return m_extra_params;
 }
 
 void IPKContainer::Destroy() {

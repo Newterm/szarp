@@ -1040,6 +1040,14 @@ if test x$no_newt != xyes ; then
 fi
 AC_SUBST(SZBEDIT)
 
+# iks conditional building
+AC_ARG_WITH([iks], AC_HELP_STRING([--without-iks], [Do not compile iks]))
+
+# iks system directory
+if test x$with_iks != xno; then
+	SUBDIRS="$SUBDIRS iks"
+fi
+
 # WX programs needs wxWidgets
 if test x$no_wx != xyes ; then
         SUBDIRS="$SUBDIRS extern wx"
@@ -1152,20 +1160,12 @@ if test x$lua_optimise = xyes; then
 	AC_DEFINE(LUA_PARAM_OPTIMISE, 1, [Define if lua param optimiser should be built in])
 fi
 
-# iks conditional building
-AC_ARG_WITH([iks], AC_HELP_STRING([--without-iks], [Do not compile iks]))
-
 # Resources directory
 SUBDIRS="$SUBDIRS resources script"
 
 # pyipk directory
 if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS pyipk"
-fi
-
-# iks system directory
-if test x$with_mingw32 != xyes -a x$with_iks != xno; then
-	SUBDIRS="$SUBDIRS iks"
 fi
 
 # qt4 directory
@@ -1186,11 +1186,13 @@ AC_OUTPUT( \
 	extern/Makefile \
 	extern/wxscintilla/Makefile \
 	iks/Makefile \
+	iks/common/Makefile \
 	iks/server/Makefile \
 	iks/server/locations/Makefile \
 	iks/server/utils/Makefile \
 	iks/server/data/Makefile \
 	iks/server/net/Makefile \
+	iks/client/Makefile \
 	isl/Makefile \
 	isl/server/Makefile \
 	isl/paramd/Makefile \

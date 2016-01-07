@@ -33,16 +33,11 @@ konfiguracja() {
 	if [ ! -e $DIR/szarp.cfg ]; then
 		#"fix" the old configuration style and handle case when package configuration
 		#is not in sync with real configuration
-		if [ -e /etc/szarp/szarp.cfg ]; then
-			cp /etc/szarp/szarp.cfg $DIR;
-			return;
-		else
-			sed -e s?__INSTALL_DIR__?`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`?g  \
-			    -e s?__HELPCOMMAND__?$SZARPDIR/bin/wxhelp?g \
-			    -e s?__PREFIX__?$PREFIX?g \
-				< $RESDIR/SZARP_CFG_TEMPLATE \
-				> /tmp/szarp.cfg.tmp;
-		fi
+		sed -e s?__INSTALL_DIR__?`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`?g  \
+		    -e s?__HELPCOMMAND__?$SZARPDIR/bin/wxhelp?g \
+		    -e s?__PREFIX__?$PREFIX?g \
+			< $RESDIR/SZARP_CFG_TEMPLATE \
+			> /tmp/szarp.cfg.tmp;
 	else
 		return	
 	fi;
@@ -70,15 +65,10 @@ parstart() {
 	if [ ! -e $DIR/parstart.cfg ]; then
 		#"fix" the old configuration style and handle case when package configuration
 		#is not in sync with real configuration
-		if [ -e /etc/szarp/parstart.cfg ]; then
-			cp /etc/szarp/parstart.cfg $DIR;
-		else	
-			sed -e s/__INSTALL_DIR__/`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`/g \
-			    -e s/__PREFIX__/$PREFIX/g \
-			    < $RESDIR/parstart_cfg_TEMPLATE \
-			    > $DIR/parstart.cfg 
-		fi
-
+		sed -e s/__INSTALL_DIR__/`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`/g \
+		    -e s/__PREFIX__/$PREFIX/g \
+		    < $RESDIR/parstart_cfg_TEMPLATE \
+		    > $DIR/parstart.cfg 
 	fi	
 
 	ln -sf $DIR/parstart.cfg /etc/szarp

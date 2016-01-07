@@ -890,9 +890,14 @@ void K601Daemon::Do()
 				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				SetNoData();
 				ipc->GoParcook();
+				wait_ms = RESTART_INTERVAL_MS;
+				dolog(10, "Schedule next (restart) in %dms", wait_ms);
+				ScheduleNext(wait_ms);
 			}
-			wait_ms = RESTART_INTERVAL_MS;
-			break;
+			// in the case of restart we should either
+			// get OpenFinished event or ReadError
+			// which should ScheduleNext on themselves
+			return;
 	}
 	dolog(10, "Schedule next in %dms", wait_ms);
 	ScheduleNext(wait_ms);

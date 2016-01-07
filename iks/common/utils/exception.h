@@ -48,6 +48,10 @@ DECLARE_MSG_BASE_EXCEPT(uri_parse_error,parse_error);
 DECLARE_MSG_EXCEPT(szbase_error);
 DECLARE_MSG_BASE_EXCEPT(szbase_init_error,szbase_error);
 DECLARE_MSG_BASE_EXCEPT(szbase_get_value_error,szbase_error);
+DECLARE_MSG_BASE_EXCEPT(szbase_param_not_found_error,szbase_error);
+DECLARE_MSG_BASE_EXCEPT(szbase_invalid_name,szbase_error);
+DECLARE_MSG_BASE_EXCEPT(szbase_formula_invalid_syntax,szbase_error);
+DECLARE_MSG_BASE_EXCEPT(szbase_formula_invalid_formula_type,szbase_error);
 
 #endif /* __UTILS_EXCEPTIONS_H__ */
 

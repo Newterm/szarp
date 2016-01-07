@@ -8,6 +8,7 @@ MAINTAINERCLEANFILES = Makefile.in
 AM_CPPFLAGS = \
 	-DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../ \
+	-I@srcdir@/../../common \
 	-I@srcdir@/../../../libSzarp/include \
 	-I@srcdir@/../../../libSzarp2/include \
 	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@
@@ -28,7 +29,6 @@ libiks_server_data_a_SOURCES = \
 	param.cpp \
 	params.cpp \
 	params_updater.cpp \
-	probe_type.cpp \
 	set.cpp \
 	sets.cpp \
 	vars.cpp \

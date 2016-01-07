@@ -32,6 +32,7 @@
 #include "sz4/combined_param_entry.h"
 
 #include "sz4/buffer_templ.h"
+#include "sz4/base_templ.h"
 #include "sz4/lua_interpreter_templ.h"
 
 #include "test_serach_condition.h"

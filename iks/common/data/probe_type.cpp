@@ -7,11 +7,22 @@ ProbeType::ProbeType( ProbeType::Type pt , unsigned len )
 {
 }
 
+ProbeType::ProbeType( SZARP_PROBE_TYPE pt , unsigned len )
+	: pt(static_cast<Type>(pt + 1)) , len(len)
+{
+}
+
 ProbeType::ProbeType( const std::string& probe_string )
 	: len(0)
 {
 	if( probe_string == "live" )
 		pt = Type::LIVE;
+	else if( probe_string == "100ms" )
+		pt = Type::MS100;
+	else if( probe_string == "500ms" )
+		pt = Type::MS500;
+	else if( probe_string == "1s" )
+		pt = Type::S;
 	else if( probe_string == "10s" )
 		pt = Type::S10;
 	else if( probe_string == "10m" )
@@ -37,6 +48,12 @@ std::string ProbeType::to_string() const
 {
 	if( pt == Type::LIVE )
 		return "live";
+	if( pt == Type::MS100 )
+		return "100ms";
+	if( pt == Type::MS500 )
+		return "500ms";
+	if( pt == Type::S )
+		return "1s";
 	if( pt == Type::S10 )
 		return "10s";
 	if( pt == Type::M10 )

@@ -28,6 +28,10 @@ generic_block::generic_block(block_cache* cache) :
 	m_cache->add_new_block(*this);
 }
 
+block_cache* generic_block::cache() {
+	return m_cache;
+}
+
 void generic_block::block_data_updated(size_t previous_size) {
 	m_cache->block_size_changed(*this, previous_size);
 }

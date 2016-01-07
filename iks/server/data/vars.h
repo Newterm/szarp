@@ -22,8 +22,6 @@ public:
 
 	void from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error);
 
-	void set_szarp_prober_server( const std::string& address , unsigned port );
-
 	void command_request( const std::string& cmd , const std::string& data ) const;
 
 	void response_received( const std::string& cmd , const std::string& data );

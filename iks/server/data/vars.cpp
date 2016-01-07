@@ -39,12 +39,6 @@ void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_erro
 	params_updater.set_data_feeder( szb_wrapper );
 }
 
-void Vars::set_szarp_prober_server( const std::string& address , unsigned port )
-{
-	if( szb_wrapper )
-		szb_wrapper->set_prober_address( address , port );
-}
-
 void Vars::command_request( const std::string& cmd , const std::string& data ) const
 {
 	emit_command_received( cmd , data );

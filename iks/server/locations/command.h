@@ -8,7 +8,7 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "error_codes.h"
+#include "locations/error_codes.h"
 #include "utils/signals.h"
 
 typedef unsigned int id_t;

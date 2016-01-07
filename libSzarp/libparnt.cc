@@ -48,6 +48,7 @@ static Par* command_line_pars = NULL;
 
 int parse(FILE * stream);
 void parser_reset(void);
+void parser_hard_reset(void);
 void parser_destroy(void);
 
 /* Implementacja f. p.*/
@@ -393,10 +394,10 @@ int libpar_init_with_filename(const char *filename, int exit_on_error)
 	}
     }
     
-    parse(desc);
+    int parse_ret = parse(desc);
     fclose(desc);
 
-    return 0;
+    return parse_ret;
 }
 
 void libpar_done()
@@ -514,6 +515,11 @@ void libpar_reinit() {
 	libpar_init();
 }
 #endif
+
+void libpar_hard_reset() {
+	libpar_reset();
+	parser_hard_reset();
+}
 
 void libpar_reinit_with_filename(const char *name, int exit_on_error) {
 	libpar_reset();

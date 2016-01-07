@@ -191,6 +191,7 @@ function CopyDlls()
 	/usr/local/win32/boost-1.55/lib/libboost_chrono*.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.8/libstdc++-6.dll \
 	/usr/lib/gcc/i686-w64-mingw32/4.8/libgcc_s_sjlj-1.dll \
+	/usr/lib/gcc/i686-w64-mingw32/4.8/libquadmath-0.dll \
 	/usr/local/win32/bin/*winpthread-1.dll \
 	$MINGW"
 	
@@ -227,7 +228,7 @@ function PrepareScript() {
 		> "`GetTmp`/require.ini"
 	cat "$CURDIR"/../../gpl-2.0-pl-win.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \
-		| $ICONV -f utf-8 -t cp1250 \ 
+		| $ICONV -f utf-8 -t cp1250 \
 		> "`GetTmp`/license.pl"
 	cat "$CURDIR"/../../gpl-2.0.txt \
 		| $SED -e "s/__NAME__/$_NAME/g" \

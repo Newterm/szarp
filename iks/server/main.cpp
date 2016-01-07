@@ -14,6 +14,8 @@
 
 #include <liblog.h>
 
+#include "../../config.h"
+
 #include "net/tcp_server.h"
 
 #include "locations/manager.h"
@@ -50,7 +52,9 @@ int main( int argc , char** argv )
 		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
-		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
+		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
+		("base_cache_size_low_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT), "Szbase in-memory cache size low water mark (in bytes)")
+		("base_cache_size_high_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT), "Szbase in-memory cache size high water mark (in bytes)");
 
 	po::variables_map vm; 
 	CfgPairs pairs;
@@ -101,20 +105,10 @@ int main( int argc , char** argv )
 	sz_log(2,"Welcome, milord");
 
 	try {
-		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
-
 		boost::asio::io_service& io_service = GlobalService::get_service();
 
 		tcp::endpoint endpoint(tcp::v4(), vm["port"].as<unsigned>() );
 		TcpServer ts(io_service, endpoint);
-
-		LocationsMgr lm;
-
-		lm.add_locations( locs_cfg );
-		lm.add_config( server_config );
-
-		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
-		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
 
 		ba::signal_set signals(io_service, SIGINT, SIGTERM);
 		signals.async_wait( bind(&ba::io_service::stop, &io_service) );
@@ -147,6 +141,32 @@ int main( int argc , char** argv )
 			std::ofstream pf( pid_path , std::ofstream::trunc );
 			pf << get_pid();
 		}
+
+		{
+
+			size_t base_cache_size_low_water_mark = vm.count("base_cache_size_low_water_mark")
+								? vm["base_cache_size_low_water_mark"].as<size_t>()
+								: SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT;
+
+			size_t base_cache_size_high_water_mark = vm.count("base_cache_size_high_water_mark")
+								? vm["base_cache_size_high_water_mark"].as<size_t>()
+								: SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
+
+			sz_log(2, "Using %zu as base cache size low water mark", base_cache_size_low_water_mark);
+			sz_log(2, "Using %zu as base cache size high water mark", base_cache_size_high_water_mark);
+			SzbaseWrapper::init( vm["prefix"].as<std::string>()
+							   , base_cache_size_low_water_mark
+							   , base_cache_size_high_water_mark );
+
+		}
+
+		LocationsMgr lm;
+
+		lm.add_locations( locs_cfg );
+		lm.add_config( server_config );
+
+		ts.on_connected   ( bind(&LocationsMgr::on_new_connection,&lm,p::_1) );
+		ts.on_disconnected( bind(&LocationsMgr::on_disconnected  ,&lm,p::_1) );
 
 		sz_log(2,"Start serving on port %d", vm["port"].as<unsigned>() );
 

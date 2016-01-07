@@ -24,6 +24,7 @@
 #include <wx/dir.h>
 #include <wx/tokenzr.h>
 #include <wx/config.h>
+#include <wx/regex.h>
 #include <libxml/xmlreader.h>
 #include "cconv.h"
 
@@ -67,7 +68,7 @@ ConfigNameHash GetConfigTitles(const wxString &szarp_dir, wxArrayString* hidden)
 	    if(hidden != 0 && hidden->Index(prefix) != wxNOT_FOUND) continue;//asm
 
 		wxString file_path = szarp_dir + prefix + _T("/config/params.xml");
-		if (!wxFile::Exists(file_path))
+		if (!wxFile::Exists(file_path) || wxRegEx(wxString(std::string(".*[-._]bak.*").c_str(), wxConvUTF8), 0).Matches(prefix.Lower(), 0))
 			continue;
 
 		wxFileName file_name(file_path);

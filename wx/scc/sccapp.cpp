@@ -82,6 +82,9 @@ bool SCCApp::OnInit()
 		return false;
 	} 
 
+	if (this->rTimer == nullptr) {
+		this->rTimer = new ReloadTimer(this);
+	}
 	const char *prefix;
 	const char *suffix;
 	char *buffer;
@@ -191,14 +194,19 @@ bool SCCApp::OnInit()
 }
 
 void SCCApp::ReloadMenu() {
+	// Reinit libpar
+	libpar_hard_reset();
+	int reinit_status =
 #ifndef MINGW32
-        libpar_reinit();
+        libpar_init_with_filename(NULL, 0);
 #else
-        libpar_reinit_with_filename(SC::S2A((GetSzarpDir() + _T("resources/szarp.cfg"))).c_str(), 0);
+        libpar_init_with_filename(SC::S2A((GetSzarpDir() + _T("resources/szarp.cfg"))).c_str(), 0);
 #endif
 
-	if (taskbar_item == NULL)
+	if (taskbar_item == NULL || reinit_status != 0)
 		return;
+
+	// If config file was OK, recreate menu
 	SCCMenu *menu = CreateMainMenu();
 	taskbar_item->ReplaceMenu(menu);
 }
@@ -258,6 +266,9 @@ SCCMenu* SCCApp::CreateMainMenu() {
 int SCCApp::OnExit()
 {
 	libpar_done();
+	if (this->rTimer != nullptr) {
+		delete this->rTimer;
+	}
 	delete app_instance;
 #ifndef MINGW32
 	delete app_instance2;

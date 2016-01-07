@@ -51,4 +51,9 @@ std::string printable_string(std::string s);
 
 }	// namespace SC
 
+//comes in handy
+namespace std {
+ostream& operator<<(ostream& os, const std::basic_string<unsigned char> &us);
+}
+
 #endif

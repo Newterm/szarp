@@ -72,6 +72,11 @@ void Params::param_value_changed( iterator itr , double value , ProbeType pt )
 	emit_value_changed( itr.itr->second , value , pt );
 }
 
+void Params::param_changed( const std::string& name )
+{
+	emit_changed( name );
+}
+
 void Params::request_param_value( const std::string& name ,
                                   double value ,
 								  const std::string& pin ) const

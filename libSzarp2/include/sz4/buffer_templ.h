@@ -37,6 +37,8 @@ template<template <typename DT, typename TT, class BT> class param_entry_type, c
 			return param_entry_build_t_3<param_entry_type, types, data_type, second_time_t>(base, param, buffer_directory);
 		case TParam::NANOSECOND:
 			return param_entry_build_t_3<param_entry_type, types, data_type, nanosecond_time_t>(base, param, buffer_directory);
+		default:
+			assert(false);
 	}
 	return NULL;
 }
@@ -51,6 +53,8 @@ template<template <typename DT, typename TT, class BT> class param_entry_type, c
 			return param_entry_build_t_2<param_entry_type, types, float>(base, param, buffer_directory);
 		case TParam::DOUBLE:
 			return param_entry_build_t_2<param_entry_type, types, double>(base, param, buffer_directory);
+		default:
+			assert(false);
 	}
 	return NULL;
 }
@@ -141,8 +145,15 @@ template<class types> void buffer_templ<types>::remove_param(TParam* param) {
 	if (!entry)
 		return;
 
+	while (entry->referring_params().size()) {
+		auto p = (*entry->referring_params().begin())->get_param();
+		remove_param(p);
+	}
+
 	entry->deregister_from_monitor(m_param_monitor);
 	delete entry;
+
+	param->SetSz4Type(TParam::SZ4_NONE);
 
 	m_param_ents[param->GetParamId()] = NULL;
 }

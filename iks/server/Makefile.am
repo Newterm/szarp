@@ -8,6 +8,7 @@ MAINTAINERCLEANFILES = Makefile.in
 AM_CPPFLAGS = \
 	-DPREFIX=\"@prefix@\" \
 	-I@srcdir@ \
+	-I@srcdir@/../common \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
 	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@
@@ -20,6 +21,7 @@ LDADD = \
 	data/libiks-server-data.a \
 	utils/libiks-server-utils.a \
 	net/libiks-server-net.a \
+	../common/libiks-common.a \
 	@PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \
 	@XSLT_LIBS@ @XML_LIBS@ @LUA_LIBS@ \
 	@BOOST_LDFLAGS@ @BOOST_ASIO_LIB@ @BOOST_SYSTEM_LIB@ \

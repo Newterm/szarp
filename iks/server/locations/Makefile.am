@@ -8,6 +8,7 @@ MAINTAINERCLEANFILES = Makefile.in
 AM_CPPFLAGS = \
 	-DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../ \
+	-I@srcdir@/../../common \
 	-I@srcdir@/../../../libSzarp/include \
 	-I@srcdir@/../../../libSzarp2/include \
 	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@
@@ -27,6 +28,8 @@ libiks_server_locations_a_SOURCES = \
 	remotes_updater/remotes_updater.cpp \
 	welcome/welcome.cpp \
 	szbase/szbase.cpp \
+	szbase/cmd_search_data.cpp \
+	szbase/cmd_get_data.cpp \
 	proxy/proxy.cpp \
 	location.cpp \
 	protocol_location.cpp \

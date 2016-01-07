@@ -180,6 +180,10 @@ public:
 		return m_wsum;
 	}
 
+	sum_type _sum() const {
+		return m_wsum;
+	}
+
 	value_type avg() const {
 		if (!m_weight)
 			return no_data<value_type>();
@@ -187,11 +191,11 @@ public:
 		return sum_conv_helper<sum_type, value_type>::_do(m_wsum / sum_type(m_weight));
 	}
 
-	time_diff_type weight() {
+	time_diff_type weight() const {
 		return m_weight;
 	}
 	
-	time_diff_type no_data_weight() {
+	time_diff_type no_data_weight() const {
 		return m_no_data_weight;
 	}
 

@@ -2233,7 +2233,7 @@ class IPKContainer {
 
 	static IPKContainer* _object;
 
-	std::map<std::wstring, std::vector<TParam*> > m_extra_params;
+	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
 
 	IPKContainer(const std::wstring& szarp_data_dir,
 			const std::wstring& szarp_system_dir,
@@ -2258,8 +2258,12 @@ class IPKContainer {
 	void RemoveParamFromHash(TParam* p);
 
 	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
+
+	void RemoveExtraParamImpl(const std::wstring& prefix, TParam *p);
 public:
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
+
+	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);
 
 	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
@@ -2275,11 +2279,15 @@ public:
 	/**Loads config into the container
 	 * @return loaded config object, NULL if error occured during configuration load*/
 	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring(), bool logparams = true );
+
+	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams();
+
 	/**@return the container object*/
 	static IPKContainer* GetObject();
 	/**Inits the container
 	 * @param szarp_dir path to main szarp directory*/
 	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
+
 	/**Destroys the container*/
 	static void Destroy();
 };

@@ -193,7 +193,14 @@ protected:
 	/** start in full screen mode*/
 	bool m_full_screen;
 
-	bool m_sz4;
+	enum {
+		SZBASE_BASE,
+		SZ4_BASE,
+		IKS_BASE
+	} m_base_type;
+
+	wxString m_iks_server;
+	wxString m_iks_port;
 
 	/**Object that prevents more than one m_instance of program from running.*/
 	szSingleInstanceChecker *m_instance;

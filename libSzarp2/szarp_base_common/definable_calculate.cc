@@ -239,6 +239,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 	short sp = 0;
 	const wchar_t *chptr = formula.c_str();
 	int it = 0;	// licznik, do indeksowania parametrow
+	wchar_t* end_ptr;
 
 	szb_definable_error = 0;
 
@@ -339,11 +340,11 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 					if (stack_size <= sp) {
 						sz_log(0,
 							"Przepelnienie stosu dla formuly %ls, przy odkladaniu stalej: %lf",
-							formula.c_str(), wcstod(++chptr, NULL));
+							formula.c_str(), wcstod(++chptr, &end_ptr));
 						return nan("");
 					}
 		
-					stack[sp++] = wcstod(++chptr, NULL);
+					stack[sp++] = wcstod(++chptr, &end_ptr);
 					chptr = wcschr(chptr, L' ');
 					break;
 				case L'?':

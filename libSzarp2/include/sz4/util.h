@@ -52,8 +52,8 @@ public:
 	}
 };
 
-template<class T> T scale_value(const T& v, TParam* p) {
-	switch (p->GetDataType()) {
+template<class T> T scale_value(const T& v, TParam::DataType dt, int prec) {
+	switch (dt) {
 		case TParam::FLOAT:
 		case TParam::DOUBLE:
 			return v;
@@ -62,10 +62,14 @@ template<class T> T scale_value(const T& v, TParam* p) {
 			if (value_is_no_data(v))
 				return v;
 			else
-				return v / pow(10, p->GetPrec());
+				return v / pow(10, prec);
 		default:
 			assert(false);
 	}
+}
+
+template<class T> T scale_value(const T& v, TParam* p) {
+	return scale_value(v, p->GetDataType(), p->GetPrec());
 }
 
 template<class T> T descale_value(const T& v, TParam* p) {

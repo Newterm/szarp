@@ -65,10 +65,16 @@ function GetVimRc () {
 # Check if syntax files are already installed.
 # Uses VIM_RC variable.
 # Return 0 if files are installed, 1 otherwise.
-function CheckVim () {
+function OldCheckVim () {
 	grep "so /opt/szarp/resources/szarp.vim" "$VIM_RC" &> /dev/null
 	return $?
 }
+
+function CheckVim () {
+	grep "source /opt/szarp/resources/vimfiles/szarp.vim" "$VIM_RC" &> /dev/null
+	return $?
+}
+
 
 # Syntax installation.
 # Uses VIM_RC variable.
@@ -77,15 +83,24 @@ function InstallVim () {
 		Message "Syntax files already installed"
 		return
 	}
-	echo "so /opt/szarp/resources/szarp.vim" >> $VIM_RC || \
-			Error "Installation error"
+	OldCheckVim && {
+		sed -i --follow-symlinks '/so \/opt\/szarp\/resources\/szarp.vim/d' "$VIM_RC"
+		Message "Updating entry for SZARP syntax files..."
+	}
+
+	cat >> "$VIM_RC" <<EOT
+" Source SZARP syntax file
+if filereadable("/opt/szarp/resources/vimfiles/szarp.vim")
+    source /opt/szarp/resources/vimfiles/szarp.vim
+endif
+EOT
 	Message "Files successfully installed"
 }
 
 
 FindVim || {
 	Error "Vim editor not found. You can install this SZARP syntax files manually
-	by putting 'so /opt/szarp/resources/szarp.vim' in your vim configuration file."
+	by putting 'source /opt/szarp/resources/vimfiles/szarp.vim' in your vim configuration file."
 }
 GetVimRc
 Message "vimrc file found at $VIM_RC"

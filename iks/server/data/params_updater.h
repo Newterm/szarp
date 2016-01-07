@@ -15,11 +15,15 @@
  * values.
  */
 class ParamsUpdater {
-	typedef std::pair<Params::iterator,ProbeType> SubKey;
-	typedef std::shared_ptr<SubKey> SharedKey;
-	typedef std::set<SharedKey> SharedSubscription;
-	typedef std::unordered_map<SharedKey,time_t> SubscribedParams;
+	class SubPar;
 
+	typedef std::shared_ptr< SubPar > SubParPtr;
+	typedef std::weak_ptr  < SubPar > SubParWeakPtr;
+
+	typedef std::string SubKey;
+	typedef std::map< SubKey , SubParWeakPtr > SubParsMap;
+	
+	friend class SubPar;
 public:
 	class Subscription;
 
@@ -29,16 +33,13 @@ public:
 	/** TODO: change SzbaseWrapper to generic DataFeeder class */
 	void set_data_feeder( SzbaseWrapper* data_feeder = NULL );
 
-	Subscription subscribe_param( const std::string& name , ProbeType pt , bool update = true );
+	Subscription subscribe_param( const std::string& name , boost::optional<ProbeType> pt , bool update = true );
 	template<class Container>
-	Subscription subscribe_params( const Container& names , ProbeType pt , bool update = true )
+	Subscription subscribe_params( const Container& names , boost::optional<ProbeType> pt , bool update = true )
 	{
 		Subscription s;
 		for( auto itr=names.begin() ; itr!=names.end() ; ++itr )
-			s.insert( subscribe_param( *itr , pt , false ) );
-
-		if( update )
-			data_updater->check_szarp_values();
+			s.insert( subscribe_param( *itr , pt , update ) );
 
 		return s;
 	}
@@ -47,8 +48,7 @@ protected:
 	Params& params;
 	SzbaseWrapper* data_feeder;
 
-	SubscribedParams subscribed_params;
-
+	std::map< SubKey , SubParWeakPtr > subscribed_params;
 public:
 	class Subscription {
 		friend class ParamsUpdater;
@@ -59,27 +59,40 @@ public:
 		void cancel() { subset.clear(); }
 
 	protected:
-		Subscription( const SharedKey& itr );
+		std::set<SubParPtr> subset;
 
 		void insert( const Subscription& sub );
-
-	private:
-		SharedSubscription subset;
+		void insert( const SubParPtr& sub );
 	};
 
-private:
-	class DataUpdater : public std::enable_shared_from_this<DataUpdater> {
-	public: 
-		DataUpdater( ParamsUpdater* parent ) : parent(parent) {}
-		~DataUpdater() {}
+	std::string add_param( const std::string& param
+						 , const std::string& bae
+						 , const std::string& formula
+						 , const std::string& token
+						 , const std::string& type
+						 , int prec
+						 , unsigned start_time);
 
-		void check_szarp_values( const boost::system::error_code& e = boost::system::error_code() );
+	void remove_param( const std::string& base , const std::string& param );
+private:
+
+	class SubPar : public std::enable_shared_from_this< SubPar > {
+		std::string pname;
+		boost::optional<ProbeType> pt;
 
 		ParamsUpdater* parent;
-	};
-	std::shared_ptr<DataUpdater> data_updater;
 
-	boost::asio::deadline_timer timeout;
+		SzbaseObserverToken token;
+	public:
+		SubPar( const std::string& pname , boost::optional<ProbeType> pt , ParamsUpdater* parent);
+		~SubPar();
+
+		bool start_sub();
+	
+		void update_param();
+
+		static void callback( SubParWeakPtr ptr );
+	};
 
 };
 

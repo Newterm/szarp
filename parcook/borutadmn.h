@@ -64,9 +64,9 @@ struct serial_port_configuration {
 	int stop_bits;
 	int speed;
 	enum CHAR_SIZE {
-		CS_6,
-		CS_7,
-		CS_8
+		CS_6 = 6,
+		CS_7 = 7,
+		CS_8 = 8
 	} char_size;
 };
 

@@ -17,15 +17,22 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
+#include "cconv.h"
+
 #include "classes.h"
+#include "szarp_config.h"
 #include "database.h"
 #include "cfgmgr.h"
 #include "dbmgr.h"
 #include "conversion.h"
 #include "szbextr/extr.h"
+#include "sz4/api.h"
 #include "sz4/util.h"
 #include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"
+#include "ikssetup.h"
+#include "sz4_iks_param_info.h"
+#include "sz4_iks.h"
 
 #include <cmath>
 
@@ -33,9 +40,22 @@
 #include <iostream>
 #include <limits>
 
-void Draw3Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars)
+
+Draw3Base::Draw3Base(wxEvtHandler *response_receiver) : m_response_receiver(response_receiver)
+{}
+
+void Draw3Base::SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			const std::wstring& port)
 {
+}
+
+void Draw3Base::ExtractParameters(DatabaseQuery *query)
+{
+	DatabaseQuery::ExtractionParameters &pars = query->extraction_parameters;
 	boost::shared_ptr<SzbExtractor> extr(CreateExtractor());
+	if (!extr)
+		return;
 	extr->SetPeriod(PeriodToProbeType(pars.pt),
 			pars.start_time,
 			szb_move_time(pars.end_time, 1, PeriodToProbeType(pars.pt), 0),
@@ -59,6 +79,53 @@ void Draw3Base::ExtractParameters(DatabaseQuery::ExtractionParameters &pars)
 	extr->ExtractToCSV(output, L";");
 	fclose(output);
 }
+
+void Draw3Base::RemoveConfig(DatabaseQuery* query) {
+	RemoveConfig(query->reload_prefix.prefix, true);
+	DatabaseResponse r(query);
+	wxPostEvent(m_response_receiver, r);
+}
+
+void Draw3Base::RegisterObserver(DatabaseQuery *query) { }
+
+
+void Draw3Base::SetProberAddress(DatabaseQuery* query) {
+	SetProberAddress(query->prefix, query->prober_address.address, query->prober_address.port);
+
+	free(query->prober_address.address);
+	free(query->prober_address.port);
+
+	delete query;
+}
+
+void Draw3Base::CompileLuaFormula(DatabaseQuery* query) {
+	std::wstring error;
+	bool ret;
+
+	ret = CompileLuaFormula(query->compile_formula.formula, error);
+	query->compile_formula.ok = ret;
+	if (ret == false)
+		query->compile_formula.error = wcsdup(error.c_str());
+		
+	DatabaseResponse dr(query);
+	wxPostEvent(m_response_receiver, dr);
+}
+
+void Draw3Base::NotifyAboutConfigurationChanges(DatabaseQuery* query) {
+	NotifyAboutConfigurationChanges();
+	delete query;
+}
+
+void Draw3Base::AddExtraParam(DatabaseQuery *query) {
+	AddExtraParam(query->defined_param.prefix, query->defined_param.p);
+	free(query->defined_param.prefix);
+	delete query;
+}
+
+void Draw3Base::RemoveExtraParam(DatabaseQuery* query) {
+	RemoveExtraParam(query->defined_param.prefix, query->defined_param.p);
+}
+
 
 namespace {
 
@@ -116,7 +183,7 @@ void SzbaseBase::releaseCancelHandle(TParam* p) {
 
 }
 
-SzbaseBase::SzbaseBase(const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size) {
+SzbaseBase::SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size) : Draw3Base(response_receiver) {
 	Szbase::Init(data_path, conf_changed_cb, true, cache_size);
 	szbase = Szbase::GetObject();
 }
@@ -172,6 +239,9 @@ void SzbaseBase::SearchData(DatabaseQuery* query) {
 		sd.ok = true;
 		sd.response_second = -1;
 		sd.response_nanosecond = -1;
+
+		DatabaseResponse dr(query);
+		wxPostEvent(m_response_receiver, dr);
 		return;
 	}
 
@@ -203,9 +273,13 @@ void SzbaseBase::SearchData(DatabaseQuery* query) {
 
 
 	releaseCancelHandle(p);
+
+	DatabaseResponse dr(query);
+	wxPostEvent(m_response_receiver, dr);
+
 }
 
-void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) {
+void SzbaseBase::GetData(DatabaseQuery* query) {
 	TParam *p = query->param;
 	TSzarpConfig *cfg = NULL;
 	szb_buffer_t *szb = NULL;
@@ -235,7 +309,7 @@ void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) 
 		if (new_year != year || new_month != month) {
 			if (rq) {
 				DatabaseResponse dr(rq);
-				wxPostEvent(response_receiver, dr);
+				wxPostEvent(m_response_receiver, dr);
 				rq = NULL;
 			}
 
@@ -285,7 +359,7 @@ void SzbaseBase::GetData(DatabaseQuery* query, wxEvtHandler *response_receiver) 
 
 	if (rq) {
 		DatabaseResponse dr(rq);
-		wxPostEvent(response_receiver, dr);
+		wxPostEvent(m_response_receiver, dr);
 	}
 
 }
@@ -319,8 +393,63 @@ void SzbaseBase::StopSearch() {
 	}
 }
 
-Sz4Base::Sz4Base(const std::wstring& data_dir, IPKContainer* ipk_conatiner)
-	: data_dir(data_dir), ipk_container(ipk_conatiner) {
+namespace {
+
+template<class time_type>
+void wsum_to_value(DatabaseQuery::ValueData::V& v,
+		const sz4::weighted_sum<double, time_type>& wsum,
+		SZARP_PROBE_TYPE pt,
+		TParam::DataType dt,
+		int prec) {
+	typedef sz4::weighted_sum<double, time_type> wsum_type;
+
+	typename wsum_type::sum_type sum;
+	typename wsum_type::time_diff_type weight;
+
+	sum = wsum.sum(weight);
+
+	v.response = sz4::scale_value(wsum.avg(), dt, prec);
+
+	double scale;
+	switch (pt) {
+		case PT_HALFSEC: 
+		case PT_MSEC10:
+			scale = 10 * 1000000000. * 60;
+			break;
+		default:
+			scale = 10 * 60.;
+			break;
+	}
+	v.sum = sz4::scale_value(double(sum), dt, prec) / scale;
+
+	if (weight && v.count)
+		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
+	else
+		v.count = 0;
+}
+
+template<class T> struct pair_to_sz4_type {};
+
+template<> struct pair_to_sz4_type<sz4::nanosecond_time_t> {
+	sz4::nanosecond_time_t operator()(time_t second, time_t nanosecond) const {
+		if (second == (time_t) -1 && nanosecond == (time_t) -1)
+			return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+		else
+			return sz4::nanosecond_time_t(second, nanosecond);
+	}
+};
+
+template<> struct pair_to_sz4_type<sz4::second_time_t> {
+	sz4::second_time_t operator()(time_t second, time_t nanosecond) const {
+		return second;
+	}
+};
+	
+}
+
+
+Sz4Base::Sz4Base(wxEvtHandler* response_receiver, const std::wstring& data_dir, IPKContainer* ipk_conatiner)
+	: Draw3Base(response_receiver), data_dir(data_dir), ipk_container(ipk_conatiner) {
 
 	base = new sz4::base(data_dir, ipk_conatiner);
 
@@ -342,7 +471,7 @@ bool Sz4Base::CompileLuaFormula(const std::wstring& formula, std::wstring& error
 	if (r == false)
 		error = SC::lua_error2szarp(lua_tostring(lua, -1));
 	lua_pop(lua, 1);
-	return r;
+	return true;
 }
 
 void Sz4Base::AddExtraParam(const std::wstring& prefix, TParam *param) {
@@ -354,11 +483,6 @@ void Sz4Base::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
 
 void Sz4Base::NotifyAboutConfigurationChanges() {
 
-}
-
-void Sz4Base::SetProberAddress(const std::wstring& prefix,
-			const std::wstring& address,
-			const std::wstring& port)  {
 }
 
 SzbExtractor* Sz4Base::CreateExtractor() {
@@ -401,6 +525,9 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 		sd.ok = true;
 		sd.response_second = -1;
 		sd.response_nanosecond = -1;
+
+		DatabaseResponse dr(query);
+		wxPostEvent(m_response_receiver, dr);
 		return;
 	}
 
@@ -428,15 +555,20 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 	}
 	sz4_nanonsecond_to_pair(response, sd.response_second, sd.response_nanosecond);
 	sd.ok = true;
+
+	DatabaseResponse dr(query);
+	wxPostEvent(m_response_receiver, dr);
 }
 
 template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
-		const time_type& time, TParam* p, SZARP_PROBE_TYPE pt) {
+		time_t second, time_t nanosecond, TParam* p, SZARP_PROBE_TYPE pt) {
 	if (!p) {
 		v.count = 0;
 		v.response = nan("");
 		return;
 	}
+
+	time_type time = pair_to_sz4_type<time_type>()(second, nanosecond);
 
 	typedef sz4::weighted_sum<double, time_type> wsum_type;
 
@@ -444,26 +576,10 @@ template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 	wsum_type wsum;
 	base->get_weighted_sum(p, time, end_time, pt, wsum);
 
-	v.response = sz4::scale_value(wsum.avg(), p);
-
-	typename wsum_type::sum_type sum;
-	typename wsum_type::time_diff_type weight;
-	sum = wsum.sum(weight);
-
-	double scale;
-	if (pt == PT_HALFSEC || pt == PT_MSEC10)
-		scale = 10 * 60.;
-	else
-		scale = 10 * 1000000000. * 60;
-	v.sum = sz4::scale_value(double(sum), p) / scale;
-
-	if (weight && v.count)
-		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
-	else
-		v.count = 0;
+	wsum_to_value(v, wsum, pt, p->GetDataType(), p->GetPrec());
 }
 
-void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
+void Sz4Base::GetData(DatabaseQuery* query) {
 	DatabaseQuery::ValueData &vd = query->value_data;
 	TParam* p = query->param;
 
@@ -474,16 +590,15 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 		DatabaseQuery *rq = CreateDataQueryPrivate(query->draw_info, query->param, vd.period_type, query->draw_no);
 		rq->inquirer_id = query->inquirer_id;
 		try {
-			if (pt == PT_HALFSEC || pt == PT_MSEC10) {
-				sz4::nanosecond_time_t time = pair_to_sz4_nanosecond(i->time_second, i->time_nanosecond);
-				GetValue<sz4::nanosecond_time_t>(*i, time, p, pt);
-			} else {
-				GetValue<sz4::second_time_t>(*i, i->time_second, p, pt);
-			}
+			if (pt == PT_HALFSEC || pt == PT_MSEC10)
+				GetValue<sz4::nanosecond_time_t>(*i, i->time_second, i->time_nanosecond, p, pt);
+			else
+				GetValue<sz4::second_time_t>(*i, i->time_second, i->time_nanosecond, p, pt);
 
 			i->ok = true;
 
 		} catch (sz4::exception &e) {
+			i->response = nan("");
 			i->error = 1;
 			i->error_str = wcsdup(SC::U2S((const unsigned char*)(e.what())).c_str());
 			i->count = 0;
@@ -493,7 +608,7 @@ void Sz4Base::GetData(DatabaseQuery* query, wxEvtHandler* response_receiver) {
 		rq->value_data.vv->push_back(*i);
 
 		DatabaseResponse dr(rq);
-		wxPostEvent(response_receiver, dr);
+		wxPostEvent(m_response_receiver, dr);
 		i++;
 	}	
 }
@@ -510,13 +625,268 @@ void Sz4Base::StopSearch() {
 
 }
 
-void Sz4Base::RegisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
-	base->register_observer(observer, params);
+void Sz4Base::RegisterObserver(DatabaseQuery *query) {
+	base->deregister_observer(
+		query->observer_registration_parameters.observer,
+		*query->observer_registration_parameters.params_to_deregister);
+	base->register_observer(
+		query->observer_registration_parameters.observer,
+		*query->observer_registration_parameters.params_to_register);
 }
 
-void Sz4Base::DeregisterObserver(sz4::param_observer* observer, const std::vector<TParam*>& params) {
-	base->deregister_observer(observer, params);
+
+Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
+			const std::wstring& address, const std::wstring& port,
+			IPKContainer *ipk_container) 
+			: Draw3Base(response_receiver)
+			, ipk_container(ipk_container) {
+
+	std::tie(connection_mgr, base, io) =
+		build_iks_client(ipk_container, address, port, _("User:Param:"));
+
+	io_thread = start_connection_manager(connection_mgr);
 }
+
+void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
+			bool poison_cache) 
+{
+}
+
+bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
+	///XXX: implement
+	return true;
+}
+
+void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
+	sz4::param_info p(prefix, param->GetName());
+	base->add_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
+}
+
+void Sz4ApiBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
+	sz4::param_info p(prefix, param->GetName());
+	base->remove_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
+}
+
+void Sz4ApiBase::NotifyAboutConfigurationChanges() {
+}
+
+void Sz4ApiBase::SetProberAddress(const std::wstring& prefix,
+			const std::wstring& address,
+			const std::wstring& port) {
+}
+
+
+SzbExtractor* Sz4ApiBase::CreateExtractor() {
+	///XXX:
+	return NULL;
+}
+
+
+void Sz4ApiBase::SearchData(DatabaseQuery* query) {
+	TParam* p = query->param;
+	DatabaseQuery::SearchData& sd = query->search_data;
+
+	if (p == NULL) {
+		sd.ok = true;
+		sd.response_second = -1;
+		sd.response_nanosecond = -1;
+
+		DatabaseResponse dr(query);
+		wxPostEvent(m_response_receiver, dr);
+		return;
+	}
+
+	auto cb = [query, this] (const boost::system::error_code& ec, const sz4::nanosecond_time_t& t) {
+		DatabaseQuery::SearchData& sd = query->search_data;
+		if (!ec) {
+			sz4_nanonsecond_to_pair(t, sd.response_second, sd.response_nanosecond);
+			sd.ok = true;
+		} else {
+			sd.ok = false;
+			sd.error_str = wcsdup(SC::L2S(ec.message()).c_str());
+		}
+
+		DatabaseResponse dr(query);
+		wxPostEvent(m_response_receiver, dr);
+	};
+
+	if (sd.direction > 0) {
+		base->search_data_right<sz4::nanosecond_time_t>(
+			ParamInfoFromParam(p),
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
+			PeriodToProbeType(sd.period_type),
+			cb
+		);
+	} else {
+		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
+			end.second = 0;
+			end.nanosecond = 0;
+		}
+		base->search_data_left<sz4::nanosecond_time_t>(
+			ParamInfoFromParam(p),
+			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			end,
+			PeriodToProbeType(sd.period_type),
+			cb
+		);
+	}
+}
+
+sz4::param_info Sz4ApiBase::ParamInfoFromParam(TParam* p) {
+	return sz4::param_info(p->GetSzarpConfig()->GetPrefix(), p->GetName());
+}
+
+namespace {
+
+void dummy_prepare_sz4_param(TParam* param) {
+	if (param->GetSz4Type() != TParam::SZ4_NONE)
+		return;
+
+	if (param->GetType() == TParam::P_REAL) {
+		param->SetSz4Type(TParam::SZ4_REAL);
+		return;
+	}
+
+	if (param->IsDefinable())
+		param->PrepareDefinable();
+
+	if (param->GetType() == TParam::P_COMBINED) {
+		param->SetSz4Type(TParam::SZ4_COMBINED);
+		param->SetDataType(TParam::INT);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_DEFINABLE) {
+		param->SetSz4Type(TParam::SZ4_DEFINABLE);
+		param->SetDataType(TParam::DOUBLE);
+		return;
+	}
+
+	if (param->GetType() == TParam::P_LUA) {
+		param->SetSz4Type(TParam::SZ4_LUA);
+		param->SetDataType(TParam::DOUBLE);
+	}
+
+}
+
+
+}
+
+
+template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
+	auto query_ptr = std::shared_ptr<DatabaseQuery>(query);
+
+	DatabaseQuery::ValueData &vd = query->value_data;
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(vd.period_type);
+
+	dummy_prepare_sz4_param(query->param);
+
+	TParam::DataType dt = query->param->GetDataType();
+	int prec = query->param->GetPrec();
+
+	for (auto v : *vd.vv) {
+		time_type time = pair_to_sz4_type<time_type>()(v.time_second, v.time_nanosecond);
+		base->get_weighted_sum<double, time_type>(
+			ParamInfoFromParam(query->param),
+			time, szb_move_time(time, 1, pt), pt,
+			[query_ptr, time, this, v, dt, prec]
+			(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
+				auto& vd = query_ptr->value_data;
+				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
+							vd.period_type, query_ptr->draw_no);
+				rq->inquirer_id = query_ptr->inquirer_id;
+				rq->value_data.vv->push_back(v);
+				auto &nv = rq->value_data.vv->back();
+
+				if (!ec) {
+					wsum_to_value(nv, sums.at(0),
+							PeriodToProbeType(query_ptr->value_data.period_type),
+							dt, prec);
+					nv.ok = true;
+				} else {
+					nv.error = 1;
+					nv.error_str = wcsdup(SC::L2S(ec.message()).c_str());
+					nv.count = 0;
+					nv.response = nan("");
+					nv.ok = false;
+				}
+
+				DatabaseResponse r(rq);
+				wxPostEvent(m_response_receiver, r);
+		});
+	}
+}
+
+void Sz4ApiBase::GetData(DatabaseQuery* query) {
+	DatabaseQuery::ValueData &vd = query->value_data;
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(vd.period_type);
+	if (pt == PT_HALFSEC || pt == PT_MSEC10)
+		DoGetData<sz4::nanosecond_time_t>(query);
+	else
+		DoGetData<sz4::second_time_t>(query);
+}
+
+void Sz4ApiBase::ResetBuffer(DatabaseQuery* query) {
+
+}
+
+
+void Sz4ApiBase::ClearCache(DatabaseQuery* query) {
+
+}
+	
+void Sz4ApiBase::StopSearch() {
+
+}
+
+Sz4ApiBase::ObserverWrapper::ObserverWrapper(TParam* param, sz4::param_observer* obs)
+			: obs(obs), param(param) {
+	prefix = param->GetSzarpConfig()->GetPrefix();
+}
+
+void Sz4ApiBase::ObserverWrapper::operator()() {
+	obs->param_data_changed(param);
+}
+
+void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
+	auto observer = query->observer_registration_parameters.observer;
+	auto& to_dereg = *query->observer_registration_parameters.params_to_deregister;
+	auto& to_reg = *query->observer_registration_parameters.params_to_deregister;
+
+	for (auto& p : to_dereg) {
+		auto pi = ParamInfoFromParam(p);
+		auto i = observers.find(std::make_pair(observer, pi));
+		if (i == observers.end())
+			continue;
+
+		base->deregister_observer(
+			i->second,
+			std::vector<sz4::param_info>(1, pi),
+			[] (const boost::system::error_code&) { /*XXX*/ });
+
+		observers.erase(i);
+	}
+
+	for (auto& p : to_reg) {
+		auto pi = ParamInfoFromParam(p);
+		auto ow = std::make_shared<ObserverWrapper>(p, observer);
+		observers[std::make_pair(observer, pi)] = ow;
+
+		base->register_observer(
+			ow,
+			std::vector<sz4::param_info>(1 , pi),
+			[] (const boost::system::error_code&) { /*XXX*/ });
+	}
+
+}
+
+Sz4ApiBase::~Sz4ApiBase() {}
 
 QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response_receiver, Draw3Base *_base) :
 	wxThread(wxTHREAD_JOINABLE), queue(_queue), response_receiver(_response_receiver), base(_base)
@@ -588,67 +958,55 @@ void* QueryExecutor::Entry() {
 	DatabaseQuery *q = NULL;
 
 	while ((q = queue->GetQuery())) {
+		switch (q->type) {
+			case DatabaseQuery::STARTING_CONFIG_RELOAD:
+				base->RemoveConfig(q);
+				break;
+			
+			case DatabaseQuery::COMPILE_FORMULA:
+				base->CompileLuaFormula(q);
+				break;
 
-		bool post_response = false;
+			case DatabaseQuery::ADD_PARAM:
+				base->AddExtraParam(q);
+				break;
 
-		if (q->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
-			base->RemoveConfig(q->reload_prefix.prefix, true);
-			post_response = true;
-		} else if (q->type == DatabaseQuery::COMPILE_FORMULA) {
-			std::wstring error;
-			bool ret;
-#ifndef NO_LUA
-			ret = base->CompileLuaFormula(q->compile_formula.formula, error);
-			q->compile_formula.ok = ret;
-			if (ret == false)
-				q->compile_formula.error = wcsdup(error.c_str());
-				
-#else
-			q->compile_formula.ok = false;
-			q->compile_formula.error = strdup(error.c_str());
-#endif
-			post_response = true;
+			case DatabaseQuery::REMOVE_PARAM:
+				base->RemoveExtraParam(q);
+				break;
 
-#ifndef NO_LUA
-		} else if (q->type == DatabaseQuery::ADD_PARAM) {
-			base->AddExtraParam(q->defined_param.prefix, q->defined_param.p);
-			free(q->defined_param.prefix);
-		} else if (q->type == DatabaseQuery::REMOVE_PARAM) {
-			base->RemoveExtraParam(q->defined_param.prefix, q->defined_param.p);
-			post_response = true;
-#endif
-		} else if (q->type == DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE) {
-			base->NotifyAboutConfigurationChanges();
-		} else if (q->type == DatabaseQuery::SET_PROBER_ADDRESS) {
-			base->SetProberAddress(q->prefix,
-					q->prober_address.address,
-					q->prober_address.port);
-			free(q->prober_address.address);
-			free(q->prober_address.port);
-		} else if (q->type == DatabaseQuery::EXTRACT_PARAM_VALUES) {
-			ExecuteExtractParametersQuery(q->extraction_parameters);
-		} else if (q->type == DatabaseQuery::SEARCH_DATA) {
-			base->SearchData(q);
-			post_response = true;
-		} else if (q->type == DatabaseQuery::GET_DATA) {
-			base->GetData(q, response_receiver);
-			post_response = false;
-		} else if (q->type == DatabaseQuery::RESET_BUFFER) {
-			base->ResetBuffer(q);
-		} else if (q->type == DatabaseQuery::CLEAR_CACHE) {
-			base->ClearCache(q);
-		} else if (q->type == DatabaseQuery::REGISTER_OBSERVER) {
-			base->DeregisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_deregister);
-			base->RegisterObserver(q->observer_registration_parameters.observer, *q->observer_registration_parameters.params_to_register);
-		} else {
-			assert(false);
+			case DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE:
+				base->NotifyAboutConfigurationChanges(q);
+				break;
+
+			case DatabaseQuery::SET_PROBER_ADDRESS:
+				base->SetProberAddress(q);
+				break;
+
+			case DatabaseQuery::EXTRACT_PARAM_VALUES:
+				base->ExtractParameters(q);
+				break;
+
+			case DatabaseQuery::SEARCH_DATA:
+				base->SearchData(q);
+				break;
+
+			case DatabaseQuery::GET_DATA:
+				base->GetData(q);
+				break;
+
+			case DatabaseQuery::RESET_BUFFER:
+				base->ResetBuffer(q);
+				break;
+
+			case DatabaseQuery::CLEAR_CACHE:
+				base->ClearCache(q);
+				break;
+
+			case DatabaseQuery::REGISTER_OBSERVER:
+				base->RegisterObserver(q);
+				break;
 		}
-	
-		if (post_response) {
-			DatabaseResponse r(q);
-			wxPostEvent(response_receiver, r);
-		} else
-			delete q;
 	
 	}
 
@@ -660,10 +1018,6 @@ void* QueryExecutor::Entry() {
 
 void QueryExecutor::StopSearch() {
 	base->StopSearch();
-}
-
-void QueryExecutor::ExecuteExtractParametersQuery(DatabaseQuery::ExtractionParameters &pars) {
-	base->ExtractParameters(pars);
 }
 
 DatabaseQuery::~DatabaseQuery() {

@@ -1,4 +1,5 @@
 #include "params_updater.h"
+#include "sz4/base.h"
 
 #include <chrono>
 #include <memory>
@@ -12,14 +13,11 @@ namespace p = std::placeholders;
 
 ParamsUpdater::ParamsUpdater( Params& params )
 	: params(params)
-	, timeout(GlobalService::get_service())
 {
-	data_updater = std::make_shared<DataUpdater>( this );
 }
 
 ParamsUpdater::~ParamsUpdater()
 {
-	data_updater->parent = NULL;
 }
 
 void ParamsUpdater::set_data_feeder( SzbaseWrapper* data_feeder_ )
@@ -29,34 +27,52 @@ void ParamsUpdater::set_data_feeder( SzbaseWrapper* data_feeder_ )
 
 ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		const std::string& name ,
-		ProbeType pt ,
+		boost::optional<ProbeType> pt ,
 		bool update )
 {
-	auto itr = params.find( name );
+	Subscription sub;
 
-	if( itr == params.end() )
-		return Subscription();
+	auto key = SubKey( name );
 
-	Subscription s(
-		subscribed_params.insert(
-			std::make_pair( 
-				std::make_shared<SubKey>( itr , pt ) ,
-				0
-				) ).first->first );
+	SubParPtr ptr;
+	if ( !( ptr = subscribed_params[ key ].lock() ) ) {
+		ptr = std::make_shared< SubPar >( name, pt, this );
+
+		if ( !ptr->start_sub() ) {
+			subscribed_params.erase( key );
+			return sub;
+		}
+
+		subscribed_params.insert(std::make_pair( key,
+												 SubParWeakPtr( ptr ) ) );
+	}
 
 	if( update )
-		data_updater->check_szarp_values();
+		ptr->update_param();
 
-	return s;
+	sub.insert(ptr);
+	return sub;
+}
+
+std::string ParamsUpdater::add_param( const std::string& param
+									, const std::string& base
+									, const std::string& formula
+									, const std::string& token
+									, const std::string& type
+									, int prec
+									, unsigned start_time)
+
+{
+	return data_feeder->add_param( param , base , formula , token, type , prec , start_time );
+}
+
+void ParamsUpdater::remove_param( const std::string& base , const std::string& param )
+{
+	return data_feeder->remove_param( base , param );
 }
 
 ParamsUpdater::Subscription::Subscription()
 {
-}
-
-ParamsUpdater::Subscription::Subscription( const SharedKey& key )
-{
-	subset.insert( key );
 }
 
 void ParamsUpdater::Subscription::insert( const ParamsUpdater::Subscription& sub )
@@ -64,65 +80,54 @@ void ParamsUpdater::Subscription::insert( const ParamsUpdater::Subscription& sub
 	subset.insert( sub.subset.begin() , sub.subset.end() );
 }
 
-void ParamsUpdater::DataUpdater::check_szarp_values(
-		const boost::system::error_code& e )
+void ParamsUpdater::Subscription::insert( const ParamsUpdater::SubParPtr& sub )
 {
-	if( e || !parent ) return;
+	subset.insert( sub );
+}
 
+ParamsUpdater::SubPar::SubPar( const std::string& pname , boost::optional<ProbeType> pt , ParamsUpdater* parent )
+											   : pname( pname ) , pt( pt ) , parent( parent )
+{
+}
+
+bool ParamsUpdater::SubPar::start_sub() {
+	SubParWeakPtr ptr(shared_from_this());
+
+	try {
+			token = parent->data_feeder->register_observer( pname , [ptr] () {
+				GlobalService::get_service().post( std::bind( callback, ptr ) );
+			} );
+	} catch( szbase_error& e ) {
+		sz_log( 0, "Szbase error while registering observer : %s", e.what() );
+		return false;
+	}
+
+	return true;
+}
+
+ParamsUpdater::SubPar::~SubPar() {
+	parent->subscribed_params.erase( ParamsUpdater::SubKey( pname ) );
+}
+
+void ParamsUpdater::SubPar::update_param() {
 	using std::chrono::system_clock;
 	using namespace boost::posix_time;
 
-	time_t t = system_clock::to_time_t(system_clock::now());
+	if( pt ) {
+		time_t t = system_clock::to_time_t( system_clock::now() );
+		time_t ptime = SzbaseWrapper::round( t , *pt );
 
-	/**
-	 * Find minimum probe type to reschedule probes update and remove
-	 * unused subscriptions
-	 */
-	ProbeType min_pt( ProbeType::Type::MAX );
-	for( auto itr=parent->subscribed_params.begin() ;
-		 itr != parent->subscribed_params.end() ; )
-		if( itr->first.use_count() <= 1 ) {
-			/** No Subscription object left */
-			parent->subscribed_params.erase( itr++ );
-		} else {
-			min_pt = std::min( (*itr->first).second , min_pt );
-			++itr;
-		}
-
-	try {
-		for( auto itr=parent->subscribed_params.begin() ;
-			 itr != parent->subscribed_params.end() ;
-			 ++itr )
-		{
-			auto& name = *(*itr->first).first;
-			auto& pt   =  (*itr->first).second;
-			auto& last_update = itr->second;
-
-			time_t ptime = SzbaseWrapper::round( t , pt );
-
-			if( last_update == ptime )
-				continue;
-
-			itr->second = ptime;
-
-			parent->params.param_value_changed(
-					name ,
-					parent->data_feeder->get_avg( name , ptime , pt ) ,
-					pt );
-		}
-	} catch( szbase_error& e ) {
-		sz_log(0, "Szbase error while updating data: %s", e.what());
+		parent->params.param_value_changed(
+				pname ,
+				parent->data_feeder->get_avg( pname , ptime , *pt ) ,
+				*pt );
+	} else {
+		parent->params.param_changed( pname );
 	}
+}
 
-	if( parent->subscribed_params.empty() )
-		/** Nothing to do -- no need to check for update */
-		return;
-
-	t = system_clock::to_time_t(system_clock::now());
-	t = SzbaseWrapper::round( t , min_pt );
-	t = SzbaseWrapper::next ( t , min_pt );
-
-	parent->timeout.expires_at( from_time_t(t) + seconds(1));
-	parent->timeout.async_wait( std::bind(&ParamsUpdater::DataUpdater::check_szarp_values,shared_from_this(),p::_1) );
+void ParamsUpdater::SubPar::callback(SubParWeakPtr ptr) {
+		if (auto p = ptr.lock())
+				p->update_param();
 }
 

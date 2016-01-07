@@ -57,6 +57,8 @@ void libpar_reinit_with_filename(const char *filename, int exit_on_error);
  * adresy zwrocone przez libpar_getkey staja sie niewazne*/
 void libpar_reinit();
 
+/** Ponowna inicjalizacja po zlej skladni */
+void libpar_hard_reset();
 
 /* Zakonczenie */
 void libpar_done();

@@ -81,6 +81,8 @@ template<class C> struct path_to_date_converter<second_time_t, C> {
 
 template<class C> struct path_to_date_converter<nanosecond_time_t, C>  {
 	static nanosecond_time_t convert(const std::basic_string<C> &path, bool& sz4) {
+		sz4 = false;
+
 		nanosecond_time_t v(0, 0);
 
 		size_t path_size = path.size();
@@ -104,8 +106,7 @@ template<class C> struct path_to_date_converter<nanosecond_time_t, C>  {
 			v.second += path[path.size() - 24 + i] - char_trait<C>::zero;
 		}
 
-		sz4 = false;
-
+		sz4 = true;
 		return v;
 	}
 };

@@ -1288,7 +1288,7 @@ void Client::Connect() {
 	BIO_set_nbio(sock_bio, 1);
 
 	if (m_ctx == NULL) {
-		m_ctx = SSL_CTX_new(SSLv3_client_method());
+		m_ctx = SSL_CTX_new(TLSv1_2_client_method());
 		SSL_CTX_set_mode(m_ctx, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 	}
 

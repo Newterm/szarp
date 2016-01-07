@@ -18,7 +18,25 @@ public:
 			Set::const_ptr s = Set::const_ptr() ,
 			ProbeType pt = ProbeType() );
 
+	void subscribe_param( const std::string& name );
+
+	void unsubscribe_param( const std::string& name );
+
+	void add_param( const std::string& param
+				  , const std::string& base
+				  , const std::string& formula
+				  , const std::string& type
+				  , int prec
+				  , unsigned start_time);
+
+	void remove_param( const std::string& base , const std::string& param );
+
+	const std::string& get_client_param_name( const std::string& name ) const;
+	const std::string& get_mapped_param_name( const std::string& name ) const;
+
+	std::shared_ptr<const Param> get_param( const std::string& name ) const;
 private:
+	void on_param_changed( const std::string& pname );
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
@@ -27,9 +45,15 @@ private:
 	Set::const_ptr current_set;
 
 	boost::signals2::scoped_connection conn_param;
+	boost::signals2::scoped_connection conn_param_value;
 
-	ParamsUpdater::Subscription sub_params;
+	ParamsUpdater::Subscription sub_set;
 
+	std::multimap<std::string , ParamsUpdater::Subscription > sub_params;
+	std::map< std::pair< std::string , std::string >, std::string> user_params;
+	std::map< std::string , std::string> user_params_inverted;
+
+	std::string def_param_uuid;
 };
 
 class SzbaseLocation : public ProtocolLocation {
