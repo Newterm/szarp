@@ -857,7 +857,7 @@ void Sz4ApiBase::ObserverWrapper::operator()() {
 void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
 	auto observer = query->observer_registration_parameters.observer;
 	auto& to_dereg = *query->observer_registration_parameters.params_to_deregister;
-	auto& to_reg = *query->observer_registration_parameters.params_to_deregister;
+	auto& to_reg = *query->observer_registration_parameters.params_to_register;
 
 	for (auto& p : to_dereg) {
 		auto pi = ParamInfoFromParam(p);
