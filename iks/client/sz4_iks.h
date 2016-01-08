@@ -20,22 +20,28 @@ class iks : public std::enable_shared_from_this<iks> {
 	std::shared_ptr<connection_mgr> m_connection_mgr;
 
 	struct observer_reg {
-		connection_mgr::loc_connection_ptr connection;
+		std::shared_ptr<connection_mgr> conn_mgr;
 		std::string name;
 		param_info param;
-		param_observer_f observer;
+		std::vector<param_observer_f> observers;
 
 		boost::signals2::scoped_connection error_sig_c;
 		boost::signals2::scoped_connection cmd_sig_c;
+		boost::signals2::scoped_connection connected_sig_c;
 
-		observer_reg(connection_mgr::loc_connection_ptr connection, const std::string& name,
-			param_info param, param_observer_f observer);
+		observer_reg(std::shared_ptr<connection_mgr> conn_mgr, const std::string& name,
+			param_info param);
+
+		~observer_reg();
 
 		void on_error(const boost::system::error_code& ec);
 		void on_cmd(const std::string& tag, IksCmdId, const std::string &);
+		void on_connected(std::wstring prefix);
+
+		void connect();
 	};
 
-	std::list<observer_reg> m_observer_regs;
+	std::map<param_info, observer_reg> m_observer_regs;
 
 	connection_mgr::loc_connection_ptr connection_for_base(const std::wstring& prefix);
 

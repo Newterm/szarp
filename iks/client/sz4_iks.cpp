@@ -6,22 +6,65 @@
 
 namespace sz4 {
 
-iks::observer_reg::observer_reg(connection_mgr::loc_connection_ptr c, const std::string& name,
-				param_info param, param_observer_f observer)
-				: connection(c), name(name), param(param), observer(observer)
+iks::observer_reg::observer_reg(std::shared_ptr<connection_mgr> conn_mgr, const std::string& name,
+				param_info param)
+				: conn_mgr(conn_mgr), name(name), param(param)
 {
-	error_sig_c = c->connection_error_sig.connect(std::bind(&observer_reg::on_error, this, std::placeholders::_1));
-	cmd_sig_c = c->cmd_sig.connect(std::bind(&observer_reg::on_cmd, this, std::placeholders::_1
-						, std::placeholders::_2, std::placeholders::_3));
+	conn_mgr->connected_location_sig.connect(std::bind(&observer_reg::on_connected, this, std::placeholders::_1));
+
+	connect();
+}
+
+iks::observer_reg::~observer_reg() {
+	auto c = conn_mgr->connection_for_base(param.prefix());
+	if (!c)
+		return;
+
+
+	std::stringstream ss;
+	ss << "\"" << SC::S2U(param.name()) << "\"";
+
+	c->send_command("param_unsubscribe", ss.str(), [] (const bs::error_code&,
+							   const std::string&,
+							   std::string&) {
+		return IksCmdStatus::cmd_done;
+	});
 }
 
 void iks::observer_reg::on_cmd(const std::string& tag, IksCmdId, const std::string &data) {
 	if (tag == "n" && data == name)
-		(*observer)();
+		for (auto& observer : observers)
+			(*observer)();
+}
+
+void iks::observer_reg::on_connected(std::wstring prefix) {
+	if (param.prefix() != prefix)
+		return;
+
+	connect();
 }
 
 void iks::observer_reg::on_error(const boost::system::error_code& ec) {
 	///notify connection error to observer
+}
+
+void iks::observer_reg::connect() {
+	auto c = conn_mgr->connection_for_base(param.prefix());
+	if (!c)
+		return;
+
+	error_sig_c = c->connection_error_sig.connect(std::bind(&observer_reg::on_error, this, std::placeholders::_1));
+	cmd_sig_c = c->cmd_sig.connect(std::bind(&observer_reg::on_cmd, this, std::placeholders::_1
+						, std::placeholders::_2, std::placeholders::_3));
+
+	std::stringstream ss;
+	ss << "\"" << SC::S2U(param.name()) << "\"";
+
+	c->send_command("param_subscribe", ss.str(), [] (const bs::error_code&,
+							 const std::string&,
+							 std::string&) {
+		return IksCmdStatus::cmd_done;
+	});
 }
 
 connection_mgr::loc_connection_ptr iks::connection_for_base(const std::wstring& prefix) {
@@ -30,64 +73,39 @@ connection_mgr::loc_connection_ptr iks::connection_for_base(const std::wstring& 
 
 void iks::_register_observer(param_observer_f observer, std::vector<param_info> params, std::function<void(const boost::system::error_code&) > cb) {
 	for (auto& p : params) {
+		auto i = m_observer_regs.find(p);
 
-		auto c = connection_for_base(p.prefix());
-		if (!c)
-			continue;
+		if (i == m_observer_regs.end()) {
+			std::basic_string<unsigned char> uname(SC::S2U(p.name()));
+			std::string name(uname.begin(), uname.end());
 
-		std::basic_string<unsigned char> uname(SC::S2U(p.name()));
-		std::string name(uname.begin(), uname.end());
+			i = m_observer_regs.emplace(std::piecewise_construct,
+					            std::forward_as_tuple(p),
+					            std::forward_as_tuple(m_connection_mgr, name, p)).first;
+		}
 
-		bool p_registered = std::any_of(m_observer_regs.begin(), m_observer_regs.end(),
-				[&p] (observer_reg& e) { return e.param == p; });
-
-		m_observer_regs.emplace_back(c, name, p, observer);
-
-		if (p_registered)
-			continue;
-
-		std::stringstream ss;
-		ss << "\"" << SC::S2U(p.name()) << "\"";
-
-		c->send_command("param_subscribe", ss.str(), [] (const bs::error_code&,
-								 const std::string&,
-								 std::string&) {
-			return IksCmdStatus::cmd_done;
-		});
+		i->second.observers.push_back(observer);
 	}
 
 	cb(make_error_code(bsec::success));
 }
 
 void iks::_deregister_observer(param_observer_f observer, std::vector<param_info> params, std::function<void(const boost::system::error_code&) > cb) {
-	std::set<param_info> maybe_deregister, deregister;
-	m_observer_regs.remove_if([&] (observer_reg& e) {
-		if (e.observer == observer && std::find(params.begin(), params.end(), e.param) != params.end()) {
-				maybe_deregister.insert(e.param);
-				return true;
-		} else
-			return false;
-	});
-
-	for (auto& p : maybe_deregister) {
-		if (std::none_of(m_observer_regs.begin(), m_observer_regs.end(),
-				[&p] (observer_reg& e) { return e.param == p; })) 
-			deregister.insert(p);
-	}
-
-	for (auto& i : deregister) {
-		auto c = connection_for_base(i.prefix());
-		if (!c)
+	for (auto& param : params) {
+		auto i = m_observer_regs.find(param);
+		if (i == m_observer_regs.end())
 			continue;
 
-		std::stringstream ss;
-		ss << "\"" << SC::S2U(i.name()) << "\"";
+		auto& o_reg = i->second;
 
-		c->send_command("param_unsubscribe", ss.str(), [] (const bs::error_code&,
-								   const std::string&,
-								   std::string&) {
-			return IksCmdStatus::cmd_done;
-		});
+		auto j = std::find(o_reg.observers.begin(), o_reg.observers.end(), observer);	
+		if (j == o_reg.observers.end())
+			continue;
+
+		o_reg.observers.erase(j);
+
+		if (!o_reg.observers.size())
+			m_observer_regs.erase(i);
 	}
 
 	cb(make_error_code(bsec::success));
