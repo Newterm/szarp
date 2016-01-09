@@ -167,6 +167,9 @@ bool SerialPort::Wait(int timeout)
 		if (tv.tv_sec < 0) {
 			dolog(2, "I cannot wait for negative number of seconds");
 			return false;
+		} else if (tv.tv_sec == 0) {
+			dolog(2, "I cannot wait for zero seconds");
+			return false;
 		}
 		tv.tv_usec = 0;
 		FD_ZERO(&set);
@@ -175,6 +178,7 @@ bool SerialPort::Wait(int timeout)
 		ret = select(m_fd + 1, &set, NULL, NULL, &tv);
 		if (ret < 0) {
 			if (errno == EINTR) {
+				dolog(2, "select interrupted by signal (EINTR)");
 				continue;
 			} else {
 				Close();
