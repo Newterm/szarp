@@ -584,13 +584,16 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 	}
 
 	qs.str(std::string());
-	//qs << ACK << "0" << char(read_buffer[4]) << "0\r\n";
-	qs << ACK << "000\r\n";
-	m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
-	if (m_wait_timeout != 0) this->Skip(qs.str().size());
+	if (m_wait_timeout != 0) {
+		qs << ACK << "000\r\n";
+		m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
+		this->Skip(qs.str().size());
 
-	//dolog(2, "Speed is %d", speed);
-	//m_port->Open(m_speed);
+	} else {
+		qs << ACK << "0" << char(read_buffer[4]) << "0\r\n";
+		dolog(2, "Speed is %d", speed);
+		m_port->Open(m_speed);
+	}
 
 	read_pos = 0;
 	do {
