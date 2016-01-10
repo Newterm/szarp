@@ -41,7 +41,7 @@ class iks : public std::enable_shared_from_this<iks> {
 		void connect();
 	};
 
-	std::map<param_info, observer_reg> m_observer_regs;
+	std::map<param_info, std::shared_ptr<observer_reg>> m_observer_regs;
 
 	connection_mgr::loc_connection_ptr connection_for_base(const std::wstring& prefix);
 

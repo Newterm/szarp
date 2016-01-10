@@ -79,12 +79,13 @@ void iks::_register_observer(param_observer_f observer, std::vector<param_info> 
 			std::basic_string<unsigned char> uname(SC::S2U(p.name()));
 			std::string name(uname.begin(), uname.end());
 
-			i = m_observer_regs.emplace(std::piecewise_construct,
-					            std::forward_as_tuple(p),
-					            std::forward_as_tuple(m_connection_mgr, name, p)).first;
+			i = m_observer_regs.insert(
+					std::make_pair(
+					            p,
+					            std::make_shared<observer_reg>(m_connection_mgr, name, p))).first;
 		}
 
-		i->second.observers.push_back(observer);
+		i->second->observers.push_back(observer);
 	}
 
 	cb(make_error_code(bsec::success));
@@ -96,15 +97,15 @@ void iks::_deregister_observer(param_observer_f observer, std::vector<param_info
 		if (i == m_observer_regs.end())
 			continue;
 
-		auto& o_reg = i->second;
+		auto o_reg = i->second;
 
-		auto j = std::find(o_reg.observers.begin(), o_reg.observers.end(), observer);	
-		if (j == o_reg.observers.end())
+		auto j = std::find(o_reg->observers.begin(), o_reg->observers.end(), observer);	
+		if (j == o_reg->observers.end())
 			continue;
 
-		o_reg.observers.erase(j);
+		o_reg->observers.erase(j);
 
-		if (!o_reg.observers.size())
+		if (!o_reg->observers.size())
 			m_observer_regs.erase(i);
 	}
 
