@@ -34,11 +34,20 @@ void IksConnection::schedule_keepalive() {
 
 				switch (self->state) {
 					case CONNECTED:
-						self->schedule_reconnect();
 						break;
 					default:
-						break;
+						return;
 				}
+
+				auto _ec = make_error_code( bs::errc::stream_timeout );
+
+				std::string empty;
+				for ( auto& i : self->commands )
+						i.second( _ec , "" , empty );
+				self->commands.clear();
+
+				self->connection_error_sig( _ec );
+				self->schedule_reconnect();
 		});
 
 	});
