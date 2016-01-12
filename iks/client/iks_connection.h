@@ -8,13 +8,26 @@
 #include "tcp_client_socket.h"
 
 class IksConnection : public std::enable_shared_from_this<IksConnection>, public TcpClientSocket::Handler {
-public:
 private:
 	std::unordered_map<IksCmdId, IksCmdCallback> commands;
 
 	IksCmdId next_cmd_id;
 
 	std::shared_ptr<TcpClientSocket> socket;	
+
+	boost::asio::deadline_timer keepalive_timer;
+	boost::asio::deadline_timer reconnect_timer;
+
+	enum STATE {
+		CONNECTING,
+		CONNECTED,
+		WAITING	
+	} state;
+
+	void schedule_keepalive();
+	void schedule_reconnect();
+
+	bool is_connected() const;
 public:
 	IksConnection( boost::asio::io_service& io
 				 , const std::string& server

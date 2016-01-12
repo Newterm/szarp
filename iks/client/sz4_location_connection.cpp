@@ -186,6 +186,7 @@ void location_connection::on_connected()
 
 void location_connection::on_connection_error(const boost::system::error_code& ec) 
 {
+	m_connected = false;
 	connection_error_sig(ec);
 }
 

@@ -2,11 +2,51 @@
 
 #include "iks_connection.h"
 
-IksConnection::IksConnection( boost::asio::io_service& io
+namespace ba = boost::asio;
+namespace bs = boost::system;
+namespace bae = ba::error;
+namespace bsec = boost::system::errc;
+
+void IksConnection::schedule_keepalive() {
+	auto self = shared_from_this();
+	keepalive_timer.expires_from_now( boost::posix_time::seconds( 5 ) );
+	keepalive_timer.async_wait([self] ( const bs::error_code& ec ) {
+		if ( ec == bae::operation_aborted )
+			return;
+
+		self->send_command("are_you_there", "" , [self] ( const bs::error_code &ec
+								      , const std::string& status
+								      , std::string& data ) {
+
+			if ( !ec && self->state == CONNECTED )
+				self->schedule_keepalive();
+
+			return IksCmdStatus::cmd_done;
+		});
+	});
+}
+
+void IksConnection::schedule_reconnect() {
+	auto self = shared_from_this();
+	reconnect_timer.expires_from_now(boost::posix_time::seconds(1));
+	reconnect_timer.async_wait([self] (const bs::error_code& ec) {
+		if (ec == bae::operation_aborted)
+			return;
+
+		self->disconnect();
+		self->connect();
+	});
+
+	state = WAITING;
+}
+
+IksConnection::IksConnection( ba::io_service& io
 							, const std::string& server
 							, const std::string& port)
 							: next_cmd_id(0)
 							, socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
+							, keepalive_timer( io )
+							, reconnect_timer( io )
 {
 }
 
@@ -41,7 +81,7 @@ void IksConnection::remove_command(IksCmdId id)
 	commands.erase(id);
 }
 
-void IksConnection::handle_read_line( boost::asio::streambuf& buf )
+void IksConnection::handle_read_line( ba::streambuf& buf )
 {
 	std::istream is( &buf );
 	std::string tag;
@@ -54,37 +94,63 @@ void IksConnection::handle_read_line( boost::asio::streambuf& buf )
 	std::getline(is, data);
 
 	if ( !is ) {
+		auto ec = make_error_code( iks_client_error::invalid_server_response );
+
 		std::string empty;
-		for ( auto i : commands )
+		for ( auto& i : commands )
 			i.second( make_error_code( iks_client_error::invalid_server_response )
 					, ""
 					, empty );
-		socket->connect();
+		commands.clear();
+
+		connection_error_sig( ec );
+		schedule_reconnect();
 		return;
 	}
 
 	auto i = commands.find(id);
 	if ( i != commands.end() ) {
-		if ( i->second( make_error_code( boost::system::errc::success ), tag , data ) == cmd_done)
+		if ( i->second( make_error_code( bs::errc::success ), tag , data ) == cmd_done)
 			commands.erase(i);
 	} else
 		cmd_sig( tag, id, data );
 }
 
-void IksConnection::handle_error( const boost::system::error_code& ec )
+void IksConnection::handle_error( const bs::error_code& ec )
 {
+	if ( ec == bae::operation_aborted )
+		return;
+	
+	switch (state) {
+		case CONNECTED:
+			break;
+		case CONNECTING:
+			schedule_reconnect();
+			return;
+		case WAITING:
+			assert( false );
+			break;
+	}
+
 	std::string empty;
 	for ( auto& i : commands ) 
 		i.second( ec , "" , empty );
-
 	commands.clear();
 
 	connection_error_sig(ec);
+
+	bs::error_code _ec;
+	keepalive_timer.cancel(_ec);
+
+	schedule_reconnect();
 }
 
 void IksConnection::handle_connected()
 {
+	state = CONNECTED;
 	connected_sig();
+
+	schedule_keepalive();
 }
 
 void IksConnection::handle_disconnected()
@@ -94,6 +160,7 @@ void IksConnection::handle_disconnected()
 
 void IksConnection::connect() 
 {
+	state = CONNECTING;
 	socket->connect();
 }
 

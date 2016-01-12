@@ -18,12 +18,6 @@ namespace bsec = boost::system::errc;
 
 namespace sz4 {
 
-class connection_mgr::timer : public ba::deadline_timer {
-public:
-	timer(ba::io_service& io) : ba::deadline_timer(io) 
-	{}
-};
-
 bool connection_mgr::parse_remotes(const std::string &data, std::vector<remote_entry>& remotes) {
 
 	namespace bp = boost::property_tree;
@@ -54,10 +48,6 @@ bool connection_mgr::parse_remotes(const std::string &data, std::vector<remote_e
 }
 
 void connection_mgr::connect() {
-	if (m_connecting)
-		return;
-	m_connecting = true;
-
 	m_connection = std::make_shared<IksConnection>(*m_io, m_address, m_port);
 
 	auto self = shared_from_this();
@@ -74,11 +64,8 @@ void connection_mgr::connect() {
 void connection_mgr::connect_location(const std::wstring& name, const std::string& location) {
 
 	auto citr = m_location_connections.find(name);
-	if (citr != m_location_connections.end()) {
-		citr->second->disconnect();
-		m_location_connections.erase(citr);
-	}
-
+	if (citr != m_location_connections.end())
+		return;
 	auto ritr = std::find_if(m_remotes.begin(), m_remotes.end(),
 		[&] (const remote_entry& e) { return e.first == name; });
 	if (ritr != m_remotes.end())
@@ -120,47 +107,7 @@ void connection_mgr::disconnect_location(const std::wstring& name) {
 }
 
 
-void connection_mgr::schedule_reconnect() {
-	if (m_connection) {
-		m_connection->disconnect();
-		m_connection.reset();
-	}
-
-	auto self = shared_from_this();
-	m_reconnect_timer->expires_from_now(boost::posix_time::seconds(1));
-	m_reconnect_timer->async_wait([self] (const bs::error_code& ec) {
-		if (ec == bae::operation_aborted)
-			return;
-
-		self->connect();
-	});
-}
-
-void connection_mgr::schedule_keepalive() {
-	auto self = shared_from_this();
-	m_keepalive_timer->expires_from_now( boost::posix_time::seconds( 5 ) );
-	m_keepalive_timer->async_wait([self] ( const bs::error_code& ec ) {
-		if ( ec == bae::operation_aborted )
-			return;
-
-		if ( !self->is_connected() )
-			return;
-
-		self->m_connection->send_command("are_you_there", "" , [self] ( const bs::error_code &ec
-								      , const std::string& status
-								      , std::string& data ) {
-
-			if ( !ec )
-				self->schedule_keepalive();
-
-			return IksCmdStatus::cmd_done;
-		});
-	});
-}
-
 void connection_mgr::on_connected() {
-	m_connecting = false;
-
 	connected_sig();
 
 	auto self = shared_from_this();
@@ -185,23 +132,14 @@ void connection_mgr::on_connected() {
 
 		if (_ec)
 			self->on_error(_ec);
-		else
-			self->schedule_keepalive();
-
 
 		return IksCmdStatus::cmd_done;
 	});
 }
 
 void connection_mgr::on_error(const boost::system::error_code& ec) {
-	if (ec != ba::error::operation_aborted) {
+	if (ec != ba::error::operation_aborted)
 		connection_error_sig(ec);
-
-		if (m_connecting)
-			schedule_reconnect();
-		else
-			connect();
-	}
 }
 
 void connection_mgr::on_cmd(const std::string& tag, IksCmdId, const std::string& data) {
@@ -238,17 +176,6 @@ void connection_mgr::on_location_connected(std::wstring name) {
 
 void connection_mgr::on_location_error(std::wstring name, const bs::error_code& ec) {
 	error_location_sig(name, ec);
-
-	auto locr = std::find_if(m_remotes.begin(), m_remotes.end(),
-		[&] (const remote_entry& e) { return e.first == name; });
-	if (locr == m_remotes.end())
-		return;
-
-	connect_location(name, locr->second);
-}
-
-bool connection_mgr::is_connected() const {
-	return m_connection && !m_connecting;
 }
 
 connection_mgr::connection_mgr(IPKContainer *conatiner,
@@ -257,13 +184,10 @@ connection_mgr::connection_mgr(IPKContainer *conatiner,
 				const std::string& defined_param_prefix,
 				std::shared_ptr<ba::io_service> io)
 				:
-				m_connecting(false),
 				m_ipk_container(conatiner),
 				m_address(address),
 				m_port(port),
 				m_defined_param_prefix(defined_param_prefix),
-				m_reconnect_timer(std::make_shared<timer>(*io)),
-				m_keepalive_timer(std::make_shared<timer>(*io)),
 				m_io(io) {
 
 }

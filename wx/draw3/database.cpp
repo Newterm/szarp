@@ -707,6 +707,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 			sd.ok = true;
 		} else {
 			sd.ok = false;
+			sd.response_second = sd.response_nanosecond = -1;
 			sd.error_str = wcsdup(SC::L2S(ec.message()).c_str());
 		}
 
