@@ -15,8 +15,8 @@ private:
 
 	std::shared_ptr<TcpClientSocket> socket;	
 
-	boost::asio::deadline_timer keepalive_timer;
-	boost::asio::deadline_timer reconnect_timer;
+	boost::asio::deadline_timer keepalive_timer, keepalive_timeout_timer;
+	boost::asio::deadline_timer reconnect_timer, connect_timeout_timer;
 
 	enum STATE {
 		CONNECTING,

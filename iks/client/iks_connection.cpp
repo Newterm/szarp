@@ -21,19 +21,40 @@ void IksConnection::schedule_keepalive() {
 			if ( !ec && self->state == CONNECTED )
 				self->schedule_keepalive();
 
+			bs::error_code _ec;
+			self->keepalive_timeout_timer.cancel(_ec);
+
 			return IksCmdStatus::cmd_done;
 		});
+
+		self->keepalive_timeout_timer.expires_from_now( boost::posix_time::seconds( 10 ) );
+		self->keepalive_timeout_timer.async_wait([self] ( const bs::error_code& ec ) {
+				if ( ec == bae::operation_aborted )
+						return;
+
+				switch (self->state) {
+					case CONNECTED:
+						self->schedule_reconnect();
+						break;
+					default:
+						break;
+				}
+		});
+
 	});
+
 }
 
 void IksConnection::schedule_reconnect() {
 	auto self = shared_from_this();
+
+	self->disconnect();
+
 	reconnect_timer.expires_from_now(boost::posix_time::seconds(1));
 	reconnect_timer.async_wait([self] (const bs::error_code& ec) {
 		if (ec == bae::operation_aborted)
 			return;
 
-		self->disconnect();
 		self->connect();
 	});
 
@@ -46,7 +67,9 @@ IksConnection::IksConnection( ba::io_service& io
 							: next_cmd_id(0)
 							, socket( std::make_shared<TcpClientSocket>( io , server , port , *this ) )
 							, keepalive_timer( io )
+							, keepalive_timeout_timer( io )
 							, reconnect_timer( io )
+							, connect_timeout_timer( io )
 {
 }
 
@@ -147,6 +170,9 @@ void IksConnection::handle_error( const bs::error_code& ec )
 
 void IksConnection::handle_connected()
 {
+	bs::error_code _ec;
+	connect_timeout_timer.cancel(_ec);
+
 	state = CONNECTED;
 	connected_sig();
 
@@ -160,8 +186,24 @@ void IksConnection::handle_disconnected()
 
 void IksConnection::connect() 
 {
+	auto self = shared_from_this();
 	state = CONNECTING;
+
 	socket->connect();
+
+	connect_timeout_timer.expires_from_now( boost::posix_time::seconds( 20 ) );
+	connect_timeout_timer.async_wait([self] ( const bs::error_code& ec ) {
+			if ( ec == bae::operation_aborted )
+					return;
+
+			switch (self->state) {
+				case CONNECTING:
+					self->schedule_reconnect();
+					break;
+				default:
+					break;
+			}
+	});
 }
 
 void IksConnection::disconnect() {

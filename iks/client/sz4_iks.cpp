@@ -10,7 +10,7 @@ iks::observer_reg::observer_reg(std::shared_ptr<connection_mgr> conn_mgr, const 
 				param_info param)
 				: conn_mgr(conn_mgr), name(name), param(param)
 {
-	conn_mgr->connected_location_sig.connect(std::bind(&observer_reg::on_connected, this, std::placeholders::_1));
+	connected_sig_c = conn_mgr->connected_location_sig.connect(std::bind(&observer_reg::on_connected, this, std::placeholders::_1));
 
 	connect();
 }
