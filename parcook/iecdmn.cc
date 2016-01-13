@@ -121,7 +121,7 @@ public:
 	* is not already opened or is opened with another speed
 	* @param speed - speed of opened port connection
 	*/
-	void Open(int ispeed, int ospeed = -1);
+	void Open(int ispeed, int ospeed = -1, bool optical = false);
 
 	/*Reads data from a port to a given buffer,
 	 * null terminates read data. Throws @see SerialException
@@ -286,7 +286,7 @@ namespace {
 
 }
 
-void SerialPort::Open(int ispeed, int ospeed) 
+void SerialPort::Open(int ispeed, int ospeed, bool optical) 
 {
 	if (ospeed == -1)
 		ospeed = ispeed;	
@@ -336,7 +336,16 @@ void SerialPort::Open(int ispeed, int ospeed)
 		Close();
 		throw SerialException(errno);
 	}
-
+	
+	if (optical) {
+		dolog(6, "Optical set, setting RTS high");
+		/* Set RTS high */
+		int flags;
+		ioctl(m_fd, TIOCMGET, &flags);
+		flags &= ~TIOCM_RTS;
+		//flags &= ~TIOCM_DTR;
+		ioctl(m_fd, TIOCMSET, &flags);
+	}
 }
 
 void SerialPort::Close() 
@@ -371,6 +380,8 @@ class IECDaemon {
 	int m_speed;
 	int m_timeout;
 	int m_wait_timeout;
+	int m_const_speed;
+	bool m_optical;
 
 	bool ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, xmlXPathContextPtr xp_ctx);
 	void QueryUnit(IECDaemon::Unit &unit);
@@ -414,6 +425,26 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 	else {
 		m_wait_timeout = boost::lexical_cast<int>(timeout);
 		xmlFree(timeout);	
+	}
+
+	xmlChar* const_speed = xmlGetNsProp(xunit, BAD_CAST("const_speed"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (const_speed != NULL) {
+		m_const_speed = boost::lexical_cast<int>(const_speed);
+		xmlFree(const_speed);	
+	} else {
+		m_const_speed = -1;
+	}
+
+	xmlChar* optical = xmlGetNsProp(xunit, BAD_CAST("optical"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (optical != NULL) {
+		std::string s = (char*)optical;
+		if (s.compare(std::string("true")) == 0) 
+			m_optical = true;
+		else
+			m_optical = false;
+		xmlFree(optical);	
+	} else {
+		m_optical = false;;
 	}
 
 	xp_ctx->node = xunit;
@@ -529,7 +560,7 @@ void IECDaemon::Skip(size_t to_skip) {
 }
 
 void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
-	m_port->Open(m_speed);
+	m_port->Open(m_speed, -1, m_optical);
 	
 	if (m_wait_timeout != 0) WaitForSilence();
 
@@ -537,7 +568,7 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 	qs << "/?" << unit.address << "!\r\n";
 
 	m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
-
+	
 	if (m_wait_timeout != 0) this->Skip(qs.str().size());
 
 	unsigned char read_buffer[10000];
@@ -583,17 +614,47 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 			throw IECException("Unsupported iec speed speficication");
 	}
 
+	dolog(6, "Got speed %d", speed);
+
 	qs.str(std::string());
-	if (m_wait_timeout != 0) {
-		qs << ACK << "000\r\n";
+	
+	if (m_const_speed != -1) {
+		dolog(6, "Const speed is %d", m_const_speed);
+
+		switch (m_const_speed) {
+			case 300:
+				qs << ACK << "000\r\n";
+				break;
+			case 600:
+				qs << ACK << "010\r\n";
+				break;
+			case 1200:
+				qs << ACK << "020\r\n";
+				break;
+			case 2400:
+				qs << ACK << "030\r\n";
+				break;
+			case 4800:
+				qs << ACK << "040\r\n";
+				break;
+			case 9600:
+				qs << ACK << "050\r\n";
+				break;
+			case 19200:
+				qs << ACK << "060\r\n";
+				break;
+			default:
+				qs << ACK << "000\r\n";
+		}
 		m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
-		this->Skip(qs.str().size());
 
 	} else {
 		qs << ACK << "0" << char(read_buffer[4]) << "0\r\n";
-		dolog(2, "Speed is %d", speed);
-		m_port->Open(m_speed);
+		dolog(6, "Speed is %d", speed);
+		m_port->Open(speed, -1, m_optical);
 	}
+
+	if (m_wait_timeout != 0) this->Skip(qs.str().size());
 
 	read_pos = 0;
 	do {
@@ -636,7 +697,7 @@ void IECDaemon::ParseParamValue(std::istream& istream, Unit& unit) {
 			istream.ignore(1);
 			std::getline(istream, s, ')');
 		}
-		dolog(2, "Address %s skipped, not defined in configuration", address.c_str()); 
+		dolog(8, "Address %s skipped, not defined in configuration", address.c_str()); 
 		return;
 	}
 	
@@ -689,7 +750,7 @@ void IECDaemon::ParseParamValue(std::istream& istream, Unit& unit) {
 	lsw = ival & 0xffffu;
 	msw = ival >> 16;
 
-	dolog(1, "Got value %s for address: %s", value.c_str(), address.c_str());
+	dolog(6, "Got value %s for address: %s", value.c_str(), address.c_str());
 
 	if (i->second.msw >= 0)
 		m_ipc->m_read[i->second.msw] = msw;
