@@ -34,6 +34,7 @@
 //#define SEM_DAY 8	/* not used anymore */
 #define SEM_ALERT 10
 #define SEM_LINE 12
+#define SEM_PROBES_BUF 14
 
 #define SHM_PROBE 1
 #define SHM_MINUTE 2
@@ -42,7 +43,7 @@
 //#define SHM_DAY 5	/* not used anymore */
 //#define SHM_PTT 6	/* not used anymore */
 #define SHM_ALERT 7
-
+#define SHM_PROBES_BUF 8
 
 #define NO_ALERT 0              /* brak przekroczenia zakresu */
 #define ALERT1   1              /* przekroczenie stopnia wa¿no¶ci 1 */
@@ -54,6 +55,10 @@
 #define FULL_NAME_LEN	161
 #define ALT_NAME_LEN	24
 #define SHORT_NAME_LEN	8
+
+#define SHM_PROBES_BUF_POS_INDEX 0
+#define SHM_PROBES_BUF_CNT_INDEX 1
+#define SHM_PROBES_BUF_DATA_OFF  2
 
 
 #endif // __IPC_DEFINES_H__
