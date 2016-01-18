@@ -1058,7 +1058,8 @@ void CreateProbesSegments(char* parcookpat)
 	}
 	if (ProbeBufSize)
 		if ((ProbeBufDes =
-		     shmget(key, VTlen * ProbeBufSize * sizeof(short) + SHM_PROBES_BUF_DATA_OFF, IPC_CREAT | 00666))  == -1) {
+		     shmget(key, (VTlen * ProbeBufSize + SHM_PROBES_BUF_DATA_OFF) * sizeof(short)
+			   , IPC_CREAT | 00666))  == -1) {
 			sz_log(0,
 			    "parcook: cannot get shared memory descriptor for 'probes buf' segment, errno %d, exiting",
 			    errno);
