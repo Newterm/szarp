@@ -72,8 +72,7 @@ std::vector<unsigned char> GetCommand::exec (void)
 		throw ArgumentError("cannot exec(), arguments not loaded");
 
 	/* get size of data and last available probe */
-	SzCache szc;
-	auto ret = szc.getSizeAndLast(m_start_time, m_end_time, m_param_path);
+	auto ret = _szcache.getSizeAndLast(m_start_time, m_end_time, m_param_path);
 	auto size = ret.first;
 	auto last_time = ret.second;
 
@@ -93,7 +92,7 @@ std::vector<unsigned char> GetCommand::exec (void)
 
 		while (m_start_time < m_end_time) {
 			m_start_time =
-				szc.writeData(vals, m_start_time, m_end_time, m_param_path);
+				_szcache.writeData(vals, m_start_time, m_end_time, m_param_path);
 		}
 
 		/* split into lsw/msw and insert to vector */
@@ -156,7 +155,6 @@ std::vector<unsigned char> SearchCommand::exec (void)
 		throw ArgumentError("cannot exec(), arguments not loaded");
 
 	/* search probes */
-	SzCache szc;
 	SzCache::SzSearchResult res;
 
 	/* timestamps are more important than direction (fix its value if needed) */
@@ -169,13 +167,13 @@ std::vector<unsigned char> SearchCommand::exec (void)
 
 	switch (m_direction) {
 		case -1:
-			res = szc.searchLeft(m_start_time, m_end_time, m_param_path);
+			res = _szcache.searchLeft(m_start_time, m_end_time, m_param_path);
 			break;
 		case  0:
-			res = szc.searchInPlace(m_start_time, m_param_path);
+			res = _szcache.searchInPlace(m_start_time, m_param_path);
 			break;
 		case  1:
-			res = szc.searchRight(m_start_time, m_end_time, m_param_path);
+			res = _szcache.searchRight(m_start_time, m_end_time, m_param_path);
 			break;
 		default:
 			throw ArgumentError("(SEARCH) exec(): bad direction value");
@@ -206,8 +204,7 @@ void RangeCommand::load_args (const std::vector<std::string>& args)
 std::vector<unsigned char> RangeCommand::exec (void)
 {
 	/* get available range */
-	SzCache szc;
-	auto range = szc.availableRange();
+	auto range = _szcache.availableRange();
 
 	/* construct reply message */
 	std::string reply;

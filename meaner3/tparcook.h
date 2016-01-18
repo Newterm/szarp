@@ -48,6 +48,8 @@ class TParcook {
 		 * @param probes_count length of probes table
 		 * @return 0 on success, 1 on error */
 		int Init(int probes_count);
+		/** Init communication with parcook process - buffer memory */
+		int InitBuffer();
 		/** Gets parameters values from parcook segment. Enters
 		 * parcook semaphore, attaches segment, copies values
 		 * to internal objects buffer, detaches segment and releases
@@ -55,12 +57,22 @@ class TParcook {
 		 * method calls termination handler.
 		 */
 		void GetValues();
+		void GetValuesBuffer();
 		/** Return probe value for given param from internal object
 		 * buffer.
 		 * @param i parameter index
 		 * @return parameter's probe value
 		 */
 		short int GetData(int i);
+		/** Return buffer size
+		 * buffer.
+		 * @param i parameter index
+		 * @return parameter's buffer size
+		 */
+		short int GetData(int i, short int* buffer) ;
+		short int GetDataPos();
+		short int GetDataCount();
+
 	protected:
 		ProbesType probes_type;	/**< type of parcook segment we read from */
 		char* parcook_path;	/**< path used to obtain semaphore and
@@ -68,8 +80,13 @@ class TParcook {
 		
 		int shm_desc;		/**< shared memory descriptor */
 		int sem_desc;		/**< semaphore descr */
+		int shm_desc_buff;	/**< shared memory descriptor buffer*/
+		int sem_desc_buff;	/**< semaphore descr buffer*/
 		int probes_count;	/**< length of probes table */
+		int buffer_count;	/**< length of buffer */
+
 		SZB_FILE_TYPE* copied;	/**< buffer for copied probes values */
+		SZB_FILE_TYPE* buffer_copied;	/**< buffer for copied buffer probes values */
 };
 
 #endif

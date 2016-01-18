@@ -1488,7 +1488,7 @@ void update_probes_buf(short *Probe, short *ProbeBuf) {
 
 	short* current_pos = &ProbeBuf[SHM_PROBES_BUF_POS_INDEX];
 	short* count = &ProbeBuf[SHM_PROBES_BUF_CNT_INDEX];
-		
+
 	*count = std::min(*count + 1, ProbeBufSize);
 
 	for (int i = 0; i < VTlen; i++)
@@ -1513,6 +1513,7 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	Sem[0].sem_op = 1;
 	Sem[1].sem_num = SEM_PROBE;
 	Sem[1].sem_op = 0;
+
 	if (ProbeBufSize) {
 		Sem[2].sem_num = SEM_PROBES_BUF + 1;
 		Sem[2].sem_op = 1;
@@ -1528,7 +1529,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 			    errno);
 			exit(1);
 		}
-		
 	} else {
 		semop(SemDes, Sem, 2);
 	}
@@ -1755,7 +1755,6 @@ int main(int argc, char *argv[])
 		free(probes_buffer_size);
 	}
 
-	
 	/* end szarp.cfg processing */
 	libpar_done();
 	
