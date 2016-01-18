@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 /** Constants */
 
@@ -285,20 +286,27 @@ SzCache::SzPath SzCache::prevMonth(SzPath path) const
 
 SzCache::SzRange SzCache::availableRange() const
 {
+	/** Using UTC */
+
+	/** Current epoch */
 	SzCache::SzTime last = std::time(nullptr);
-	std::tm *gmt = std::localtime(&last);
+
+	/** Current epoch to UTC struct tm */
+	std::tm *gmt = std::gmtime(&last);
+
 	gmt->tm_mon -= _numMonths;
 	if (gmt->tm_mon < 1) {
 		gmt->tm_mon += 12;
 		gmt->tm_year -= 1;
 	}
+
 	gmt->tm_mday = 1;
-	gmt->tm_isdst ? gmt->tm_hour = 2 : gmt->tm_hour = 1;
+	gmt->tm_hour = 0;
 	gmt->tm_min = 0;
 	gmt->tm_sec = 0;
-	gmt->tm_isdst = -1;
 	
-	return SzRange(std::mktime(gmt), last);
+	/** UTC struct tm to epoch */
+	return SzRange(timegm(gmt), last);
 }
 
 SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
@@ -306,12 +314,15 @@ SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 	logMsg(3, std::string("getPathIndex(") + std::to_string(szt)
 		+ std::string(",") + dir + std::string(")"));
 
-	auto gmt = std::gmtime(&szt);
+	std::tm* gmt = std::gmtime(&szt);
+
 	std::ostringstream os;
+
 	os << dir << "/" << std::setfill('0') << std::setw(4) << gmt->tm_year+1900 
 		<< std::setw(2) << gmt->tm_mon+1 << cSzCacheExt;
 	
 	int idx = (gmt->tm_mday - 1) * 24 * 3600 + gmt->tm_hour * 3600 + gmt->tm_min * 60 + gmt->tm_sec;
+
 	idx = std::floor(idx / cSzCacheProbe);
 
 	return SzPathIndex(SzPath(os.str()),SzIndex(idx));
@@ -321,10 +332,6 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 {
 	logMsg(3, std::string("getTime(") + std::to_string(idx)
 		+ std::string(",") + path + std::string(")"));
-
-	std::tm * timeinfo;
-	time_t t = std::time(NULL);
-	timeinfo = std::localtime(&t);
 
 	std::tm gmt;
 	if (idx == -1) 
@@ -337,12 +344,11 @@ SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
 	gmt.tm_year -= 1900; // Falling back to years since 1900 repr.
 	gmt.tm_mon -= 1; // Falling back to mon 0-11 repr.
 	gmt.tm_mday = 1;
-	timeinfo->tm_isdst ? gmt.tm_hour = 2 : gmt.tm_hour = 1;
+	gmt.tm_hour = 0;
 	gmt.tm_min = 0;
 	gmt.tm_sec = 0;
-	gmt.tm_isdst = -1;
 
-	return SzTime(std::mktime(&gmt) + (idx * cSzCacheProbe));
+	return SzTime(timegm(&gmt) + (idx * cSzCacheProbe));
 }
 
 bool SzCache::validatePathMember(std::string member) const
