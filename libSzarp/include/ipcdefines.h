@@ -33,8 +33,8 @@
 #define SEM_HOUR 6
 //#define SEM_DAY 8	/* not used anymore */
 #define SEM_ALERT 10
-#define SEM_LINE 12
-#define SEM_PROBES_BUF 14
+#define SEM_PROBES_BUF 12
+#define SEM_LINE 14
 
 #define SHM_PROBE 1
 #define SHM_MINUTE 2

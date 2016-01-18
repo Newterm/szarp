@@ -540,7 +540,7 @@ void CleanUp()
 {
 	ushort i;
 
-	for (i = 0; i < 12; i++)
+	for (i = 0; i < SEM_LINE; i++)
 		semctl(SemDes, i, SETVAL, 0);
 }
 
