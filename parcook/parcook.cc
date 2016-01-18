@@ -147,10 +147,14 @@ static struct argp argp = { options, parse_opt, 0, doc };
 				   przekodowanie */
 #define OPTIONS_LIMIT 255 		/* Parametrs limit */
 
-int ProbeDes, MinuteDes, Min10Des, HourDes, SemDes, AlertDes;
+int ProbeDes, MinuteDes, Min10Des, HourDes, SemDes, AlertDes, ProbeBufDes;
 int MsgSetDes, MsgRplyDes;
 
+int ProbeBufSize = 0;
+
 short *Probe;			/* ostatnia probka */
+
+short *ProbeBuf;		/* ostatnia probka */
 
 short *Minute;			/* srednia ostatnia minuta */
 
@@ -501,6 +505,13 @@ void Rmipc()
 	    "parcook: removing 'hour' shared memory segment, shmctl() returned %d errno %d",
 	    i, errno);
 
+	if (ProbeBufSize) {
+		i = shmctl(ProbeBufDes, IPC_RMID, NULL);
+		sz_log((i < 0 ? 1 : 10),
+			"parcook: removing 'probesbuf' memory segment, shmctl() returned %d errno %d",
+			i, errno);
+	}
+
 	i = shmctl(AlertDes, IPC_RMID, NULL);
 	sz_log((i < 0 ? 1 : 10),
 	    "parcook: removing 'alert' shared memory segment, shmctl() returned %d errno %d",
@@ -527,7 +538,7 @@ void CleanUp()
 {
 	ushort i;
 
-	for (i = 0; i < 12; i++)
+	for (i = 0; i < SEM_LINE; i++)
 		semctl(SemDes, i, SETVAL, 0);
 }
 
@@ -1043,6 +1054,14 @@ void CreateProbesSegments(char* parcookpat)
 		    errno);
 		exit(1);
 	}
+	if (ProbeBufSize)
+		if ((ProbeBufDes =
+		     shmget(key, VTlen * ProbeBufSize * sizeof(short) + SHM_PROBES_BUF_DATA_OFF * sizeof(short), IPC_CREAT | 00666))  == -1) {
+			sz_log(0,
+			    "parcook: cannot get shared memory descriptor for 'probes buf' segment, errno %d, exiting",
+			    errno);
+			exit(1);
+		}
 }
 
 /** allocate memory for probes */
@@ -1436,6 +1455,20 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 	socket.send(msg);
 }
 
+void update_probes_buf(short *Probe, short *ProbeBuf) {
+	if (ProbeBufSize == 0)
+		return;
+
+	short* current_pos = &ProbeBuf[SHM_PROBES_BUF_POS_INDEX];
+	short* count = &ProbeBuf[SHM_PROBES_BUF_CNT_INDEX];
+
+	*count = std::min(*count + 1, ProbeBufSize);
+	*current_pos = (*current_pos + 1) % ProbeBufSize;
+
+	for (int i = 0; i < VTlen; i++)
+		ProbeBuf[SHM_PROBES_BUF_DATA_OFF + i * ProbeBufSize + *current_pos] = Probe[i];
+}
+
 void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*>& param_info, zmq::socket_t& zmq_socket) 
 {
 	int abuf;	/* time index in probes tables */
@@ -1452,7 +1485,26 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	Sem[0].sem_op = 1;
 	Sem[1].sem_num = SEM_PROBE;
 	Sem[1].sem_op = 0;
-	semop(SemDes, Sem, 2);
+
+	if (ProbeBufSize) {
+		Sem[2].sem_num = SEM_PROBES_BUF + 1;
+		Sem[2].sem_op = 1;
+		Sem[3].sem_num = SEM_PROBES_BUF;
+		Sem[3].sem_op = 0;
+		semop(SemDes, Sem, 4);
+
+		if ((ProbeBuf =
+		     (short *) shmat(ProbeBufDes , (void *) 0,
+				     0)) == (void *) -1) {
+			sz_log(0,
+			    "parcook: cannot attach 'probes buf' segment, errno %d, exiting",
+			    errno);
+			exit(1);
+		}
+
+	} else {
+		semop(SemDes, Sem, 2);
+	}
 	/* Attach probes */
 	if ((Probe =
 	     (short *) shmat(ProbeDes, (void *) 0,
@@ -1510,10 +1562,21 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	sz_log(10, "publishing new values");
 	publish_values(Probe, zmq_socket);
 
+	update_probes_buf(Probe, ProbeBuf);
+
 	/* release probes semaphore */
 	Sem[0].sem_num = SEM_PROBE + 1;
 	Sem[0].sem_op = -1;
-	semop(SemDes, Sem, 1);
+	if (ProbeBufSize) {
+		Sem[1].sem_num = SEM_PROBES_BUF + 1;
+		Sem[1].sem_op = -1;
+		semop(SemDes, Sem, 2);
+
+		/* detach probes buf segment */
+		shmdt((void *) ProbeBuf);
+	} else {
+		semop(SemDes, Sem, 1);
+	}
 	/* detach probes segment */
 	shmdt((void *) Probe);
 
@@ -1612,6 +1675,7 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 	char* linedmnpat;	/**< path for ftok */
 	char* config_prefix;
+	char* probes_buffer_size;
 	std::string parcook_socket;
 
 	InitSignals();
@@ -1657,6 +1721,13 @@ int main(int argc, char *argv[])
 	linedmnpat = libpar_getpar("", "linex_cfg", 1);
 	config_prefix = libpar_getpar("parscriptd", "config_prefix", 1);
 	parcook_socket = libpar_getpar("", "parcook_socket_uri", 1);
+
+	probes_buffer_size = libpar_getpar("", "probes_buffer_size", 0);
+	if (probes_buffer_size) {
+		ProbeBufSize = atoi(probes_buffer_size);
+		free(probes_buffer_size);
+	}
+
 	/* end szarp.cfg processing */
 	libpar_done();
 	
