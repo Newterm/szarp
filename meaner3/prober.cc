@@ -176,12 +176,18 @@ int main(int argc, char* argv[])
 	int i;
 	TProber* prober;
 	time_t last_cycle; /**< time of last cycle */
+	char* probes_buffer_size;
 
 	libpar_read_cmdline(&argc, argv);
-	
+
 	/* parse params */
 	arguments.no_daemon = 0;
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+
+	/* read params from szarp.cfg file */
+	libpar_init_with_filename("/etc/szarp/szarp.cfg", 1);
+
+	probes_buffer_size = libpar_getpar("", "probes_buffer_size", 0);
 
 	/* Check for other copies of program. */
 	if ((i = check_for_other (argc, argv))) {
@@ -189,7 +195,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	prober = new TProber();
+	if (probes_buffer_size) {
+		prober = new TProber(atoi(probes_buffer_size));
+		free(probes_buffer_size);
+	} else {
+		prober = new TProber();
+	}
+
 	assert (prober != NULL);
 	
 	/* Set signal handling */
@@ -238,7 +250,11 @@ int main(int argc, char* argv[])
 		time_t t;
 		time(&t);
 
-		time_t plan = prober->WaitForCycle(BASE_PERIOD, t);
+		time_t plan;
+		if (prober->IsBuffered())
+			plan = prober->WaitForCycle(prober->GetBuffSize() * BASE_PERIOD, t);
+		else
+			plan = prober->WaitForCycle(BASE_PERIOD, t);
 
 		if ((t - last_cycle > BASE_PERIOD) && (last_cycle > 0)) {
 			sz_log(1, "prober: cycle lasted for %ld seconds, planned %ld", t - last_cycle, plan);
@@ -253,7 +269,10 @@ int main(int argc, char* argv[])
 		prober->ReadParams();
 
 		/* Write data to base. */
-		prober->WriteParams();
+		if (prober->IsBuffered())
+			prober->WriteParamsBuffered();
+		else
+			prober->WriteParams();
 	}
 	
 	return 0;
