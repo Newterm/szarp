@@ -278,6 +278,8 @@ retry:
 	if (g_should_exit) {
 		g_TerminateHandler(0);
 	}
+	
+	if (buffer_count != 0) GetValuesBuffer();
 }
 
 void TParcook::GetValuesBuffer()
