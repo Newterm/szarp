@@ -364,12 +364,12 @@ short int TParcook::GetData(int i, short int* buffer)
 	int pos_abs = pos + param_off;
 
 	if (count < buffer_count) {
-		memcpy((void*)(buffer), (void*)(data + param_off), pos + 1);
+		memcpy((void*)(buffer), (void*)(data + param_off), (pos + 1)*sizeof(short int));
 		return (pos + 1);
 	} else {
 		int old_vals_cnt = param_end_off - pos_abs;
-		memcpy((void*)(buffer), (void*)(data + pos_abs + 1), old_vals_cnt);
-		memcpy((void*)(buffer + old_vals_cnt), (void*)(data + param_off), pos + 1);
+		memcpy((void*)(buffer), (void*)(data + pos_abs + 1), old_vals_cnt*sizeof(short int));
+		memcpy((void*)(buffer + old_vals_cnt), (void*)(data + param_off), (pos + 1)*sizeof(short int));
 		return buffer_count;
 	}
 }
