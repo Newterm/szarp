@@ -1056,6 +1056,12 @@ void CreateProbesSegments(char* parcookpat)
 		    errno);
 		exit(1);
 	}
+	key = ftok(parcookpat, SHM_PROBES_BUF);
+	if (key == -1) {
+		sz_log(0, "parcook: ftok(%s, SHM_PROBES_BUF) error, errno %d",
+				parcookpat, errno);
+		exit(1);
+	}
 	if (ProbeBufSize)
 		if ((ProbeBufDes =
 		     shmget(key, (VTlen * ProbeBufSize + SHM_PROBES_BUF_DATA_OFF) * sizeof(short)
