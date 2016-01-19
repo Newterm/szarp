@@ -136,7 +136,7 @@ path '%s'",
 		return 1;
 	}
 
-	sem_key = ftok(parcook_path, SEM_PROBES_BUF);
+	sem_key = ftok(parcook_path, SEM_PARCOOK);
 	if (sem_key == -1) {
 		sz_log(0, "TParcook::Init(): ftok() for semaphore key failed, errno %d, \
 path '%s'",
