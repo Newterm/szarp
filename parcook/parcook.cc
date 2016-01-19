@@ -1469,10 +1469,11 @@ void update_probes_buf(short *Probe, short *ProbeBuf) {
 	short* count = &ProbeBuf[SHM_PROBES_BUF_CNT_INDEX];
 
 	*count = std::min(*count + 1, ProbeBufSize);
-	*current_pos = (*current_pos + 1) % ProbeBufSize;
 
 	for (int i = 0; i < VTlen; i++)
 		ProbeBuf[SHM_PROBES_BUF_DATA_OFF + i * ProbeBufSize + *current_pos] = Probe[i];
+	
+	*current_pos = (*current_pos + 1) % ProbeBufSize;
 }
 
 void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*>& param_info, zmq::socket_t& zmq_socket) 
