@@ -356,6 +356,12 @@ short int TParcook::GetData(int i, short int* buffer)
 
 	int count = (int)buffer_copied[SHM_PROBES_BUF_CNT_INDEX];
 	int pos = (int)buffer_copied[SHM_PROBES_BUF_POS_INDEX];
+	
+	/*
+	for (int y = 0; y < count; y++)
+		sz_log(9, "param %d value %d : %d", i, y, 
+			buffer_copied[SHM_PROBES_BUF_DATA_OFF + i * buffer_count + y]);
+	*/
 
 	short int* data = buffer_copied + SHM_PROBES_BUF_DATA_OFF;
 
@@ -364,12 +370,12 @@ short int TParcook::GetData(int i, short int* buffer)
 	int pos_abs = pos + param_off;
 
 	if (count < buffer_count) {
-		memcpy((void*)(buffer), (void*)(data + param_off), (pos + 1)*sizeof(short int));
-		return (pos + 1);
+		memcpy((void*)(buffer), (void*)(data + param_off), pos * sizeof(short int));
+		return pos;
 	} else {
-		int old_vals_cnt = param_end_off - pos_abs;
-		memcpy((void*)(buffer), (void*)(data + pos_abs + 1), old_vals_cnt*sizeof(short int));
-		memcpy((void*)(buffer + old_vals_cnt), (void*)(data + param_off), (pos + 1)*sizeof(short int));
+		int old_vals_cnt = param_end_off - pos_abs + 1;
+		memcpy((void*)(buffer), (void*)(data + pos_abs), old_vals_cnt*sizeof(short int));
+		memcpy((void*)(buffer + old_vals_cnt), (void*)(data + param_off), pos * sizeof(short int));
 		return buffer_count;
 	}
 }
