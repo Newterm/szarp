@@ -19,6 +19,7 @@
  */
 
 #include "szcache.h"
+#include "shm_connection.h"
 
 #include <iostream>
 #include <iomanip>
@@ -220,6 +221,17 @@ class SzCache::SzCacheFile {
 		{
 			logMsg(3, std::string("cacheMap(") + path
 				+ std::string(")"));
+			
+			/*
+			ShmConnection shm_conn;
+			shm_conn.register_signals();
+			shm_conn.configure();
+			shm_conn.connect();
+			shm_conn.update_segment();
+			std::vector<int16_t> vals = shm_conn.get_values(250);
+			for(auto v = vals.begin(); v != vals.end(); ++v)
+				std::cout << "VALUE: " << *v << std::endl;
+			*/
 
 			cacheMap(path, 0, getFileSize(path) / sizeof(int16_t));
 		};
