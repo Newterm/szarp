@@ -5,9 +5,12 @@
 #include "config.h"
 #endif
 
+#include "szarp_config.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #include <cstdint>
 #include <sys/ipc.h>
@@ -37,20 +40,22 @@ class ShmConnection {
 		std::vector<int16_t> get_values(int param_index);
 
 	protected:
+		//std::unique_ptr<TSzarpConfig> _szarp_config;
+			
 		void shm_open(struct sembuf* semaphores);
 		void shm_close(struct sembuf* semaphores);
 		void attach(int16_t** segment);
 		void detach(int16_t** segment);
 
-		std::string parcook_path;
+		std::string _parcook_path;
 		
-		int shm_desc;			
-		int sem_desc;			
+		int _shm_desc;			
+		int _sem_desc;			
 
-		int values_count;		
-		int params_count;
+		int _values_count;		
+		int _params_count;
 
-		std::vector<int16_t> shm_segment;
+		std::vector<int16_t> _shm_segment;
 };
 
 #endif /*SHM_CONNECTION_H*/

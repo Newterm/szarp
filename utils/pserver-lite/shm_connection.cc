@@ -1,13 +1,11 @@
 #include "shm_connection.h"
 
 #include <boost/lexical_cast.hpp>
-#include <memory>
 
 #include "liblog.h"
 #include "libpar.h"
 #include "ipcdefines.h"
 #include "conversion.h"
-#include "szarp_config.h"
 #include "szbdefines.h"
 
 volatile sig_atomic_t g_signals_blocked = 0;
@@ -30,7 +28,7 @@ RETSIGTYPE g_TerminateHandler(int signum)
 }
 
 ShmConnection::ShmConnection() 
-: shm_desc(0), sem_desc(0), values_count(0)
+: _shm_desc(0), _sem_desc(0), _values_count(0)
 {
 }
 
@@ -94,15 +92,15 @@ bool ShmConnection::configure()
 		libpar_done();
 		return false;
 	} else {
-		parcook_path = std::string(config_param);
+		_parcook_path = std::string(config_param);
 		free(config_param);
 	}
 
 	config_param = libpar_getpar("", "probes_buffer_size", 0);
 	if (config_param != nullptr) {
-		values_count = boost::lexical_cast<int>(config_param);
+		_values_count = boost::lexical_cast<int>(config_param);
 		free(config_param);
-		sz_log(9, "ShmConnection::configure(): buffer size %d detected in szarp.cfg file", values_count);
+		sz_log(9, "ShmConnection::configure(): buffer size %d detected in szarp.cfg file", _values_count);
 	}
 	
 	libpar_done();
@@ -119,7 +117,7 @@ bool ShmConnection::configure()
 	}
 	sz_log(5, "ShmConnection::configure(): IPK file %s successfully loaded", SC::S2A(ipk_path).c_str());
 	
-	params_count = config->GetParamsCount() + config->GetDefinedCount();
+	_params_count = config->GetParamsCount() + config->GetDefinedCount();
 
 	xmlCleanupParser();
 
@@ -132,37 +130,37 @@ bool ShmConnection::connect()
 	key_t sem_key;
 	const int max_attempts_no = 60;
 	
-	shm_segment.resize(values_count * params_count + SHM_PROBES_BUF_DATA_OFF);
+	_shm_segment.resize(_values_count * _params_count + SHM_PROBES_BUF_DATA_OFF);
 
-	shm_key = ftok(parcook_path.c_str(), SHM_PROBES_BUF);
+	shm_key = ftok(_parcook_path.c_str(), SHM_PROBES_BUF);
 	if (shm_key == -1) {
 		sz_log(0, "ShmConnection::connect(): ftok() for shm failed, errno %d, path '%s'",
-			errno, parcook_path.c_str());
+			errno, _parcook_path.c_str());
 		return false;
 	}
 
-	sem_key = ftok(parcook_path.c_str(), SEM_PARCOOK);
+	sem_key = ftok(_parcook_path.c_str(), SEM_PARCOOK);
 	if (sem_key == -1) {
 		sz_log(0, "ShmConnection::connect(): ftok() for sem failed, errno %d, path '%s'",
-				errno, parcook_path.c_str());
+				errno, _parcook_path.c_str());
 		return false;
 	}
 
-	shm_desc = shmget(shm_key, 1, 00600);
-	sem_desc = semget(sem_key, 2, 00600);
-	for (int i = 0; ((shm_desc == -1) || (sem_desc == -1)) && (i < max_attempts_no-1); ++i)
+	_shm_desc = shmget(shm_key, 1, 00600);
+	_sem_desc = semget(sem_key, 2, 00600);
+	for (int i = 0; ((_shm_desc == -1) || (_sem_desc == -1)) && (i < max_attempts_no-1); ++i)
 	{
 		sleep(1);
-		shm_desc = shmget(shm_key, 1, 00600);
-		sem_desc = semget(sem_key, 2, 00600);
+		_shm_desc = shmget(shm_key, 1, 00600);
+		_sem_desc = semget(sem_key, 2, 00600);
 	}
 
-	if (shm_desc == -1) {
+	if (_shm_desc == -1) {
 		sz_log(0, "ShmConnection::connect(): error getting shm id, errno %d, key %d", 
 				errno, shm_key);
 		return false;
 	}
-	if (sem_desc == -1) {
+	if (_sem_desc == -1) {
 		sz_log(0, "ShmConnection::connect(): error getting semid, errno %d, key %d",
 				errno, sem_key);
 		return false;
@@ -180,7 +178,7 @@ void ShmConnection::shm_open(struct sembuf* semaphores)
 	semaphores[1].sem_op = 1;
 	semaphores[1].sem_flg = SEM_UNDO;
 
-	if (semop(sem_desc, semaphores, 2) == -1) {
+	if (semop(_sem_desc, semaphores, 2) == -1) {
 		sz_log(0, "ShmConnection:shm_open(): cannot open semaphore, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
@@ -193,7 +191,7 @@ void ShmConnection::shm_close(struct sembuf* semaphores)
 	semaphores[0].sem_num = SEM_PROBES_BUF + 1;
 	semaphores[0].sem_op = -1;
 	semaphores[0].sem_flg = SEM_UNDO;
-	if (semop(sem_desc, semaphores, 1) == -1) {
+	if (semop(_sem_desc, semaphores, 1) == -1) {
 		sz_log(0, "ShmConnection:shm_close: cannot release semaphore, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
@@ -204,7 +202,7 @@ void ShmConnection::shm_close(struct sembuf* semaphores)
 void ShmConnection::attach(int16_t** segment) 
 {	
 	do { 
-		*segment = (int16_t*)shmat(shm_desc, 0, SHM_RDONLY); 
+		*segment = (int16_t*)shmat(_shm_desc, 0, SHM_RDONLY); 
 
 	} while((*segment == (void*)-1) && errno == EINTR);
 
@@ -234,7 +232,7 @@ void ShmConnection::update_segment()
 	shm_open(semaphores);
 	attach(&attached_segment);
 	
-	std::copy(attached_segment, attached_segment + shm_segment.size(), shm_segment.begin());
+	std::copy(attached_segment, attached_segment + _shm_segment.size(), _shm_segment.begin());
 
 	detach(&attached_segment);
 	shm_close(semaphores);
@@ -247,18 +245,18 @@ void ShmConnection::update_segment()
 
 std::vector<int16_t> ShmConnection::get_values(int param_index)
 {
-	std::vector<int16_t> param_values(values_count, SZB_FILE_NODATA);
+	std::vector<int16_t> param_values(_values_count, SZB_FILE_NODATA);
 
-	int16_t count = shm_segment[SHM_PROBES_BUF_CNT_INDEX]; 				
-	int16_t pos = shm_segment[SHM_PROBES_BUF_POS_INDEX]; 				
+	int16_t count = _shm_segment[SHM_PROBES_BUF_CNT_INDEX]; 				
+	int16_t pos = _shm_segment[SHM_PROBES_BUF_POS_INDEX]; 				
 				
-	std::vector<int16_t>::iterator data = shm_segment.begin() + SHM_PROBES_BUF_DATA_OFF;
+	std::vector<int16_t>::iterator data = _shm_segment.begin() + SHM_PROBES_BUF_DATA_OFF;
 
-	int param_off = values_count * param_index;
-	int param_end_off = param_off + values_count - 1;
+	int param_off = _values_count * param_index;
+	int param_end_off = param_off + _values_count - 1;
 	int pos_abs = pos + param_off;
 
-	if (count < values_count) {
+	if (count < _values_count) {
 		std::copy(data + param_off, data + param_off + pos,  param_values.begin());
 		return param_values;
 	} else {
