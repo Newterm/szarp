@@ -189,12 +189,16 @@ void TProber::WriteParamsBuffered(bool force_write)
 		if (params[i] != NULL) {
 			int param_off = GetBuffSize() * i;
 			int read_count = parcook->GetData(i, buffer + param_off);
-			if (params[i]->WriteProbes(fs::wpath(data_dir), t,
-						buffer + param_off,
-						GetBuffSize())) {
-				err++;
-			} else {
-				ok++;
+			sz_log(9, "Read count: %d, buffer size: %d", read_count, GetBuffSize());
+			
+			if (read_count > 0) {
+				if (params[i]->WriteProbes(fs::wpath(data_dir), t, 
+					buffer + param_off,
+					read_count)) {
+					err++;
+				} else {
+					ok++;
+				}
 			}
 		}
 	}

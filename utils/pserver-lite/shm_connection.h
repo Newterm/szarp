@@ -36,11 +36,13 @@ class ShmConnection {
 		bool connect();
 
 		void update_segment();
+	
+		int param_index_from_path(std::string path);
 
-		std::vector<int16_t> get_values(int param_index);
+		std::vector<int16_t> get_values(int param_index);	
 
 	protected:
-		//std::unique_ptr<TSzarpConfig> _szarp_config;
+		std::unique_ptr<TSzarpConfig> _szarp_config;
 			
 		void shm_open(struct sembuf* semaphores);
 		void shm_close(struct sembuf* semaphores);

@@ -27,8 +27,9 @@ RETSIGTYPE g_TerminateHandler(int signum)
 	}
 }
 
-ShmConnection::ShmConnection() 
-: _shm_desc(0), _sem_desc(0), _values_count(0)
+ShmConnection::ShmConnection()
+: _szarp_config(new TSzarpConfig()),
+_shm_desc(0), _sem_desc(0), _values_count(0)
 {
 }
 
@@ -78,7 +79,7 @@ bool ShmConnection::configure()
 
 	char *config_param = libpar_getpar("global", "IPK", 0);
 	if (config_param == nullptr) {
-		sz_log(0, "TWriter::LoadConfig(): set 'IPK' param in szarp.cfg file");
+		sz_log(0, "ShmConnection::configure(): set 'IPK' param in szarp.cfg file");
 		libpar_done();
 		return false;
 	} else {
@@ -105,11 +106,9 @@ bool ShmConnection::configure()
 	
 	libpar_done();
 
-	std::unique_ptr<TSzarpConfig> config(new TSzarpConfig());
-
 	xmlInitParser();
 
-	if (config->loadXML(ipk_path) != 0) {
+	if (_szarp_config->loadXML(ipk_path) != 0) {
 		sz_log(0, "ShmConnection::configure(): error loading configuration from file %s",
 				SC::S2A(ipk_path).c_str());
 		xmlCleanupParser();
@@ -117,7 +116,7 @@ bool ShmConnection::configure()
 	}
 	sz_log(5, "ShmConnection::configure(): IPK file %s successfully loaded", SC::S2A(ipk_path).c_str());
 	
-	_params_count = config->GetParamsCount() + config->GetDefinedCount();
+	_params_count = _szarp_config->GetParamsCount() + _szarp_config->GetDefinedCount();
 
 	xmlCleanupParser();
 
@@ -241,6 +240,35 @@ void ShmConnection::update_segment()
 
 	if (g_should_exit) 
 		g_TerminateHandler(0);
+}
+
+int ShmConnection::param_index_from_path(std::string path)
+{
+	std::string name_path;
+	std::wstring w_name_path;
+	
+	/* Remove "/.szc" */
+	path = path.substr(0, path.rfind("/"));
+	/* Get last 3 parts of szbase name */
+	for (int name_part = 0; name_part < 3; ++name_part) {
+		name_path = path.substr(path.rfind("/"), std::string::npos) + name_path; 
+		path = path.substr(0, path.rfind("/"));
+	}
+	/* Remove first slash */
+	name_path.erase(name_path.begin());
+	
+	w_name_path.assign(name_path.begin(), name_path.end());
+
+	TParam* param = _szarp_config->GetFirstParam();
+	while (param != nullptr) {
+		std::wstring szbase_name = param->GetSzbaseName();
+		if (szbase_name.compare(w_name_path) == 0)
+			return param->GetIpcInd();		
+		param = _szarp_config->GetNextParam(param);
+	}
+
+	sz_log(0, "ShmConnection::param_index_from_path: param not found!");
+	return -1;
 }
 
 std::vector<int16_t> ShmConnection::get_values(int param_index)

@@ -106,8 +106,10 @@ class SzCache {
 
 		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
 		SzTime		writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path);
-			
+		
 	private:
+		static int toReadFromShm(SzPath path);
+		static std::vector<int16_t> getShmData(SzPath path);
 
 		/** Search utils */
 		SzRange		searchFirstLast(SzPath path) const;
@@ -117,15 +119,17 @@ class SzCache {
 		/** Filesystem utils */
 		SzPath					checkPath(SzPath path) const;
 		std::set<SzPath>			globify(const SzPath& path) const;
-		std::pair<SzPath,SzPath>		splitPath(const SzPath& path) const;
 		bool					validatePathMember(std::string member) const;
 		bool					directoryExists(const SzPath& path) const;
 		bool					fileExists(const SzPath& path) const;
 		static std::size_t			getFileSize(const SzPath& path);
 
+		static std::pair<SzPath,SzPath> splitPath(const SzPath& path);
+
 		/** Epoch time <-> CACHE file path  and index translations */
-		SzPathIndex	getPathIndex(SzTime szt, SzPath dir) const;
-		SzTime		getTime(SzIndex idx, SzPath path) const;
+		static SzPathIndex getPathIndex(SzTime szt, SzPath dir);
+		static SzTime getTime(SzIndex idx, SzPath path);
+
 		SzIndex		lastIndex(SzPath path) const;
 		SzPath		moveMonth(SzPath path, bool forward) const;
 		SzPath		nextMonth(SzPath path) const;
