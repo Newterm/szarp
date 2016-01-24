@@ -1711,7 +1711,24 @@ W 2008 roku w zespole programistów S³awomir Chy³ek wymieni³ siê z Adamem Smykiem
 <para>
 W roku 2009, rok po przejêciu firmy Praterm przez grupê Dalkia, czê¶æ zespo³u technicznego opu¶ci³a Praterm, rozwój systemu zacz±³ wiêc byæ prowadzony jednocze¶nie tak¿e przez firmê Newterm. Repozytorium projektu zosta³o przeniesione na portal SourceForge.net, kod zosta³ wyczyszczony z wiêkszo¶ci komercyjnych pozosta³o¶ci. Uruchomiono nowy portal projektu pod adresem <ulink url="http://www.szarp.org">www.szarp.org</ulink>.
 </para>
-
+<para>
+W roku 2010 SZARP zmieni³ system kontroli wersji na git. Dodano obs³ugê kolejnych urz±dzeñ i kolejne demony, cache parametrów definiowalnych, optymalizator formu³ LUA, a szbase wzbogaci³ siê o mo¿liwo¶æ zbierania danych z 10 sekundow± rozdzielczo¶ci±.
+</para>
+<para>
+Rok 2011, do grona programistów SZARPa do³±cza Jakub Kotur, który, w tym samym roku tworzy aplikacjê pyipk. W 2011 roku zostaje zakoñczone wdro¿enie najwiêkszej do tej pory, pojedyñczej, konfiguracji systemu SZARP, która zawieraja prawie 20000 tysiêcy parametrów. Pracê nad SZARPem koñczy Pawe³ Pa³ucha, developer i architekt, który, miêdzy innymi, zaprojetkowa³ oraz zaimplementowa³ szbase i ISL, posiadacz nawiêkszej ilo¶ci wpisów w ChangeLogu. W roku 2011 do³±cza do zespo³u Aleksy Barcz.
+</para>
+<para>
+Rok 2012 to ropoczêcie prac nad nowym formatem bazy danych "sz4" oraz zakoñczenie prac nad pyipk. To ju¿ kolejny rok, w którym programi¶ci firmy Newterm, dotychczas zajmuj±cy siê wy³±cznie system SZARP, rozwijaj± siostrzane projekty - knlib i kngui. Knlib to platforma dla programów techologicznych dzia³aj±ca pod kontrol± sytemu Linux (dzia³aj±ca pocz±tku na sterownika firmy Kontron). Kngui to interfejs graficzny, komnikuj±cy siê z knlib-em, pozwalaj±cy na podgl±d i zadawanie parametrów technologicznych, zg³aszanie alarmów, etc. Do zespo³u do³±cza Marcin Harasimczuk.
+</para>
+<para>
+Rok 2013 to dalszy rozwój nowego formatu danych, wzbogacenie SZARPa o obs³ugê kolejnych protoko³ów i urz±dzeñ, przeprowadzka kodu z SourceForge na github. W 2013 do zespo³u do³±cza Tomasz Pieczerak. 
+</para>
+<para>
+Najwa¿niejszym wydarzenie roku 2014 to bez w±tpienia powstanie idraw, web-owej wersji programu draw, posiadaj±c± podobn± funkcjonalno¶c do "klasycznej" desktopowej wersji draw. Z idrawa mo¿na korzystaæ z przegl±drki internetowej oraz smartphona.
+</para>
+<para>
+W 2015 roku Tomasz Pieczerak doda³ do SZARPa aplikacjê filler2, umo¿liwaj±c±, za pomoc± graficznego interfejsu u¿ytkownika, modyfikacjê danych historycznych bazy szbase, a Marcin Harasimczuk wzbogaci³ SZARPa o nowego demona, pozwalaj±cego SZARPowi komunikowaæ siê za pomoc± protoko³u S7 firmy Siemens. W tym¿e roku dokonano pierwszego, pilota¿owego wdro¿enia nowego formatu bazy danych. Do zespo³u do³±cza Marcin Morusiewicz.
+</para>
 </section> <!-- historia szarpa -->
 
 </article>
