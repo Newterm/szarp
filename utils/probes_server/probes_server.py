@@ -147,7 +147,7 @@ class GetProducer(Producer):
 				debug("GET PRODUCER FINISH")
 				return
 			self._size = None
-		while not self._paused and self._start < self._end:
+		while not self._paused and self._start <= self._end:
 			self._start = self._proto.factory.szbcache.write_data(
 					self._start, self._end, self._param, self._proto.transport)
 		if self._start >= self._end:
