@@ -110,7 +110,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 
 	*/
 
-	selectedPeriod = PT_MIN10;
+	selectedPeriod = PT_MIN10 - PT_SEC10; // PT_SEC10 is the first type used by ekstraktor3, we need to index accordingly
 	selectedSeparator = COMMA;
 
 	wxPanel* panel = new wxPanel(this);
