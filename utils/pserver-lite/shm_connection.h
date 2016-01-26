@@ -40,8 +40,22 @@ class ShmConnection {
 		int param_index_from_path(std::string path);
 
 		std::vector<int16_t> get_values(int param_index);	
+		
+		int get_pos();
+		int get_count();
+
+		bool registered()
+		{ return _registered; }
+		bool configured()
+		{ return _configured; }
+		bool connected()
+		{ return _connected; }
 
 	protected:
+		bool _registered;
+		bool _configured;
+		bool _connected;
+		
 		std::unique_ptr<TSzarpConfig> _szarp_config;
 			
 		void shm_open(struct sembuf* semaphores);

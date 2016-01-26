@@ -5,6 +5,8 @@
 #include <vector>
 #include <stdexcept>
 
+#include "szcache.h"
+
 // TODO: move this macro to some more appropriate place
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 10000 \
@@ -63,6 +65,9 @@ public:
 			: Exception(what_arg) { }
 	};
 #endif
+protected:
+	SzCache _szcache;
+		
 };
 
 #endif /* __COMMAND_HANDLER_H */

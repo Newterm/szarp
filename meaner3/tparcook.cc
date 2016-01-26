@@ -130,7 +130,7 @@ int TParcook::InitBuffer()
 
 	shm_key = ftok(parcook_path, SHM_PROBES_BUF);
 	if (shm_key == -1) {
-		sz_log(0, "TParcook::Init(): ftok() for shared memory key failed, errno %d, \
+		sz_log(0, "TParcook::InitBuffer(): ftok() for shared memory key failed, errno %d, \
 path '%s'",
 			errno, parcook_path);
 		return 1;
@@ -138,7 +138,7 @@ path '%s'",
 
 	sem_key = ftok(parcook_path, SEM_PARCOOK);
 	if (sem_key == -1) {
-		sz_log(0, "TParcook::Init(): ftok() for semaphore key failed, errno %d, \
+		sz_log(0, "TParcook::InitBuffer(): ftok() for semaphore key failed, errno %d, \
 path '%s'",
 			errno, parcook_path);
 		return 1;
@@ -154,13 +154,13 @@ path '%s'",
 	}
 
 	if (shm_desc_buff == -1) {
-		sz_log(0, "TParcook::Init(): error getting parcook shared memory identifier, \
+		sz_log(0, "TParcook::InitBuffer(): error getting parcook shared memory identifier, \
 errno %d, key %d",
 			errno, shm_key);
 		return 1;
 	}
 	if (sem_desc_buff == -1) {
-		sz_log(0, "TParcook::Init(): error getting parcook semaphor identifier, \
+		sz_log(0, "TParcook::InitBuffer(): error getting parcook semaphor identifier, \
 errno %d, key %d",
 			errno, sem_key);
 		return 1;
@@ -176,8 +176,10 @@ int TParcook::Init(int probes_count)
 	const int max_attempts_no = 60;
 
 	assert(probes_count > 0);
-	
 	this->probes_count = probes_count;
+	
+	if (buffer_count != 0) return InitBuffer();
+
 	copied = (short int *) malloc (probes_count * sizeof(short int));
 	if (copied == NULL) {
 		sz_log(0, "TParcook::Init(): not enough memory for probes table, errno %d",
@@ -219,13 +221,14 @@ errno %d, key %d",
 		return 1;
 	}
 	
-	if (buffer_count != 0) return InitBuffer();
-
 	return 0;
 }
 
 void TParcook::GetValues()
 {
+
+	if (buffer_count != 0) { GetValuesBuffer(); return; }
+
 	short int* probes;	/**< attached probe table */
 	struct sembuf sems[2];
 
@@ -279,7 +282,6 @@ retry:
 		g_TerminateHandler(0);
 	}
 	
-	if (buffer_count != 0) GetValuesBuffer();
 }
 
 void TParcook::GetValuesBuffer()
@@ -290,10 +292,10 @@ void TParcook::GetValuesBuffer()
 	/* block signals */
 	g_signals_blocked = 1;
 	/* enter semaphore, set undo for possible exit */
-	sems[0].sem_num = SEM_PROBES_BUF;
+	sems[0].sem_num = SEM_PROBES_BUF + 1;
 	sems[0].sem_op = 0;
 	sems[0].sem_flg = SEM_UNDO;
-	sems[1].sem_num = SEM_PROBES_BUF + 1;
+	sems[1].sem_num = SEM_PROBES_BUF;
 	sems[1].sem_op = 1;
 	sems[1].sem_flg = SEM_UNDO;
 
@@ -326,7 +328,7 @@ retry_buff:
 		g_TerminateHandler(0);
 	}
 	/* release semaphore */
-	sems[0].sem_num = SEM_PROBES_BUF + 1;
+	sems[0].sem_num = SEM_PROBES_BUF;
 	sems[0].sem_op = -1;
 	sems[0].sem_flg = SEM_UNDO;
 	if (semop(sem_desc_buff, sems, 1) == -1) {
@@ -344,6 +346,11 @@ retry_buff:
 
 short int TParcook::GetData(int i)
 {
+	if (buffer_count != 0) { 
+		short int buffer[buffer_count];
+		int read = GetData(i,buffer);
+		return buffer[read - 1];
+	}
 	return copied[i];
 }
 
@@ -358,9 +365,11 @@ short int TParcook::GetData(int i, short int* buffer)
 	int pos = (int)buffer_copied[SHM_PROBES_BUF_POS_INDEX];
 	
 	/*
-	for (int y = 0; y < count; y++)
-		sz_log(9, "param %d value %d : %d", i, y, 
-			buffer_copied[SHM_PROBES_BUF_DATA_OFF + i * buffer_count + y]);
+	std::ostringstream os;
+	for (int j = 0; j < count; ++j) {
+		os << buffer_copied[SHM_PROBES_BUF_DATA_OFF + buffer_count * i + j] << " ";
+	} 	
+	sz_log(3, "Buf-shm(%d):[%s] count:%d",i,os.str().c_str(),count); 
 	*/
 
 	short int* data = buffer_copied + SHM_PROBES_BUF_DATA_OFF;

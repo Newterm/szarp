@@ -244,17 +244,20 @@ int main(int argc, char* argv[])
 				0);/* close stdout and stderr descriptors */
 	sz_log(2, "prober started");
 	
+	time_t periods = 1;
+	if (prober->IsBuffered()) periods = prober->GetBuffSize();
+
 	last_cycle = 0;
+	int cycle_count = 0;
 	while (1) {
 		/* Get current time */
 		time_t t;
 		time(&t);
 
-		time_t plan;
-		if (prober->IsBuffered())
-			plan = prober->WaitForCycle(prober->GetBuffSize() * BASE_PERIOD, t);
-		else
-			plan = prober->WaitForCycle(BASE_PERIOD, t);
+		sz_log(2, "prober: t:%ld last:%ld cycle_count:%d periods:%ld",t,last_cycle,cycle_count,periods);
+		time_t plan = prober->WaitForCycle(BASE_PERIOD, t);
+
+		sz_log(2, "prober: done waiting plan:%ld",plan);
 
 		if ((t - last_cycle > BASE_PERIOD) && (last_cycle > 0)) {
 			sz_log(1, "prober: cycle lasted for %ld seconds, planned %ld", t - last_cycle, plan);
@@ -264,6 +267,9 @@ int main(int argc, char* argv[])
 			continue;
 		}
 		last_cycle = t;
+		
+		cycle_count = (cycle_count + 1) % periods;
+		if (cycle_count != 0) continue;
 
 		/* Connect with parcook. */
 		prober->ReadParams();

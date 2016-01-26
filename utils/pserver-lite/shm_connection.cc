@@ -27,9 +27,14 @@ RETSIGTYPE g_TerminateHandler(int signum)
 	}
 }
 
-ShmConnection::ShmConnection()
-: _szarp_config(new TSzarpConfig()),
-_shm_desc(0), _sem_desc(0), _values_count(0)
+ShmConnection::ShmConnection(): 
+_registered(false), 
+_configured(false), 
+_connected(false),
+_szarp_config(new TSzarpConfig()),
+_shm_desc(0), 
+_sem_desc(0), 
+_values_count(0)
 {
 }
 
@@ -69,6 +74,8 @@ void ShmConnection::register_signals()
 	assert (ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
 	assert (ret == 0);
+	
+	_registered = true;
 }
 
 bool ShmConnection::configure()
@@ -119,7 +126,8 @@ bool ShmConnection::configure()
 	_params_count = _szarp_config->GetParamsCount() + _szarp_config->GetDefinedCount();
 
 	xmlCleanupParser();
-
+	
+	_configured = true;
 	return true;
 }
 
@@ -164,16 +172,16 @@ bool ShmConnection::connect()
 				errno, sem_key);
 		return false;
 	}
-
+	_connected = true;
 	return true;
 }
 
 void ShmConnection::shm_open(struct sembuf* semaphores)
 {
-	semaphores[0].sem_num = SEM_PROBES_BUF;
+	semaphores[0].sem_num = SEM_PROBES_BUF + 1;
 	semaphores[0].sem_op = 0;
 	semaphores[0].sem_flg = SEM_UNDO;
-	semaphores[1].sem_num = SEM_PROBES_BUF + 1;
+	semaphores[1].sem_num = SEM_PROBES_BUF;
 	semaphores[1].sem_op = 1;
 	semaphores[1].sem_flg = SEM_UNDO;
 
@@ -187,7 +195,7 @@ void ShmConnection::shm_open(struct sembuf* semaphores)
 
 void ShmConnection::shm_close(struct sembuf* semaphores)
 {
-	semaphores[0].sem_num = SEM_PROBES_BUF + 1;
+	semaphores[0].sem_num = SEM_PROBES_BUF;
 	semaphores[0].sem_op = -1;
 	semaphores[0].sem_flg = SEM_UNDO;
 	if (semop(_sem_desc, semaphores, 1) == -1) {
@@ -271,6 +279,16 @@ int ShmConnection::param_index_from_path(std::string path)
 	return -1;
 }
 
+int ShmConnection::get_count() 
+{
+	return _shm_segment[SHM_PROBES_BUF_CNT_INDEX]; 			
+}
+	
+int ShmConnection::get_pos() 
+{
+	return _shm_segment[SHM_PROBES_BUF_POS_INDEX];
+}
+
 std::vector<int16_t> ShmConnection::get_values(int param_index)
 {
 	std::vector<int16_t> param_values(_values_count, SZB_FILE_NODATA);
@@ -292,6 +310,7 @@ std::vector<int16_t> ShmConnection::get_values(int param_index)
 		std::copy(data + pos_abs, data + pos_abs + old_vals_cnt, param_values.begin());
 		if (pos == 0) return param_values;
 		std::copy(data + param_off, data + param_off + pos, param_values.begin() + old_vals_cnt);
+		//std::copy(data + param_off, data + param_off + _values_count,  param_values.begin());
 		return param_values;
 	}
 }

@@ -35,6 +35,8 @@
 #include <algorithm>
 #include <tuple>
 
+#include "shm_connection.h"
+
 class SzCache {	
 
 	public:	
@@ -109,6 +111,8 @@ class SzCache {
 		
 	private:
 		static int toReadFromShm(SzPath path);
+		static int getShmPos();		
+		static int getShmCount();		
 		static std::vector<int16_t> getShmData(SzPath path);
 
 		/** Search utils */
@@ -129,8 +133,8 @@ class SzCache {
 		/** Epoch time <-> CACHE file path  and index translations */
 		static SzPathIndex getPathIndex(SzTime szt, SzPath dir);
 		static SzTime getTime(SzIndex idx, SzPath path);
+		static SzIndex lastIndex(SzPath path);
 
-		SzIndex		lastIndex(SzPath path) const;
 		SzPath		moveMonth(SzPath path, bool forward) const;
 		SzPath		nextMonth(SzPath path) const;
 		SzPath		prevMonth(SzPath path) const;
@@ -140,10 +144,12 @@ class SzCache {
 		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
 		
 		static void	logMsg(int level, std::string msg);
-
+	
 		/** CACHE file representation */
 		class SzCacheFile;
-		
+
+		static ShmConnection _shm_conn;
+
 		SzPath _cacheRootDir;
 		int _numMonths;
 };
