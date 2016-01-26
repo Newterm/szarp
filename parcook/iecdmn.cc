@@ -212,6 +212,11 @@ again:
 			throw SerialException(errno);
 		}
 	}
+
+	if (size && ret == 0) {
+		dolog(1, "read failed, read returned 0");
+		throw SerialException(EBADF);
+	}
 	for (ssize_t i = 0; i < ret; i++)
 		((unsigned char*)buffer)[i] &= 0x7f;
 	return ret;
