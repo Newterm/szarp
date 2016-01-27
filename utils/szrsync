@@ -253,8 +253,8 @@ function do_rsync () {
 	[ $? -eq 0 ] || return
 
 	export RSYNC_RSH="ssh -o StrictHostKeyChecking=no $SSH_PORT"
-	echo rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
-	rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
+	echo rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' --exclude='lost+found' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
+    rsync -az $SZRSYNC_VERBOSE --bwlimit=$BWLIMIT --exclude='.*' --exclude='nohup.out' --exclude='lost+found' $SYNC_ACTIVITY $DELETE $INC $EXC $ADDRESS:$1 ${1%\/[^\/]*}
 	LAST=$?
 	if [ $LAST -ne 0 -a $CODE -eq 0 ] ; then
 		CODE=$LAST
