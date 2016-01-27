@@ -44,6 +44,7 @@ class TProber : public TWriter {
 		/** Buffered write data to base.
 		 * @param force_write force write in the middle of the cycle, used during program termination */
 		void WriteParamsBuffered(bool force_write = false);
+		void WriteParamsMissed(int to_write, bool force_write = false);
 		/** Wait until begining of next cycle. During wait we also check if we need to remove
 		 * outdated cache files.
 		 * @param period cycle length in seconds
@@ -54,13 +55,19 @@ class TProber : public TWriter {
 		/** Check if writes are buffered */
 		bool IsBuffered();
 		/** Get write buffer size */
+		int ReadDataSnapshot();
 		int GetBuffSize();
+		int GetWritePos();
+		int GetCurrPos();
+		void SetWritePos(int pos_to_write);
+
 	protected:
 		short int * buffer;	/**< buffer for data to save */
 		bool all_written;	/**< flag for marking that all available data was saved */
 		FileRemover m_fr;	/**< */
 
 		int m_probes_buffer_size; /** < if larger than 0, writes are buffered */
+		int m_pos_to_write; /** < always -1 for unbuffered writes */
 };
 
 #endif

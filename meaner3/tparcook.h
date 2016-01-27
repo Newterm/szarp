@@ -70,7 +70,8 @@ class TParcook {
 		 * @return parameter's buffer size
 		 */
 		short int GetData(int i, short int* buffer) ;
-		short int GetDataSize(int i);
+		short int GetDataPos();
+		short int GetDataCount();
 
 	protected:
 		ProbesType probes_type;	/**< type of parcook segment we read from */

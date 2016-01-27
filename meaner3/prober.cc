@@ -67,6 +67,8 @@
 #include "tparcook.h"
 #include "texecute.h"
 
+/** hary: nanosleep */
+#include <time.h>
 
 /** arguments processing, see info argp */
 #include <argp.h>
@@ -268,16 +270,45 @@ int main(int argc, char* argv[])
 		}
 		last_cycle = t;
 		
-		cycle_count = (cycle_count + 1) % periods;
-		if (cycle_count != 0) continue;
-
 		/* Connect with parcook. */
 		prober->ReadParams();
 
+		if (prober->IsBuffered()) {
+			prober->ReadDataSnapshot();
+		}
+
+		cycle_count = (cycle_count + 1) % periods;
+		if (cycle_count != 0) continue;
+
 		/* Write data to base. */
-		if (prober->IsBuffered())
+		if (prober->IsBuffered()) {
+			int curr_pos = prober->GetCurrPos();
+			int write_pos = prober->GetWritePos();
+			sz_log(3, "curr_pos:%d write_pos:%d", curr_pos, write_pos);
+			if (write_pos != -1 && curr_pos != write_pos) {
+				if (curr_pos == (write_pos - 1) % periods) {
+					sz_log(1, "prober: fixing -1 pos drift");
+					while (prober->GetCurrPos() != write_pos) {
+						prober->ReadParams();
+						prober->ReadDataSnapshot();
+						struct timespec to_sleep;
+						to_sleep.tv_sec = 0; to_sleep.tv_nsec = 1000;
+						nanosleep(&to_sleep, nullptr);
+					}	
+							
+				} else if (curr_pos == (write_pos + 1) % periods) {
+					sz_log(1, "prober: fixing +1 pos drift");
+					prober->WriteParamsMissed(1);
+					prober->SetWritePos(curr_pos);
+				} else {
+					/* This is indeed fixable with more buffering */
+					//prober->WriteParamsMissed(nlost);	
+					sz_log(0, "prober: unfixable pos diff - data lost");
+					prober->SetWritePos(curr_pos);
+				}
+			}
 			prober->WriteParamsBuffered();
-		else
+		} else
 			prober->WriteParams();
 	}
 	

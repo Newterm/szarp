@@ -51,6 +51,8 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 
+#include <vector>
+
 TSaveParam::TSaveParam(TParam* p) 
 	: fd(-1)
 {
@@ -95,7 +97,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 	off_t index;		/* index of save in file */
 	off_t last = -1;	/* last index in file */
 	int ret;		/* temporary value */
-	short int tmp;		/* buffer for write() */
+	//short int tmp;	/* buffer for write() */
 
 	/* get index */
 	index = szb_probeind(t, probe_length);
@@ -161,14 +163,16 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 	if (last < index) {
 		ret = lseek(fd, last * sizeof(short int), SEEK_SET);
 		assert (ret == (int)(last * sizeof(short int)) );
-		tmp = SZB_FILE_NODATA;
-		for ( ; last < index; last++)
-			if (write(fd, &tmp, sizeof(tmp)) == -1) {
-				sz_log(1, "TSaveParam::Write(): error writing (1) to file '%ls', errno %d",
-						m_path.c_str(), errno);
+
+		std::vector<SZB_FILE_TYPE> nodata_block(index - last, (SZB_FILE_TYPE)SZB_FILE_NODATA);
+		if (write(fd, nodata_block.data(), nodata_block.size() * 2) == -1) {
+			sz_log(1, "TSaveParam::Write(): error writing (1) to file '%ls', errno %d",
+				m_path.c_str(), errno);
 				CloseFile();
 				return 1;
-			}
+		}
+			
+
 	} else { /* set file pointer */
 		ret = lseek(fd, index * sizeof(short int), SEEK_SET);
 		assert (ret == (int)(index * sizeof(short int)));

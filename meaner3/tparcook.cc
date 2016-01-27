@@ -389,11 +389,20 @@ short int TParcook::GetData(int i, short int* buffer)
 	}
 }
 
-short int TParcook::GetDataSize(int i)
+short int TParcook::GetDataPos()
 {
 	if (buffer_count == 0) {
-		sz_log(0, "TParcook::GetDataSize(): buffer_count is 0");
+		sz_log(0, "TParcook::GetDataPos(): buffer_count is 0");
 		return -1;
 	}
-	return (int)buffer_copied[SHM_PROBES_BUF_CNT_INDEX];
+	return buffer_copied[SHM_PROBES_BUF_POS_INDEX];
+}
+
+short int TParcook::GetDataCount()
+{
+	if (buffer_count == 0) {
+		sz_log(0, "TParcook::GetDataCount(): buffer_count is 0");
+		return -1;
+	}
+	return buffer_copied[SHM_PROBES_BUF_CNT_INDEX];
 }
