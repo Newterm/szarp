@@ -2197,6 +2197,14 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 			m_log.log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
+
+	switch (m_state) {
+		case IDLE:
+			event_del(&m_query_deadine_timer);
+			break;
+		default:
+			break;
+	}
 }
 
 int modbus_client::initialize() {
@@ -2219,7 +2227,6 @@ void modbus_tcp_client::terminate_connection() {
 modbus_tcp_client::modbus_tcp_client() : modbus_client(this) {}
 
 void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
-	event_del(&m_query_deadine_timer);
 	
 	if (m_trans_id != adu.trans_id) {
 		m_log.log(1, "Received unexpected tranasction id in response: %u, expected: %u, progressing with queries", unsigned(adu.trans_id), unsigned(m_trans_id));
@@ -2341,8 +2348,6 @@ int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, s
 }
 
 void modbus_serial_client::frame_parsed(SDU &sdu, struct bufferevent* bufev) {
-	event_del(&m_query_deadine_timer);
-	
 	pdu_received(sdu.unit_id, sdu.pdu);
 }
 
