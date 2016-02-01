@@ -803,7 +803,7 @@ void IECDaemon::Start() {
 				dolog(6, "Querying unit %s", m_units[i].address.c_str());
 				QueryUnit(m_units[i]);
 			} catch (std::runtime_error& re) {
-				dolog(1, "Error while querying uint: %s", re.what());	
+				dolog(1, "Error while querying unit: %s", re.what());
 			}
 
 		int to_sleep;
