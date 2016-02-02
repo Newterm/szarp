@@ -40,6 +40,7 @@ bin_PROGRAMS = scc
 scc_SOURCES = \
         @srcdir@/scc.cpp \
         @srcdir@/sccapp.cpp @srcdir@/sccapp.h \
+        @srcdir@/sccreloader.cpp @srcdir@/sccreloader.h \
         @srcdir@/sccframe.cpp @srcdir@/sccframe.h \
         @srcdir@/sccipc.cpp @srcdir@/sccipc.h \
         @srcdir@/sccmenu.cpp @srcdir@/sccmenu.h \

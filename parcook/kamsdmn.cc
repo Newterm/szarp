@@ -167,7 +167,7 @@ protected:
 	/** One step of state machine */
 	void Do();
 
-	/** Sets NODATA and schedules reconnect */
+	/** Sets NODATA and changes state to RESTART */
 	void SetRestart()
 	{
 		dolog(10, "%s: SetRestart", m_id.c_str());
@@ -379,9 +379,13 @@ void kams_daemon::Do()
 					m_ipc->m_read[i] = SZARP_NO_DATA;
 				}
 				m_ipc->GoParcook();
+				wait_ms = RESTART_INTERVAL_MS;
+				ScheduleNext(wait_ms);
 			}
-			wait_ms = RESTART_INTERVAL_MS;
-			break;
+			// in the case of restart we should either
+			// get OpenFinished event or ReadError
+			// which should ScheduleNext on themselves
+			return;
 	}
 	ScheduleNext(wait_ms);
 }

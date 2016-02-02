@@ -59,8 +59,13 @@ void GetDataRcv::parse_command( const std::string& data )
 		return;
 	}
 		
-	apply( vars.get_szbase()->get_data ( name, tags[3] , tags[4], vtype , ttype , pt ) );
-
+	try {
+		apply( vars.get_szbase()->get_data ( name, tags[3] , tags[4], vtype , ttype , pt ) );
+	} catch ( szbase_param_not_found_error& ) {
+		fail( ErrorCodes::unknown_param );
+	} catch ( szbase_error& e ) {
+		fail( ErrorCodes::szbase_error , e.what() );
+	}
 }
 
 

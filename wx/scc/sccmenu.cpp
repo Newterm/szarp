@@ -409,6 +409,9 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 			//check if given draw is not already contained within menu hierarchy
 			if (find(draws.begin(),draws.end(),d_iter->prefix) != draws.end())
 				continue;
+			//check if not a backup
+			if (wxRegEx(wxString(std::string(".*[-._]bak").c_str(), wxConvUTF8), wxRE_ICASE + wxRE_ADVANCED).Matches(d_iter->prefix, 0))
+				continue;
 			submenu->Add(CreateDrawItem(
 						d_iter->title,
 						d_iter->prefix,
@@ -788,6 +791,10 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 
 void SCCMenu::Destroy(SCCMenu* m) {
 	assert(m != NULL);
+	for (auto ptr = m->hierarchy_data->exclude_expr.begin(); ptr != m->hierarchy_data->exclude_expr.end(); ) {
+		delete *ptr;
+		ptr = m->hierarchy_data->exclude_expr.erase(ptr);
+	}
 	delete m->hierarchy_data;
 	delete m;
 }

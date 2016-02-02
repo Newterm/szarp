@@ -82,6 +82,9 @@ bool SCCApp::OnInit()
 		return false;
 	} 
 
+	if (this->rTimer == nullptr) {
+		this->rTimer = new ReloadTimer(this);
+	}
 	const char *prefix;
 	const char *suffix;
 	char *buffer;
@@ -258,6 +261,9 @@ SCCMenu* SCCApp::CreateMainMenu() {
 int SCCApp::OnExit()
 {
 	libpar_done();
+	if (this->rTimer != nullptr) {
+		delete this->rTimer;
+	}
 	delete app_instance;
 #ifndef MINGW32
 	delete app_instance2;

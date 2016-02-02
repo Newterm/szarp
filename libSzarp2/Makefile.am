@@ -70,7 +70,6 @@ endif
 noinst_HEADERS = \
                       $(INCLUDE_DIR)/dmncfg.h \
                       $(INCLUDE_DIR)/httpcl.h \
-                      $(INCLUDE_DIR)/szarpbase64.h \
                       $(INCLUDE_DIR)/ipchandler.h \
                       $(INCLUDE_DIR)/insort.h \
                       $(INCLUDE_DIR)/szarp_config.h \
@@ -143,7 +142,6 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/insort.cc \
 			$(SOURCE_DIR)/misc/tokens.cc \
 			$(SOURCE_DIR)/misc/xmlutils.cc \
-			$(SOURCE_DIR)/misc/base64.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
 			$(BASECONN) \

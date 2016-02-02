@@ -181,6 +181,8 @@ void SzbParamMonitorImpl::loop() {
 	while (!m_terminate) {
 		struct pollfd fds[2];
 
+		memset(fds, 0, sizeof(fds));
+
 		fds[0].fd = m_inotify_socket;
 		fds[0].events = POLLIN;
 		
@@ -210,16 +212,19 @@ void SzbParamMonitorImpl::run() {
 bool SzbParamMonitorImpl::trigger_command_pipe() {
 again:
 	ssize_t r = write(m_cmd_socket[0], "a", 1);
-	if (r == -1) {
-		if (errno == EINTR)
-			goto again;
-		else {
-			sz_log(4, "Failed to write to command pipe errno: %d", errno);
-			boost::mutex::scoped_lock lock(m_mutex);
-			m_queue.pop_back();
-			return false;
+	if (r == -1)
+		switch (errno) {
+			case EINTR:
+				goto again;
+			case EWOULDBLOCK:
+				break;
+			default: {
+				sz_log(4, "Failed to write to command pipe errno: %d", errno);
+				boost::mutex::scoped_lock lock(m_mutex);
+				m_queue.pop_back();
+				return false;
+			}
 		}
-	}
 	return true;
 }
 
