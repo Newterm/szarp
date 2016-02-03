@@ -89,8 +89,14 @@ template<class value_type, class time_type, class types> class rpn_param_entry_i
 
 public:
 	rpn_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>(_base, param, path) {}
-};
 
+	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
+		if (this->m_param->IsNUsed())
+			this->m_base->get_heartbeat_last_time(this->m_param, t);
+		else
+			buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>::get_last_time(referred_params, t);
+	}
+};
 
 }
 
