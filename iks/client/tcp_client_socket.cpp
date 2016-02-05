@@ -1,5 +1,7 @@
 #include <boost/asio.hpp>
 
+#include "liblog.h"
+
 #include "tcp_client_socket.h"
 
 namespace ba = boost::asio;
@@ -17,6 +19,7 @@ void TcpClientSocket::do_read()
 	ba::async_read_until( socket , i_buf , '\n'
 						, [self] ( const bs::error_code& ec , std::size_t bytes_read ) {
 		if ( ec ) {
+			sz_log(5, "TcpClientSocket(%p), async_read failed, error: %s", self.get(), ec.message().c_str());
 			self->handle_error( ec );
 			return;
 		}
@@ -50,6 +53,7 @@ void TcpClientSocket::do_write()
 	ba::async_write( socket , buf_v , [self] ( const bs::error_code& ec , const std::size_t& ) {
 		if ( ec )
 		{
+			sz_log(5, "TcpClientSocket(%p), async_write failed, error: %s", self.get(), ec.message().c_str());
 			self->handle_error( ec );
 			return;
 		}
@@ -87,8 +91,10 @@ void TcpClientSocket::connect()
 						   , [self] ( const bs::error_code& ec , bip::tcp::resolver::iterator i ) {
 		if ( ec )
 		{
+			sz_log(10, "TcpClientSocket(%p), async_resolve failed, error: %s", self.get(), ec.message().c_str());
 			if ( ec != bae::operation_aborted )
 				self->handle_error( ec );
+			
 			return;
 		}
 
@@ -97,6 +103,7 @@ void TcpClientSocket::connect()
 		self->socket.async_connect( *i , [self] ( const bs::error_code& ec ) {
 			if ( ec )
 			{
+				sz_log(5, "TcpClientSocket(%p), async_connect failed, error: %s", self.get(), ec.message().c_str());
 				self->handle_error( ec );
 				return;
 			}
@@ -129,5 +136,7 @@ void TcpClientSocket::close()
 
 	if (socket.is_open()) 
 		socket.close();
+
+	sz_log(10, "TcpClientSocket(%p), closing", this);
 }
 /* vim: set tabstop=4 softtabstop=4 shiftwidth=4 noexpandtab : */

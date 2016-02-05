@@ -1,5 +1,7 @@
 #include <boost/asio.hpp>
 
+#include <liblog.h>
+
 #include "iks_connection.h"
 
 namespace ba = boost::asio;
@@ -8,15 +10,17 @@ namespace bae = ba::error;
 namespace bsec = boost::system::errc;
 
 void IksConnection::schedule_keepalive() {
+	sz_log(10, "IksConnection(%p): schedule_keepalive", this);
+
 	auto self = shared_from_this();
 	keepalive_timer.expires_from_now( boost::posix_time::seconds( 5 ) );
 	keepalive_timer.async_wait([self] ( const bs::error_code& ec ) {
 		if ( ec == bae::operation_aborted )
 			return;
 
-		self->send_command("are_you_there", "" , [self] ( const bs::error_code &ec
-								      , const std::string& status
-								      , std::string& data ) {
+		self->send_command("i_will_not_buy_this_record_it_is_scratched", "" , [self] ( const bs::error_code &ec
+																					 , const std::string& status
+																					 , std::string& data ) {
 
 			if ( !ec && self->state == CONNECTED )
 				self->schedule_keepalive();
@@ -32,12 +36,16 @@ void IksConnection::schedule_keepalive() {
 				if ( ec == bae::operation_aborted )
 						return;
 
+				sz_log(5, "IksConnection(%p): keepalive timeout timer kicked in, state:%d"
+					  , self.get(), int(self->state));
+
 				switch (self->state) {
 					case CONNECTED:
 						break;
 					default:
 						return;
 				}
+
 
 				auto _ec = make_error_code( bs::errc::stream_timeout );
 
@@ -55,6 +63,8 @@ void IksConnection::schedule_keepalive() {
 }
 
 void IksConnection::schedule_reconnect() {
+	sz_log(10, "IksConnection(%p): schedule_reconnect", this);
+
 	auto self = shared_from_this();
 
 	self->disconnect();
@@ -63,6 +73,8 @@ void IksConnection::schedule_reconnect() {
 	reconnect_timer.async_wait([self] (const bs::error_code& ec) {
 		if (ec == bae::operation_aborted)
 			return;
+
+		sz_log(10, "IksConnection(%p): schedule reconnect timer ticked, connecting", self.get());
 
 		self->connect();
 	});
@@ -80,6 +92,7 @@ IksConnection::IksConnection( ba::io_service& io
 							, reconnect_timer( io )
 							, connect_timeout_timer( io )
 {
+	sz_log( 10 , "IksConnection::IksConnection(%p) socket:(%p)" , this , socket.get() );
 }
 
 IksCmdId IksConnection::send_command( const std::string& cmd
@@ -98,6 +111,8 @@ void IksConnection::send_command( IksCmdId id
 								, const std::string& cmd
 								, const std::string& data )
 {
+	sz_log(10, "IksConnection(%p):send_command id:%d cmd:%s data:\"%s\"", this , int(id), cmd.c_str(), data.c_str() );
+
 	std::ostringstream os;
 
 	os << cmd << " " << id;
@@ -126,13 +141,14 @@ void IksConnection::handle_read_line( ba::streambuf& buf )
 	std::getline(is, data);
 
 	if ( !is ) {
+		sz_log(1, "IksConnection(%p):handle_read_line invalid response from server, tag: %s, data: %s"
+			  , this, tag.c_str(), data.c_str());
+
 		auto ec = make_error_code( iks_client_error::invalid_server_response );
 
 		std::string empty;
 		for ( auto& i : commands )
-			i.second( make_error_code( iks_client_error::invalid_server_response )
-					, ""
-					, empty );
+			i.second( ec , "" , empty );
 		commands.clear();
 
 		connection_error_sig( ec );
@@ -152,7 +168,9 @@ void IksConnection::handle_error( const bs::error_code& ec )
 {
 	if ( ec == bae::operation_aborted )
 		return;
-	
+
+	sz_log(5, "IksConnection(%p):handle_error, error: %s, state: %d", this, ec.message().c_str(), int(state)); 
+
 	switch (state) {
 		case CONNECTED:
 			break;
@@ -179,6 +197,8 @@ void IksConnection::handle_error( const bs::error_code& ec )
 
 void IksConnection::handle_connected()
 {
+	sz_log(10, "IksConnection(%p):handle_connected", this);
+
 	bs::error_code _ec;
 	connect_timeout_timer.cancel(_ec);
 
@@ -195,6 +215,8 @@ void IksConnection::handle_disconnected()
 
 void IksConnection::connect() 
 {
+	sz_log(10, "IksConnection(%p):connect", this);
+
 	auto self = shared_from_this();
 	state = CONNECTING;
 
@@ -204,6 +226,8 @@ void IksConnection::connect()
 	connect_timeout_timer.async_wait([self] ( const bs::error_code& ec ) {
 			if ( ec == bae::operation_aborted )
 					return;
+
+			sz_log(10, "IksConnection(%p):connect_timeout_timer kicks in, state:%d", self.get(), int(self->state));
 
 			switch (self->state) {
 				case CONNECTING:
@@ -216,6 +240,7 @@ void IksConnection::connect()
 }
 
 void IksConnection::disconnect() {
+	sz_log(10, "IksConnection(%p):disconnect", this);
 	socket->close();		
 }
 

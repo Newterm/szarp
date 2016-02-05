@@ -8,6 +8,8 @@
 #include "conversion.h"
 #include "szarp_config.h"
 
+#include "liblog.h"
+
 #include "szarp_base_common/lua_strings_extract.h"
 
 #include "iks_connection.h"
@@ -104,15 +106,24 @@ void location_connection::connect_to_location()
 
 	m_connection->send_command("connect" , m_location,
 			[self] ( const bs::error_code& ec, const std::string& status, std::string& data ) {
+
+		sz_log( 5 , "location_connection(%p)::connect_to_location error: %s"
+		      , self.get() , ec.message().c_str() );
+
 		if ( ec ) {
 			self->connection_error_sig( ec );
 			return IksCmdStatus::cmd_done;
 		}
 
 		if ( status != "k" ) {
+			sz_log( 5 , "location_connection(%p)::connect_to_location not ok from server"
+			        " error: %s , data: %s" , self.get(), status.c_str() , data.c_str() );
+
 			self->connection_error_sig( make_iks_error_code( data ) );
 			return IksCmdStatus::cmd_done;
 		}
+
+		sz_log( 10 , "location_connection(%p)::connected " , self.get() );
 
 		self->m_connected = true;
 
@@ -134,7 +145,10 @@ location_connection::location_connection(IPKContainer* container, boost::asio::i
 					m_connection(std::make_shared<IksConnection>(io, server, port)),
 					m_defined_param_prefix(defined_param_prefix), m_connected(false)
 {
-}
+	sz_log(10, "location_connection::location_connection(%p), m_connection(%p), location: %s"
+	      , this, m_connection.get(), location.c_str() );
+	      
+} 
 
 void location_connection::add_param(const param_info& param, IksCmdCallback callback) {
 	auto defined = m_container->GetExtraParams();
