@@ -206,6 +206,8 @@ class SaveParam:
 
 		self.process_value(val, msg.time, msg.nanotime)
 
+		return msg.time
+
 
 	def close(self):
 		if self.file:
