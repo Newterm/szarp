@@ -2,9 +2,9 @@
 #include "sccreloader.h"
 #include "sccapp.h"
 
-ReloadTimer::ReloadTimer(SCCApp* sccPtr): wxTimer(), sccApp(sccPtr)
+ReloadTimer::ReloadTimer(SCCApp* sccPtr, long int period): wxTimer(), sccApp(sccPtr)
 {	
-	this->wxTimer::Start(200000, false);
+	this->wxTimer::Start(period, false);
 }
 
 void ReloadTimer::Notify() 

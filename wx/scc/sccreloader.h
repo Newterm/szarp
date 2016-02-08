@@ -10,7 +10,7 @@ class ReloadTimer : public wxTimer
 	SCCApp* sccApp;
 
 public:
-	ReloadTimer(SCCApp* sccPtr);
+	ReloadTimer(SCCApp* sccPtr, long int period = 200000);
 	virtual void Notify();
 };
 
