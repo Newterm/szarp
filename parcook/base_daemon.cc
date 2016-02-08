@@ -134,6 +134,7 @@ void BaseDaemon::Wait( time_t interval )
 void BaseDaemon::Transfer()
 {
 	ipc->GoParcook();
+	ipc->GoSender();
 }
 
 void BaseDaemon::Set( unsigned int i , short val )
@@ -145,6 +146,11 @@ void BaseDaemon::Set( unsigned int i , short val )
 short BaseDaemon::At( unsigned int i )
 {
 	return ipc->m_read[i];
+}
+
+short BaseDaemon::Send( unsigned int i )
+{
+	return ipc->m_send[i];
 }
 
 void BaseDaemon::Clear()

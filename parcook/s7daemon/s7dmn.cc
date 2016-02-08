@@ -123,9 +123,9 @@ void S7Daemon::Transfer()
 	/** Read SZARP DB and write values to write queries */
 	_pmap.clearReadBuffer();
 	_client.AccessData([&](unsigned long int idx, DataDescriptor desc) {
-		_pmap.ReadData(idx, desc, [&](TSendParam* s) {
-			TParam *sp = m_cfg->GetIPK()->getParamByName(s->GetParamName());
-			return At(sp->GetIpcInd());
+		_pmap.ReadData(idx, desc, [&](unsigned long int pid) {
+			sz_log(5, "Value from sender: %d", Send(pid - Count()));
+			return Send(pid - Count());
 		});
 	});
 

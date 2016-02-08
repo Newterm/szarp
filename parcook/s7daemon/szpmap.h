@@ -186,7 +186,7 @@ public:
 	template <typename DataWriter>
 	void writeMultiParam( unsigned long int pid, DataBuffer data, DataWriter write )
 	{ 
-		sz_log(10, "SzParamMap::writeMultiParam");
+		sz_log(10, "SzParamMap::writeMultiParam(%lu)",pid);
 
 		if (!hasParamLSW(getAddr(pid) - 2)) {
 			sz_log(0, "Param addr:%d has msw and missing lsw", getAddr(pid));
@@ -202,7 +202,7 @@ public:
 	template <typename DataWriter>
 	void writeSingleParam( unsigned long int pid, DataBuffer data, DataWriter write )
 	{ 
-		sz_log(10, "SzParamMap::writeSingleParam");
+		sz_log(10, "SzParamMap::writeSingleParam(%lu)", pid);
 
 		int16_t value = 0;
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&value);		
@@ -231,13 +231,19 @@ public:
 	template <typename DataReader>
 	void readFloat( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
-		sz_log(10, "SzParamMap::readInteger");
+		sz_log(10, "SzParamMap::readFloat(%lu)", pid);
 
 		SendIndexData sid = _send_lsws[getAddr(pid) - 2];
 		unsigned long int lsw_pid = sid.first;
 
-		int16_t lsw = read(_send_params[lsw_pid]);
-		int16_t msw = read(_send_params[pid]);
+		int16_t lsw = read(lsw_pid);
+		int16_t msw = read(pid);
+		
+		sz_log(10, "Send value (msw integer) id:%lu, val:%d", pid, msw);
+		sz_log(10, "Send value (lsw integer) id:%lu, val:%d", lsw_pid, lsw);
+	
+		/* @TODO: make this optional later */
+		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) return;
 
 		int int_value;
 		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
@@ -246,6 +252,8 @@ public:
 		
 		float float_value = (float)(int_value / pow10(getPrec(pid)));
 		
+		sz_log(10, "Send value (float) id:%lu, val:%f", lsw_pid, float_value);
+
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&float_value);
 
 		*(desc.first + 1) = *pblock8; pblock8++;
@@ -257,18 +265,26 @@ public:
 	template <typename DataReader>
 	void readInteger( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
-		sz_log(10, "SzParamMap::readInteger");
+		sz_log(10, "SzParamMap::readInteger(%lu)", pid);
 
 		SendIndexData sid = _send_lsws[getAddr(pid)];
 		unsigned long int lsw_pid = sid.first;
 
-		int16_t lsw = read(_send_params[lsw_pid]);
-		int16_t msw = read(_send_params[pid]);
+		int16_t lsw = read(lsw_pid);
+		int16_t msw = read(pid);
 	
+		sz_log(10, "Send value (msw integer) id:%lu, val:%d", pid, msw);
+		sz_log(10, "Send value (lsw integer) id:%lu, val:%d", lsw_pid, lsw);
+
+		/* @TODO: make this optional later */
+		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) return;
+
 		int int_value;
 		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
 		*pblock16 = lsw; pblock16++;
 		*pblock16 = msw;
+
+		sz_log(10, "Send value (int ) id:%lu, val:%d", lsw_pid, int_value);
 
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
 
@@ -281,7 +297,7 @@ public:
 	template <typename DataReader>
 	void readMultiParam( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
-		sz_log(10, "SzParamMap::readMultiParam");
+		sz_log(10, "SzParamMap::readMultiParam(%lu)", pid);
 
 		if (!hasSendLSW(getAddr(pid) - 2)) {
 			sz_log(0, "Send addr:%d has msw and missing lsw", getAddr(pid));
@@ -297,9 +313,13 @@ public:
 	template <typename DataReader>
 	void readSingleParam( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
-		sz_log(10, "SzParamMap::readSingleParam");
+		sz_log(10, "SzParamMap::readSingleParam(%lu)", pid);
 
-		int16_t value = read(_send_params[pid]);
+		int16_t value = read(pid);
+		
+		/* @TODO: make this optional later */
+		if (value == SZARP_NO_DATA) return;
+
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&value);		
 		if (desc.first != desc.second) { 
 			*(desc.first + 1) = *pblock8; pblock8++; 
@@ -319,7 +339,6 @@ public:
 		
 		readSingleParam(pid,desc,read);
 	}
-
 
 private:
 	/** Map param index in params.xml to SzParam */

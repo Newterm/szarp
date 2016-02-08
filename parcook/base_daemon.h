@@ -165,6 +165,14 @@ protected:
 	 * @return value of parameter
 	 */
 	short At( unsigned int i );
+	/** 
+	 * @brief values from sender
+	 *
+	 * @param i index of send
+	 * 
+	 * @return value of send
+	 */
+	short Send( unsigned int i );
 
 	DaemonConfig *m_cfg;
 	IPCHandler   *ipc;
