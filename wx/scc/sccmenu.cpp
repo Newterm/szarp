@@ -42,10 +42,9 @@
 
 SCCMenu::SCCMenu(MenuHierarchyData *mhd, wxString _name, wxString _exec) :
 	hierarchy_data(mhd), id(mhd->id), name(_name), exec(_exec), children(NULL),
-	menu_type(SCCMenu::ORDINARY_ITEM), prefix(NULL)
+	logger(new wxLogStderr()), menu_type(SCCMenu::ORDINARY_ITEM), prefix(NULL)
 {
 	children = new ArrayOfMenu();
-	wxLog *logger=new wxLogStderr();
 	wxLog::SetActiveTarget(logger);
 
 	mhd->id++;
@@ -58,6 +57,7 @@ SCCMenu::~SCCMenu()
 			delete children->Item(i);
 		delete children;
 	}
+	delete logger;
 	delete prefix;
 }
 
@@ -132,7 +132,10 @@ void SCCMenu::AddConfig(wxString prefix)
 	SzarpConfigs* sconfs = SzarpConfigs::GetInstance();
 	TSzarpConfig* sc = sconfs->GetConfig(prefix);
 	if (sc != NULL)
+	{
 		AddDraw(_("Draw program"), prefix);
+		delete sc;
+	}
 }
 
 void SCCMenu::AddRaporter3(wxString prefix) {
@@ -175,6 +178,7 @@ void SCCMenu::AddRaporter3(wxString prefix) {
 	if (is_any)
 		AddSeparator();
 
+	delete sc;
 }
 
 void SCCMenu::AddEkstraktor3(const wxString &prefix) {
@@ -267,6 +271,7 @@ void SCCMenu::AddRaport3Item(wxString param, wxString title,
 		return;
 	}
 	wxString port = wxString(SC::L2S(port_c));
+	free(port_c);
 
 	wxFileName filename(wxGetApp().GetSzarpDir(), wxEmptyString);
 	filename.AppendDir(_T("bin"));
@@ -282,6 +287,7 @@ void SCCMenu::AddRaport3Item(wxString param, wxString title,
 	img.LoadFile(wxGetApp().GetSzarpDir() + RAP_ICON_PATH);
 	wxBitmap b(img);
 	item->AddCommand(title, group, &b);
+
 }
 
 void SCCMenu::BuildMenu() {
@@ -608,7 +614,8 @@ SCCMenu* SCCMenu::ParseMenu(wxString menu)
 	int id = SCC_MENU_FIRST_ID;
 	mhd->id = id;
 	Tokenizer t(menu);
-	SCCMenu* res =  ParseMenu(&t, _T("SZARP"), mhd);
+	wxString szarp = _T("SZARP");
+	SCCMenu* res =  ParseMenu(&t, szarp, mhd);
 	res->BuildMenu();
 	res->RemoveSuperseded();
 	return res;

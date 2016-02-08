@@ -266,6 +266,7 @@ private:
 				  (for submenu), NULL pointers are used for
 				  separators. */
 	wxBitmap bmp;		/**< Menu item icon. */
+	wxLog *logger;		/**< The Stderr for logging. */
 
 	/** Menu type
 	 * ORDINARY_ITEM - an item from which wxMenuItem can directly be created
