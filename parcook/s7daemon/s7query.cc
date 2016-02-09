@@ -64,6 +64,10 @@ bool S7Query::ask( S7Object& client )
 bool S7Query::tell( S7Object& client ) 
 {
 	sz_log(10, "S7Query::tell");
+	if (_no_data) {
+		sz_log(5, "NO_DATA in query - not sending");
+		return true;
+	}
 
 	int ret = Cli_WriteArea(client,_area,_db_num,_start,_amount,_w_len,_data.data());
 	if( ret != 0 ) {

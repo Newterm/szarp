@@ -123,10 +123,13 @@ void S7Daemon::Transfer()
 	/** Read SZARP DB and write values to write queries */
 	_pmap.clearReadBuffer();
 	_client.AccessData([&](unsigned long int idx, DataDescriptor desc) {
+		SzInteger send_value = SZARP_NO_DATA;
 		_pmap.ReadData(idx, desc, [&](unsigned long int pid) {
-			sz_log(5, "Value from sender: %d", Send(pid - Count()));
-			return Send(pid - Count());
+			send_value = Send(pid - Count());
+			return send_value;
 		});
+		if (send_value == SZARP_NO_DATA) return true;
+		return false;
 	});
 
 	/** Send write queries to PLC */

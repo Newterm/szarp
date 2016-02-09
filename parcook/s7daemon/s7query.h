@@ -91,7 +91,7 @@ public:
 			DataIterator data_begin = _data.begin() + offset;
 			DataIterator data_end =  data_begin + typeSize() - 1;
 
-			access(ids.front(), DataDescriptor(data_begin, data_end));
+			_no_data = access(ids.front(), DataDescriptor(data_begin, data_end));
 
 			ids.erase(ids.begin());
 		}
