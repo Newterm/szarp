@@ -538,6 +538,21 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 		r.prec = draw->GetDrawInfo()->GetPrec();
 		r.unit = draw->GetDrawInfo()->GetUnit();
 
+		for (auto it = ranges.begin(); it!=ranges.end(); ++it)
+		{
+			if (it->first.min == r.min && it->first.max == r.max && it->first.unit == r.unit) {
+				if (it->first.prec < r.prec) r.prec = it->first.prec;
+				else {
+					for (auto jt = ranges[it->first].begin(); jt != ranges[it->first].end(); ++jt)
+						ranges[r].insert(*jt);
+
+					if (sr == it->first)
+						sr = r;
+
+					ranges.erase(it);
+				}
+			}
+		}
 
 		if (m_draws[i]->GetSelected())
 			sr = r;
