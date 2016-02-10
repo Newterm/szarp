@@ -31,6 +31,9 @@ fi
 	exit 1
 }
 
+EXITCODE=0
+DAEMON_ERROR=""
+
 szlog() {
 	log_daemon_msg "Starting SZARP" $DAEMON
 }
@@ -45,134 +48,140 @@ setulimit() {
 	fi
 }
 
-case "$1" in
-    start)
+do_start () {
 	setulimit $NOFILE_LIMIT
 	# enable core dump
 	ulimit -c unlimited
 
 	if [ x$PARHUB = x1 ]; then
-	    DAEMON='parhub'
-	    szlog
-	    python /opt/szarp/lib/python/parhub.py start
-	    log_end_msg $?
+			DAEMON='parhub'
+			szlog
+			python /opt/szarp/lib/python/parhub.py start
+			worklog $?
 	fi
-	
+
 	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
 		supervisorctl start iks-server
 	fi
 
 	if [ x$PROBES_SERVER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
-    	    szlog
-	    twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
+			szlog
+			twistd -y $DAEMON --logfile /opt/szarp/logs/prober.log --pidfile /var/run/probes_server.pid
+			worklog $?
 	fi
-	
+
 	if [ x$PSERVER_LITE = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/pserver-lite
-    	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/pserver-lite
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$MEANER4 = x1 ]; then
-	    DAEMON='meaner4'
-	    szlog
-	    python /opt/szarp/lib/python/meaner4/meaner4dmn.py start
-	    log_end_msg $?
+			DAEMON='meaner4'
+			szlog
+			python /opt/szarp/lib/python/meaner4/meaner4dmn.py start
+			worklog $?
 	fi
 
 	if [ x$PARCOOK = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/parcook 
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/parcook
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
-	
+
 	if [ x$MEANER3 = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/meaner3
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/meaner3
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
-	
+
 	if [ x$PARAMD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/paramd 
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/paramd
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$XSLTD = x1 ]; then
-	    log_daemon_msg "Updating xsltd link"
-	    ln -sf "__INSTALL_DIR__/$HOST" /etc/szarp/default
-	    log_end_msg $?
+			log_daemon_msg "Updating xsltd link"
+			ln -sf "__INSTALL_DIR__/$HOST" /etc/szarp/default
+			worklog $?
 	fi
 
 	if [ x$SENDER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/sender
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/sender
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$ANALIZA = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/analiza
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/analiza
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$SSS = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/sss
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/sss
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$PSETD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/psetd
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/psetd
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$STAMPD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/stampd
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/stampd
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$SSCONF = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/ssconf.py
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/ssconf.py
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$PROBER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/prober
-	    szlog
-	    start_daemon $DAEMON
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/prober
+			szlog
+			start_daemon $DAEMON
+			worklog $?
 	fi
 
 	if [ x$REMARKS_SERVER = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/remarks_server.py
-	    szlog
-	    twistd -y $DAEMON --pidfile /var/run/remarks_server.pid -l __INSTALL_DIR__/logs/remarks_server.log
-	    log_end_msg $?
+			DAEMON=__INSTALL_DIR__/bin/remarks_server.py
+			szlog
+			twistd -y $DAEMON --pidfile /var/run/remarks_server.pid -l __INSTALL_DIR__/logs/remarks_server.log
+			worklog $?
 	fi
-	;;
 
-  stop)
+	if [ x$EXITCODE != x0 ]; then
+		echo "One or more daemon failed to run:"
+		log_failure_msg "${DAEMON_ERROR}"
+		echo "Stopping all daemons!\n"
+		do_stop
+	fi
+}
+
+do_stop() {
 	if [ x$SSS = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/sss
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
@@ -183,35 +192,35 @@ case "$1" in
 	    DAEMON=__INSTALL_DIR__/bin/prober
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PROBES_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/lib/python/probes_server.tac
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/probes_server.pid
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PSERVER_LITE = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/pserver-lite
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PSETD = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/psetd
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$STAMPD = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/stampd
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$SSCONF = x1 ]; then
@@ -221,21 +230,21 @@ case "$1" in
 	    PIDFILE=/var/run/ssconf.pid
 	    pidof -x $DAEMON > $PIDFILE
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$ANALIZA = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/analiza
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$SENDER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/sender
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$MEANER3 = x1 ]; then
@@ -244,42 +253,42 @@ case "$1" in
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
     	    # sometimes meaner3 needs more time
     	    sleep 1
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PARAMD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/paramd 
+	    DAEMON=__INSTALL_DIR__/bin/paramd
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PARCOOK = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/parcook 
+	    DAEMON=__INSTALL_DIR__/bin/parcook
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$REMARKS_SERVER = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/remarks_server.py
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/remarks_server.pid
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$MEANER4 = x1 ]; then
 	    DAEMON='meaner4'
 	    stlog
 	    python /opt/szarp/lib/python/meaner4/meaner4dmn.py stop
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	if [ x$PARHUB = x1 ]; then
 	    DAEMON='parhub'
-	    szlog
+	    stlog
 	    python /opt/szarp/lib/python/parhub.py stop
-	    log_end_msg $?
+	    worklog $?
 	fi
 
 	echo -n "(SZARP) Oczekiwanie"
@@ -287,11 +296,27 @@ case "$1" in
 		echo -n "."
 		sleep 1
 	}; done
-	
+
 	log_daemon_msg "Cleaning IPC resources"
 	__INSTALL_DIR__/bin/ipcclean
-	log_end_msg $?
+	worklog $?
+}
 
+worklog() {
+	log_end_msg $1
+	if [ $1 -ne "0" ]; then
+		 EXITCODE=$1
+		 DAEMON_ERROR="$DAEMON_ERROR $DAEMON"
+	fi
+}
+
+case "$1" in
+  start)
+		do_start
+	;;
+
+  stop)
+		do_stop
 	;;
   restart|reload)
 	###
@@ -303,9 +328,9 @@ case "$1" in
 		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
 	fi
 
-	$0 stop
-	$0 start
-	
+	do_stop
+	do_start
+
 	;;
   status)
 	echo "SZARP programs run: "
@@ -318,4 +343,4 @@ case "$1" in
 	;;
 esac
 
-exit 0
+exit $EXITCODE
