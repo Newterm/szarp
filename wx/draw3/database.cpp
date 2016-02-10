@@ -86,8 +86,9 @@ void Draw3Base::RemoveConfig(DatabaseQuery* query) {
 	wxPostEvent(m_response_receiver, r);
 }
 
-void Draw3Base::RegisterObserver(DatabaseQuery *query) { }
-
+void Draw3Base::RegisterObserver(DatabaseQuery *query) {
+	delete query;
+}
 
 void Draw3Base::SetProberAddress(DatabaseQuery* query) {
 	SetProberAddress(query->prefix, query->prober_address.address, query->prober_address.port);
@@ -632,6 +633,7 @@ void Sz4Base::RegisterObserver(DatabaseQuery *query) {
 	base->register_observer(
 		query->observer_registration_parameters.observer,
 		*query->observer_registration_parameters.params_to_register);
+	delete query;
 }
 
 
@@ -885,6 +887,7 @@ void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
 			[] (const boost::system::error_code&) { /*XXX*/ });
 	}
 
+	delete query;
 }
 
 Sz4ApiBase::~Sz4ApiBase() {}
@@ -974,6 +977,7 @@ void* QueryExecutor::Entry() {
 
 			case DatabaseQuery::REMOVE_PARAM:
 				base->RemoveExtraParam(q);
+				delete q;
 				break;
 
 			case DatabaseQuery::CHECK_CONFIGURATIONS_CHANGE:
@@ -986,6 +990,7 @@ void* QueryExecutor::Entry() {
 
 			case DatabaseQuery::EXTRACT_PARAM_VALUES:
 				base->ExtractParameters(q);
+				delete q;
 				break;
 
 			case DatabaseQuery::SEARCH_DATA:
@@ -994,14 +999,17 @@ void* QueryExecutor::Entry() {
 
 			case DatabaseQuery::GET_DATA:
 				base->GetData(q);
+				delete q;
 				break;
 
 			case DatabaseQuery::RESET_BUFFER:
 				base->ResetBuffer(q);
+				delete q;
 				break;
 
 			case DatabaseQuery::CLEAR_CACHE:
 				base->ClearCache(q);
+				delete q;
 				break;
 
 			case DatabaseQuery::REGISTER_OBSERVER:
