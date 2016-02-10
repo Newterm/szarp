@@ -156,6 +156,9 @@ void IksConnection::handle_read_line( ba::streambuf& buf )
 		return;
 	}
 
+	sz_log(10, "IksConnection(%p): received message: tag: %s, id:%d data: %s"
+		   , this, tag.c_str(), int(id), data.c_str() );
+
 	auto i = commands.find(id);
 	if ( i != commands.end() ) {
 		if ( i->second( make_error_code( bs::errc::success ), tag , data ) == cmd_done)
