@@ -108,6 +108,9 @@ void TcpClientSocket::connect()
 				return;
 			}
 
+			//reset input buffer
+			self->i_buf.consume( self->i_buf.size() );
+
 			self->handler.handle_connected();
 
 			self->do_write();
