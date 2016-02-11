@@ -402,6 +402,8 @@ void IncSearch::LoadParams()
 		AddDrawsItems(&sorted);
 	}
 
+	if (m_cur_items != NULL && m_cur_items != &items_array)
+		delete m_cur_items;
 	m_cur_items = &items_array;
 
 	selected_index = wxNOT_FOUND;
