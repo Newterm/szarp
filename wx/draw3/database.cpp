@@ -362,6 +362,7 @@ void SzbaseBase::GetData(DatabaseQuery* query) {
 		wxPostEvent(m_response_receiver, dr);
 	}
 
+	delete query;
 }
 
 void SzbaseBase::ResetBuffer(DatabaseQuery* query) {
@@ -610,7 +611,9 @@ void Sz4Base::GetData(DatabaseQuery* query) {
 		DatabaseResponse dr(rq);
 		wxPostEvent(m_response_receiver, dr);
 		i++;
-	}	
+	}
+
+	delete query;
 }
 
 void Sz4Base::ResetBuffer(DatabaseQuery* query) {
@@ -992,7 +995,6 @@ void* QueryExecutor::Entry() {
 
 			case DatabaseQuery::GET_DATA:
 				base->GetData(q);
-				delete q;
 				break;
 
 			case DatabaseQuery::RESET_BUFFER:
