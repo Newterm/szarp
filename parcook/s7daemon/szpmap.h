@@ -267,7 +267,7 @@ public:
 	{
 		sz_log(10, "SzParamMap::readInteger(%lu)", pid);
 
-		SendIndexData sid = _send_lsws[getAddr(pid)];
+		SendIndexData sid = _send_lsws[getAddr(pid) - 2];
 		unsigned long int lsw_pid = sid.first;
 
 		int16_t lsw = read(lsw_pid);
