@@ -91,7 +91,7 @@ int extract(struct extr_arguments arguments,
 
 	assert (!arguments.output.empty());
         if (!arguments.openoffice) {
-		output = fopen(SC::S2A(arguments.output).c_str(), "w");
+		output = fopen(reinterpret_cast<const char*>(SC::S2U(arguments.output).c_str()), "w");
 		if (output == NULL) {
 			wxMessageBox(
 			_("Couldn't open file ") +  wxString(arguments.output) + _("\n") +
