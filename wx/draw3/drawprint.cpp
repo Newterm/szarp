@@ -21,6 +21,7 @@
 
 #include <wx/config.h>
 
+#include <wx/dcps.h>
 #include <wx/printdlg.h>
 
 #ifdef __WXMSW__
@@ -584,6 +585,14 @@ bool DrawsPrintout::OnPrintPage(int page) {
 			break;
 	if (sel == m_draws_count)
 		return false;
+	wxDC *dc = GetDC();
+#ifndef MINGW32
+	try {
+		wxPostScriptDC *psdc = reinterpret_cast<wxPostScriptDC*>(dc);
+		psdc->PsPrint(wxString::FromUTF8("\n/ISOLatin1Encoding [\n/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/minus/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde/.notdef/.notdef/Lslash/lslash/Nacute/nacute/aogonek/Cacute/cacute/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/dotlessi/grave/acute/Oacute/tilde/macron/breve/dotaccent/Eogonek/eogonek/Sacute/sacute/.notdef/hungarumlaut/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot/hyphen/registered/macron/degree/plusminus/twosuperior/oacute/acute/mu/paragraph/periodcentered/cedilla/Zacute/zacute/guillemotright/z/onehalf/threequarters/questiondown/Agrave/Aacute/Acircumflex/.notdef/.notdef/.notdef/AE/Ccedilla/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute/Thorn/germandbls/agrave/aacute/acircumflex/atilde/adieresis/aring/ae/ccedilla/egrave/eacute/ecircumflex/edieresis/igrave/iacute/icircumflex/idieresis/eth/ntilde/ograve/oacute/ocircumflex/otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis/yacute/thorn/ydieresis\n] def\n"));
+	} catch(...) { // tu ew. usuniecie polskich znakow
+	}
+#endif
 
 	wxFont f;
 #ifdef __WXMSW__ 
@@ -592,7 +601,6 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	f.Create(8, wxSWISS, wxNORMAL, wxNORMAL);
 #endif
 
-	wxDC *dc = GetDC();
 	dc->SetMapMode(wxMM_TEXT);
 	dc->SetFont(f);
 
@@ -699,6 +707,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 
 	wxFont font = dc->GetFont();
 	wxFont f = font;
+	//wxFont f(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, _T("Helvetica"), wxFONTENCODING_ISO8859_2);
 #ifdef __WXMSW__
 	f.SetPointSize(100);
 #else
