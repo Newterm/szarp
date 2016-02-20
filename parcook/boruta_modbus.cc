@@ -2005,8 +2005,15 @@ void modbus_client::next_query_cb(int fd, short event, void* thisptr) {
 void modbus_client::query_deadline_cb(int fd, short event, void* thisptr) {
 	modbus_client* _this = reinterpret_cast<modbus_client*>(thisptr);
 
-	_this->m_log.log(8, "Query timed out, progressing with queries");
-	_this->send_next_query(false);
+	switch (_this->m_state) {
+		case READING_FROM_PEER:
+		case WRITING_TO_PEER:
+			_this->m_log.log(8, "Query timed out, progressing with queries");
+			_this->send_next_query(false);
+			break;
+		default:
+			return;
+	}
 }
 
 void modbus_client::connection_error() {
@@ -2229,11 +2236,11 @@ modbus_tcp_client::modbus_tcp_client() : modbus_client(this) {}
 void modbus_tcp_client::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
 	
 	if (m_trans_id != adu.trans_id) {
-		m_log.log(1, "Received unexpected tranasction id in response: %u, expected: %u, progressing with queries", unsigned(adu.trans_id), unsigned(m_trans_id));
-		send_next_query(false);
-	} else {
-		pdu_received(adu.unit_id, adu.pdu);
+		m_log.log(1, "Received unexpected tranasction id in response: %u, expected: %u, ignoring the response", unsigned(adu.trans_id), unsigned(m_trans_id));
+		return;
 	}
+
+	pdu_received(adu.unit_id, adu.pdu);
 }
 
 void modbus_tcp_client::finished_cycle() {
