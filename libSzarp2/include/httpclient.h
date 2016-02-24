@@ -23,7 +23,7 @@ public:
 	virtual ~HttpClient();
 	void Connect(const std::string ip, const int port=80);
 	void CloseConnection();
-	void SendRequest(http_request_cb callback, std::string uri,
+	virtual int SendRequest(http_request_cb callback, std::string uri,
 		const std::map<std::string, std::string>& headers=std::map<std::string, std::string>(),
 		int timeout_s=10);
 
@@ -42,6 +42,7 @@ public:
 	virtual void GetAuthCookieFinished(const AtcHttpClient* client) = 0;
 	virtual void SetConfigurationFinished(const AtcHttpClient* client) = 0;
 	virtual void ResetDeviceFinished(const AtcHttpClient* client) = 0;
+	virtual void AtcError(const AtcHttpClient* client) = 0;
 };
 
 
@@ -51,6 +52,10 @@ public:
 	AtcHttpClient(struct event_base *base)
 	:HttpClient(base), m_auth_cookie(""), m_close_on_reset(false)
 	{}
+
+	int SendRequest(http_request_cb callback, std::string uri,
+		const std::map<std::string, std::string>& headers=std::map<std::string, std::string>(),
+		int timeout_s=10) override;
 
 	/** Get auth cookie via cgi script using default credentials. */
 	void GetAuthCookie();
@@ -89,6 +94,8 @@ private:
 		reinterpret_cast<AtcHttpClient*>(obj)->ResetDeviceFinished(request);
 	}
 	void ResetDeviceFinished(struct evhttp_request* request);
+
+	void NotifyError();
 
 private:
 	std::string m_auth_cookie;

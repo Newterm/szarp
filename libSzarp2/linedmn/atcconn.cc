@@ -11,6 +11,12 @@ AtcConnection::~AtcConnection()
 	delete m_http_client;
 }
 
+void AtcConnection::AtcError(const AtcHttpClient* client)
+{
+	// use "unrecoverable error encountered"
+	TcpConnection::Error(NULL, BEV_EVENT_ERROR);
+}
+
 void AtcConnection::Open()
 {
 	TcpConnection::Open();

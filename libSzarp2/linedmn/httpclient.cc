@@ -41,18 +41,32 @@ void HttpClient::CloseConnection()
 	}
 }
 
-void HttpClient::SendRequest(http_request_cb callback, std::string uri,
+int HttpClient::SendRequest(http_request_cb callback, std::string uri,
 	const std::map<std::string, std::string>& headers, int timeout_s)
 {
 	if (m_connection == NULL) {
-		return;
+		return - 1;
 	}
 	struct evhttp_request* request = evhttp_request_new(callback, this);
 	for (auto it = headers.begin(); it != headers.end(); ++it) {
 		evhttp_add_header(request->output_headers, it->first.c_str(), it->second.c_str());
 	}
-	evhttp_make_request(m_connection, request, EVHTTP_REQ_GET, uri.c_str());
+	const int ret = evhttp_make_request(m_connection, request, EVHTTP_REQ_GET, uri.c_str());
+	if (ret != 0) {
+		return - 1;
+	}
 	evhttp_connection_set_timeout(request->evcon, timeout_s);
+	return 0;
+}
+
+int AtcHttpClient::SendRequest(http_request_cb callback, std::string uri,
+	const std::map<std::string, std::string>& headers, int timeout_s)
+{
+	const int ret = HttpClient::SendRequest(callback, uri, headers, timeout_s);
+	if (ret != 0) {
+		NotifyError();
+	}
+	return ret;
 }
 
 void AtcHttpClient::GetAuthCookie()
@@ -63,15 +77,24 @@ void AtcHttpClient::GetAuthCookie()
 void AtcHttpClient::GetAuthCookieFinished(struct evhttp_request* request)
 {
 	if (request == NULL) {
+		NotifyError();
 		return;
 	}
 	if (evhttp_request_get_response_code(request) != 200) {
+		NotifyError();
 		return;
 	}
 	const std::string cookie_str = get_header_value(request, "Set-Cookie");
 	m_auth_cookie = cookie_str.substr(0, cookie_str.find(";"));
 	for (auto it = m_listeners.begin(); it != m_listeners.end(); ++it) {
 		(*it)->GetAuthCookieFinished(this);
+	}
+}
+
+void AtcHttpClient::NotifyError()
+{
+	for (auto it = m_listeners.begin(); it != m_listeners.end(); ++it) {
+		(*it)->AtcError(this);
 	}
 }
 

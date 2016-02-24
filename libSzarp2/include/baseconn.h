@@ -48,7 +48,8 @@ public:
 	{}
 	virtual ~BaseConnection() {}
 
-	/** Open connection (previously initialized) */
+	/** Open connection (previously initialized).
+	  * Open must result either in OpenFinished or ReadError callback or throw */
 	virtual void Open() = 0;
 	/** Close connection */
 	virtual void Close() = 0;

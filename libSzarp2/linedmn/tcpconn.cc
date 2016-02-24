@@ -37,7 +37,7 @@ void TcpConnection::InitTcp(std::string address, int port)
 void TcpConnection::Open()
 {
 	if (m_connect_fd != -1) {
-		return;
+		throw ConnectionException("Open already pending");
 	}
 	CreateSocket();
 

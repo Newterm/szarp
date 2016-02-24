@@ -8,7 +8,7 @@
 void SerialPort::Open()
 {
 	if (m_bufferevent != NULL) {
-		return;
+		throw ConnectionException("Open already pending");
 	}
 	m_fd = open(m_device_path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
 	if (m_fd == -1) {

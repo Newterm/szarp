@@ -26,6 +26,7 @@ public:
 	void GetAuthCookieFinished(const AtcHttpClient* client) override;
 	void SetConfigurationFinished(const AtcHttpClient* client) override;
 	void ResetDeviceFinished(const AtcHttpClient* client) override;
+	void AtcError(const AtcHttpClient* client) override;
 protected:
 	void OpenFinished() override;
 

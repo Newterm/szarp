@@ -30,7 +30,7 @@ void SerialAdapter::InitTcp(std::string address, int data_port, int cmd_port)
 void SerialAdapter::Open()
 {
 	if (m_open_pending) {
-		return;
+		throw ConnectionException("Open already pending");
 	}
 	try {
 		m_data_connection->Open();
