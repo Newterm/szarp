@@ -31,6 +31,7 @@
 #include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"
 #include "ikssetup.h"
+#include "sz4_iks_param_info.h"
 #include "sz4_iks.h"
 
 #include <cmath>
@@ -646,7 +647,7 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			, ipk_container(ipk_container) {
 
 	std::tie(connection_mgr, base, io) =
-		build_iks_client(ipk_container, address, port);
+		build_iks_client(ipk_container, address, port, _("User:Param:"));
 
 	io_thread = start_connection_manager(connection_mgr);
 }
@@ -657,18 +658,23 @@ void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
 }
 
 bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	error = L"not implemented";
-	return false;
+	///XXX: implement
+	return true;
 }
 
 void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
-	///XXX:
+	sz4::param_info p(prefix, param->GetName());
+	base->add_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
 }
 
 void Sz4ApiBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
-	///XXX:
+	sz4::param_info p(prefix, param->GetName());
+	base->remove_param(p, [this] (const boost::system::error_code& ec) {
+		//XXX:*
+	});
 }
-
 
 void Sz4ApiBase::NotifyAboutConfigurationChanges() {
 }
@@ -706,6 +712,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 			sd.ok = true;
 		} else {
 			sd.ok = false;
+			sd.response_second = sd.response_nanosecond = -1;
 			sd.error_str = wcsdup(SC::L2S(ec.message()).c_str());
 		}
 
@@ -856,7 +863,7 @@ void Sz4ApiBase::ObserverWrapper::operator()() {
 void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
 	auto observer = query->observer_registration_parameters.observer;
 	auto& to_dereg = *query->observer_registration_parameters.params_to_deregister;
-	auto& to_reg = *query->observer_registration_parameters.params_to_deregister;
+	auto& to_reg = *query->observer_registration_parameters.params_to_register;
 
 	for (auto& p : to_dereg) {
 		auto pi = ParamInfoFromParam(p);

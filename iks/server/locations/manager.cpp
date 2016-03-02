@@ -48,16 +48,7 @@ void LocationsMgr::add_config( const CfgPairs& cfg )
 
 void LocationsMgr::add_szbase( const std::string& name , const CfgPairs& cfg )
 {
-	auto pa = cfg.count("prober_address") ? cfg.at("prober_address") : "127.0.0.1";
-	auto pp = cfg.count("prober_port")    ? cfg.at("prober_port")    : "8090";
 	auto draw_name = cfg.count("draw_name") ?  cfg.at("draw_name") : name;
-
-	unsigned p;
-	try {
-		p = boost::lexical_cast<unsigned>(pp);
-	} catch( boost::bad_lexical_cast& e ) {
-		throw invalid_value("Invalid port number in section " + name );
-	}
 
 	try {
 		auto& vars = vars_cache.get_szarp( cfg.at("base") );

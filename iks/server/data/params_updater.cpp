@@ -31,8 +31,6 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 		bool update )
 {
 	Subscription sub;
-	if ( !params.has_param( name ) )
-		return sub;
 
 	auto key = SubKey( name );
 
@@ -54,6 +52,23 @@ ParamsUpdater::Subscription ParamsUpdater::subscribe_param(
 
 	sub.insert(ptr);
 	return sub;
+}
+
+std::string ParamsUpdater::add_param( const std::string& param
+									, const std::string& base
+									, const std::string& formula
+									, const std::string& token
+									, const std::string& type
+									, int prec
+									, unsigned start_time)
+
+{
+	return data_feeder->add_param( param , base , formula , token, type , prec , start_time );
+}
+
+void ParamsUpdater::remove_param( const std::string& base , const std::string& param )
+{
+	return data_feeder->remove_param( base , param );
 }
 
 ParamsUpdater::Subscription::Subscription()

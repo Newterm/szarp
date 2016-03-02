@@ -15,7 +15,7 @@
 #include "utils/iterator.h"
 #include "utils/signals.h"
 
-typedef boost::signals2::signal<void (std::shared_ptr<const Param>)> sig_param;
+typedef boost::signals2::signal<void (const std::string&)> sig_param;
 typedef sig_param::slot_type sig_param_slot;
 
 typedef boost::signals2::signal<void (std::shared_ptr<const Param>,double,ProbeType)> sig_param_value;
@@ -49,7 +49,6 @@ public:
 
 	std::shared_ptr<const Param> get_param( const std::string& name ) const;
 
-	void param_changed( iterator itr );
 	void param_changed( const std::string& name );
 
 	void param_value_changed( iterator itr , double value , ProbeType pt );

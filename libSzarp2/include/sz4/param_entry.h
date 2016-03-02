@@ -87,34 +87,6 @@ public:
 	virtual ~generic_param_entry();
 };
 
-template<class V, class T> class block_entry {
-protected:
-	concrete_block<V, T> m_block;
-	bool m_needs_refresh;
-	const boost::filesystem::wpath m_block_path;
-public:
-	block_entry(const T& start_time, block_cache* cache) :
-		m_block(start_time, cache), m_needs_refresh(true) {}
-
-	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
-		m_block.get_weighted_sum(start, end, wsum);
-	}
-
-	T search_data_right(const T& start, const T& end, const search_condition& condition) {
-		return m_block.search_data_right(start, end, condition);
-	}
-
-	T search_data_left(const T& start, const T& end, const search_condition& condition) {
-		return m_block.search_data_left(start, end, condition);
-	}
-
-	void set_needs_refresh() {
-		m_needs_refresh = true;
-	}
-
-	concrete_block<V, T>& block() { return m_block; }
-};
-
 namespace param_buffer_type_converion_helper {
 
 template<class IV, class IT, class OV, class OT> class helper {

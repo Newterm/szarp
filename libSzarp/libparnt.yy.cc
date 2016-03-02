@@ -2226,6 +2226,17 @@ static int yy_init_globals (void)
     return 0;
 }
 
+int yylex_reinit_globals(void)
+{
+	while(YY_CURRENT_BUFFER){
+		yy_delete_buffer(YY_CURRENT_BUFFER  );
+		YY_CURRENT_BUFFER_LVALUE = NULL;
+		yypop_buffer_state();
+	}
+
+	return yy_init_globals( );
+}
+
 /* yylex_destroy is for both reentrant and non-reentrant scanners. */
 int yylex_destroy  (void)
 {

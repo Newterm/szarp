@@ -7,10 +7,10 @@
 
 #include "cmd_search_data.h"
 
-SearchDataRcv::SearchDataRcv( Vars& vars , Protocol& prot )
+SearchDataRcv::SearchDataRcv( Vars& vars , SzbaseProt& prot )
 	: vars(vars)
+	, prot(prot)
 {
-	(void)prot;
 	set_next( std::bind(&SearchDataRcv::parse_command,this,std::placeholders::_1) );
 }
 
@@ -56,13 +56,14 @@ void SearchDataRcv::parse_command( const std::string& data )
 	}
 		
 	try {
-		apply( vars.get_szbase()->search_data ( name, tags[3] , tags[4], ttype , dir , pt ) );
+		apply( vars.get_szbase()->search_data( prot.get_mapped_param_name( name )
+						     , tags[3] , tags[4], ttype , dir , pt ) );
 	} catch ( szbase_param_not_found_error& ) {
 		fail( ErrorCodes::unknown_param );
 	} catch ( szbase_error& e ) {
 		fail( ErrorCodes::szbase_error , e.what() );
 	}
 	
-
 }
+
 

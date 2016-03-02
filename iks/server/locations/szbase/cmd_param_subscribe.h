@@ -24,14 +24,9 @@ public:
 		auto r = find_quotation( line );
 		std::string name(r.begin(),r.end());
 
-		auto p = vars.get_params().get_param( name );	
-		if ( p ) {
-			/** subscribe to param */
-			prot.subscribe_param ( p );
-			apply();
-		} else {
-			fail( ErrorCodes::unknown_param );
-		}
+		/** subscribe to param */
+		prot.subscribe_param ( name );
+		apply();
 
 	}
 

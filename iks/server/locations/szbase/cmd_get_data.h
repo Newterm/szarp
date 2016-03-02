@@ -3,7 +3,7 @@
 
 class GetDataRcv : public Command {
 public:
-	GetDataRcv( Vars& vars , Protocol& prot );
+	GetDataRcv( Vars& vars , SzbaseProt& prot );
 
 	GetDataRcv();
 protected:
@@ -11,6 +11,7 @@ protected:
 
 protected:
 	Vars& vars;
+	SzbaseProt& prot;
 
 };
 

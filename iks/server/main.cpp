@@ -52,7 +52,9 @@ int main( int argc , char** argv )
 		("log_level", po::value<unsigned>()->default_value(2), "Level how verbose should server be. Convention is: 0 - errors , 1 - warnings , 2 - info output , 3 and more - debug")
 		("name", po::value<std::string>()->default_value(ba::ip::host_name()), "Servers name -- defaults to hostname.")
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
-		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen");
+		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
+		("base_cache_size_low_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT), "Szbase in-memory cache size low water mark (in bytes)")
+		("base_cache_size_high_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT), "Szbase in-memory cache size high water mark (in bytes)");
 
 	po::variables_map vm; 
 	CfgPairs pairs;
@@ -140,7 +142,23 @@ int main( int argc , char** argv )
 			pf << get_pid();
 		}
 
-		SzbaseWrapper::init( vm["prefix"].as<std::string>() );
+		{
+
+			size_t base_cache_size_low_water_mark = vm.count("base_cache_size_low_water_mark")
+								? vm["base_cache_size_low_water_mark"].as<size_t>()
+								: SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT;
+
+			size_t base_cache_size_high_water_mark = vm.count("base_cache_size_high_water_mark")
+								? vm["base_cache_size_high_water_mark"].as<size_t>()
+								: SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
+
+			sz_log(2, "Using %zu as base cache size low water mark", base_cache_size_low_water_mark);
+			sz_log(2, "Using %zu as base cache size high water mark", base_cache_size_high_water_mark);
+			SzbaseWrapper::init( vm["prefix"].as<std::string>()
+							   , base_cache_size_low_water_mark
+							   , base_cache_size_high_water_mark );
+
+		}
 
 		LocationsMgr lm;
 

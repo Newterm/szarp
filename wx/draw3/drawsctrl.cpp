@@ -1109,6 +1109,7 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
+	wxLogInfo(_T("Set '%s' choosen, selected draw index; %d"), set->GetName().c_str(), draw_to_select);
 	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
 
 	EnterState(SEARCH_BOTH, period_time);

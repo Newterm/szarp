@@ -16,4 +16,4 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_HEADERS = data/probe_type.h utils/exception.h locations/error_codes.h
 
-libiks_common_a_SOURCES = data/probe_type.cpp
+libiks_common_a_SOURCES = data/probe_type.cpp utils/ptree.cpp

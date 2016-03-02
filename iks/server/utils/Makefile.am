@@ -24,7 +24,6 @@ LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \
 lib_LIBRARIES = libiks-server-utils.a
 
 libiks_server_utils_a_SOURCES = \
-	ptree.cpp \
 	config_.cpp \
 	colors.cpp
 

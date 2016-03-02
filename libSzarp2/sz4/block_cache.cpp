@@ -54,14 +54,16 @@ void block_cache::block_updated(generic_block& block) {
 void block_cache::remove(size_t size) {
 	while (size > 0 && m_blocks.size()) {
 		size -= std::min(size, m_blocks.front().block_size());
-		delete &m_blocks.front();
+
+		auto block = &m_blocks.front();
+		delete block;
 	}
 }
 
-cache_block_size_updater::cache_block_size_updater(block_cache* cache,
+cache_block_size_updater::cache_block_size_updater(
 				generic_block* block)
 				:
-				m_cache(cache),
+				m_cache(block->cache()),
 				m_block(block) {
 	m_previous_size = m_block->block_size();
 }

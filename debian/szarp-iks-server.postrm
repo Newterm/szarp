@@ -9,10 +9,16 @@ set -e;
 
 case "$1" in
 	remove|abort-install|purge)
-		rm /etc/supervisor/conf.d/iks-server.conf
+		if [ -f /etc/supervisor/conf.d/iks-server.conf ]; then
+			rm /etc/supervisor/conf.d/iks-server.conf
+		fi
+		supervisorctl reread
+		supervisorctl update	
 	;;
 
 	upgrade|failed-upgrade|abort-upgrade|disappear)
+		supervisorctl reread
+		supervisorctl update
 	;;
 
 	*)

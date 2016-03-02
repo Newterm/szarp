@@ -15,10 +15,10 @@
 
 class GetHistoryRcv : public Command {
 public:
-	GetHistoryRcv( Vars& vars , Protocol& prot )
+	GetHistoryRcv( Vars& vars , SzbaseProt& prot )
 		: vars(vars)
+		, prot(prot)
 	{
-		(void)prot;
 		set_next( std::bind(&GetHistoryRcv::parse_command,this,std::placeholders::_1) );
 	}
 
@@ -114,6 +114,7 @@ protected:
 	}
 
 	Vars& vars;
+	SzbaseProt& prot;
 };
 
 #endif /* end of include guard: __SERVER_CMD_GET_HISTORY_H__ */

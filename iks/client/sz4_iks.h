@@ -20,22 +20,28 @@ class iks : public std::enable_shared_from_this<iks> {
 	std::shared_ptr<connection_mgr> m_connection_mgr;
 
 	struct observer_reg {
-		connection_mgr::loc_connection_ptr connection;
+		std::shared_ptr<connection_mgr> conn_mgr;
 		std::string name;
 		param_info param;
-		param_observer_f observer;
+		std::vector<param_observer_f> observers;
 
 		boost::signals2::scoped_connection error_sig_c;
 		boost::signals2::scoped_connection cmd_sig_c;
+		boost::signals2::scoped_connection connected_sig_c;
 
-		observer_reg(connection_mgr::loc_connection_ptr connection, const std::string& name,
-			param_info param, param_observer_f observer);
+		observer_reg(std::shared_ptr<connection_mgr> conn_mgr, const std::string& name,
+			param_info param);
+
+		~observer_reg();
 
 		void on_error(const boost::system::error_code& ec);
 		void on_cmd(const std::string& tag, IksCmdId, const std::string &);
+		void on_connected(std::wstring prefix);
+
+		void connect();
 	};
 
-	std::list<observer_reg> m_observer_regs;
+	std::map<param_info, std::shared_ptr<observer_reg>> m_observer_regs;
 
 	connection_mgr::loc_connection_ptr connection_for_base(const std::wstring& prefix);
 
@@ -50,6 +56,9 @@ class iks : public std::enable_shared_from_this<iks> {
 
 	template<class T> void _get_last_time(param_info param, std::function<void(const boost::system::error_code&, T&) > cb);
 
+	void _add_param(param_info param, std::function<void(const boost::system::error_code&)> cb);
+
+	void _remove_param(param_info param, std::function<void(const boost::system::error_code&)> cb);
 public:
 	iks(std::shared_ptr<boost::asio::io_service> io, std::shared_ptr<connection_mgr> connection_mgr);
 
@@ -66,6 +75,10 @@ public:
 	void register_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb);
 
 	void deregister_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb);
+
+	void add_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb);
+
+	void remove_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb);
 
 };
 

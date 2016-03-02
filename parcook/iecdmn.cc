@@ -50,6 +50,8 @@
 #include <time.h>
 #include <sys/ioctl.h>
 
+#include <boost/algorithm/string.hpp>
+
 #include "liblog.h"
 #include "dmncfg.h"
 #include "ipchandler.h"
@@ -119,7 +121,7 @@ public:
 	* is not already opened or is opened with another speed
 	* @param speed - speed of opened port connection
 	*/
-	void Open(int ispeed, int ospeed = -1);
+	void Open(int ispeed, int ospeed = -1, bool optical = false);
 
 	/*Reads data from a port to a given buffer,
 	 * null terminates read data. Throws @see SerialException
@@ -167,6 +169,9 @@ bool SerialPort::Wait(int timeout)
 		if (tv.tv_sec < 0) {
 			dolog(2, "I cannot wait for negative number of seconds");
 			return false;
+		} else if (tv.tv_sec == 0) {
+			dolog(2, "I cannot wait for zero seconds");
+			return false;
 		}
 		tv.tv_usec = 0;
 		FD_ZERO(&set);
@@ -175,6 +180,7 @@ bool SerialPort::Wait(int timeout)
 		ret = select(m_fd + 1, &set, NULL, NULL, &tv);
 		if (ret < 0) {
 			if (errno == EINTR) {
+				dolog(2, "select interrupted by signal (EINTR)");
 				continue;
 			} else {
 				Close();
@@ -205,6 +211,11 @@ again:
 				errno, strerror(errno));
 			throw SerialException(errno);
 		}
+	}
+
+	if (size && ret == 0) {
+		dolog(1, "read failed, read returned 0");
+		throw SerialException(EBADF);
 	}
 	for (ssize_t i = 0; i < ret; i++)
 		((unsigned char*)buffer)[i] &= 0x7f;
@@ -280,7 +291,7 @@ namespace {
 
 }
 
-void SerialPort::Open(int ispeed, int ospeed) 
+void SerialPort::Open(int ispeed, int ospeed, bool optical) 
 {
 	if (ospeed == -1)
 		ospeed = ispeed;	
@@ -330,7 +341,16 @@ void SerialPort::Open(int ispeed, int ospeed)
 		Close();
 		throw SerialException(errno);
 	}
-
+	
+	if (optical) {
+		dolog(6, "Optical set, setting RTS high");
+		/* Set RTS high */
+		int flags;
+		ioctl(m_fd, TIOCMGET, &flags);
+		flags &= ~TIOCM_RTS;
+		//flags &= ~TIOCM_DTR;
+		ioctl(m_fd, TIOCMSET, &flags);
+	}
 }
 
 void SerialPort::Close() 
@@ -345,14 +365,17 @@ void SerialPort::Close()
 }
 
 class IECDaemon { 
+	static const int c_default_timeout;
+
 	IPCHandler *m_ipc;
 	SerialPort *m_port;
 
 	struct Value {
-		Value() : prec(0), msw(-1), lsw(-1) {}
+		Value() : prec(0), msw(-1), lsw(-1), selector(-1) {}
 		int prec;
 		int msw;
 		int lsw;
+		int selector;
 	};
 	struct Unit {
 		std::map<std::string, Value> values;
@@ -360,6 +383,10 @@ class IECDaemon {
 	};
 	std::vector<Unit> m_units;
 	int m_speed;
+	int m_timeout;
+	int m_wait_timeout;
+	int m_const_speed;
+	bool m_optical;
 
 	bool ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, xmlXPathContextPtr xp_ctx);
 	void QueryUnit(IECDaemon::Unit &unit);
@@ -368,8 +395,12 @@ class IECDaemon {
 public:
 	void Start();
 	bool Configure(DaemonConfig* cfg);
+	void WaitForSilence();
+	void Skip(size_t to_skip);
 
 };
+
+const int IECDaemon::c_default_timeout = 2;
 
 bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, xmlXPathContextPtr xp_ctx) {
 	Unit dunit;
@@ -381,12 +412,53 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 	dunit.address = (char*)_address;
 	xmlFree(_address);
 	
+	xmlChar* timeout = xmlGetNsProp(xunit, BAD_CAST("timeout"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (timeout == NULL) {
+		sz_log(2, "No attribute timeout given, assuming default %d (line %ld)", c_default_timeout, xmlGetLineNo(xunit));
+		m_timeout = c_default_timeout;
+	}
+	else {
+		m_timeout = boost::lexical_cast<int>(timeout);
+		xmlFree(timeout);	
+	}
+
+	timeout = xmlGetNsProp(xunit, BAD_CAST("wait_timeout"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (timeout == NULL) {
+		sz_log(2, "No attribute wait_timeout given, skipping disabled");
+		m_wait_timeout = 0;
+	}
+	else {
+		m_wait_timeout = boost::lexical_cast<int>(timeout);
+		xmlFree(timeout);	
+	}
+
+	xmlChar* const_speed = xmlGetNsProp(xunit, BAD_CAST("const_speed"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (const_speed != NULL) {
+		m_const_speed = boost::lexical_cast<int>(const_speed);
+		xmlFree(const_speed);	
+	} else {
+		m_const_speed = -1;
+	}
+
+	xmlChar* optical = xmlGetNsProp(xunit, BAD_CAST("optical"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (optical != NULL) {
+		std::string s = (char*)optical;
+		if (s.compare(std::string("true")) == 0) 
+			m_optical = true;
+		else
+			m_optical = false;
+		xmlFree(optical);	
+	} else {
+		m_optical = false;;
+	}
+
 	xp_ctx->node = xunit;
 	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST "./ipk:param", xp_ctx);
 	TParam* p = unit->GetFirstParam();
 	for (int j = 0; j < rset->nodesetval->nodeNr; j++, p = p->GetNext()) {
 		Value value;
 		xmlNodePtr n = rset->nodesetval->nodeTab[j];
+
 		xmlChar* _address = xmlGetNsProp(n, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (_address == NULL) { 
 			dolog(0, "Attribute iec:address not present in param element, line no (%ld)", xmlGetLineNo(n)); 
@@ -394,6 +466,14 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 		}
 		std::string address = (char*)_address;
 		xmlFree(_address);
+
+		int selector = -1;
+		xmlChar* _selector = xmlGetNsProp(n, BAD_CAST("selector"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+		if (_selector != NULL) {
+			selector = boost::lexical_cast<int>(_selector);
+			xmlFree(_selector);	
+		}
+		
 		bool is_msw = false;
 		xmlChar* _is_msw = xmlGetNsProp(n,
 				BAD_CAST("word"), 
@@ -404,6 +484,8 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 		int prec = pow10(p->GetPrec());
 		if (dunit.values.find(address) != dunit.values.end()) {
 			Value& value = dunit.values[address];
+			if (selector != -1)  value.selector = selector;
+
 			if (prec)
 				value.prec = prec;
 			if (is_msw)
@@ -413,6 +495,8 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 		} else {
 			Value value;
 			value.prec = prec;
+			if (selector != -1) value.selector = selector;
+
 			if (is_msw)
 				value.msw = param_index++;
 			else
@@ -461,16 +545,41 @@ bool IECDaemon::Configure(DaemonConfig* cfg) {
 	return true;
 }
 
+void IECDaemon::WaitForSilence() {
+	dolog(10, "Waiting for silence on the wire");
+	while (m_port->Wait(m_wait_timeout)) {
+		char buf[100];
+		m_port->GetData(buf, 100);
+	}
+}
+
+void IECDaemon::Skip(size_t to_skip) {
+	while (to_skip) {
+		if (!m_port->Wait(m_timeout))
+			throw DeviceResponseTimeout();
+
+		char buf[to_skip];
+
+		to_skip -= m_port->GetData(buf, to_skip);
+	}
+}
+
 void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
+	m_port->Open(m_speed, -1, m_optical);
+	
+	if (m_wait_timeout != 0) WaitForSilence();
+
 	std::ostringstream qs;
 	qs << "/?" << unit.address << "!\r\n";
-	m_port->Open(m_speed);
+
 	m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
+	
+	if (m_wait_timeout != 0) this->Skip(qs.str().size());
 
 	unsigned char read_buffer[10000];
 	ssize_t read_pos = 0;
 	do {
-		if (!m_port->Wait(2))
+		if (!m_port->Wait(m_timeout))
 			throw DeviceResponseTimeout();
 
 		read_pos += m_port->GetData(read_buffer + read_pos, sizeof(read_buffer) - read_pos);
@@ -510,18 +619,53 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 			throw IECException("Unsupported iec speed speficication");
 	}
 
-	qs.str(std::string());
-	qs << ACK << "0" << char(read_buffer[4]) << "0\r\n";
-	m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
+	dolog(6, "Got speed %d", speed);
 
-	dolog(2, "Speed is %d", speed);
-	m_port->Open(m_speed);
+	qs.str(std::string());
+	
+	if (m_const_speed != -1) {
+		dolog(6, "Const speed is %d", m_const_speed);
+
+		switch (m_const_speed) {
+			case 300:
+				qs << ACK << "000\r\n";
+				break;
+			case 600:
+				qs << ACK << "010\r\n";
+				break;
+			case 1200:
+				qs << ACK << "020\r\n";
+				break;
+			case 2400:
+				qs << ACK << "030\r\n";
+				break;
+			case 4800:
+				qs << ACK << "040\r\n";
+				break;
+			case 9600:
+				qs << ACK << "050\r\n";
+				break;
+			case 19200:
+				qs << ACK << "060\r\n";
+				break;
+			default:
+				qs << ACK << "000\r\n";
+		}
+		m_port->WriteData((const unsigned char*) qs.str().c_str(), qs.str().size());
+
+	} else {
+		qs << ACK << "0" << char(read_buffer[4]) << "0\r\n";
+		dolog(6, "Speed is %d", speed);
+		m_port->Open(speed, -1, m_optical);
+	}
+
+	if (m_wait_timeout != 0) this->Skip(qs.str().size());
 
 	read_pos = 0;
 	do {
-		if (!m_port->Wait(2))
+		if (!m_port->Wait(m_timeout))
 			throw DeviceResponseTimeout();
-
+	
 		read_pos += m_port->GetData(read_buffer + read_pos, sizeof(read_buffer) - read_pos);
 
 		if (read_pos == sizeof(read_buffer)) {
@@ -529,6 +673,8 @@ void IECDaemon::QueryUnit(IECDaemon::Unit &unit) {
 			throw IECException("Response form meter too large");
 		}
 
+		dolog(10, "Read so far:\n%*s", (int)read_pos, read_buffer);
+		
 	} while (read_pos < 4 || read_buffer[read_pos - 2] != ETX);
 
 	ParseResponse(unit, (const char*)read_buffer, read_pos);
@@ -544,55 +690,94 @@ void IECDaemon::ParseParamValue(std::istream& istream, Unit& unit) {
 	const char* vs;
 	char* e;
 
+	dolog(10, "IECDaemon: ParseParamValue");
 	std::getline(istream, address, '(');
+	
+	std::map<std::string, Value>::iterator i = unit.values.find(address);
+	if (i == unit.values.end()) {
+		/* Skip values for this address */
+		std::string s;
+		std::getline(istream, s, ')');
+		while (istream.peek() == '(') {
+			istream.ignore(1);
+			std::getline(istream, s, ')');
+		}
+		dolog(8, "Address %s skipped, not defined in configuration", address.c_str()); 
+		return;
+	}
+	
 	bool done = false;
+	int cnt = 0;
 	do {
 		std::string v;
 		std::getline(istream, v, ')');
-		if (v.find('*') != std::string::npos)
-			value = v;
+
+		if (i->second.selector > -1) {
+			dolog(10, "IECDaemon: ParseParamValue: using selector %d", i->second.selector);
+			if (cnt == i->second.selector) value = v;
+		} else {
+			dolog(10, "IECDaemon: ParseParamValue: searching for value");
+			if (v.find('*') != std::string::npos) value = v.substr(0,v.find("*",0));
+		}
+		
+		cnt = cnt + 1;
+
 		if (istream.peek() == '(')
 			istream.ignore(1);
 		else	
 			done = true;
+
 	} while (!done);
 
-	std::map<std::string, Value>::iterator i = unit.values.find(address);
-	if (i == unit.values.end()) {
-		dolog(2, "Address %s skipped, not defined in configuration", address.c_str()); 
-		goto end;
+	try {
+		boost::trim(value);
+		dval = boost::lexical_cast<double>(value);
+	} catch (boost::bad_lexical_cast& bdl) {
+		dolog(1, "Invalid value(%s) received for address: %s, parsing stopped at: %s", 
+				value.c_str(), address.c_str(), bdl.what());
+		return;
 	}
+
+	/*
 	vs = value.c_str();
 	while (*vs == ' ')
 		vs++;
 	dval = strtod(vs, &e); 
-	if (e == vs || *e != '*') {
-		dolog(1, "Invalid value(%s) received for address: %s, pasring stopped at: %s", vs, address.c_str(), e);
+
+	//if (e == vs || *e != '*') {
+	if (e == vs) {
+		dolog(1, "Invalid value(%s) received for address: %s, parsing stopped at: %s", vs, address.c_str(), e);
 		goto end;
 	}
+	*/
 
 	ival = int(dval * i->second.prec);
 	lsw = ival & 0xffffu;
 	msw = ival >> 16;
 
-	dolog(1, "Got value %s for address: %s", vs, address.c_str());
+	dolog(6, "Got value %s for address: %s", value.c_str(), address.c_str());
 
 	if (i->second.msw >= 0)
 		m_ipc->m_read[i->second.msw] = msw;
 	if (i->second.lsw >= 0)
 		m_ipc->m_read[i->second.lsw] = lsw;
-end:;
 }
 
 void IECDaemon::ParseResponse(IECDaemon::Unit& unit, const char* read_buffer, size_t buf_size) {
+
+	dolog(10, "IECDaemon: ParseResponse");
+
 	std::istringstream is(std::string(read_buffer, read_buffer + buf_size));
 	is.exceptions(std::ios_base::failbit | std::ios_base::badbit | std::ios_base::eofbit);
+	
 	try {
 		is.ignore(1);//skip STX
 		while (true) switch (is.peek()) {
 				case '!': //end of message
+					dolog(10, "IECDaemon: ParseResponse: end of message");
 					return;
 				case '\r':
+					dolog(10, "IECDaemon: ParseResponse: next value");
 					is.ignore(2);
 					break;
 				default:
@@ -616,9 +801,9 @@ void IECDaemon::Start() {
 		for (size_t i = 0; i < m_units.size(); i++)
 			try {
 				dolog(6, "Querying unit %s", m_units[i].address.c_str());
-				QueryUnit(m_units[0]);
-			} catch (std::runtime_error) {
-				dolog(1, "Error while querying uint");	
+				QueryUnit(m_units[i]);
+			} catch (std::runtime_error& re) {
+				dolog(1, "Error while querying unit: %s", re.what());
 			}
 
 		int to_sleep;
