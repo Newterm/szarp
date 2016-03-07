@@ -31,7 +31,13 @@
 
 #include <boost/container/flat_set.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/float128.hpp>
+
+#ifdef __arm__
+	typedef double float_sum_type;
+#else
+	#include <boost/multiprecision/float128.hpp>
+	typedef boost::multiprecision::float128 float_sum_type;
+#endif
 
 
 #include "sz4/time.h"
@@ -86,7 +92,6 @@ template<> struct time_difference<nanosecond_time_t> {
 template<class T> struct value_sum { };
 
 typedef boost::multiprecision::cpp_int int_sum_type;
-typedef boost::multiprecision::float128 float_sum_type;
 
 template<> struct value_sum<short> {
 	typedef int_sum_type type;
@@ -137,7 +142,7 @@ template<> struct sum_conv_helper<int_sum_type, short> {
 };
 
 template<> struct sum_conv_helper<float_sum_type, int_sum_type> {
-	static int_sum_type _do(boost::multiprecision::float128 v) {
+	static int_sum_type _do(float_sum_type v) {
 		int_sum_type r(0);
 		int_sum_type e(1);
 		while (v >= 1) {
