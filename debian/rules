@@ -51,7 +51,6 @@ else
 	CFG_ARGS=--with-prefix=/usr/$(DEB_HOST_GNU_TYPE)
 endif
 
-DEB_PYTHON_SYSTEM=pysupport
 DEB_PYTHON_VERSIONS=all
 
 PREFIX = opt/szarp/
@@ -192,7 +191,7 @@ install-sssweb:
 create-sssweb: DH_OPTIONS=-pszarp-sssweb
 create-sssweb:
 	dh_testroot
-	dh_pysupport
+	dh_python2
 	dh_installinit -i
 	dh_installdocs
 	dh_installlogrotate
