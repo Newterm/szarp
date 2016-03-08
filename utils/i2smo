@@ -30,12 +30,17 @@ import sys
 import os
 from clint.textui import puts, indent, colored
 from clint.textui.core import STDOUT, STDERR
+from lxml import etree
+import hashlib
+import re
 
+error_count = 0
 def printerr(msg, prefix="ERROR: "):
-	puts(colored.red(prefix + str(msg)), stream=STDERR)
+	global error_count
+	error_count = error_count + 1
+	puts(colored.red(prefix + "(" + str(error_count) + ") " + str(msg)), stream=STDERR)
 
 note_count = 0
-
 def printnote(msg, prefix="NOTE: "):
 	global note_count
 	note_count = note_count + 1
@@ -80,6 +85,82 @@ def check_svn():
 	else:
 		printnote(realpath + " is not added to svn, maybe it should?")
 
+def parse_config_file():
+	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
+	if args.input_file is None:
+		szarp_path = os.path.realpath("/etc/szarp/default")
+		xml_path = szarp_path + "/config/params.xml"
+	else:
+		xml_path = args.input_file
+	xml_file = etree.parse(xml_path, options)
+	params = xml_file.getroot()
+	parameters = list(params)
+	return parameters
+
+def check_exist(parameters):
+	file_to_check = re.compile(r"\/opt\/szarp\/.")
+	check_list = []
+	for device in parameters:
+		for attr, value in device.items():
+			find_file = file_to_check.search(value)
+			if find_file is not None:
+				if os.path.exists(value) is False:
+					if not value in check_list:
+						printerr(value + " does not exist!")
+						check_list.insert(0,value)
+
+def check_custom(parameters):
+	md5sum_regex = re.compile(r"[a-f0-9]{32}")
+	daemon_regex = re.compile(r"(?<=\/opt\/szarp\/bin\/).*")
+	daemons_list = []
+	for device in parameters:
+		for attr, value in device.items():
+			if attr == "daemon":
+				if not value in daemons_list:
+					daemons_list.insert(0,value)
+					md5sum_check = 0
+					daemon = daemon_regex.search(value)
+					with open("/var/lib/dpkg/info/szarp-daemons.md5sums", "r") as md5file:
+						for line in md5file:
+							standard_daemon_md5sum = re.search(r"[a-f0-9]{32}.{16}" + daemon.group(0) , line)
+							if standard_daemon_md5sum is not None:
+								md5sum = md5sum_regex.search(line)
+								md5sum_check = md5sum.group(0)
+								break
+					try:
+						daemon_md5sum = hashlib.md5(open(value, 'rb').read()).hexdigest()
+					except:
+						daemon_md5sum = 0
+					if md5sum_check != daemon_md5sum is not None:
+						printnote("custom daemon found in " + value)
+
+def check_config(parameters):
+	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
+	for device in parameters:
+		if device.tag == namespace + "device":
+			for unit in device:
+				for elements in unit:
+					if elements.tag == namespace + "param":
+						find_unit = False
+						for attr, value in elements.items():
+							if attr == "unit":
+								find_unit = True
+						if find_unit is False:
+							printerr("atribute 'unit' in node 'param' not found (line  " + str(elements.sourceline) + ")")
+					elif elements.tag == namespace + "send":
+						try:
+							if elements.getnext().tag != namespace + "send":
+								printnote("found wrong order of 'send' elements (line " + str(elements.sourceline) + ")")
+						except:
+							pass
+						for attr, value in elements.items():
+							found_param_or_value = False
+							if attr == "param" or attr == "value":
+								found_param_or_value = True
+								break
+						if found_param_or_value is False:
+							printerr("found send without param or value (line " + str(elements.sourceline) + ")")
+
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
 	help='XML config file (default is params.xml), passed to ipk2szarp')
@@ -103,9 +184,14 @@ if stderr:
 return_code = process.returncode
 
 if return_code == 0:
-	printok("OK")
 	printnote("if backend configuration has changed: /etc/init.d/parstart restart")
 	check_iks()
 	check_svn()
+	config = parse_config_file()
+	check_exist(config)
+	check_custom(config)
+	check_config(config)
+	if error_count == 0:
+		printok("OK")
 else:
 	printerr("ERROR", '')
