@@ -28,6 +28,9 @@ public:
 		int timeout_s=10);
 
 protected:
+	bool IsClosed() const;
+
+protected:
 	struct event_base* m_event_base;
 	struct evhttp_connection* m_connection;
 };

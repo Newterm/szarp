@@ -41,6 +41,11 @@ void HttpClient::CloseConnection()
 	}
 }
 
+bool HttpClient::IsClosed() const
+{
+	return m_connection == NULL;
+}
+
 int HttpClient::SendRequest(http_request_cb callback, std::string uri,
 	const std::map<std::string, std::string>& headers, int timeout_s)
 {
@@ -76,6 +81,9 @@ void AtcHttpClient::GetAuthCookie()
 
 void AtcHttpClient::GetAuthCookieFinished(struct evhttp_request* request)
 {
+	if (IsClosed()) {
+		return;
+	}
 	if (request == NULL) {
 		NotifyError();
 		return;
@@ -134,6 +142,9 @@ void AtcHttpClient::SetConfiguration(const SerialPortConfiguration& conf)
 
 void AtcHttpClient::SetConfigurationFinished(struct evhttp_request* request)
 {
+	if (IsClosed()) {
+		return;
+	}
 	for (auto it = m_listeners.begin(); it != m_listeners.end(); ++it) {
 		(*it)->SetConfigurationFinished(this);
 	}
@@ -147,6 +158,9 @@ void AtcHttpClient::ResetDevice(bool close_on_reset)
 
 void AtcHttpClient::ResetDeviceFinished(struct evhttp_request* request)
 {
+	if (IsClosed()) {
+		return;
+	}
 	if (m_close_on_reset) {
 		CloseConnection();
 		m_close_on_reset = false;

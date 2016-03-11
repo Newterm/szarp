@@ -4,10 +4,12 @@ AtcConnection::AtcConnection(struct event_base* base)
 :TcpConnection(base), m_event_base(base), m_action_queued(NO_ACTION), m_open_finished_pending(true)
 {
 	m_http_client = new AtcHttpClient(base);
+	m_http_client->AddListener(this);
 }
 
 AtcConnection::~AtcConnection()
 {
+	m_http_client->ClearListeners();
 	delete m_http_client;
 }
 
@@ -20,7 +22,6 @@ void AtcConnection::AtcError(const AtcHttpClient* client)
 void AtcConnection::Open()
 {
 	TcpConnection::Open();
-	m_http_client->AddListener(this);
 	m_http_client->Connect(m_address);
 	m_action_queued = RESET;
 	m_http_client->GetAuthCookie();
@@ -39,7 +40,6 @@ void AtcConnection::OpenFinished()
 void AtcConnection::Close()
 {
 	TcpConnection::Close();
-	m_http_client->ClearListeners();
 	m_http_client->CloseConnection();
 	m_open_finished_pending = false;
 }
