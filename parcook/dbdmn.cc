@@ -48,6 +48,9 @@
 		<param name="..." 
 			db:param="database_name:...:...:..."
 				name of parameter to read from database, preceded by database name
+			extra:probe-type="..."
+				type of database value: PT_MIN10 - 10 min probes, PT_SEC10 - 10 sec probes
+			prec="..."
  @description_end
 
 */
