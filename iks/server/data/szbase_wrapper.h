@@ -33,7 +33,7 @@ public:
 	static std::string get_dir()
 	{	return szarp_dir.string(); }
 
-	static bool init( const std::string& _szarp_dir , size_t base_high_water_mark , size_t base_low_water_mark );
+	static bool init( const std::string& _szarp_dir , size_t base_low_water_mark , size_t base_high_water_mark);
 	static bool is_initialized() { return initialized; }
 
 	static time_t next( time_t t , ProbeType pt , int num = 1 );

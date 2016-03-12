@@ -47,7 +47,7 @@ size_t SzbaseWrapper::base_cache_high_water_mark;
 const size_t SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT = 128 * 1024 * 1024;
 const size_t SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT = 192 * 1024 * 1024;
 
-bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_high_water_mark , size_t base_low_water_mark )
+bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_low_water_mark, size_t base_high_water_mark)
 {
 	if( initialized )
 		return boost::filesystem::path(_szarp_dir) == szarp_dir;
@@ -57,6 +57,9 @@ bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_high_water
 	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
 
 	base = new sz4::base( szarp_dir.wstring() , IPKContainer::GetObject() );
+
+	SzbaseWrapper::base_cache_high_water_mark = base_high_water_mark;
+	SzbaseWrapper::base_cache_low_water_mark = base_low_water_mark;
 
 	initialized = true;
 
