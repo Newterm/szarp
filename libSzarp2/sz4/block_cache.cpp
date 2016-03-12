@@ -36,9 +36,9 @@ void block_cache::add_new_block(generic_block& block) {
 	m_blocks.push_back(block);
 }
 
-void block_cache::remove_block(generic_block& block) {
+void block_cache::remove_block(generic_block& block, size_t block_size) {
+	m_cache_size -= block_size;
 	m_blocks.erase(generic_block_list::s_iterator_to(block));
-	m_cache_size -= block.block_size();
 }
 
 void block_cache::block_size_changed(generic_block& block, size_t previous_size) {

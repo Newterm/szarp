@@ -36,8 +36,8 @@ void generic_block::block_data_updated(size_t previous_size) {
 	m_cache->block_size_changed(*this, previous_size);
 }
 
-void generic_block::remove_from_cache() {
-	m_cache->remove_block(*this);
+void generic_block::remove_from_cache(size_t block_size) {
+	m_cache->remove_block(*this, block_size);
 }
 
 generic_block::~generic_block() { 

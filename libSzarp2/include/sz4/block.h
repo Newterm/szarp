@@ -58,7 +58,7 @@ public:
 
 	void block_data_updated(size_t previous_size);
 
-	void remove_from_cache();
+	void remove_from_cache(size_t block_size);
 
 	virtual ~generic_block();
 
@@ -118,11 +118,11 @@ public:
 		return sz4::search_entry_for_time(m_data.begin(), m_data.end(), time);
 	}
 
-	value_time_vector& data() {
+	const value_time_vector& data() const {
 		return m_data;
 	}
 
-	const value_time_vector& data() const {
+	value_time_vector& data() {
 		return m_data;
 	}
 
@@ -187,7 +187,7 @@ public:
 	}
 
 	void append_entry(const value_type& value, const time_type& time) {
-		cache_block_size_updater(this);
+		cache_block_size_updater _updater(this);
 		if (!m_data.size())
 			m_data.push_back(make_value_time_pair<value_time_type>(value, time));
 		else {
@@ -204,11 +204,11 @@ public:
 		if (begin == end)
 			return;
 
-		cache_block_size_updater _updater(this);
 		append_entry(begin->value, begin->time);
+
+		cache_block_size_updater _updater(this);
 		m_data.insert(m_data.end(), begin + 1, end);
 	}
-
 
 	typename value_time_vector::iterator insert_entry(typename value_time_vector::iterator i, const value_type& value, const time_type& time) {
 		cache_block_size_updater _updater(this);
@@ -232,8 +232,9 @@ public:
 			m_data.erase(i, i + 2);
 		}
 	}
+
 	virtual ~value_time_block() {
-		remove_from_cache();
+		remove_from_cache(block_size());
 	}
 
 protected:
@@ -279,10 +280,6 @@ public:
 		}
 	}
 
-	virtual size_t block_size() const {
-		return block_type::block_size();
-	}
-		
 	time_type search_data_right(const time_type& start, const time_type& end, const search_condition &condition) {
 		typename block_type::value_time_vector::const_iterator i = this->search_data_right_t(start, end, condition);
 		return this->search_result_right(start, i);
