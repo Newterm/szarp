@@ -32,7 +32,7 @@ public:
 	void add_new_block(generic_block& block);
 	void remove_block(generic_block& block, size_t block_size);
 	void block_size_changed(generic_block& block, size_t previous_size);
-	void block_updated(generic_block& block);
+	void block_touched(generic_block& block);
 	void remove(size_t size);
 };
 

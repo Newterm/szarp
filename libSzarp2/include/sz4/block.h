@@ -256,6 +256,8 @@ public:
 		if (start_time >= end_time)
 			return;
 
+		this->m_cache->block_touched(*this);
+
 		time_type prev_time(start_time);
 		bool done = false;
 		typename block_type::value_time_vector::const_iterator i = this->search_entry_for_time(start_time);
