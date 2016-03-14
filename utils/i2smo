@@ -46,6 +46,14 @@ def printnote(msg, prefix="NOTE: "):
 	note_count = note_count + 1
 	puts(colored.yellow(prefix + "(" + str(note_count) + ") " + str(msg)))
 
+note_list = []
+def add_note(msg):
+	note_list.append(msg)
+
+def print_notes():
+	for note in note_list:
+		printnote(note)
+
 def printok(msg):
 	puts(colored.green(str(msg)))
 
@@ -74,16 +82,16 @@ iks_server = "/opt/szarp/bin/iks-server"
 
 def check_iks():
 	if os.path.isfile(iks_server):
-		printnote("if only draw configuration has changed: supervisorctl restart iks-server")
+		add_note("if only draw configuration has changed: supervisorctl restart iks-server")
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
 	realpath = os.path.realpath("/etc/szarp/default")
 	if szarp_svn:
 		if szarp_uncommited:
-			printnote("uncommited changes found in " + realpath + ": /opt/szarp/bin/conf-put.sh")
+			add_note("uncommited changes found in " + realpath + ": /opt/szarp/bin/conf-put.sh")
 	else:
-		printnote(realpath + " is not added to svn, maybe it should?")
+		add_note(realpath + " is not added to svn, maybe it should?")
 
 def parse_config_file():
 	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
@@ -97,7 +105,8 @@ def parse_config_file():
 	parameters = list(params)
 	return parameters
 
-def check_exist(parameters):
+
+def check_if_file_exist(parameters):
 	file_to_check = re.compile(r"\/opt\/szarp\/.")
 	check_list = []
 	for device in parameters:
@@ -109,7 +118,7 @@ def check_exist(parameters):
 						printerr(value + " does not exist!")
 						check_list.insert(0,value)
 
-def check_custom(parameters):
+def check_for_daemons(parameters):
 	md5sum_regex = re.compile(r"[a-f0-9]{32}")
 	daemon_regex = re.compile(r"(?<=\/opt\/szarp\/bin\/).*")
 	daemons_list = []
@@ -132,9 +141,19 @@ def check_custom(parameters):
 					except:
 						daemon_md5sum = 0
 					if md5sum_check != daemon_md5sum is not None:
-						printnote("custom daemon found in " + value)
+						add_note("custom daemon found in " + value)
+				if re.search(r"dbdmn.{0,}", value):
+					for unit in device:
+						for param in unit:
+							for attrib, value in param.items():
+								found_probe_type = False
+								if attrib == "{http://www.praterm.com.pl/SZARP/ipk-extra}probe-type" is not None:
+									found_probe_type = True
+									break
+							if found_probe_type is False:
+								printerr("attribute extra:probe-type wasn't found in device with dbdmn daemon (line " + str(param.sourceline) + ")")
 
-def check_config(parameters):
+def check_send_elements(parameters):
 	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
 	for device in parameters:
 		if device.tag == namespace + "device":
@@ -150,7 +169,7 @@ def check_config(parameters):
 					elif elements.tag == namespace + "send":
 						try:
 							if elements.getnext().tag != namespace + "send":
-								printnote("found wrong order of 'send' elements (line " + str(elements.sourceline) + ")")
+								add_note("found wrong order of 'send' elements (line " + str(elements.sourceline) + ")")
 						except:
 							pass
 						for attr, value in elements.items():
@@ -160,6 +179,11 @@ def check_config(parameters):
 								break
 						if found_param_or_value is False:
 							printerr("found send without param or value (line " + str(elements.sourceline) + ")")
+
+def test_config_file(config):
+	check_if_file_exist(config)
+	check_for_daemons(config)
+	check_send_elements(config)
 
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
@@ -184,13 +208,12 @@ if stderr:
 return_code = process.returncode
 
 if return_code == 0:
-	printnote("if backend configuration has changed: /etc/init.d/parstart restart")
+	add_note("if backend configuration has changed: /etc/init.d/parstart restart")
 	check_iks()
 	check_svn()
 	config = parse_config_file()
-	check_exist(config)
-	check_custom(config)
-	check_config(config)
+	test_config_file(config)
+	print_notes()
 	if error_count == 0:
 		printok("OK")
 else:
