@@ -39,6 +39,9 @@ template<class V, class T> struct value_time_type {
 
 template<class value_type, class time_type> class definable_param_cache {
 public:
+	static const size_t PAGE_SIZE = 8192;
+	static const size_t MAX_BLOCK_SIZE = PAGE_SIZE - sizeof(value_type) - sizeof(time_type);
+
 	SZARP_PROBE_TYPE m_probe_type;
 
 	struct entry_type {
@@ -157,7 +160,7 @@ public:
 	void maybe_merge_block_with_next_one(typename map_type::iterator i) {
 		block_type* block = i->second;
 		std::advance(i, 1);
-		if (i != m_blocks.end() && i->first == block->end_time()) {
+		if (i != m_blocks.end() && i->first == block->end_time() && block->block_size() + i->second->block_size() <= MAX_BLOCK_SIZE) {
 			block_type* block_n = i->second;
 			block->append_entries(block_n->data().begin(), block_n->data().end());
 
@@ -179,7 +182,7 @@ public:
 			i = create_new_block(value, time, entry_version);
 		else {
 			std::advance(i, -1);
-			if (i->second->end_time() < time)
+			if (i->second->end_time() < time || (i->second->end_time() == time && i->second->block_size() > MAX_BLOCK_SIZE))
 				i = create_new_block(value, time, entry_version);
 			else if (i->second->end_time() == time)
 				i->second->append_entry(entry_type(value, entry_version), szb_move_time(time, 1, m_probe_type));
