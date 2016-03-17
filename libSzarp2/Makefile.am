@@ -202,6 +202,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/block_cache..h \
 			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
 			$(INCLUDE_DIR)/sz4/decode_file.h \
+			$(INCLUDE_DIR)/sz4/encode_file.h \
 			$(SZ4_DIR)/load_file_locked.cpp \
 			$(SZ4_DIR)/path.cpp \
 			$(SZ4_DIR)/buffer.cpp \
@@ -214,6 +215,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/block_cache.cpp \
 			$(SZ4_DIR)/filelock.cpp \
 			$(SZ4_DIR)/decode_file.cpp \
+			$(SZ4_DIR)/encode_file.cpp \
 			\
 			$(PROTOBUF) \
 			$(SOURCE_DIR)/utils/daemonize.cc
