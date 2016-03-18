@@ -18,6 +18,8 @@
 */
 
 #include <string>
+#include <iomanip>
+#include <sstream>
 #include "sz4/path.h"
 #include "szbase/szbdate.h"
 
@@ -158,5 +160,32 @@ template second_time_t path_to_date(const std::wstring& path, bool &sz4);
 
 template nanosecond_time_t path_to_date(const std::string& path, bool &sz4);
 template second_time_t path_to_date(const std::string& path, bool &sz4);
+
+template<class C> std::basic_string<C> date_to_path(const second_time_t& t) {
+	typedef path_impl::char_trait<C> CT;
+	std::basic_stringstream<C> s;
+
+	s << std::setw(10) << std::setfill(CT::zero) << t;
+	s << CT::dot << CT::s << CT::z << CT::_4;
+
+	return s.str();
+}
+
+template<class C> std::basic_string<C> date_to_path(const nanosecond_time_t& t) {
+	typedef path_impl::char_trait<C> CT;
+	std::basic_stringstream<C> s;
+
+	s << std::setw(10) << std::setfill(CT::zero) << t.second;
+	s << std::setw(10) << std::setfill(CT::zero) << t.nanosecond;
+	s << CT::dot << CT::s << CT::z << CT::_4;
+
+	return s.str();
+}
+
+template std::wstring date_to_path(const second_time_t&);
+template std::string date_to_path(const second_time_t&);
+
+template std::wstring date_to_path(const nanosecond_time_t&);
+template std::string date_to_path(const nanosecond_time_t&);
 
 }

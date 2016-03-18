@@ -27,5 +27,7 @@ template<class C> bool szbase_path(const std::basic_string<C> &path, unsigned& t
 
 template<class T, class C> T path_to_date(const std::basic_string<C>& path, bool &sz4);
 
+template<class C, class T> std::basic_string<C> date_to_path(const T& t);
+
 }
 #endif
