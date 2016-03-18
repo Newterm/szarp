@@ -43,6 +43,7 @@
 #include <string>
 #include <cstdint>
 #include <utility>
+#include <limits>
 
 #include "liblog.h"
 #include "xmlutils.h"
@@ -60,7 +61,15 @@ public:
 	class SzParam 
 	{
 	public:
-		SzParam() : _addr(-1), _val_type(""), _val_op(""), _prec(0) {}
+		SzParam() : 
+			_addr(-1), 
+			_val_type(""), 
+			_val_op(""), 
+			_prec(0),
+			_min(std::numeric_limits<double>::min()),
+			_max(std::numeric_limits<double>::max())
+		{}
+
 		SzParam(int addr,
 			std::string vtype,
 			std::string vop,
@@ -69,7 +78,9 @@ public:
 			_addr(addr),
 			_val_type(vtype),
 			_val_op(vop),
-			_prec(prec)
+			_prec(prec),
+			_min(std::numeric_limits<double>::min()),
+			_max(std::numeric_limits<double>::max())
 		{}
 	
 		bool isValid()
@@ -91,15 +102,25 @@ public:
 		{ return _val_type; }
 		int getPrec()
 		{ return _prec; }
+		double getMin()
+		{ return _min; }
+		double getMax()
+		{ return _max; }
 		
 		void setPrec(int prec)
 		{ _prec = prec; }
+		void setMin(double min)
+		{ _min = min; }
+		void setMax(double max)
+		{ _max = max; }
 
 	private:
 		int _addr;
 		std::string _val_type;
 		std::string _val_op;
 		int _prec;
+		double _min;
+		double _max;
 	};
 
 	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
@@ -135,6 +156,11 @@ public:
 	bool hasSendLSW( int addr ) 
 	{ return ( _send_lsws.find(addr) != _send_lsws.end() ); }
 
+	double getMin(unsigned long int pid)
+	{ return _params[pid].getMin(); }
+	double getMax(unsigned long int pid)
+	{ return _params[pid].getMax(); }
+	
 	template <typename DataWriter>
 	void writeFloat( unsigned long int pid, DataBuffer data, DataWriter write)
 	{
@@ -229,7 +255,7 @@ public:
 	}
 
 	template <typename DataReader>
-	void readFloat( unsigned long int pid, DataDescriptor desc, DataReader read)
+	bool readFloat( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
 		sz_log(10, "SzParamMap::readFloat(%lu)", pid);
 
@@ -242,8 +268,11 @@ public:
 		sz_log(10, "Send value (msw integer) id:%lu, val:%d", pid, msw);
 		sz_log(10, "Send value (lsw integer) id:%lu, val:%d", lsw_pid, lsw);
 	
-		/* @TODO: make this optional later */
-		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) return;
+		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) {
+			sz_log(10, "Param lsw id:%lu msw id:%lu  is no data - aborting query write", 
+					lsw_pid, pid);
+			return false;
+		}
 
 		int int_value;
 		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
@@ -253,6 +282,19 @@ public:
 		float float_value = (float)(int_value / pow10(getPrec(pid)));
 		
 		sz_log(10, "Send value (float) id:%lu, val:%f", lsw_pid, float_value);
+		
+		/* Use min/max from lsw and msw param configuration together */
+		if ((static_cast<double>(float_value) < getMin(lsw_pid)) ||
+				(static_cast<double>(float_value) > getMax(lsw_pid)) ||
+				(static_cast<double>(float_value) < getMin(pid)) ||
+				(static_cast<double>(float_value) > getMax(pid)))
+		{
+			sz_log(10, "Param id:%lu value:%f is out of limits:", lsw_pid, float_value);
+			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
+			sz_log(10, "[%f,%f]", getMin(pid), getMax(pid));
+			sz_log(10, "Aborting query write");
+			return false;
+		}
 
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&float_value);
 
@@ -260,10 +302,12 @@ public:
 		*(desc.first + 0) = *pblock8; pblock8++;
 		*(sid.second.first + 1) = *pblock8; pblock8++;
 		*(sid.second.first + 0) = *pblock8; 
+
+		return true;
 	}	
 
 	template <typename DataReader>
-	void readInteger( unsigned long int pid, DataDescriptor desc, DataReader read)
+	bool readInteger( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
 		sz_log(10, "SzParamMap::readInteger(%lu)", pid);
 
@@ -276,8 +320,11 @@ public:
 		sz_log(10, "Send value (msw integer) id:%lu, val:%d", pid, msw);
 		sz_log(10, "Send value (lsw integer) id:%lu, val:%d", lsw_pid, lsw);
 
-		/* @TODO: make this optional later */
-		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) return;
+		if ((lsw == SZARP_NO_DATA) || (msw == SZARP_NO_DATA)) {
+			sz_log(10, "Param lsw id:%lu msw id:%lu  is no data - aborting query write", 
+					lsw_pid, pid);
+			return false;
+		}
 
 		int int_value;
 		uint16_t* pblock16 = reinterpret_cast<uint16_t*>(&int_value);
@@ -288,37 +335,62 @@ public:
 
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
 
+		/* Use min/max from lsw and msw param configuration together */
+		if ((static_cast<double>(int_value) < getMin(lsw_pid)) ||
+				(static_cast<double>(int_value) > getMax(lsw_pid)) ||
+				(static_cast<double>(int_value) < getMin(pid)) ||
+				(static_cast<double>(int_value) > getMax(pid)))
+		{
+			sz_log(10, "Param id:%lu value:%d is out of limits:", lsw_pid, int_value);
+			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
+			sz_log(10, "[%f,%f]", getMin(pid), getMax(pid));
+			sz_log(10, "Aborting query write");
+			return false;
+		}
+
 		*(desc.first + 1) = *pblock8; pblock8++;
 		*(desc.first + 0) = *pblock8; pblock8++;
 		*(sid.second.first + 1) = *pblock8; pblock8++;
 		*(sid.second.first + 0) = *pblock8; 
+
+		return true;
 	}	
 
 	template <typename DataReader>
-	void readMultiParam( unsigned long int pid, DataDescriptor desc, DataReader read)
+	bool readMultiParam( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
 		sz_log(10, "SzParamMap::readMultiParam(%lu)", pid);
 
 		if (!hasSendLSW(getAddr(pid) - 2)) {
 			sz_log(0, "Send addr:%d has msw and missing lsw", getAddr(pid));
-			return;
+			return false;
 		}
 		
-		if (isFloat(pid)) { readFloat(pid,desc,read); return; }
+		if (isFloat(pid)) { return readFloat(pid,desc,read); }
 
-		readInteger(pid,desc,read);
-		return;
+		return readInteger(pid,desc,read);
 	}
 
 	template <typename DataReader>
-	void readSingleParam( unsigned long int pid, DataDescriptor desc, DataReader read)
+	bool readSingleParam( unsigned long int pid, DataDescriptor desc, DataReader read)
 	{
 		sz_log(10, "SzParamMap::readSingleParam(%lu)", pid);
 
 		int16_t value = read(pid);
 		
-		/* @TODO: make this optional later */
-		if (value == SZARP_NO_DATA) return;
+		if (value == SZARP_NO_DATA) {
+			sz_log(10, "Param id:%lu is no data - aborting query write", pid);
+			return false;
+		}
+
+		if ((static_cast<double>(value) < getMin(pid)) || 
+				(static_cast<double>(value) > getMax(pid)))
+		{
+			sz_log(10, "Param id:%lu value:%d is out of limits:", pid, value);
+			sz_log(10, "[%f,%f]", getMin(pid), getMax(pid));
+			sz_log(10, "Aborting query write");
+			return false;
+		}
 
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&value);		
 		if (desc.first != desc.second) { 
@@ -327,17 +399,19 @@ public:
 		} else {
 			*(desc.first) = *pblock8;
 		}
+
+		return true;
 	}
 
 	template <typename DataReader>
-	void ReadData( unsigned long int pid, DataDescriptor desc, DataReader read ) 
+	bool ReadData( unsigned long int pid, DataDescriptor desc, DataReader read ) 
 	{ 
 		sz_log(10, "SzParamMap::ReadData id:%lu",pid);
 		
-		if (isLSW(pid)) { setSendLSW(pid,desc); return; }
-		if (isMSW(pid)) { readMultiParam(pid,desc,read); return; }
+		if (isLSW(pid)) { setSendLSW(pid,desc); return true; }
+		if (isMSW(pid)) { return readMultiParam(pid,desc,read); }
 		
-		readSingleParam(pid,desc,read);
+		return readSingleParam(pid,desc,read);
 	}
 
 private:

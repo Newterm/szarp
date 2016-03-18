@@ -81,6 +81,8 @@ public:
 	void AccessData(DataAccessor access)
 	{ _s7qmap.AccessData(access); }
 
+	bool ClearWriteNoDataFlags();
+
 	bool QueryAll();
 	bool AskAll();
 	bool TellAll();

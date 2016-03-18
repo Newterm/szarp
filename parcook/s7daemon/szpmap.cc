@@ -45,8 +45,34 @@ bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xm
 	SzParam szp = ConfigureParamFromXml(idx, node);
 	if (!szp.isValid()) return false;
 
+	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("min"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (NULL == prop) {
+		sz_log(2, "No attribute min given for param in line %ld",
+			       	xmlGetLineNo(node));
+	} else {
+		szp.setMin(boost::lexical_cast<double>((char*)prop));
+		xmlFree(prop);
+	}
+	
+	prop = xmlGetNsProp(node, BAD_CAST("max"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	if (NULL == prop) {
+		sz_log(2, "No attribute max given for param in line %ld",
+			       	xmlGetLineNo(node));
+	} else {
+		szp.setMax(boost::lexical_cast<double>((char*)prop));
+		xmlFree(prop);
+	}
+
+	sz_log(7, "SzParam::min = %f", szp.getMin());
+	sz_log(7, "SzParam::max = %f", szp.getMax());
+
+	if (szp.getMin() > szp.getMax()) {
+		sz_log(0, "Configuration error: min > max");
+		return false;
+	}
+
 	/* extra:prec is required for sending floats */
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("prec"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
+	prop = xmlGetNsProp(node, BAD_CAST("prec"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
 		sz_log(0, "No attribute prec (required for float) given for param in line %ld",
 			       	xmlGetLineNo(node));

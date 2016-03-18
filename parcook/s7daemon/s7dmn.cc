@@ -120,16 +120,20 @@ void S7Daemon::Transfer()
 		});
 	});	
 	
+	/** 
+	 * Assume all write queries have data.
+	 * If part of merged query will lack data, whole query will not be send to device.
+	 */
+	_client.ClearWriteNoDataFlags();
+
 	/** Read SZARP DB and write values to write queries */
 	_pmap.clearReadBuffer();
 	_client.AccessData([&](unsigned long int idx, DataDescriptor desc) {
 		SzInteger send_value = SZARP_NO_DATA;
-		_pmap.ReadData(idx, desc, [&](unsigned long int pid) {
+		return _pmap.ReadData(idx, desc, [&](unsigned long int pid) {
 			send_value = Send(pid - Count());
 			return send_value;
 		});
-		if (send_value == SZARP_NO_DATA) return true;
-		return false;
 	});
 
 	/** Send write queries to PLC */

@@ -89,8 +89,11 @@ public:
 	void Sort();
 	void Merge();
 
+	bool ClearWriteNoDataFlags();
+
 	bool AskAll(S7Object& client);
 	bool TellAll(S7Object& client);
+
 	bool DumpAll();
 	
 	template <typename ResponseProcessor>

@@ -65,7 +65,7 @@ bool S7Query::tell( S7Object& client )
 {
 	sz_log(10, "S7Query::tell");
 	if (_no_data) {
-		sz_log(5, "NO_DATA in query - not sending");
+		sz_log(5, "Invalidated query - not sending");
 		return true;
 	}
 

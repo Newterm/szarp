@@ -98,6 +98,16 @@ void S7QueryMap::MergeBucket( S7Query::QueryKey key, QueryVec& qvec )
 	}
 }
 
+bool S7QueryMap::ClearWriteNoDataFlags()
+{
+	sz_log(10, "S7QueryMap::ClearWriteNoDataFlags");
+
+	for (auto vk_q = _queries.begin(); vk_q != _queries.end(); vk_q++)
+		for (auto q = vk_q->second.begin(); q != vk_q->second.end(); q++)
+			if(q->isWriteQuery()) q->setNoData(false);
+	return true;
+}
+
 bool S7QueryMap::AskAll( S7Object& client )
 {
 	sz_log(10, "S7QueryMap::AskAll");

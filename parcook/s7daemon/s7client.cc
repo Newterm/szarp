@@ -2,8 +2,9 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "conversion.h"
+#include <limits>
 
+#include "conversion.h"
 
 const int S7Client::_default_rack = 0;
 const int S7Client::_default_slot = 2;
@@ -123,7 +124,7 @@ bool S7Client::ConfigureParamFromXml( unsigned long int idx, TSendParam* s,  xml
 	
 	S7QueryMap::S7Param param = ConfigureParamFromXml(idx,node);
 	param.s7Write = true;
-	
+
 	return _s7qmap.AddQuery(idx, param);
 }
 
@@ -182,6 +183,12 @@ bool S7Client::BuildQueries()
 	return true;
 }
 
+bool S7Client::ClearWriteNoDataFlags()
+{
+	sz_log(10, "S7Client::ClearWriteNoDataFlags");
+
+	return (_s7qmap.ClearWriteNoDataFlags());
+}
 
 bool S7Client::QueryAll()
 {
@@ -190,6 +197,8 @@ bool S7Client::QueryAll()
 	return (_s7qmap.AskAll(_s7client) ||
 		_s7qmap.TellAll(_s7client));
 }
+
+
 
 bool S7Client::AskAll()
 {

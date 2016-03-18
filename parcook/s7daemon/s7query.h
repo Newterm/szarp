@@ -91,7 +91,10 @@ public:
 			DataIterator data_begin = _data.begin() + offset;
 			DataIterator data_end =  data_begin + typeSize() - 1;
 
-			_no_data = access(ids.front(), DataDescriptor(data_begin, data_end));
+			if (access(ids.front(), DataDescriptor(data_begin, data_end)) == false) {
+				sz_log(10, "Write query invalidated");
+				_no_data = true;
+			}
 
 			ids.erase(ids.begin());
 		}
@@ -109,6 +112,9 @@ public:
 	{ _w_len = w_len; }
 	void setWriteQuery( bool write )
 	{ _write = write; }
+	
+	void setNoData( bool no_data )
+	{ _no_data = no_data; }
 
 	bool isWriteQuery()
 	{ return _write; }
