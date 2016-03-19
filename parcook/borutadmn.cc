@@ -597,7 +597,7 @@ void client_manager::driver_finished_job(client_driver *driver) {
 void client_manager::terminate_connection(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
-	dolog(6, "client_manager::terminate_connection: requested connection: %s, client: %zu",
+	dolog(2, "client_manager::terminate_connection: connection: %s, client: %zu",
 		m_connection_client_map.at(connection).at(client)->address_string().c_str(),
 		client);
 	if (driver->id().second != client) {
@@ -678,15 +678,15 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 	}
 	c.fd = -1;
 	c.state = NOT_CONNECTED;
-	dolog(7, "tcp_client_manager::close_connection connection %s closed", c.address.first.c_str());
+	dolog(2, "tcp_client_manager::close_connection connection %s closed", c.address.first.c_str());
 }
 
 void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
-	dolog(7, "tcp_client_manager::open_connection %s", c.address.first.c_str());
+	dolog(2, "tcp_client_manager::open_connection %s", c.address.first.c_str());
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
 	assert(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
-		dolog(1, "Failed to set non blocking mode on socket");
+		dolog(0, "Failed to set non blocking mode on socket");
 		close_connection(c);
 		return;
 	}
@@ -733,14 +733,14 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 			break;
 		case CONNECTED:
 		case CONNECTING:
-			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.first.c_str());
+			dolog(2, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.first.c_str());
 			close_connection(c);
 			c.schedule_timer(c.retry_gap, 0);
 			c.state = IDLING;
 			break;
 		case NOT_CONNECTED:
 		case IDLING:
-			dolog(7, "tcp_client_manager::do_terminate_connection connection: %s,"
+			dolog(1, "tcp_client_manager::do_terminate_connection connection: %s,"
 				"however connection is is not connected/idling state, doing nothing",
 				c.address.first.c_str());
 			break;
@@ -750,7 +750,7 @@ void tcp_client_manager::do_terminate_connection(size_t conn_no) {
 CONNECTION_STATE tcp_client_manager::do_establish_connection(size_t conn_no) {
 	tcp_connection &c = m_tcp_connections.at(conn_no);
 	if (c.state == NOT_CONNECTED) {
-		dolog(7, "tcp_client_manager::connecting to address: %s", c.address.first.c_str());
+		dolog(2, "tcp_client_manager::connecting to address: %s", c.address.first.c_str());
 		resolve_address(c);
 	}
 	return c.state;
@@ -794,7 +794,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		if (get_xml_extra_prop(node, "connection-establishment-timeout", c.establishment_timeout, true))
 			return 1;
 
-		dolog(8, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
+		dolog(1, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
 		m_tcp_connections.push_back(c);
 	}
 
@@ -833,12 +833,12 @@ void tcp_client_manager::connection_event_cb(struct bufferevent *ev, short event
 	if (event & BEV_EVENT_CONNECTED) {
 		c->state = CONNECTED;
 		event_del(&c->timer);
-		dolog(7, "tcp_client_manager: connection with address: %s established", c->address.first.c_str());
+		dolog(2, "tcp_client_manager: connection with address: %s established", c->address.first.c_str());
 		t->connection_established_cb(c->conn_no);
 	} 
 
 	if (event & BEV_EVENT_ERROR) {
-		dolog(5, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.first.c_str());
+		dolog(1, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.first.c_str());
 		switch (c->state) {
 			case CONNECTING:
 				event_del(&c->timer);
@@ -870,17 +870,17 @@ void tcp_client_manager::connection_timer_cb(int fd, short event, void* _tcp_con
 		case CONNECTED:
 		case NOT_CONNECTED:
 		case RESOLVING_ADDR:
-			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
+			dolog(0, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
 				 "received timer tick for CONNECTED or NOT_CONNECTED or RESOLVING_ADDR, shouldn't happen",
 				 c->address.first.c_str());
 			break;
 		case IDLING:
-			dolog(10, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
+			dolog(2, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
 				 "trying to resolve", c->address.first.c_str());
 			t->resolve_address(*c);
 			break;
 		case CONNECTING:
-			dolog(10, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
+			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
 				 "time to establish connecton expired, closing socket, will try later", c->address.first.c_str());
 			t->client_manager::connection_error_cb(c->conn_no);
 			break;
@@ -905,7 +905,7 @@ void tcp_client_manager::address_resolved_cb(int result, struct evutil_addrinfo 
 	}
 	struct sockaddr_in* sockaddr = (struct sockaddr_in*) res->ai_addr;
 	sockaddr->sin_port = htons(c->address.second);
-	dolog(3, "tcp_client_manager::address %s resolved to %s, connecting to: %s:%hu", 
+	dolog(2, "tcp_client_manager::address %s resolved to %s, connecting to: %s:%hu", 
 		c->address.first.c_str(), inet_ntoa(sockaddr->sin_addr), inet_ntoa(sockaddr->sin_addr),
 		c->address.second);
 	t->open_connection(*c, *sockaddr);
