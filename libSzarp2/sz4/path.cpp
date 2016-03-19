@@ -48,7 +48,6 @@ template<> struct char_trait<wchar_t> {
 };
 
 template<class T, class C> struct path_to_date_converter {
-	static T convert(const std::basic_string<C> &path, bool& sz4);
 };
 
 template<class C> struct path_to_date_converter<second_time_t, C> {
@@ -115,10 +114,33 @@ template<class C> struct path_to_date_converter<nanosecond_time_t, C> {
 	}
 };
 
-template struct path_to_date_converter<nanosecond_time_t, char>;
-template struct path_to_date_converter<second_time_t, char>;
-template struct path_to_date_converter<nanosecond_time_t, wchar_t>;
-template struct path_to_date_converter<second_time_t, wchar_t>;
+template<class C, class T> struct date_to_path_converter {
+};
+
+template<class C> struct date_to_path_converter<C, second_time_t> {
+	static std::basic_string<C> convert(const second_time_t& t) {
+		typedef char_trait<C> CT;
+		std::basic_stringstream<C> s;
+
+		s << std::setw(10) << std::setfill(CT::zero) << t;
+		s << CT::dot << CT::s << CT::z << CT::_4;
+
+		return s.str();
+	}
+};
+
+template<class C> struct date_to_path_converter<C, nanosecond_time_t> {
+	static std::basic_string<C> convert(const nanosecond_time_t& t) {
+		typedef char_trait<C> CT;
+		std::basic_stringstream<C> s;
+
+		s << std::setw(10) << std::setfill(CT::zero) << t.second;
+		s << std::setw(10) << std::setfill(CT::zero) << t.nanosecond;
+		s << CT::dot << CT::s << CT::z << CT::_4;
+
+		return s.str();
+	}
+};
 
 }
 
@@ -161,31 +183,14 @@ template second_time_t path_to_date(const std::wstring& path, bool &sz4);
 template nanosecond_time_t path_to_date(const std::string& path, bool &sz4);
 template second_time_t path_to_date(const std::string& path, bool &sz4);
 
-template<class C> std::basic_string<C> date_to_path(const second_time_t& t) {
-	typedef path_impl::char_trait<C> CT;
-	std::basic_stringstream<C> s;
-
-	s << std::setw(10) << std::setfill(CT::zero) << t;
-	s << CT::dot << CT::s << CT::z << CT::_4;
-
-	return s.str();
+template<class C, class T> std::basic_string<C> date_to_path(const T& t) {
+	return path_impl::date_to_path_converter<C, T>::convert(t);
 }
 
-template<class C> std::basic_string<C> date_to_path(const nanosecond_time_t& t) {
-	typedef path_impl::char_trait<C> CT;
-	std::basic_stringstream<C> s;
+template std::wstring date_to_path<wchar_t, second_time_t>(const second_time_t&);
+template std::string date_to_path<char, second_time_t>(const second_time_t&);
 
-	s << std::setw(10) << std::setfill(CT::zero) << t.second;
-	s << std::setw(10) << std::setfill(CT::zero) << t.nanosecond;
-	s << CT::dot << CT::s << CT::z << CT::_4;
-
-	return s.str();
-}
-
-template std::wstring date_to_path(const second_time_t&);
-template std::string date_to_path(const second_time_t&);
-
-template std::wstring date_to_path(const nanosecond_time_t&);
-template std::string date_to_path(const nanosecond_time_t&);
+template std::wstring date_to_path<wchar_t, nanosecond_time_t>(const nanosecond_time_t&);
+template std::string date_to_path<char, nanosecond_time_t>(const nanosecond_time_t&);
 
 }

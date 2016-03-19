@@ -27,7 +27,7 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	void searchTest();
 	void weigthedSumTest();
 	void weigthedSumTest2();
-	void pathParseTest();
+	void pathTest();
 	void blockLoadTest();
 	void searchDataTest();
 	void testBigNum();
@@ -36,7 +36,7 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( searchTest );
 	CPPUNIT_TEST( weigthedSumTest );
 	CPPUNIT_TEST( weigthedSumTest2 );
-	CPPUNIT_TEST( pathParseTest );
+	CPPUNIT_TEST( pathTest );
 	CPPUNIT_TEST( blockLoadTest );
 	CPPUNIT_TEST( searchDataTest );
 	CPPUNIT_TEST( testBigNum );
@@ -145,16 +145,23 @@ void Sz4BlockTestCase::weigthedSumTest2() {
 	CPPUNIT_ASSERT_EQUAL(2l, weight);
 }
 
-void Sz4BlockTestCase::pathParseTest() {
+void Sz4BlockTestCase::pathTest() {
 	bool sz4;
-	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(21), sz4::path_to_date<sz4::second_time_t>(L"0000000021.sz4", sz4));
-	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(1), sz4::path_to_date<sz4::second_time_t>(L"0000000001.sz4", sz4));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sz4::second_time_t>::invalid_value, sz4::path_to_date<sz4::second_time_t>(L"000000001.sz4", sz4));
+	sz4::second_time_t st1[] = { 21, 1, sz4::time_trait<sz4::second_time_t>::invalid_value };
+	std::wstring wst1[] = { L"0000000021.sz4", L"0000000001.sz4", L"000000001.sz4" };
+	for (int i = 0; i < 3; i++)
+		CPPUNIT_ASSERT_EQUAL(st1[i], sz4::path_to_date<sz4::second_time_t>(wst1[i], sz4));
 
-	sz4::nanosecond_time_t t[] = { sz4::nanosecond_time_t(1, 1), sz4::nanosecond_time_t(2, 2 ), sz4::time_trait<sz4::nanosecond_time_t>::invalid_value };
-	CPPUNIT_ASSERT(t[0] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000010000000001.sz4", sz4));
-	CPPUNIT_ASSERT(t[1] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000000002.sz4", sz4));
-	CPPUNIT_ASSERT(t[2] == sz4::path_to_date<sz4::nanosecond_time_t>(L"00000000020000.sz4", sz4));
+	sz4::nanosecond_time_t st2[] = { {1, 1}, {2, 2}, sz4::time_trait<sz4::nanosecond_time_t>::invalid_value };
+	std::wstring wst2[] = { L"00000000010000000001.sz4", L"00000000020000000002.sz4", L"00000000020000.sz4" };
+	for (int i = 0; i < 3; i++)
+		CPPUNIT_ASSERT_EQUAL(st2[i], sz4::path_to_date<sz4::nanosecond_time_t>(wst2[i], sz4));
+
+	for (int i = 0; i < 2; i++)
+		CPPUNIT_ASSERT(wst1[i] == sz4::date_to_path<wchar_t>(st1[i]));
+
+	for (int i = 0; i < 2; i++)
+		CPPUNIT_ASSERT(wst2[i] == sz4::date_to_path<wchar_t>(st2[i]));
 }
 
 void Sz4BlockTestCase::blockLoadTest() {
