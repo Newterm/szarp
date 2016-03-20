@@ -19,20 +19,22 @@
 """
 
 
-import sys
-import os
-import os.path
-import lxml
-import struct
+from heartbeat import heartbeat_param_name, create_hearbeat_param
+import multiprocessing
 import lxml.etree
+import cStringIO
 import calendar
 import datetime
+import os.path
 import config
-from heartbeat import heartbeat_param_name, create_hearbeat_param
-import cStringIO
+import struct
+import lxml
+import sys
+import os
 
-import param
 import saveparam
+import parampath
+import param
 import ipk
 
 def szbase_file_path_to_date(path): 
@@ -91,52 +93,101 @@ class FileFactory:
 
 
 class Converter:
-	def __init__(self, config_dir, offset, count):
+	def __init__(self, config_dir, szc_dir, offset, current, queue):
 		self.offset = offset
-		self.count = count
+		self.current = current
 
-		sz4_dir = os.path.join(config_dir, "sz4")
 		self.szbase_dir = os.path.join(config_dir, "szbase")
 
 		self.ipk = ipk.IPK(config_dir + "/config/params.xml")
+		self.szc_dir = szc_dir
 
 		self.s_params = {}
 
+		del parampath.ParamPath.find_latest_path 
+		parampath.ParamPath.find_latest_path = lambda self: None
+
 		for p in self.ipk.params:
-			sp = saveparam.SaveParam(p, sz4_dir, FileFactory(), False)
+			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory(), False)
 			self.s_params[p.param_name] = sp
 	
-		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), sz4_dir, FileFactory())
+		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), self.szbase_dir, FileFactory())
 
-	def convert_param(self, sp, pname):
-		param_path = sp.param_path.param_path if pname != heartbeat_param_name else "Status/Meaner3/program_uruchomiony"
+		self.queue = queue
 
+	def param_sz4_time_start(self, sp):
 		try:
-			szbase_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".szb")]
-		except OSError:
-			print "No values stored in db for that param"
-			return	
-		szbase_files.sort()
+			sz4_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".sz4") ]
+			sz4_files.sort()
+			return int(sz4_files[0][:-4])
+		except:
+			return None
 
+	def read_file(self, param_path, file_path, is_szc):
+		try:
+			path = self.szc_dir if is_szc else self.szbase_dir
+
+			f = open(os.path.join(path, param_path, file_path))
+			data = f.read()
+			f.close()
+
+			l = len(data) / 2
+			values = struct.unpack_from(("<%dh" % (l,)), data)
+			return values
+
+		except e:
+			print e
+			return []
+
+	def file_start_end_time(self, szbase_path):
+		year, month = szbase_file_path_to_date(szbase_path)
+		nyear, nmonth = (year, month + 1) if month != 12 else (year + 1, 1)
+
+		time = calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
+		ntime = calendar.timegm(datetime.datetime(nyear, nmonth, 1).utctimetuple())
+
+		return time, ntime
+
+	def get_szbase_files(self,  param_path):
+		szb = [ x[:-4] for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".szb") ]
+		
+		if self.szc_dir:
+			szc = [ x[:-4] for x in os.listdir(os.path.join(self.szc, param_path)) if x.endswith(".szc") ]
+		else:
+			szc = []
+
+		ret = []	
+		for s in szb:
+			if szc.count(s):
+				ret.append(s + ".szc")
+			else:
+				ret.append(s + ".szb")
+		ret.sort()
+
+		return ret
+
+	def convert_param(self, sp, pname, pno):
 		value = None
+		prev_time = None
+		param_path = sp.param_path.param_path
+		sz4_time = self.param_sz4_time_start(sp)
+		szbase_files = self.get_szbase_files(param_path)
 
-		for j, szbase_path in enumerate(szbase_files):
-			sys.stdout.write("\rFile: %s, %d/%d    " % (szbase_path, j + 1, len(szbase_files)))
+		for j, path in enumerate(szbase_files):
+			self.queue.put((self.offset, param_path, pno + 1,
+					len(self.s_params), path , j + 1,
+					len(szbase_files)))
 
-			year, month = szbase_file_path_to_date(szbase_path)
-			nyear, nmonth = (year, month + 1) if month != 12 else (year + 1, 1)
+			time, ntime = self.file_start_end_time(path)
+			if sz4_time is not None and sz4_time <= time:
+				sp.close()
+				return
+			
+			if prev_time is not None and time > prev_time:
+				sp.fill_no_data(time, 0)
 
-			time = calendar.timegm(datetime.datetime(year, month, 1).utctimetuple())
-			ntime = calendar.timegm(datetime.datetime(nyear, nmonth, 1).utctimetuple())
-
-			f = open(os.path.join(self.szbase_dir, param_path, szbase_path)).read()
-			try: 
-				l = len(f) / 2
-				values = struct.unpack_from(("<%dh" % (l,)), f)
-
-			except struct.error as e:
-				print e
-				continue
+			is_szc = path.endswith(".szc")
+			values = self.read_file(param_path, path, is_szc)
 
 			for v in values:
 				if value is None:
@@ -148,11 +199,16 @@ class Converter:
 					sp.write_value(v, time, 0)
 					value = v
 
-				time += 600
-				#meaner bug fix
+				delta = 60 if is_szc else 600 
+				time += delta
 				if not time < ntime:
 					break
+
+ 				if sz4_time is not None and sz4_time <= time:
+					sp.close()
+					return
 				
+			prev_time = time
 
 		if value is not None:
 			sp.update_last_time_unlocked(time, 0)
@@ -161,23 +217,29 @@ class Converter:
 
 
 	def convert(self):
-		sys.stdout.write("Converting...")
+		keys = self.s_params.keys()
 
-		pno = 0
-		for pname in self.s_params.iterkeys():
-			if pno % self.count == self.offset:
-				sp = self.s_params[pname]
-				print
-				print "Converting values for param: %s, param %d out of %d" % (sp.param_path.param_path, pno + 1, len(self.s_params))
-				try:
-					self.convert_param(sp, pname)
-				except OSError, e:
-					print e
-			pno += 1
+		with self.current.get_lock():
+			pno = self.current.value
+			self.current.value += 1
+
+		while pno < len(keys):
+			pname = keys[pno]
+			sp = self.s_params[pname]
+			try:
+				self.convert_param(sp, pname, pno)
+			except OSError, e:
+				pass
+
+			with self.current.get_lock():
+				pno = self.current.value
+				self.current.value += 1
+
+		self.queue.put((self.offset, None))
 
 def help():
 	print """Invocation:
-%s configuration_dir [offset partition]
+%s configuration_dir [szc cache dir]
 Program converts database from szbase to sz4 format.
 Acceppts one mandatory command line argument - directory
 to szbase configuration or '-h' which make it print this 
@@ -185,16 +247,35 @@ help""" % (sys.argv[0],)
 
 
 def main():
-	if len(sys.argv) != 2 and len(sys.argv) != 4 or sys.argv[1] == '-h':
+	if len(sys.argv) != 2 and len(sys.argv) != 3 or sys.argv[1] == '-h':
 		help()
-	else:
-		if len(sys.argv) == 4:
-			offset = int(sys.argv[2])
-			count = int(sys.argv[3])
-		else:
-			offset = 0
-			count = 1
-		Converter(sys.argv[1], offset, count).convert()
+		return
 
+	queue = multiprocessing.Queue()
+	value = multiprocessing.Value('i', 0)
+
+	processes = []
+	count = multiprocessing.cpu_count()
+
+	szc_dir = sys.argv[2] if len(sys.argv) == 3 else None
+
+	for i in range(count):
+		converter = Converter(sys.argv[1], szc_dir, i, value, queue)
+		p = multiprocessing.Process(target=converter.convert)
+		processes.append(p)
+		p.start()
+
+	while count:
+		m = queue.get()
+		if m[1] is None:
+			count -= 1
+		else:
+			sys.stdout.write("\033[%d;0H" % (int(m[0])+1))
+			print "%60.60s %s/%s f:%s %s/%s" % m[1:]
+	
+	for p in processes:
+		p.join()
+
+		
 
 main()
