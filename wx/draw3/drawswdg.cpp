@@ -418,6 +418,8 @@ void DrawsWidget::Print(bool preview) {
 		Print::DoPrintPreviev(draws, draws.size());
 	else
 		Print::DoPrint(m_parent, draws, draws.size());
+
+	m_parent->SetFocus();
 }
 		
 size_t DrawsWidget::GetDrawsCount() {
