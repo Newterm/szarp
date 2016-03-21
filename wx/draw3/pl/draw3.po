@@ -393,8 +393,8 @@ msgid "Select number of displayed 10-seconds periods"
 msgstr "Wybierz liczbę wyświetlanych okresów 10-sekundowych"
 
 #: drawfrm.cpp:148
-msgid "Select number of displayed 3-seconds periods"
-msgstr "Wybierz liczbę wyświetlanych okresów 3-sekundowych"
+msgid "Select number of displayed 5-seconds periods"
+msgstr "Wybierz liczbę wyświetlanych okresów 5-sekundowych"
 
 #: drawfrm.cpp:153
 msgid "Select number of displayed seconds"

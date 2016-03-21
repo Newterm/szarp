@@ -145,7 +145,7 @@ NumberOfUnitsDialog::NumberOfUnitsDialog(wxWindow *parent, PeriodType pt, size_t
 		case PERIOD_T_MINUTE:
 			min = 1;
 			max = 50;
-			text = _("Select number of displayed 3-seconds periods");
+			text = _("Select number of displayed 5-seconds periods");
 			break;
 		case PERIOD_T_30SEC:
 			min = 1;
