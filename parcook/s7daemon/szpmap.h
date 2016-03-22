@@ -66,7 +66,7 @@ public:
 			_val_type(""), 
 			_val_op(""), 
 			_prec(0),
-			_min(std::numeric_limits<double>::min()),
+			_min(std::numeric_limits<double>::lowest()),
 			_max(std::numeric_limits<double>::max())
 		{}
 
@@ -79,7 +79,7 @@ public:
 			_val_type(vtype),
 			_val_op(vop),
 			_prec(prec),
-			_min(std::numeric_limits<double>::min()),
+			_min(std::numeric_limits<double>::lowest()),
 			_max(std::numeric_limits<double>::max())
 		{}
 	
