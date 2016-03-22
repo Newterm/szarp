@@ -161,6 +161,33 @@ public:
 	double getMax(unsigned long int pid)
 	{ return _params[pid].getMax(); }
 	
+	static bool almost_equal(double value, double value_to) {
+		double abs_value = std::abs(value);
+		double abs_value_to = std::abs(value_to);
+		double abs_diff = std::abs(value - value_to);
+
+		if (value == value_to) return true;
+		
+		if (value == 0 || value_to == 0 || abs_diff < std::numeric_limits<double>::min())
+			return (abs_diff < (std::numeric_limits<double>::epsilon() 
+				* std::numeric_limits<double>::min()));
+
+		return ((abs_diff / std::min((abs_value + abs_value_to), 
+			std::numeric_limits<double>::max())) < std::numeric_limits<double>::epsilon());
+	}
+	
+	static bool epsilon_smaller(double value, double value_than)
+	{
+		if (almost_equal(value,value_than)) return false;
+		return (value < value_than);
+	}
+
+	static bool epsilon_greater(double value, double value_than)
+	{
+		if (almost_equal(value,value_than)) return false;
+		return (value > value_than);
+	}
+
 	template <typename DataWriter>
 	void writeFloat( unsigned long int pid, DataBuffer data, DataWriter write)
 	{
@@ -284,10 +311,10 @@ public:
 		sz_log(10, "Send value (float) id:%lu, val:%f", lsw_pid, float_value);
 		
 		/* Use min/max from lsw and msw param configuration together */
-		if ((static_cast<double>(float_value) < getMin(lsw_pid)) ||
-				(static_cast<double>(float_value) > getMax(lsw_pid)) ||
-				(static_cast<double>(float_value) < getMin(pid)) ||
-				(static_cast<double>(float_value) > getMax(pid)))
+		if (epsilon_smaller(static_cast<double>(float_value), getMin(lsw_pid)) ||
+				epsilon_greater(static_cast<double>(float_value), getMax(lsw_pid)) ||
+				epsilon_smaller(static_cast<double>(float_value), getMin(pid)) ||
+				epsilon_greater(static_cast<double>(float_value), getMax(pid)))
 		{
 			sz_log(10, "Param id:%lu value:%f is out of limits:", lsw_pid, float_value);
 			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
@@ -336,10 +363,10 @@ public:
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
 
 		/* Use min/max from lsw and msw param configuration together */
-		if ((static_cast<double>(int_value) < getMin(lsw_pid)) ||
-				(static_cast<double>(int_value) > getMax(lsw_pid)) ||
-				(static_cast<double>(int_value) < getMin(pid)) ||
-				(static_cast<double>(int_value) > getMax(pid)))
+		if (epsilon_smaller(static_cast<double>(int_value), getMin(lsw_pid)) ||
+				epsilon_greater(static_cast<double>(int_value), getMax(lsw_pid)) ||
+				epsilon_smaller(static_cast<double>(int_value), getMin(pid)) ||
+				epsilon_greater(static_cast<double>(int_value), getMax(pid)))
 		{
 			sz_log(10, "Param id:%lu value:%d is out of limits:", lsw_pid, int_value);
 			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
@@ -383,8 +410,8 @@ public:
 			return false;
 		}
 
-		if ((static_cast<double>(value) < getMin(pid)) || 
-				(static_cast<double>(value) > getMax(pid)))
+		if (epsilon_smaller(static_cast<double>(value), getMin(pid)) || 
+				epsilon_greater(static_cast<double>(value), getMax(pid)))
 		{
 			sz_log(10, "Param id:%lu value:%d is out of limits:", pid, value);
 			sz_log(10, "[%f,%f]", getMin(pid), getMax(pid));
