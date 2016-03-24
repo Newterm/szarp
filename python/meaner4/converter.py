@@ -19,7 +19,6 @@
 """
 
 
-from heartbeat import heartbeat_param_name, create_hearbeat_param
 import multiprocessing
 import lxml.etree
 import cStringIO
@@ -28,12 +27,16 @@ import datetime
 import os.path
 import config
 import struct
+import syslog
 import lxml
 import sys
 import os
 
+from heartbeat import heartbeat_param_name, create_hearbeat_param
 import saveparam
 import parampath
+import lastentry
+import timedelta
 import param
 import ipk
 
@@ -107,6 +110,22 @@ class Converter:
 		del parampath.ParamPath.find_latest_path 
 		parampath.ParamPath.find_latest_path = lambda self: None
 
+		delta_cache = {}
+		def get_time_delta_cached(self, time_from, time_to):
+			diff = time_to - time_from
+			if diff < 0:
+				raise TimeError(time_from, time_to)
+
+			if diff in delta_cache:
+				return delta_cache[diff]
+			else:
+				delta = timedelta.encode(diff)
+				delta_cache[diff] = delta
+				return delta	
+
+		del lastentry.LastEntry.get_time_delta
+		lastentry.LastEntry.get_time_delta = get_time_delta_cached
+
 		for p in self.ipk.params:
 			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory(), False)
 			self.s_params[p.param_name] = sp
@@ -115,7 +134,7 @@ class Converter:
 
 		self.queue = queue
 
-	def param_sz4_time_start(self, sp):
+	def param_sz4_time_start(self, param_path):
 		try:
 			sz4_files = [ x for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".sz4") ]
 			sz4_files.sort()
@@ -151,10 +170,12 @@ class Converter:
 	def get_szbase_files(self,  param_path):
 		szb = [ x[:-4] for x in os.listdir(os.path.join(self.szbase_dir, param_path)) if x.endswith(".szb") ]
 		
+		szc = []
 		if self.szc_dir:
-			szc = [ x[:-4] for x in os.listdir(os.path.join(self.szc, param_path)) if x.endswith(".szc") ]
-		else:
-			szc = []
+			try:
+				szc = [ x[:-4] for x in os.listdir(os.path.join(self.szc_dir, param_path)) if x.endswith(".szc") ]
+			except OSError:
+				pass
 
 		ret = []	
 		for s in szb:
@@ -170,7 +191,8 @@ class Converter:
 		value = None
 		prev_time = None
 		param_path = sp.param_path.param_path
-		sz4_time = self.param_sz4_time_start(sp)
+		sz4_time = self.param_sz4_time_start(param_path)
+
 		szbase_files = self.get_szbase_files(param_path)
 
 		for j, path in enumerate(szbase_files):
@@ -184,11 +206,12 @@ class Converter:
 				return
 			
 			if prev_time is not None and time > prev_time:
-				sp.fill_no_data(time, 0)
+				sp.process_value(sp.param.nan(), time, 0)
 
 			is_szc = path.endswith(".szc")
-			values = self.read_file(param_path, path, is_szc)
+			delta = 10 if is_szc else 600 
 
+			values = self.read_file(param_path, path, is_szc)
 			for v in values:
 				if value is None:
 					sp.process_value(v, time, 0)
@@ -199,7 +222,6 @@ class Converter:
 					sp.write_value(v, time, 0)
 					value = v
 
-				delta = 60 if is_szc else 600 
 				time += delta
 				if not time < ntime:
 					break
@@ -229,7 +251,7 @@ class Converter:
 			try:
 				self.convert_param(sp, pname, pno)
 			except OSError, e:
-				pass
+				syslog.syslog(syslog.LOG_ERR | syslog.LOG_USER, str(e))	
 
 			with self.current.get_lock():
 				pno = self.current.value
@@ -265,17 +287,20 @@ def main():
 		processes.append(p)
 		p.start()
 
+	sys.stdout.write("\033[2J")
+
 	while count:
 		m = queue.get()
 		if m[1] is None:
 			count -= 1
 		else:
 			sys.stdout.write("\033[%d;0H" % (int(m[0])+1))
-			print "%60.60s %s/%s f:%s %s/%s" % m[1:]
+			print "%60.60s %s/%s f:%s %s/%s   " % m[1:]
 	
 	for p in processes:
 		p.join()
 
-		
+	sys.stdout.write("\033[%d;0H" % (multiprocessing.cpu_count() + 1,))
+	print("DONE!!!            ")
 
 main()

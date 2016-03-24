@@ -46,7 +46,7 @@ class LastEntry:
 		self.value_start_time = self.time
 		self.value = value 
 
-	def _get_time_delta(self, time_from, time_to):
+	def get_time_delta(self, time_from, time_to):
 		diff = time_to - time_from
 		if diff < 0:
 			raise TimeError(time_from, time_to)
@@ -54,11 +54,11 @@ class LastEntry:
 		return timedelta.encode(diff)
 
 	def get_time_delta_since_latest_time(self, time, nanotime):
-		return self._get_time_delta(self.time, self.time_to_int(time, nanotime))
+		return self.get_time_delta(self.time, self.time_to_int(time, nanotime))
 
 	def update_time(self, time, nanotime):
 		time_int = self.time_to_int(time, nanotime)
-		delta = self._get_time_delta(self.value_start_time, time_int)
+		delta = self.get_time_delta(self.value_start_time, time_int)
 
 		self.time = time_int
 		self.time_size = len(delta)
