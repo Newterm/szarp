@@ -24,6 +24,7 @@ and for displaying suggestions to user.
 """
 
 import argparse
+import subprocess
 from subprocess import Popen, PIPE
 import pysvn
 import sys
@@ -33,6 +34,7 @@ from clint.textui.core import STDOUT, STDERR
 from lxml import etree
 import hashlib
 import re
+import glob
 
 error_count = 0
 def printerr(msg, prefix="ERROR: "):
@@ -105,6 +107,15 @@ def parse_config_file():
 	parameters = list(params)
 	return parameters
 
+def get_isl_list():
+	isl_regex = re.compile(r".{1,}\.isl")
+	ls = subprocess.Popen(("ls", os.path.realpath("/etc/szarp/default")+"/config/isl/"), stdout=subprocess.PIPE)
+	isl_ls = ls.communicate()[0]
+	isl_list = []
+	for isl in isl_ls.split('\n'):
+		if isl_regex.search(isl):
+			isl_list.append(isl)
+	return isl_list
 
 def check_if_file_exist(parameters):
 	file_to_check = re.compile(r"\/opt\/szarp\/.")
@@ -122,13 +133,17 @@ def check_for_daemons(parameters):
 	md5sum_regex = re.compile(r"[a-f0-9]{32}")
 	daemon_regex = re.compile(r"(?<=\/opt\/szarp\/bin\/).*")
 	daemons_list = []
+	namespace_extra = "{http://www.praterm.com.pl/SZARP/ipk-extra}"
 	for device in parameters:
 		for attr, value in device.items():
 			if attr == "daemon":
 				if not value in daemons_list:
 					daemons_list.insert(0,value)
 					md5sum_check = 0
-					daemon = daemon_regex.search(value)
+					if daemon_regex.search(value):
+						daemon = daemon_regex.search(value)
+					else:
+						continue
 					with open("/var/lib/dpkg/info/szarp-daemons.md5sums", "r") as md5file:
 						for line in md5file:
 							standard_daemon_md5sum = re.search(r"[a-f0-9]{32}.{16}" + daemon.group(0) , line)
@@ -145,13 +160,19 @@ def check_for_daemons(parameters):
 				if re.search(r"dbdmn.{0,}", value):
 					for unit in device:
 						for param in unit:
+							found_probe_type = False
+							found_param_base = False
 							for attrib, value in param.items():
-								found_probe_type = False
-								if attrib == "{http://www.praterm.com.pl/SZARP/ipk-extra}probe-type" is not None:
+								if attrib == namespace_extra + "probe-type" is not None:
 									found_probe_type = True
-									break
+								if attrib == namespace_extra + "param" is not None:
+									base = re.search(r".{4}", value)
+									if os.path.exists("/opt/szarp/" + base.group(0)):
+										found_param_base = True
 							if found_probe_type is False:
 								printerr("attribute extra:probe-type wasn't found in device with dbdmn daemon (line " + str(param.sourceline) + ")")
+							if found_param_base is False:
+								printerr("extra:param base doesn't exist (line " + str(param.sourceline) + ")")
 
 def check_send_elements(parameters):
 	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
@@ -177,19 +198,89 @@ def check_send_elements(parameters):
 							if attr == "param" or attr == "value":
 								found_param_or_value = True
 								break
+							elif attr == "min" or attr == "max":
+								if "," in value:
+									printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(elements.sourceline) + ")")
 						if found_param_or_value is False:
 							printerr("found send without param or value (line " + str(elements.sourceline) + ")")
+
+def check_if_parameter_exist(isl_list):
+	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
+	params_list = []
+	for isl_file in isl_list:
+		szarp_path = os.path.realpath("/etc/szarp/default")
+		isl_path = szarp_path + "/config/isl/" + isl_file
+		xml_file = etree.parse(isl_path, options)
+		isl = xml_file.getroot()
+		parameters = list(isl)
+		for first_branch in parameters:
+			for attr, value in first_branch.items():
+				if "localhost" in value:
+					internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
+					if not internal_parameter.group(0) in params_list:
+						params_list.append(internal_parameter.group(0))
+					else:
+						continue
+					if args.input_file is None:
+						szarp_path = os.path.realpath("/etc/szarp/default")
+						base_path = szarp_path + "/szbase" + internal_parameter.group(0)
+						if not glob.glob(base_path + '*'):
+							add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
+			for second_branch in first_branch:
+				for attr, value in second_branch.items():
+					if "localhost" in value:
+						internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
+						if not internal_parameter.group(0) in params_list:
+							params_list.append(internal_parameter.group(0))
+						else:
+							continue
+						if args.input_file is None:
+							szarp_path = os.path.realpath("/etc/szarp/default")
+							base_path = szarp_path + "/szbase" + internal_parameter.group(0)
+							if not glob.glob(base_path + '*'):
+								add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
+				for third_branch in second_branch:
+					for attr, value in third_branch.items():
+						if "localhost" in value:
+							internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
+							if not internal_parameter.group(0) in params_list:
+								params_list.append(internal_parameter.group(0))
+							else:
+								continue
+							if args.input_file is None:
+								szarp_path = os.path.realpath("/etc/szarp/default")
+								base_path = szarp_path + "/szbase" + internal_parameter.group(0)
+								if not glob.glob(base_path + '*'):
+									add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
+					for fourth_branch in third_branch:
+							for attr, value in fourth_branch.items():
+								if "localhost" in value:
+									internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
+									if not internal_parameter.group(0) in params_list:
+										params_list.append(internal_parameter.group(0))
+									else:
+										continue
+									if args.input_file is None:
+										szarp_path = os.path.realpath("/etc/szarp/default")
+										base_path = szarp_path + "/szbase" + internal_parameter.group(0)
+										if not glob.glob(base_path + '*'):
+											add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
 
 def test_config_file(config):
 	check_if_file_exist(config)
 	check_for_daemons(config)
 	check_send_elements(config)
 
+def test_isl_file(isl_list):
+	check_if_parameter_exist(isl_list)
+
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
 	help='XML config file (default is params.xml), passed to ipk2szarp')
 parser.add_argument('-d', '--debug', type=int,
 	help='debug level from 0 (errors only) to 9, passed to ipk2szarp')
+parser.add_argument('-a', '--additional-test', action='store_true',
+	help='do additional test of isls stored in ' + os.path.realpath("/etc/szarp/default"))
 
 args = parser.parse_args()
 
@@ -213,6 +304,9 @@ if return_code == 0:
 	check_svn()
 	config = parse_config_file()
 	test_config_file(config)
+	if args.additional_test:
+		isl_list = get_isl_list()
+		test_isl_file(isl_list)
 	print_notes()
 	if error_count == 0:
 		printok("OK")
