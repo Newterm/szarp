@@ -95,7 +95,8 @@ zmqhandler::zmqhandler(
 	}
 
 	m_pub_sock.connect(pub_address.c_str());
-	m_sub_sock.connect(sub_address.c_str());
+	if (m_send.size())
+		m_sub_sock.connect(sub_address.c_str());
 }
 
 template<class T, class V> void zmqhandler::set_value(size_t index, const T& t, const V& value) {
@@ -120,6 +121,9 @@ szarp::ParamValue& zmqhandler::get_value(size_t i) {
 }
 
 int zmqhandler::subsocket() {
+	if (!m_send.size())
+		return -1;
+
 	size_t fds;
 	int fd;
 
@@ -145,6 +149,9 @@ void zmqhandler::publish() {
 }
 
 void zmqhandler::receive() {
+	if (!m_send.size())
+		return;
+
 	unsigned int event;
 	size_t event_size = sizeof(event);	
 	m_sub_sock.getsockopt(ZMQ_EVENTS, &event, &event_size);
