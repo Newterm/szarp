@@ -45,8 +45,8 @@
 #include "szarp_config.h"
 #include "conversion.h"
 
-#include <daemon.h>
-#include <liblog.h>
+#include "daemon.h"
+#include "liblog.h"
 #include "sender.h"
 
 #include "szdefines.h"
@@ -372,7 +372,7 @@ int SendSter(int pass, int log_level)
 				SterInfo[i].status = MSG_CONF;
 			}
 		       	else {
-				sz_log(1, "SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%d, IPC_NOWAIT), errno=%d (%s)for parameter %d", SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
+				sz_log(1, "SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%ld, IPC_NOWAIT), errno=%d (%s)for parameter %d", SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
 				allsent = 0;
 			}
 		}
@@ -559,8 +559,8 @@ int main(int argc, char *argv[])
 	}
 	log_value = libpar_getpar("sender", "log", 0);
 	if (log_value == NULL)
-		log_value = strdup(PREFIX "/logs/sender.log");
-	if (loginit(log_level, log_value) < 0) {
+		log_value = strdup("sender");
+	if (sz_loginit(log_level, log_value) < 0) {
 		sz_log(0, "sender: cannot open log file '%s', exiting",
 		    log_value);
 		return 1;
