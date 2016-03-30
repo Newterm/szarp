@@ -310,5 +310,8 @@ if return_code == 0:
 	print_notes()
 	if error_count == 0:
 		printok("OK")
+	else:
+		sys.exit(1)
 else:
 	printerr("ERROR", '')
+	sys.exit(return_code)

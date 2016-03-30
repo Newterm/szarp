@@ -31,6 +31,16 @@ fi
 	exit 1
 }
 
+# Using i2smo before starting the script
+if [ -x __INSTALL_DIR__/bin/i2smo ]
+	echo "Verifying configuration: __INSTALL_DIR__/bin/i2smo"
+	python /opt/szarp/bin/i2smo
+	if [ $? != 0 ]; then
+		echo "Invalid configuration -- rework params.xml!"
+		exit 1
+	fi
+fi
+
 EXITCODE=0
 DAEMON_ERROR=""
 
@@ -319,15 +329,6 @@ case "$1" in
 		do_stop
 	;;
   restart|reload)
-	###
-	# If ipk2szarp exists check configuration with it and prevent restart if
-	# configuration check failed.
-	###
-	if [ -x __INSTALL_DIR__/bin/ipk2szarp ]; then
-		echo "Verifying configuration: __INSTALL_DIR__/ipk2szarp"
-		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
-	fi
-
 	do_stop
 	do_start
 
