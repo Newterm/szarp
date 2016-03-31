@@ -98,8 +98,7 @@ BASECONN = \
 			$(DMN_DIR)/httpclient.cc \
 			$(DMN_DIR)/atcconn.cc \
 			$(DMN_DIR)/evbase.cc \
-			$(DMN_DIR)/tcpserver.cc \
-			$(DMN_DIR)/zmqhandler.cc
+			$(DMN_DIR)/tcpserver.cc
 endif
 
 if MINGW32_OPT
@@ -136,6 +135,7 @@ libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tboilers.cc \
 			$(IPK_DIR)/tscript.cc \
 			$(DMN_DIR)/ipchandler.cc \
+			$(DMN_DIR)/zmqhandler.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \
 			$(SOURCE_DIR)/misc/crontime.h \
 			$(SOURCE_DIR)/misc/crontime.cc \
