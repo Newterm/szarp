@@ -11,12 +11,56 @@
 
 # Author: Jakub Kotur <qba@newterm.pl>
 
+split () {
+	PATH=/sbin:/usr/sbin:/bin:/usr/bin
+	cnt=0
+	tmp_ifs="$1"
+	index="$2"
+	string="$3"
+	
+	IFS=$tmp_ifs	
+	for line in $string; do 
+		if [ $cnt -eq $index ]; then
+			echo $line
+		fi
+		cnt=`expr $cnt + 1`
+	done
+	unset IFS
+}
+
+get_iks_port () {
+	PATH=/sbin:/usr/sbin:/bin:/usr/bin
+	subsection=0
+	default_port=9002
+	ini="/opt/szarp/iks/iks-server.ini"
+	if [ ! -e "$ini" ]; then
+		echo $default_port
+		exit 0
+	fi
+	while read line; do
+		prefix=`echo $line | cut -c1`
+		if [ "$prefix" = "[" ]; then
+			subsection=1
+		fi
+		prefix=`echo $line | cut -c1-4`
+		if [ "$prefix" = "port" ]; then
+			if [ $subsection -eq 0 ]; then
+				port=$(split "=" "1" "$line")
+				echo $port
+				exit 0
+			fi
+		fi
+	done < $ini
+	echo $default_port
+}
+
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="SZARP iks system"
 NAME=szarp-iks
 PIDFILE=/var/run/$NAME.pid
 DAEMON=/usr/bin/websockify
-SCRIPTNAME=/etc/init.d/szarp-$NAME
+SCRIPTNAME=/etc/init.d/$NAME
+CONF_IKS_PORT="$(get_iks_port)"
 
 [ -x "$DAEMON" ] || exit 0
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -25,7 +69,7 @@ SCRIPTNAME=/etc/init.d/szarp-$NAME
 . /lib/lsb/init-functions
 
 : ${WEBSOCKET_PORT:=19002}
-: ${IKS_PORT:=9002}
+: ${IKS_PORT:=$CONF_IKS_PORT}
 
 DAEMON_ARGS="$WEBSOCKET_PORT localhost:$IKS_PORT"
 
