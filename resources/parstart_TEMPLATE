@@ -31,16 +31,6 @@ fi
 	exit 1
 }
 
-# Using i2smo before starting the script
-if [ -x __INSTALL_DIR__/bin/i2smo ]
-	echo "Verifying configuration: __INSTALL_DIR__/bin/i2smo"
-	python /opt/szarp/bin/i2smo
-	if [ $? != 0 ]; then
-		echo "Invalid configuration -- rework params.xml!"
-		exit 1
-	fi
-fi
-
 EXITCODE=0
 DAEMON_ERROR=""
 
@@ -182,10 +172,21 @@ do_start () {
 	fi
 
 	if [ x$EXITCODE != x0 ]; then
-		echo "One or more daemon failed to run:"
+		echo "One or more daemon failed to run:" 1>&2
 		log_failure_msg "${DAEMON_ERROR}"
-		echo "Stopping all daemons!\n"
+		echo "Stopping all daemons!\n" 1>&2
 		do_stop
+	fi
+}
+
+do_check() {
+	if [ -x __INSTALL_DIR__/bin/i2smo ]; then
+		echo "Verifying configuration: __INSTALL_DIR__/bin/i2smo"
+		python /opt/szarp/bin/i2smo
+		if [ $? != 0 ]; then
+			echo "Invalid configuration -- won't continue" 1>&2
+			exit 1
+		fi
 	fi
 }
 
@@ -332,9 +333,11 @@ case "$1" in
 	;;
 
   stop)
+  		do_check
 		do_stop
 	;;
   restart|reload)
+	do_check
 	do_stop
 	do_start
 
@@ -344,8 +347,12 @@ case "$1" in
 	ps axw | grep -v 'grep' | grep "__INSTALL_DIR__/bin" \
 		| cut -d ':' -f '2-' | cut -b '4-'
 	;;
+  forcestop)
+  		echo "Stopping SZARP without performing checks.." 1>&2
+		do_stop
+	;;
   *)
-	echo "Usage: parstart {start|stop|restart|reload|status}"
+	echo "Usage: parstart {start|stop|forcestop|restart|reload|status}"
 	exit 1
 	;;
 esac
