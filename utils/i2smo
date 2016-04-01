@@ -37,6 +37,7 @@ import re
 import glob
 
 error_count = 0
+quiet = False
 def printerr(msg, prefix="ERROR: "):
 	global error_count
 	error_count = error_count + 1
@@ -84,7 +85,8 @@ iks_server = "/opt/szarp/bin/iks-server"
 
 def check_iks():
 	if os.path.isfile(iks_server):
-		add_note("if only draw configuration has changed: supervisorctl restart iks-server")
+		if not quiet:
+			add_note("if only draw configuration has changed: supervisorctl restart iks-server")
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
@@ -93,7 +95,8 @@ def check_svn():
 		if szarp_uncommited:
 			add_note("uncommited changes found in " + realpath + ": /opt/szarp/bin/conf-put.sh")
 	else:
-		add_note(realpath + " is not added to svn, maybe it should?")
+		if not quiet:
+			add_note(realpath + " is not added to svn, maybe it should?")
 
 def parse_config_file():
 	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
@@ -281,6 +284,8 @@ parser.add_argument('-d', '--debug', type=int,
 	help='debug level from 0 (errors only) to 9, passed to ipk2szarp')
 parser.add_argument('-a', '--additional-test', action='store_true',
 	help='do additional test of isls stored in ' + os.path.realpath("/etc/szarp/default"))
+parser.add_argument('-q', '--quiet', action='store_true',
+	help="hide not important messages, to be used e.g. in scripts")
 
 args = parser.parse_args()
 
@@ -292,6 +297,8 @@ if args.debug:
 if args.input_file:
 	command.append(args.input_file)
 
+quiet = args.quiet
+
 process = Popen(command, stderr=PIPE)
 stdout, stderr = process.communicate()
 if stderr:
@@ -299,7 +306,8 @@ if stderr:
 return_code = process.returncode
 
 if return_code == 0:
-	add_note("if backend configuration has changed: /etc/init.d/parstart restart")
+	if not quiet:
+		add_note("if backend configuration has changed: /etc/init.d/parstart restart")
 	check_iks()
 	check_svn()
 	config = parse_config_file()
@@ -309,7 +317,8 @@ if return_code == 0:
 		test_isl_file(isl_list)
 	print_notes()
 	if error_count == 0:
-		printok("OK")
+		if not quiet:
+			printok("OK")
 	else:
 		sys.exit(1)
 else:
