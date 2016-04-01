@@ -1197,11 +1197,22 @@ int boruta_daemon::configure_ipc() {
 	char* sub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 	char* pub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
 
-	m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), m_zmq_ctx, sub_address, pub_address);
-	dolog(10, "IPC initialized successfully");
+	try {
+		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), m_zmq_ctx, sub_address, pub_address);
+		dolog(10, "ZMQ initialized successfully");
+	} catch (zmq::error_t& e) {
+		dolog(0, "ZMQ initialization failed, %s", e.what());
+		return 1;
+	}
 
 	free(sub_address);
 	free(pub_address);
+
+	int sock = m_zmq->subsocket();
+	if (sock >= 0) {
+		event_set(&m_subsock_event, sock, EV_READ | EV_PERSIST, subscribe_callback, this);
+		event_base_set(m_event_base, &m_subsock_event);
+	}
 
 	return 0;
 }
@@ -1325,18 +1336,28 @@ void boruta_daemon::go() {
 
 void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 	boruta_daemon* b = (boruta_daemon*) daemon;
+
 	b->m_tcp_client_mgr.finished_cycle();
 	b->m_serial_client_mgr.finished_cycle();
 	b->m_tcp_server_mgr.finished_cycle();
 	b->m_serial_server_mgr.finished_cycle();
+
+	b->m_zmq->publish();
+
 	b->m_tcp_client_mgr.starting_new_cycle();
 	b->m_tcp_server_mgr.starting_new_cycle();
 	b->m_serial_client_mgr.starting_new_cycle();
 	b->m_serial_server_mgr.starting_new_cycle();
+
 	struct timeval tv;
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 	evtimer_add(&b->m_timer, &tv); 
+}
+
+void boruta_daemon::subscribe_callback(int fd, short event, void* daemon) {
+	boruta_daemon* b = (boruta_daemon*)daemon; 
+	b->m_zmq->receive();
 }
 
 int main(int argc, char *argv[]) {

@@ -484,6 +484,7 @@ class boruta_daemon {
 	struct event_base* m_event_base;
 	struct evdns_base* m_evdns_base;
 	struct event m_timer;
+	struct event m_subsock_event;
 
 	int configure_ipc();
 	int configure_events();
@@ -496,6 +497,7 @@ public:
 	int configure(int *argc, char *argv[]);
 	void go();
 	static void cycle_timer_callback(int fd, short event, void* daemon);
+	static void subscribe_callback(int fd, short event, void* daemon);
 };
 
 serial_client_driver* create_modbus_serial_client();

@@ -111,6 +111,10 @@ template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, c
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const int& v);
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const float& v);
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const double& v);
+template void zmqhandler::set_value(size_t index, const time_t& t, const short& v);
+template void zmqhandler::set_value(size_t index, const time_t& t, const int& v);
+template void zmqhandler::set_value(size_t index, const time_t& t, const float& v);
+template void zmqhandler::set_value(size_t index, const time_t& t, const double& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const short& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const int& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const float& v);

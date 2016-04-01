@@ -920,7 +920,7 @@ void double_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	}
 
 	m_log->log(10, "Double parcoook op data: %f", *(double*)v);
-	handler->set_value(index, std::min_element(t, t + 4), *(double*)v);
+	handler->set_value(index, *std::min_element(t, t + 4), *(double*)v);
 }
 
 decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec) {};
@@ -978,7 +978,7 @@ void decimal3_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) 
 	double v = (10000 * r[0]) + r[1] + (r[2] / 1000.0);
 	int iv = nearbyint(v * m_prec);
 	m_log->log(10, "Int value: %d", iv);
-	handler->set_value(index, std::min_element(t, t + 3), iv);
+	handler->set_value(index, *std::min_element(t, t + 3), iv);
 }
 
 short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_register *reg, driver_logger *log) : sender_modbus_val_op(no_data, log), m_reg(reg) {}
