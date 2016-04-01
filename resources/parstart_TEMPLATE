@@ -70,7 +70,7 @@ do_start () {
 			worklog $?
 	fi
 
-	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
+	if [ x$IKS_SERVER = x1 ] ; then
 	    DAEMON=/opt/szarp/bin/iks-server
 	    szlog
 	    start_daemon $DAEMON
@@ -197,7 +197,7 @@ do_stop() {
 	    worklog $?
 	fi
 
-	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
+	if [ x$IKS_SERVER = x1 ] ; then
 	    DAEMON=/opt/szarp/bin/iks-server
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON

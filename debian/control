@@ -51,7 +51,7 @@ Package: szarp-server
 Section: misc
 Architecture: any
 Conflicts: szarp-viewer, szarp-terminal
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-daemons, szarp-utils, openssl, subversion, szarp-paramd
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-daemons, szarp-utils, openssl, subversion, szarp-paramd, szarp-iks-server
 Suggests: szarp-proprietary-daemons
 Description: Configure SZARP as a server
  Package that configures SZARP for use as a server.
