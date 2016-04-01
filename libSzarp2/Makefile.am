@@ -112,6 +112,7 @@ endif
 
 
 libSzarp2_la_SOURCES = \
+			$(PROTOBUF) \
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
 			$(IPK_DIR)/tparam.cc \
@@ -218,7 +219,6 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/decode_file.cpp \
 			$(SZ4_DIR)/encode_file.cpp \
 			\
-			$(PROTOBUF) \
 			$(SOURCE_DIR)/utils/daemonize.cc
 
 
