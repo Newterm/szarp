@@ -148,10 +148,6 @@ case "$1" in
 	#log_end_msg $?
 	#;;
   restart|force-reload)
-	###
-	# Restart also iks-server 
-	###
-	supervisorctl restart iks-server
 
 	log_daemon_msg "Restarting $DESC" "$NAME"
 	do_stop

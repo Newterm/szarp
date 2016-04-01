@@ -71,7 +71,10 @@ do_start () {
 	fi
 
 	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
-		supervisorctl start iks-server
+	    DAEMON=/opt/szarp/bin/iks-server
+	    szlog
+	    start_daemon $DAEMON
+	    log_end_msg $?
 	fi
 
 	if [ x$PROBES_SERVER = x1 ]; then
@@ -195,7 +198,10 @@ do_stop() {
 	fi
 
 	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
-		supervisorctl stop iks-server
+	    DAEMON=/opt/szarp/bin/iks-server
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    log_end_msg $?
 	fi
 
 	if [ x$PROBER = x1 ]; then
