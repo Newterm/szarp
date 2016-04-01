@@ -104,11 +104,6 @@ case "$1" in
 	#log_end_msg $?
 	#;;
   restart|force-reload)
-	###
-	# Restart also iks-server 
-	###
-	service szarp-iks-server restart
-
 	log_daemon_msg "Restarting $DESC" "$NAME"
 	do_stop
 	case "$?" in

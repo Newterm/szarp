@@ -52,9 +52,16 @@ case "$1" in
 	ulimit -c unlimited
 
 	if [ x$PARHUB = x1 ]; then
-	    DAEMON='parhub'
+			DAEMON='parhub'
+			szlog
+			python /opt/szarp/lib/python/parhub.py start
+			worklog $?
+	fi
+
+	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
+	    DAEMON=/opt/szarp/bin/iks-server
 	    szlog
-	    python /opt/szarp/lib/python/parhub.py start
+	    start_daemon $DAEMON
 	    log_end_msg $?
 	fi
 
@@ -166,6 +173,13 @@ case "$1" in
   stop)
 	if [ x$SSS = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/sss
+	    stlog
+	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
+	    worklog $?
+	fi
+
+	if [ -x __INSTALL_DIR__/bin/iks-server -a x$IKS_SERVER = x1 ] ; then
+	    DAEMON=/opt/szarp/bin/iks-server
 	    stlog
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    log_end_msg $?
@@ -295,19 +309,6 @@ case "$1" in
 		__INSTALL_DIR__/bin/ipk2szarp || { echo "Invalid configuration -- won't restart" 1>&2; exit 1; }
 	fi
 
-	###
-	# If iks server is installed restart it with other szarp daemons.
-	###
-	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
-		supervisorctl stop iks-server
-	fi
-
-	$0 stop
-	$0 start
-
-	if [ -x __INSTALL_DIR__/bin/iks-server ] ; then
-		supervisorctl start iks-server
-	fi
 	;;
   status)
 	echo "SZARP programs run: "
