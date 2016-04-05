@@ -153,6 +153,9 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind <= eind; sind++) {
+				if (static_cast<size_t>(sind) >= _records.size()) 
+					return SzIndexResult(false,-1);
+
 				int16_t val = _records[sind];
 				
 				/*
@@ -174,6 +177,9 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind >= eind; sind--) {
+				if (sind < 0) 
+					return SzIndexResult(false,-1);
+
 				int16_t val = _records[sind];
 				
 				/*
@@ -675,7 +681,14 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 		SzCacheFile szf;
 		szf.cacheMap(path);
 		while (wcount > 0) {
-			vals.push_back(szf[sind]);
+
+			try { 
+				vals.push_back(szf[sind]);
+			} catch (std::exception& e) {
+				logMsg(1, "SzCache::writeFile:" + std::string(e.what()));
+				vals.push_back(cSzCacheNoData);
+			}
+
 			sind++;
 			--wcount;
 		}
