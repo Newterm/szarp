@@ -153,7 +153,7 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind <= eind; sind++) {
-				if (static_cast<size_t>(sind) >= _records.size()) 
+				if (sind < 0 || static_cast<size_t>(sind) >= _records.size()) 
 					return SzIndexResult(false,-1);
 
 				int16_t val = _records[sind];
@@ -177,7 +177,7 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind >= eind; sind--) {
-				if (sind < 0) 
+				if (sind < 0 || static_cast<size_t>(sind) >= _records.size()) 
 					return SzIndexResult(false,-1);
 
 				int16_t val = _records[sind];
