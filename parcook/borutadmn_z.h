@@ -480,6 +480,7 @@ class boruta_daemon {
 
 	DaemonConfig* m_cfg;
 	zmqhandler * m_zmq;
+	struct timeval m_cycle;
 
 	struct event_base* m_event_base;
 	struct evdns_base* m_evdns_base;
@@ -489,6 +490,7 @@ class boruta_daemon {
 	int configure_ipc();
 	int configure_events();
 	int configure_units();
+	int configure_cycle_freq();
 public:
 	boruta_daemon();
 	struct event_base* get_event_base();	

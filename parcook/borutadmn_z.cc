@@ -1290,6 +1290,13 @@ int boruta_daemon::configure_units() {
 	return 0;
 }
 
+int boruta_daemon::configure_cycle_freq() {
+	int duration = 10000;
+	if (get_xml_extra_prop(m_cfg->GetXMLDevice(), "cycle_duration", duration, true))
+		return 1;
+	m_cycle.tv_sec = duration / 1000;
+	m_cycle.tv_usec = (duration % 1000) * 1000;
+}
 
 boruta_daemon::boruta_daemon() : m_tcp_client_mgr(this), m_tcp_server_mgr(this), m_serial_client_mgr(this), m_serial_server_mgr(this), m_zmq_ctx(1) {}
 
@@ -1318,6 +1325,8 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 		return 102;
 	if (configure_units())
 		return 103;
+	if (configure_cycle_freq())
+		return 104;
 	return 0;
 }
 
@@ -1349,10 +1358,7 @@ void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
 	b->m_serial_client_mgr.starting_new_cycle();
 	b->m_serial_server_mgr.starting_new_cycle();
 
-	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
-	evtimer_add(&b->m_timer, &tv); 
+	evtimer_add(&b->m_timer, &b->m_cycle); 
 }
 
 void boruta_daemon::subscribe_callback(int fd, short event, void* daemon) {
