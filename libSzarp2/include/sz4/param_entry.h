@@ -125,42 +125,42 @@ public:
 
 	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, second_time_t>& wsum) {
 		probe_adapter<second_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<second_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, second_time_t>& wsum) {
 		probe_adapter<second_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<second_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, second_time_t>& wsum) {
 		probe_adapter<second_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<second_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, second_time_t>& wsum) {
 		probe_adapter<second_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<second_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<second_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<short, nanosecond_time_t>& wsum) {
 		probe_adapter<nanosecond_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<int, nanosecond_time_t>& wsum) {
 		probe_adapter<nanosecond_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<float, nanosecond_time_t>& wsum) {
 		probe_adapter<nanosecond_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
 	}
 
 	void get_weighted_sum(const nanosecond_time_t& start, const nanosecond_time_t& end, SZARP_PROBE_TYPE probe_type, weighted_sum<double, nanosecond_time_t>& wsum) {
 		probe_adapter<nanosecond_time_t, T>()(probe_type);
-		get_weighted_sum_templ(start, round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
+		get_weighted_sum_templ(T(start), round_up<nanosecond_time_t, T>()(end), probe_type, wsum);
 	}
 
 	second_time_t search_data_right(const second_time_t& start, const second_time_t& end, SZARP_PROBE_TYPE probe_type, const search_condition& condition) {
@@ -192,7 +192,7 @@ public:
 	template<class RT> void get_first_time_templ(RT& t) {
 		T tt;
 		m_entry.get_first_time(m_referred_params, tt);
-		t = tt;
+		t = RT(tt);
 	}
 
 	void get_first_time(nanosecond_time_t& t) {
@@ -206,7 +206,7 @@ public:
 	template<class RT> void get_last_time_templ(RT& t) {
 		T tt;
 		m_entry.get_last_time(m_referred_params, tt);
-		t = tt;
+		t = RT(tt);
 	}
 
 	void get_last_time(nanosecond_time_t& t) {

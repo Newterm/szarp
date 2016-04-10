@@ -52,7 +52,7 @@ public:
 		}
 
 		fixed_stack_top stack_top(m_base->fixed_stack());
-		result = m_base->get_lua_interpreter().calculate_value(time, probe_type, 0);
+		result = m_base->get_lua_interpreter().calculate_value(sz4::nanosecond_time_t(time), probe_type, 0);
 		fixed &= stack_top.top();
 	}
 

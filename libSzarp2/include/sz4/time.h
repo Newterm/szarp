@@ -33,8 +33,8 @@ typedef uint32_t second_time_t;
 struct nanosecond_time_t {
 	nanosecond_time_t() : second(0), nanosecond(0) {}
 	nanosecond_time_t(uint32_t _second, uint32_t _nanosecond) : second(_second), nanosecond(_nanosecond) {}
-	nanosecond_time_t(double _time) : second(_time), nanosecond((_time - (long)_time) * 1000000000) {}
-	nanosecond_time_t(const second_time_t& time);
+	explicit nanosecond_time_t(double _time) : second(_time), nanosecond((_time - (long)_time) * 1000000000) {}
+	explicit nanosecond_time_t(const second_time_t& time);
 	bool operator==(const nanosecond_time_t& t) const { return second == t.second && nanosecond == t.nanosecond; }
 	long long operator- (const nanosecond_time_t& t) const {
 		long long d = second;
@@ -67,6 +67,7 @@ struct nanosecond_time_t {
 nanosecond_time_t make_nanosecond_time(uint32_t second, uint32_t nanosecond);
 
 template<class FT, class TT> class round_up {
+	TT operator()(const TT& t) const { return TT(t); }
 };
 
 template<class TT> class round_up<TT, TT> {

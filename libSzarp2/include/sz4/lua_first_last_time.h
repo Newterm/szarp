@@ -25,9 +25,9 @@ namespace sz4 {
 
 template<class T> void lua_adjust_first_time(TParam* param, T& t) {
 	if (param->GetLuaStartDateTime() > 0)
-		t = second_time_t(param->GetLuaStartDateTime());
+		t = T(second_time_t(param->GetLuaStartDateTime()));
 	else if (time_trait<T>::is_valid(t))
-		t = szb_move_time(t, param->GetLuaStartOffset(), PT_SEC);
+		t = T(szb_move_time(t, param->GetLuaStartOffset(), PT_SEC));
 }
 
 template<class T> void lua_adjust_last_time(TParam* param, T& t) {
