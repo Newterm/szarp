@@ -54,6 +54,11 @@ struct nanosecond_time_t {
 		}
 		return *this;
 	}
+	nanosecond_time_t operator+(long long i) {
+		nanosecond_time_t ret;
+		ret += i;
+		return ret;
+	}
 	bool operator< (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond < t.nanosecond); } 
 	bool operator<= (const nanosecond_time_t& t) const { return second < t.second || (second == t.second && nanosecond <= t.nanosecond); } 
 	bool operator> (const nanosecond_time_t& t) const { return second > t.second || (second == t.second && nanosecond > t.nanosecond); } 

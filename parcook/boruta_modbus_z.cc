@@ -391,12 +391,12 @@ class modbus_unit;
 class modbus_register {
 	modbus_unit *m_modbus_unit;
 	unsigned short m_val;
-	time_t m_mod_time;
+	sz4::nanosecond_time_t m_mod_time;
 	driver_logger* m_log;
 public:
 	modbus_register(modbus_unit *daemon, driver_logger* log);
-	void set_val(unsigned short val, time_t time);
-	unsigned short get_val(bool &valid, time_t &time);
+	void set_val(unsigned short val, sz4::nanosecond_time_t& time);
+	unsigned short get_val(bool &valid, sz4::nanosecond_time_t &time);
 	unsigned short get_val();
 };
 
@@ -423,8 +423,8 @@ protected:
 	enum FLOAT_ORDER { LSWMSW, MSWLSW } m_float_order;
 	enum DOUBLE_ORDER { LSDMSD, MSDLSD } m_double_order;
 
-	time_t m_current_time;
-	time_t m_expiration_time;
+	sz4::nanosecond_time_t m_current_time;
+	long long m_expiration_time;
 	float m_nodata_value;
 
 	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
@@ -456,7 +456,7 @@ protected:
 	void from_sender();
 public:
 	modbus_unit(boruta_driver* driver);
-	bool register_val_expired(time_t time);
+	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	virtual int initialize();
 	int configure_unit(TUnit* u, xmlNodePtr node);
 	int configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send);
@@ -520,8 +520,8 @@ protected:
 		IDLE,
 	} m_state;
 
-	time_t m_latest_request_sent;
-	time_t m_request_timeout;
+	sz4::nanosecond_time_t m_latest_request_sent;
+	int m_request_timeout;
 	struct event m_next_query_timer;
 	struct event m_query_deadine_timer;
 	bool m_single_register_pdu;
@@ -820,12 +820,9 @@ short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg, d
 
 void short_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	bool valid;
-	time_t t;
+	sz4::nanosecond_time_t t;
 	short v = m_reg->get_val(valid, t);
-	if (!valid)
-		handler->set_value(index, t, short(v));
-	else
-		handler->set_value(index, time(NULL), sz4::no_data<short>());
+	handler->set_value(index, t, short(v));
 }
 
 bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log) :
@@ -835,11 +832,9 @@ bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, drive
 
 void bcd_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	bool valid;
-	time_t t;
+	sz4::nanosecond_time_t t;
 	unsigned short val = m_reg->get_val(valid, t);
-	if (!valid)
-		handler->set_value(index, time(NULL), sz4::no_data<short>());
-	else
+	if (valid)
 		handler->set_value(index, t,
 			short((val & 0xf)
 				+ ((val >> 4) & 0xf) * 10
@@ -856,7 +851,7 @@ U32;
 template<class T> void long_parcook_modbus_val_op<T>::set_val(zmqhandler* handler, size_t index) {
 	U32 v;
 	bool valid1, valid2;
-	time_t time1, time2;
+	sz4::nanosecond_time_t time1, time2;
 
 	v.u16[1] = m_reg_msw->get_val(valid1, time1);
 	v.u16[0] = m_reg_lsw->get_val(valid2, time2);
@@ -865,8 +860,6 @@ template<class T> void long_parcook_modbus_val_op<T>::set_val(zmqhandler* handle
 			m_log->log(10, "Int value, msw invalid, no_data");
 		if (!valid2)
 			m_log->log(10, "Int value, lsw invalid, no_data");
-		handler->set_value(index, time(NULL), sz4::no_data<int>());
-		return;
 	} else {
 		int32_t iv = v.i32 * m_prec; 
 		uint32_t* pv = (uint32_t*) &iv;
@@ -879,7 +872,7 @@ template<class T> void long_parcook_modbus_val_op<T>::set_val(zmqhandler* handle
 template<> void long_parcook_modbus_val_op<float>::set_val(zmqhandler* handler, size_t index) {
 	unsigned short v2[2];
 	bool valid1, valid2;
-	time_t time1, time2;
+	sz4::nanosecond_time_t time1, time2;
 
 	v2[0] = m_reg_msw->get_val(valid1, time1);
 	v2[1] = m_reg_lsw->get_val(valid2, time2);
@@ -888,7 +881,6 @@ template<> void long_parcook_modbus_val_op<float>::set_val(zmqhandler* handler, 
 			m_log->log(10, "Int value, msw invalid, no_data");
 		if (!valid2)
 			m_log->log(10, "Int value, lsw invalid, no_data");
-		handler->set_value(index, time(NULL), sz4::no_data<float>());
 	} else {
 		float* f = (float*) v2;
 		m_log->log(10, "Float value: %f", *f);
@@ -908,13 +900,12 @@ void double_parcook_modbus_val_op::set_regs(modbus_register* regs[4]) {
 
 void double_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	unsigned short v[4];
-	time_t t[4];
+	sz4::nanosecond_time_t t[4];
 	for (size_t i = 0; i < 4; i++) {
 		bool valid;
 		v[i] = m_regs[i]->get_val(valid, t[i]);
 		if (!valid) {
 			m_log->log(10, "Double value invalid, no_data");
-			handler->set_value(index, time(NULL), sz4::no_data<double>());
 			return;
 		}
 	}
@@ -933,7 +924,7 @@ void decimal2_parcook_modbus_val_op::set_regs(modbus_register* regs[2]) {
 void decimal2_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	double rinteger, rfraction;
 	bool valid1, valid2;
-	time_t time1, time2;
+	sz4::nanosecond_time_t time1, time2;
 
 	rinteger = m_reg_integer->get_val(valid1, time1);
 	rfraction = m_reg_fraction->get_val(valid2, time2);
@@ -942,7 +933,6 @@ void decimal2_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) 
 			m_log->log(10, "Decimal2 value, msw invalid, no_data");
 		if (!valid2)
 			m_log->log(10, "Decimal2 value, lsw invalid, no_data");
-		handler->set_value(index, time(NULL), sz4::no_data<int>());
 	} else {
 		double v = rinteger + (rfraction / 1000.0);
 		int iv = nearbyint(v * m_prec);
@@ -961,16 +951,15 @@ void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
 
 void decimal3_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 	modbus_register* regs[3] = {m_reg1, m_reg2, m_reg3};
-	time_t t[3];
+	sz4::nanosecond_time_t t[3];
 	double r[3];
 	bool valid;
 
 	for (int i = 0; i < 3; i++)
 	{
 		r[i] = regs[i]->get_val(valid, t[i]);
-		if (valid) {
+		if (!valid) {
 			m_log->log(10, "Decimal3 value, r%i invalid, no_data", i);
-			handler->set_value(index, time(NULL), sz4::no_data<int>());	
 			return;
 		}
 	}
@@ -985,16 +974,15 @@ short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_reg
 
 void short_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	time_t t;
-	short v;
-	if (!value.IsInitialized() || !value.has_int_value()) {
-		v = m_nodata_value;
-		t = time(NULL);
-	} else {
-		v = value.int_value();
-		t = value.time();
+	if (value.IsInitialized() && !value.has_int_value()) {
+		short v = value.int_value();
+		sz4::nanosecond_time_t t(value.time());
+		if (value.has_nanotime())
+			t.nanosecond = value.nanotime();
+		else
+			t.nanosecond = 0;
+		m_reg->set_val(v, t);
 	}
-	m_reg->set_val(v, t);
 }
 
 float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec, driver_logger *log) :
@@ -1002,19 +990,18 @@ float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_reg
 
 void float_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	float v;
-	time_t t;
-	if (!value.IsInitialized() || !value.has_float_value()) {
-		v = m_nodata_value;
-		t = time(NULL);
-	} else {
-		v = value.float_value();
-		t = value.time();
+	if (value.IsInitialized() && !value.has_float_value()) {
+		float v = value.float_value();
+		sz4::nanosecond_time_t t(value.time());
+		if (value.has_nanotime())
+			t.nanosecond = value.nanotime();
+		else
+			t.nanosecond = 0;
+		unsigned short iv[2]; 
+		memcpy(iv, &v, sizeof(float));
+		m_reg_msw->set_val(iv[0], t);
+		m_reg_lsw->set_val(iv[1], t);
 	}
-	unsigned short iv[2]; 
-	memcpy(iv, &v, sizeof(float));
-	m_reg_msw->set_val(iv[0], t);
-	m_reg_lsw->set_val(iv[1], t);
 }
 
 decimal2_sender_modbus_val_op::decimal2_sender_modbus_val_op(float no_data, modbus_register *reg_integer, modbus_register *reg_fraction, int prec, driver_logger *log) :
@@ -1022,27 +1009,28 @@ decimal2_sender_modbus_val_op::decimal2_sender_modbus_val_op(float no_data, modb
 
 void decimal2_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	if (!value.IsInitialized() || !value.has_float_value()) {
-		m_reg_integer->set_val(sz4::no_data<short>(), time(NULL));
-		m_reg_fraction->set_val(sz4::no_data<short>(), time(NULL));
-	} else {
-		double fval = value.float_value() / m_prec;
+	if (value.IsInitialized() && value.has_float_value()) {
+		double fval = value.float_value();
 		double fint, ffrac;
 		ffrac = modf(fval, &fint);
-		m_reg_integer->set_val((short)fint, value.time());
-		m_reg_fraction->set_val((short)ffrac, value.time());
+		sz4::nanosecond_time_t t(value.time());
+		if (value.has_nanotime())
+			t.nanosecond = value.nanotime();
+		else
+			t.nanosecond = 0;
+		m_reg_integer->set_val((short)fint, t);
+		m_reg_fraction->set_val((short)ffrac, t);
 	}
 }
 
-modbus_register::modbus_register(modbus_unit* unit, driver_logger* log) : m_modbus_unit(unit), m_val(sz4::no_data<short>()), m_mod_time(-1), m_log(log) {}
+modbus_register::modbus_register(modbus_unit* unit, driver_logger* log) : m_modbus_unit(unit), m_val(sz4::no_data<short>()), m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value), m_log(log) {}
 
-unsigned short modbus_register::get_val(bool &valid, time_t& mod_time) {
-	if (m_mod_time < 0)
-		valid = false;
-	else {
+unsigned short modbus_register::get_val(bool &valid, sz4::nanosecond_time_t& mod_time) {
+	if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
 		valid = m_modbus_unit->register_val_expired(m_mod_time);
 		mod_time = m_mod_time;
-	}
+	} else 
+		valid = false;
 	return m_val;
 }
 
@@ -1050,7 +1038,7 @@ unsigned short modbus_register::get_val() {
 	return m_val;
 }
 
-void modbus_register::set_val(unsigned short val, time_t time) {
+void modbus_register::set_val(unsigned short val, sz4::nanosecond_time_t& time) {
 	m_val = val;
 	m_mod_time = time;
 }
@@ -1231,11 +1219,11 @@ void modbus_unit::from_sender() {
 		(*k)->get_val(zmq_handler(), m + m_send);
 }
 
-bool modbus_unit::register_val_expired(time_t time) {
+bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
 	if (m_expiration_time == 0)
 		return true;
 	else
-		return time >= m_current_time - m_expiration_time;
+		return time >= m_current_time + m_expiration_time;
 }
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
@@ -1702,7 +1690,8 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t sen
 	if (!m_expiration_time) {
 		m_log.log(5, "no-data timeout not specified (or 0), assuming 1 minute data expiration");
 		m_expiration_time = 60;
-	} 
+	}
+	m_expiration_time *= 1000000000;
 
 	m_nodata_value = 0;
 	if (get_xml_extra_prop(node, "nodata-value", m_nodata_value, true)) {
@@ -1728,7 +1717,10 @@ void modbus_unit::finished_cycle() {
 
 void modbus_unit::starting_new_cycle() {
 	m_log.log(5, "Timer click, doing ipc data exchange");
-	m_current_time = time(NULL);
+	struct timespec time;
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	m_current_time.second = time.tv_sec;
+	m_current_time.nanosecond = time.tv_nsec;
 	from_sender();
 }
 
