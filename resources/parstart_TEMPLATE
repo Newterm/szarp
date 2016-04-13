@@ -49,6 +49,11 @@ setulimit() {
 }
 
 do_start () {
+	# we don't want e.g. the stop exitcode to mess with starting sequence
+	# so EXITCODE has to be cleaned
+	EXITCODE=0
+	DAEMON_ERROR=""
+
 	setulimit $NOFILE_LIMIT
 	# enable core dump
 	ulimit -c unlimited
@@ -64,7 +69,7 @@ do_start () {
 	    DAEMON=/opt/szarp/bin/iks-server
 	    szlog
 	    start_daemon $DAEMON
-	    log_end_msg $?
+		worklog $?
 	fi
 
 	if [ x$PROBES_SERVER = x1 ]; then
@@ -182,7 +187,7 @@ do_start () {
 do_check() {
 	if [ -x __INSTALL_DIR__/bin/i2smo ]; then
 		echo "Verifying configuration: __INSTALL_DIR__/bin/i2smo"
-		python /opt/szarp/bin/i2smo
+		python /opt/szarp/bin/i2smo --quiet
 		if [ $? != 0 ]; then
 			echo "Invalid configuration -- won't continue" 1>&2
 			exit 1

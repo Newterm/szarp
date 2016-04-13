@@ -34,5 +34,11 @@ class Meaner4App:
 		meaner4.go()
 
 if __name__ == "__main__":
-	runner = runner.DaemonRunner(Meaner4App())	
-	runner.do_action()
+	app = runner.DaemonRunner(Meaner4App())
+	try:
+		app.do_action()
+	except runner.DaemonRunnerStopFailureError as ex:
+		# if the script was not running, the pid file won't be locked
+		# and we don't want the stop action to fail
+		if str(ex).find("not locked") < 0:
+			raise ex

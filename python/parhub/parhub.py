@@ -44,6 +44,11 @@ class ParHub:
 		dev.start()
 
 if __name__ == "__main__":
-	runner = runner.DaemonRunner(ParHub())	
-	runner.do_action()
-
+	app = runner.DaemonRunner(ParHub())
+	try:
+		app.do_action()
+	except runner.DaemonRunnerStopFailureError as ex:
+		# if the script was not running, the pid file won't be locked
+		# and we don't want the stop action to fail
+		if str(ex).find("not locked") < 0:
+			raise ex
