@@ -13,8 +13,7 @@ set -e;
 case "$1" in
 	remove)
 		if [ -e /etc/vim/vimrc ]; then
-			grep -v szarp.vim /etc/vim/vimrc > /tmp/vimrc.tmp || true;
-			cat /tmp/vimrc.tmp > /etc/vim/vimrc;
+			sed -i --follow-symlinks '/Source SZARP syntax file/,+3d' /etc/vim/vimrc;
 		fi
 	;;
 
