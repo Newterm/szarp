@@ -136,7 +136,6 @@ libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tboilers.cc \
 			$(IPK_DIR)/tscript.cc \
 			$(DMN_DIR)/ipchandler.cc \
-			$(DMN_DIR)/zmqhandler.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \
 			$(SOURCE_DIR)/misc/crontime.h \
 			$(SOURCE_DIR)/misc/crontime.cc \
@@ -220,6 +219,11 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/encode_file.cpp \
 			\
 			$(SOURCE_DIR)/utils/daemonize.cc
+
+if MINGW32_OPT
+else
+libSzarp2_la_SOURCES += $(DMN_DIR)/zmqhandler.cc
+endif
 
 
 libSzarp2_la_LIBADD = libSzarpLuaParser.la
