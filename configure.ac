@@ -392,6 +392,9 @@ AM_OPTIONS_WXCONFIG
 wc_config_prefix="${lib_prefix}"
 if test "$no_wx" != "yes" ; then
         AM_PATH_WXCONFIG(2.8.0, [], [no_wx=yes])
+		if test ${WX_VERSION:0:1} != 2 ; then
+			AC_MSG_ERROR([Cannot build SZARP with wx version: $WX_VERSION (2.8 required)])
+		fi
         if test "$no_wx" = "yes" ; then
                 AC_MSG_WARN([
                               wxWidgets must be installed on your system but wx-config
