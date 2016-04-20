@@ -167,14 +167,12 @@ def check_for_daemons(parameters):
 				if re.search(r"dbdmn.{0,}", value):
 					for unit in device:
 						for param in unit:
-							found_param_base = False
-							for attrib, value in param.items():
-								if attrib == namespace_extra + "param" is not None:
-									base = re.search(r".{4}", value)
-									if os.path.exists("/opt/szarp/" + base.group(0)):
-										found_param_base = True
-							if found_param_base is False:
-								printerr("extra:param base doesn't exist (line " + str(param.sourceline) + ")")
+							param_path = param.get(namespace_extra + "param")
+							if param_path is not None:
+								base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
+								base_path = "/opt/szarp/" + base
+								if not os.path.exists(base_path):
+									printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
 
 def check_send_elements(parameters):
 	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
