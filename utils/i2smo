@@ -163,17 +163,12 @@ def check_for_daemons(parameters):
 				if re.search(r"dbdmn.{0,}", value):
 					for unit in device:
 						for param in unit:
-							found_probe_type = False
 							found_param_base = False
 							for attrib, value in param.items():
-								if attrib == namespace_extra + "probe-type" is not None:
-									found_probe_type = True
 								if attrib == namespace_extra + "param" is not None:
 									base = re.search(r".{4}", value)
 									if os.path.exists("/opt/szarp/" + base.group(0)):
 										found_param_base = True
-							if found_probe_type is False:
-								printerr("attribute extra:probe-type wasn't found in device with dbdmn daemon (line " + str(param.sourceline) + ")")
 							if found_param_base is False:
 								printerr("extra:param base doesn't exist (line " + str(param.sourceline) + ")")
 
