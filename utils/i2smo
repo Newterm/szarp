@@ -122,15 +122,19 @@ def get_isl_list():
 
 def check_if_file_exist(parameters):
 	file_to_check = re.compile(r"\/opt\/szarp\/.")
-	check_list = []
+	not_found_files = []
 	for device in parameters:
 		for attr, value in device.items():
 			find_file = file_to_check.search(value)
 			if find_file is not None:
 				if os.path.exists(value) is False:
-					if not value in check_list:
-						printerr(value + " does not exist!")
-						check_list.insert(0,value)
+					if not value in not_found_files:
+						if device.get("daemon").endswith("testdmn") and attr == "path":
+							# the source data file may not exist at this moment
+							printnote("source data file for testdmn: '%s' does not exist" % value)
+						else:
+							printerr(value + " does not exist!")
+						not_found_files.append(value)
 
 def check_for_daemons(parameters):
 	md5sum_regex = re.compile(r"[a-f0-9]{32}")
