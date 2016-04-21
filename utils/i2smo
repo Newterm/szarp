@@ -122,15 +122,19 @@ def get_isl_list():
 
 def check_if_file_exist(parameters):
 	file_to_check = re.compile(r"\/opt\/szarp\/.")
-	check_list = []
+	not_found_files = []
 	for device in parameters:
 		for attr, value in device.items():
 			find_file = file_to_check.search(value)
 			if find_file is not None:
 				if os.path.exists(value) is False:
-					if not value in check_list:
-						printerr(value + " does not exist!")
-						check_list.insert(0,value)
+					if not value in not_found_files:
+						if device.get("daemon").endswith("testdmn") and attr == "path":
+							# the source data file may not exist at this moment
+							printnote("source data file for testdmn: '%s' does not exist" % value)
+						else:
+							printerr(value + " does not exist!")
+						not_found_files.append(value)
 
 def check_for_daemons(parameters):
 	md5sum_regex = re.compile(r"[a-f0-9]{32}")
@@ -163,19 +167,12 @@ def check_for_daemons(parameters):
 				if re.search(r"dbdmn.{0,}", value):
 					for unit in device:
 						for param in unit:
-							found_probe_type = False
-							found_param_base = False
-							for attrib, value in param.items():
-								if attrib == namespace_extra + "probe-type" is not None:
-									found_probe_type = True
-								if attrib == namespace_extra + "param" is not None:
-									base = re.search(r".{4}", value)
-									if os.path.exists("/opt/szarp/" + base.group(0)):
-										found_param_base = True
-							if found_probe_type is False:
-								printerr("attribute extra:probe-type wasn't found in device with dbdmn daemon (line " + str(param.sourceline) + ")")
-							if found_param_base is False:
-								printerr("extra:param base doesn't exist (line " + str(param.sourceline) + ")")
+							param_path = param.get(namespace_extra + "param")
+							if param_path is not None:
+								base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
+								base_path = "/opt/szarp/" + base
+								if not os.path.exists(base_path):
+									printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
 
 def check_send_elements(parameters):
 	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
