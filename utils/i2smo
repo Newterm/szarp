@@ -81,12 +81,6 @@ def get_szarp_uncommited():
 
 
 conf_parser = "/opt/szarp/bin/ipk2szarp"
-iks_server = "/opt/szarp/bin/iks-server"
-
-def check_iks():
-	if os.path.isfile(iks_server):
-		if not quiet:
-			add_note("if only draw configuration has changed: supervisorctl restart iks-server")
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
@@ -304,8 +298,7 @@ return_code = process.returncode
 
 if return_code == 0:
 	if not quiet:
-		add_note("if backend configuration has changed: /etc/init.d/parstart restart")
-	check_iks()
+		add_note("if configuration has changed: /etc/init.d/parstart restart")
 	check_svn()
 	config = parse_config_file()
 	test_config_file(config)
