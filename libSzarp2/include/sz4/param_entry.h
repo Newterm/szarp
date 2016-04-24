@@ -21,11 +21,15 @@
 
 #include "config.h"
 
+namespace szarp {
+class ParamValue;
+}
+
 namespace sz4 {
 
 template<class types> class base_templ;
 
-class generic_param_entry : public SzbParamObserver {
+class generic_param_entry : public SzbParamObserver /*, public live_values_observer*/ {
 protected:
 	boost::recursive_mutex m_lock;
 	TParam* m_param;
@@ -83,6 +87,10 @@ public:
 
 	void register_observer(param_observer *observer);
 	void deregister_observer(param_observer *observer);
+
+/*
+	virtual void new_live_value(szarp::ParamValue *value) = 0;
+*/
 
 	virtual ~generic_param_entry();
 };

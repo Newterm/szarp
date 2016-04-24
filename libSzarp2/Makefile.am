@@ -191,6 +191,7 @@ libSzarp2_la_SOURCES = \
 			$(INCLUDE_DIR)/sz4/buffer.h \
 			$(INCLUDE_DIR)/sz4/buffer_templ.h \
 			$(INCLUDE_DIR)/sz4/real_param_entry.h \
+			$(INCLUDE_DIR)/sz4/real_param_entry_templ.h \
 			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry.h \
 			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry_templ.h \
 			$(INCLUDE_DIR)/sz4/lua_interpreter.h \
@@ -217,6 +218,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/filelock.cpp \
 			$(SZ4_DIR)/decode_file.cpp \
 			$(SZ4_DIR)/encode_file.cpp \
+			$(SZ4_DIR)/real_param_entry.cpp \
 			\
 			$(SOURCE_DIR)/utils/daemonize.cc
 

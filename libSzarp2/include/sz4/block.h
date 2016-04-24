@@ -39,10 +39,84 @@ template<class time_type, class pair_type> bool cmp_time(const time_type& t, con
 	return t < p.time;
 }
 
-template<class I, class T> I search_entry_for_time(I begin, I end, const T& t) {
-	typedef typename I::value_type pair_type;
+template<class iterator, class time_type> iterator search_entry_for_time(iterator begin, iterator end, const time_type& t) {
+	typedef typename iterator::value_type pair_type;
 
-	return std::upper_bound(begin, end, t, cmp_time<T, pair_type>);
+	return std::upper_bound(begin, end, t, cmp_time<time_type, pair_type>);
+}
+
+template<class iterator, class time_type, class value_type> 
+void get_weighted_sum(iterator begin, iterator end,
+		const time_type& start_time, const time_type &end_time,
+		weighted_sum<value_type, time_type>& r)
+{
+	bool done = false;
+	time_type prev_time = start_time;
+	auto i = search_entry_for_time(begin, end, start_time);
+	while (!done && i != end) {
+		typename time_difference<time_type>::type time_diff;
+		if (i->time >= end_time) {
+			time_diff = end_time - prev_time;
+			done = true;
+		} else {
+			time_diff = i->time - prev_time;
+		}
+		prev_time = i->time;
+
+		if (!value_is_no_data(i->value)) {
+			r.add(i->value, time_diff);
+		} else {
+			r.add_no_data_weight(time_diff);
+		}
+
+		std::advance(i, 1);
+	}
+}
+
+template<class iterator, class time_type, class search_op>
+iterator search_data_left_t(
+		iterator begin, iterator end,
+		const time_type& start_time, const time_type& end_time,
+		const search_op &condition) {
+
+	if (begin == end)
+		return end;
+
+	auto i = search_entry_for_time(begin, end, start_time);
+	if (i == end)
+		std::advance(i, -1);
+
+	while (true) {
+		if (i->time <= end_time)
+			break;
+
+		if (condition(i->value))
+			return i;
+
+		if (i == begin)
+			break;
+
+		std::advance(i, -1);
+	}
+	return end;
+}
+
+template<class iterator, class time_type, class search_op>
+iterator search_data_right_t(
+		iterator begin, iterator end,
+		const time_type& start_time, const time_type& end_time,
+		const search_op &condition) {
+
+	auto i = search_entry_for_time(begin, end, start_time);
+	while (i != end) {
+		if (condition(i->value))
+			return i;
+
+		if (i->time >= end_time)
+			break;
+		std::advance(i, 1);
+	}
+	return end;
 }
 
 class block_cache;
@@ -131,16 +205,9 @@ public:
 	}
 
 	template<class search_op> typename value_time_vector::const_iterator search_data_right_t(const time_type& start, const time_type& end, const search_op &condition) {
-		typename value_time_vector::const_iterator i = search_entry_for_time(start);
-		while (i != m_data.end()) {
-			if (condition(i->value))
-				return i;
+	
+		return sz4::search_data_right_t(m_data.begin(), m_data.end(), start, end, condition);	
 
-			if (i->time >= end)
-				break;
-			std::advance(i, 1);
-		}
-		return m_data.end();
 	}
 
 	time_type search_result_right(const time_type& start, typename value_time_vector::const_iterator i) {
@@ -167,23 +234,7 @@ public:
 		if (m_data.size() == 0)
 			return m_data.end();
 
-		typename value_time_vector::const_iterator i = search_entry_for_time(start);
-		if (i == m_data.end())
-			std::advance(i, -1);
-
-		while (true) {
-			if (i->time <= end)
-				break;
-
-			if (condition(i->value))
-				return i;
-
-			if (i == m_data.begin())
-				break;
-
-			std::advance(i, -1);
-		}
-		return m_data.end();
+		return sz4::search_data_left_t(m_data.begin(), m_data.end(), start, end, condition);	
 	}
 
 	void append_entry(const value_type& value, const time_type& time) {
@@ -258,37 +309,16 @@ public:
 
 		this->m_cache->block_touched(*this);
 
-		time_type prev_time(start_time);
-		bool done = false;
-		typename block_type::value_time_vector::const_iterator i = this->search_entry_for_time(start_time);
-
-		while (!done && i != this->m_data.end()) {
-			typename time_difference<time_type>::type time_diff;
-			if (i->time >= end_time) {
-				time_diff = end_time - prev_time;
-				done = true;
-			} else {
-				time_diff = i->time - prev_time;
-			}
-			prev_time = i->time;
-
-			if (!value_is_no_data(i->value)) {
-				r.add(i->value, time_diff);
-			} else {
-				r.add_no_data_weight(time_diff);
-			}
-
-			std::advance(i, 1);
-		}
+		sz4::get_weighted_sum(this->m_data.begin(), this->m_data.end(), start_time, end_time, r);
 	}
 
 	time_type search_data_right(const time_type& start, const time_type& end, const search_condition &condition) {
-		typename block_type::value_time_vector::const_iterator i = this->search_data_right_t(start, end, condition);
+		auto i = this->search_data_right_t(start, end, condition);
 		return this->search_result_right(start, i);
 	}
 
 	time_type search_data_left(const time_type& start, const time_type& end, const search_condition &condition) {
-		typename block_type::value_time_vector::const_iterator i = this->search_data_left_t(start, end, condition);
+		auto i = this->search_data_left_t(start, end, condition);
 		return this->search_result_left(start, i);
 	}
 
