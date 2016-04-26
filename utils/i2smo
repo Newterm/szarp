@@ -65,7 +65,10 @@ def unicode_to_ascii(string):
 	"""
 	Converts unicode string to printable ascii form, removes polish characters
 	"""
-	return unicodedata.normalize('NFKD', string).replace(u'ł', 'l').replace(u'Ł', 'L').encode('ascii', 'ignore')
+	try:
+		return unicodedata.normalize('NFKD', string).replace(u'ł', 'l').replace(u'Ł', 'L').encode('ascii', 'ignore')
+	except TypeError:
+		return string
 
 def get_szarp_uncommited():
 	# without realpath client.info() strips the symlink
