@@ -42,10 +42,10 @@
 
 SCCMenu::SCCMenu(MenuHierarchyData *mhd, wxString _name, wxString _exec) :
 	hierarchy_data(mhd), id(mhd->id), name(_name), exec(_exec), children(NULL),
-	logger(new wxLogStderr()), menu_type(SCCMenu::ORDINARY_ITEM), prefix(NULL)
+	menu_type(SCCMenu::ORDINARY_ITEM), prefix(NULL)
 {
 	children = new ArrayOfMenu();
-	wxLog::SetActiveTarget(logger);
+	delete wxLog::SetActiveTarget(new wxLogStderr());
 
 	mhd->id++;
 }
@@ -57,7 +57,6 @@ SCCMenu::~SCCMenu()
 			delete children->Item(i);
 		delete children;
 	}
-	delete logger;
 	delete prefix;
 }
 
