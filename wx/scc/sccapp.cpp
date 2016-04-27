@@ -109,8 +109,7 @@ bool SCCApp::OnInit()
 	locale.AddCatalog(_T("common"));
 	locale.AddCatalog(_T("wx"));
 
-	wxLog *logger=new wxLogStderr();
-	wxLog::SetActiveTarget(logger);
+	delete wxLog::SetActiveTarget(new wxLogStderr());
 
 	wxImage::AddHandler( new wxXPMHandler );
 #if wxUSE_LIBPNG
@@ -273,6 +272,9 @@ int SCCApp::OnExit()
 #ifndef MINGW32
 	delete app_instance2;
 #endif
+	
+	delete wxLog::SetActiveTarget(NULL);
+
 	return 0;
 }
 

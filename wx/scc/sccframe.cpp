@@ -76,8 +76,7 @@ SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix)
 	m_sel_frame(NULL), tunnel_frame(NULL)
 
 {
-	wxLog *logger=new wxLogStderr();
-	wxLog::SetActiveTarget(logger);
+	delete wxLog::SetActiveTarget(new wxLogStderr());
 
 	system_menu = CreateSystemMenu();
 

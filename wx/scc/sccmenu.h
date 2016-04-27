@@ -3,7 +3,6 @@
 
 
   This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
 
@@ -266,7 +265,6 @@ private:
 				  (for submenu), NULL pointers are used for
 				  separators. */
 	wxBitmap bmp;		/**< Menu item icon. */
-	wxLog *logger;		/**< The Stderr for logging. */
 
 	/** Menu type
 	 * ORDINARY_ITEM - an item from which wxMenuItem can directly be created
