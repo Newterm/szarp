@@ -35,6 +35,7 @@ from lxml import etree
 import hashlib
 import re
 import glob
+import unicodedata
 
 error_count = 0
 quiet = False
@@ -60,6 +61,15 @@ def print_notes():
 def printok(msg):
 	puts(colored.green(str(msg)))
 
+def unicode_to_ascii(string):
+	"""
+	Converts unicode string to printable ascii form, removes polish characters
+	"""
+	try:
+		return unicodedata.normalize('NFKD', string).replace(u'ł', 'l').replace(u'Ł', 'L').encode('ascii', 'ignore')
+	except TypeError:
+		return string
+
 def get_szarp_uncommited():
 	# without realpath client.info() strips the symlink
 	szarp_path = os.path.realpath("/etc/szarp/default/")
@@ -81,12 +91,6 @@ def get_szarp_uncommited():
 
 
 conf_parser = "/opt/szarp/bin/ipk2szarp"
-iks_server = "/opt/szarp/bin/iks-server"
-
-def check_iks():
-	if os.path.isfile(iks_server):
-		if not quiet:
-			add_note("if only draw configuration has changed: supervisorctl restart iks-server")
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
@@ -266,6 +270,24 @@ def check_if_parameter_exist(isl_list):
 										if not glob.glob(base_path + '*'):
 											add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
 
+def check_no_base_ind(config):
+	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
+	param_list = []
+	for device in config:
+		if device.tag == namespace + "device":
+			for unit in device:
+				for element in unit:
+					if element.tag == namespace + "param":
+						param_list.append(element)
+		if device.tag == namespace + "defined":
+			for element in device:
+				if element.tag == namespace + "param":
+					param_list.append(element)
+	for param in param_list:
+		if param.get("base_ind") is None:
+			name = unicode_to_ascii(param.get("name"))
+			add_note("parameter '%s' no base_ind, won't be written to szbase (line %d)" % (name, param.sourceline))
+
 def test_config_file(config):
 	check_if_file_exist(config)
 	check_for_daemons(config)
@@ -280,7 +302,7 @@ parser.add_argument('-i', '--input-file',
 parser.add_argument('-d', '--debug', type=int,
 	help='debug level from 0 (errors only) to 9, passed to ipk2szarp')
 parser.add_argument('-a', '--additional-test', action='store_true',
-	help='do additional test of isls stored in ' + os.path.realpath("/etc/szarp/default"))
+	help='do additional test, including testing isls stored in ' + os.path.realpath("/etc/szarp/default"))
 parser.add_argument('-q', '--quiet', action='store_true',
 	help="hide not important messages, to be used e.g. in scripts")
 
@@ -304,14 +326,14 @@ return_code = process.returncode
 
 if return_code == 0:
 	if not quiet:
-		add_note("if backend configuration has changed: /etc/init.d/parstart restart")
-	check_iks()
+		add_note("if configuration has changed: /etc/init.d/parstart restart")
 	check_svn()
 	config = parse_config_file()
 	test_config_file(config)
 	if args.additional_test:
 		isl_list = get_isl_list()
 		test_isl_file(isl_list)
+		check_no_base_ind(config)
 	print_notes()
 	if error_count == 0:
 		if not quiet:

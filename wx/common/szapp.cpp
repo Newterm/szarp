@@ -80,7 +80,7 @@ szAppImpl::szAppImpl() : has_data_dir(false)
 	gtk_rc_add_default_file(rcpath);
 #endif /* __WXGTK__ */
 
-	m_releasedate = _T("2007 - 2014");
+	m_releasedate = _T("2007 - 2016");
 	m_version = _T(SZARP_VERSION);
 }
 
@@ -263,19 +263,24 @@ void szAppImpl::ShowAbout(wxWindow *parent) {
 	wxArrayString authors;
 	/* About dialog data */
 	authors.Add(L"Marcin Anderson");
+	authors.Add(L"Aleksy Barcz");
 	authors.Add(L"Micha\u0142 Blajerski");
 	authors.Add(L"Piotr Branecki");
+	authors.Add(L"Mateusz Chmielowiec");
 	authors.Add(L"S\u0142awomir Chy\u0142ek");
 	authors.Add(L"Krzysztof Ga\u0142\u0105zka");
 	authors.Add(L"Krzysztof Goli\u0144ski");
 	authors.Add(L"Marcin Goliszewski");
+	authors.Add(L"Marcin Harasimczuk");
 	authors.Add(L"Jaros\u0142aw Janik");
 	authors.Add(L"Stanis\u0142aw K\u0142osi\u0144ski");
+	authors.Add(L"Patryk Kulpanowski");
 	authors.Add(L"Pawe\u0142 Kolega");
 	authors.Add(L"Jakub Kotur");
 	authors.Add(L"Daniel Majewski");
 	authors.Add(L"Dariusz Marcinkiewicz");
 	authors.Add(L"Maciej Mochol");
+	authors.Add(L"Mateusz Morusiewicz");
 	authors.Add(L"Jaros\u0142aw Nowisz");
 	authors.Add(L"Krzysztof O\u0142owski");
 	authors.Add(L"Pawe\u0142 Pa\u0142ucha");
@@ -284,6 +289,8 @@ void szAppImpl::ShowAbout(wxWindow *parent) {
 	authors.Add(L"Micha\u0142 R\u00F3j");
 	authors.Add(L"Stanis\u0142aw Sawa");
 	authors.Add(L"Adam Smyk");
+	authors.Add(L"Bartosz Spychalski");
+	authors.Add(L"Marta Szawara");
 	authors.Add(L"Tomasz \u015Awiatowiec");
 	authors.Add(L"Maciej Zbi\u0144kowski");
 	authors.Add(wxString(L"Witold Kowalewski") + _(" (Ideas)"));
