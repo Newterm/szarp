@@ -796,7 +796,7 @@ msgstr "ROK "
 
 #: drawprint.cpp:722
 msgid "MONTH "
-msgstr "MIESIĄC "
+msgstr "MIESIAC "
 
 #: drawprint.cpp:725
 msgid "WEEK "
