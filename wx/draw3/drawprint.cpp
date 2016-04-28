@@ -539,9 +539,10 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 		r.prec = draw->GetDrawInfo()->GetPrec();
 		r.unit = draw->GetDrawInfo()->GetUnit();
 
-		for (auto it = ranges.begin(); it!=ranges.end(); ++it)
+		for (auto it = ranges.begin(); it!=ranges.end(); ++it) // for each axis in ranges
 		{
-			if (it->first.min == r.min && it->first.max == r.max && it->first.unit == r.unit) {
+			if (it->first.min == r.min && it->first.max == r.max && it->first.unit == r.unit) // check, if they differ only by precision. If so, change the axis
+			{
 				if (it->first.prec < r.prec) r.prec = it->first.prec;
 				else {
 					for (auto jt = ranges[it->first].begin(); jt != ranges[it->first].end(); ++jt)
@@ -549,8 +550,6 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 
 					if (sr == it->first)
 						sr = r;
-
-					ranges.erase(it);
 				}
 			}
 		}
