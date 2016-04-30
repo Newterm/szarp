@@ -29,7 +29,7 @@ class ParHub:
 
 		self.stdin_path = "/dev/null"
 		self.stdout_path = "/var/log/szarp/parhub.stdin.log"
-		self.stderr_path = "/var/log/szarp/parbub.stderr.log"
+		self.stderr_path = "/var/log/szarp/parhub.stderr.log"
 		self.pidfile_path = "/var/run/parhub.pid"
 		self.pidfile_timeout = 5
 
