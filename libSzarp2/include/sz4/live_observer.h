@@ -1,5 +1,3 @@
-#ifndef __LIVE_VALUES_OBSERVER_H__
-#define __LIVE_VALUES_OBSERVER_H__
 /* 
   SZARP: SCADA software 
   
@@ -19,7 +17,10 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-namespace szbase {
+#ifndef __LIVE_VALUES_OBSERVER_H__
+#define __LIVE_VALUES_OBSERVER_H__
+
+namespace szarp {
 	class ParamValue;
 }
 
@@ -28,7 +29,7 @@ namespace sz4
 
 class live_values_observer {
 public:
-	virtual void new_live_value(szbase::ParamValue *value) = 0;
+	virtual void new_live_value(szarp::ParamValue *value) = 0;
 };
 
 }

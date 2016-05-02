@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include <fstream>
+
 #include <boost/container/flat_map.hpp>
 
 #if BOOST_FILESYSTEM_VERSION != 3
@@ -28,8 +30,8 @@
 #define directory_iterator wdirectory_iterator
 #endif
 
-
 #include "decode_file.h"
+#include "live_cache.h"
 
 namespace sz4 {
 
@@ -199,15 +201,22 @@ real_param_entry_in_buffer<V, T, types>::real_param_entry_in_buffer(base_templ<t
 	, m_refresh_file_list(true)
 	, m_has_paths_to_update(false)
 	, m_first_sz4_date(time_trait<T>::invalid_value)
+	, m_live_block(nullptr)
 {}
 
 template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum)  {
+void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum) {
+
+	T end(_end);
+	if (m_live_block && m_live_block->get_weighted_sum(start, end, sum))
+		return;
+
 	refresh_if_needed();
+
 	//search for the first block that has starting time bigger than
 	//start_time
 	if (m_blocks.size() == 0) {
-		//no such block - nodata
+		//no blocks - nodata
 		sum.add_no_data_weight(end - start);
 		sum.set_fixed(false);
 		return;
@@ -250,32 +259,47 @@ void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& sta
 template<class V, class T, class types>
 T real_param_entry_in_buffer<V, T, types>::search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
 	refresh_if_needed();
-	if (m_blocks.size() == 0)
-		return time_trait<T>::invalid_value;
 
-	typename map_type::iterator i = m_blocks.upper_bound(start);
-	//if not first - step one back
-	if (i != m_blocks.begin())
-		std::advance(i, -1);
+	if (m_blocks.size()) {
+		typename map_type::iterator i = m_blocks.upper_bound(start);
+		//if not first - step one back
+		if (i != m_blocks.begin())
+			std::advance(i, -1);
 
-	while (i != m_blocks.end()) {
-		file_block_entry_type* entry = i->second;
-		if (entry->start_time() >= end)
-			break;
+		while (i != m_blocks.end()) {
+			file_block_entry_type* entry = i->second;
+			if (entry->start_time() >= end)
+				break;
 
-		T t = entry->search_data_right(start, end, condition);
-		if (time_trait<T>::is_valid(t))
-			return t;
+			T t = entry->search_data_right(start, end, condition);
+			if (time_trait<T>::is_valid(t))
+				return t;
 
-		std::advance(i, 1);
+			std::advance(i, 1);
+		}
 	}
 
-	return time_trait<T>::invalid_value;
+	if (m_live_block)
+		return m_live_block->search_data_right(start, end, condition);
+	else
+		return time_trait<T>::invalid_value;
 }
 
 template<class V, class T, class types>
-T real_param_entry_in_buffer<V, T, types>::search_data_left_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+T real_param_entry_in_buffer<V, T, types>::search_data_left_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, const search_condition& condition) {
+	T end(_end);
+
+	if (m_live_block) {
+		auto result = m_live_block->search_data_left(start, end, condition);
+
+		if (result.first)
+			return result.second;
+
+		end = result.second;
+	}
+
 	refresh_if_needed();
+
 	if (m_blocks.size() == 0)
 		return time_trait<T>::invalid_value;
 
@@ -394,7 +418,14 @@ void real_param_entry_in_buffer<V, T, types>::refresh_file_list() {
 
 template<class V, class T, class types>
 void real_param_entry_in_buffer<V, T, types>::get_first_time(const std::list<generic_param_entry*>&, T &t) {
+	if (m_live_block) {
+		m_live_block->get_first_time(t);
+		if (time_trait<T>::is_valid(t))
+			return;
+	}
+
 	refresh_if_needed();
+
 	if (m_blocks.size() == 0)
 		t = time_trait<T>::invalid_value;
 	else
@@ -403,6 +434,12 @@ void real_param_entry_in_buffer<V, T, types>::get_first_time(const std::list<gen
 
 template<class V, class T, class types>
 void  real_param_entry_in_buffer<V, T, types>::get_last_time(const std::list<generic_param_entry*>&, T &t) {
+	if (m_live_block) {
+		m_live_block->get_last_time(t);
+		if (time_trait<T>::is_valid(t))
+			return;
+	}
+
 	refresh_if_needed();
 	t = time_trait<T>::invalid_value;
 	for (typename map_type::reverse_iterator i = m_blocks.rbegin();
@@ -422,7 +459,6 @@ void real_param_entry_in_buffer<V, T, types>::register_at_monitor(generic_param_
 #endif
 }
 
-
 template<class V, class T, class types>
 void real_param_entry_in_buffer<V, T, types>::deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 	monitor->remove_observer(entry);
@@ -433,6 +469,12 @@ void real_param_entry_in_buffer<V, T, types>::param_data_changed(TParam*, const 
 	boost::mutex::scoped_lock lock(m_mutex);
 	m_paths_to_update.push_back(path);
 	m_has_paths_to_update = true;
+}
+
+template<class V, class T, class types>
+void real_param_entry_in_buffer<V, T, types>::set_live_block(generic_live_block* block) {
+	m_live_block = dynamic_cast<live_block<V, T>*>(block);	
+	assert(block && m_live_block);
 }
 
 template<class V, class T, class types>

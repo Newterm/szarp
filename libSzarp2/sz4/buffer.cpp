@@ -88,6 +88,10 @@ const std::list<generic_param_entry*>& generic_param_entry::referred_params() co
 	return m_referred_params;
 }
 
+void generic_param_entry::new_live_value(szarp::ParamValue *value) {
+	param_data_changed(m_param, std::string(""));
+}
+
 generic_param_entry::~generic_param_entry() {
 	std::for_each(m_referring_params.begin(), m_referring_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::refferred_param_removed), this));
 	std::for_each(m_referred_params.begin(), m_referred_params.end(), std::bind2nd(std::mem_fun(&generic_param_entry::remove_refferring_param), this));

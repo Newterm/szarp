@@ -19,9 +19,9 @@
 #ifndef __SZ4_REAL_PARAM_ENTRY_H__
 #define __SZ4_REAL_PARAM_ENTRY_H__
 
-#include <fstream>
-
 namespace sz4 {
+
+template<class V, class T> class live_block;
 
 template<class V, class T, class types> class file_block_entry;
 
@@ -95,12 +95,6 @@ public:
 	void refresh_if_needed();
 };
 
-class live_block {
-	boost::mutex m_mutex;
-public:
-	virtual void process_live_value(szarp::ParamValue* value) = 0;
-};
-
 template<class V, class T, class types> class real_param_entry_in_buffer {
 public:
 	typedef file_block_entry<V, T, types> file_block_entry_type;
@@ -119,6 +113,8 @@ private:
 	bool m_has_paths_to_update;
 
 	T m_first_sz4_date;
+
+	live_block<V, T>* m_live_block;
 public:
 	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir);
 
@@ -140,13 +136,11 @@ public:
 
 	void register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor);
 
-#if 0
-	live_block* create_live_block()
-#endif
-
 	void deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor);
 
 	void param_data_changed(TParam*, const std::string& path);
+
+	void set_live_block(generic_live_block *block);
 
 	~real_param_entry_in_buffer();
 };

@@ -219,6 +219,7 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/decode_file.cpp \
 			$(SZ4_DIR)/encode_file.cpp \
 			$(SZ4_DIR)/real_param_entry.cpp \
+			$(SZ4_DIR)/live_cache.cpp
 			\
 			$(SOURCE_DIR)/utils/daemonize.cc
 

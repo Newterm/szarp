@@ -17,19 +17,30 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 
-#include "live_cache.h"
+#include <memory>
+
+#include <zmq.hpp>
+
+#include "protobuf/paramsvalues.pb.h"
+#include "sz4/block.h"
+#include "sz4/defs.h"
+#include "szarp_config.h"
+#include "sz4/live_observer.h"
+#include "sz4/live_cache.h"
+#include "sz4/factory.h"
+#include "sz4/live_cache_templ.h"
 
 
 namespace sz4 {
 
 void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 	auto cache = m_cache[sock_no];
-	for (int i = 0; values->param_values_size(); i++) {
-		szarp::ParamsValues& value = values->param_values(i);
+	for (int i = 0; i < values->param_values_size(); i++) {
+		szarp::ParamValue* value = values->mutable_param_values(i);
 
-		size_t param_no = value.param_no();
+		size_t param_no = value->param_no();
 		if (param_no < cache.size())
-			cache[param_no]->process_live_value(&value);
+			cache[param_no]->process_live_value(value);
 	}
 }
 
@@ -37,31 +48,31 @@ void live_cache::process_socket(size_t sock_no) {
 	unsigned int event;
 	size_t event_size = sizeof(event);	
 
-	m_socks[i]->getsockopt(ZMQ_EVENTS, &event, &event_size);
+	m_socks[sock_no]->getsockopt(ZMQ_EVENTS, &event, &event_size);
 	while (event & ZMQ_POLLIN) {
 		szarp::ParamsValues values;
 
 		zmq::message_t msg;
-		m_sub_sock.recv(&msg);
+		m_socks[sock_no]->recv(&msg);
 
 		if (values.ParseFromArray(msg.data(), msg.size()))
 			process_msg(&values, sock_no);
 		else	
 			/* XXX: */;
 
-		m_socks[i]->getsockopt(ZMQ_EVENTS, &event, &event_size);
+		m_socks[sock_no]->getsockopt(ZMQ_EVENTS, &event, &event_size);
 	}
 }
 
 void live_cache::run() {
-	std::vector<zmq::poll_item_t> polls;
+	std::vector<zmq::pollitem_t> polls;
 
-	for (auto& url : urls) {
-		auto sock = std::make_unique<zmq::socket_t>(*m_context);
-		sock->connect(url);
+	for (auto& url : m_urls) {
+		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
+		sock->connect(url.c_str());
 		m_socks.push_back(std::move(sock));
 
-		zmq::poll_item_t poll;
+		zmq::pollitem_t poll;
 		poll.socket = *sock;
 		poll.events = ZMQ_POLLIN;
 
@@ -84,18 +95,14 @@ void live_cache::start() {
 	std::thread(std::bind(&live_cache::run, this));
 }
 
-template class live_block<short, sz4::second_time_t, base_types>;
-template class live_block<double, sz4::second_time_t, base_types>;
-template class live_block<float, sz4::second_time_t, base_types>;
-template class live_block<int, sz4::second_time_t, base_types>;
+template class live_block<short, sz4::second_time_t>;
+template class live_block<double, sz4::second_time_t>;
+template class live_block<float, sz4::second_time_t>;
+template class live_block<int, sz4::second_time_t>;
 
-template class live_block<short, sz4::nanosecond_time_t, base_types>;
-template class live_block<double, sz4::nanosecond_time_t, base_types>;
-template class live_block<float, sz4::nanosecond_time_t, base_types>;
-template class live_block<int, sz4::nanosecond_time_t, base_types>;
-
-template live_cache::live_cache<generic_live_entry_builder>(
-		std::vector<std::pair<std::string, TSzarpConfig*>> configuration,
-		time_difference<second_time_t>::type& cache_duration);
+template class live_block<short, sz4::nanosecond_time_t>;
+template class live_block<double, sz4::nanosecond_time_t>;
+template class live_block<float, sz4::nanosecond_time_t>;
+template class live_block<int, sz4::nanosecond_time_t>;
 
 }
