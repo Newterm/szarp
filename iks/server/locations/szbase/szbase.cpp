@@ -29,6 +29,7 @@
 #include "cmd_param_unsubscribe.h"
 #include "cmd_param_add.h"
 #include "cmd_param_remove.h"
+#include "cmd_custom_subscribe.h"
 
 namespace p = std::placeholders;
 
@@ -85,7 +86,8 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
 	MAP_CMD_TAG( "add_param"         , ParamAddRcv         );
-	MAP_CMD_TAG( "remove_param"     , ParamRemoveRcv      );
+	MAP_CMD_TAG( "remove_param"	, ParamRemoveRcv      );
+	MAP_CMD_TAG( "custom_subscribe"   , CustomSubscribeRcv   );
 	return NULL;
 }
 
@@ -107,10 +109,14 @@ void SzbaseProt::on_param_changed( const std::string& pname )
 void SzbaseProt::on_param_value_changed( Param::const_ptr p , double value , ProbeType pt )
 {
 	(void)value;
-
+	
 	if( current_set
 	 && current_set->has_param( p->get_name() ) 
 	 && current_pt == pt )
+		send_cmd( new ValueSnd(p,pt) );
+
+	if( custom_params.find(p->get_name()) != custom_params.end() 
+	 && custom_pt == pt )
 		send_cmd( new ValueSnd(p,pt) );
 }
 
@@ -137,6 +143,34 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 		else
 			sz_log(0, "Unknown param (%s) in set (%s)",
 					itr->c_str() , s->get_name().c_str() );
+	}
+}
+
+void SzbaseProt::subscribe_custom( ProbeType pt, const std::vector<std::string>& params )
+{
+	
+	custom_params.clear();
+	/* Cancel custom subscribtion if no params given */
+	if (params.empty()) {
+		sub_custom.cancel();
+		return;
+	}
+	for (auto cp = params.begin(); cp != params.end(); ++cp) 
+		custom_params.insert(*cp);
+	custom_pt = pt;
+
+	/** Prevent from sending values double if they values changed on subscribe */
+	boost::signals2::shared_connection_block block(conn_param_value);
+
+	sub_custom = vars.get_updater().subscribe_params( params , pt );
+	//sub_custom = vars.get_updater().subscribe_params( params , pt );
+	for( auto itr=params.begin() ; itr!=params.end() ; ++itr ) {
+	
+		auto p = vars.get_params().get_param( *itr );
+		if( p )
+			send_cmd( new ValueSnd(p,pt) );
+		else
+			sz_log(0, "Unknown param (%s) in custom set", itr->c_str());
 	}
 }
 

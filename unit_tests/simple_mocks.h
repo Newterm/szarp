@@ -105,15 +105,13 @@ public:
 struct mock_param_factory {
 	template<
 		template<typename DT, typename TT, class BT> class entry_type,
-		typename data_type,
-		typename time_type,
 		typename types
 	>
 	sz4::generic_param_entry* create(sz4::base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 		if(param->GetName() == L"Status:Meaner3:program_uruchomiony") {
-			return new sz4::param_entry_in_buffer<fake_entry_type, data_type, time_type, types>(base, param, buffer_directory);
+			return sz4::param_entry_factory().template create<fake_entry_type, types>(base, param, buffer_directory);
 		} else {
-			return new sz4::param_entry_in_buffer<entry_type, data_type, time_type, types>(base, param, buffer_directory);
+			return sz4::param_entry_factory().template create<entry_type, types>(base, param, buffer_directory);
 		}
 	}
 

@@ -6,6 +6,8 @@
 
 #include "data/vars.h"
 
+#include <unordered_set>
+
 class SzbaseProt : public Protocol {
 public:
 	SzbaseProt( Vars& vars );
@@ -17,6 +19,9 @@ public:
 	void set_current_set(
 			Set::const_ptr s = Set::const_ptr() ,
 			ProbeType pt = ProbeType() );
+
+
+	void subscribe_custom( ProbeType pt, const std::vector<std::string>& params );
 
 	void subscribe_param( const std::string& name );
 
@@ -40,7 +45,8 @@ private:
 	void on_param_value_changed( Param::const_ptr p , double value , ProbeType pt );
 
 	Vars& vars;
-
+	
+	ProbeType custom_pt;
 	ProbeType current_pt;
 	Set::const_ptr current_set;
 
@@ -48,11 +54,13 @@ private:
 	boost::signals2::scoped_connection conn_param_value;
 
 	ParamsUpdater::Subscription sub_set;
+	ParamsUpdater::Subscription sub_custom;
 
+	std::unordered_set<std::string> custom_params;
 	std::multimap<std::string , ParamsUpdater::Subscription > sub_params;
 	std::map< std::pair< std::string , std::string >, std::string> user_params;
 	std::map< std::string , std::string> user_params_inverted;
-
+	
 	std::string def_param_uuid;
 };
 

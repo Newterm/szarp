@@ -26,6 +26,7 @@
 #include "sz4/buffer.h"
 #include "sz4/definable_param_cache.h"
 #include "sz4/real_param_entry.h"
+#include "sz4/real_param_entry_templ.h"
 #include "sz4/lua_optimized_param_entry.h"
 #include "sz4/lua_param_entry.h"
 #include "sz4/rpn_param_entry.h"

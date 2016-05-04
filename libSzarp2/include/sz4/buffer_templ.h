@@ -1,5 +1,3 @@
-#ifndef __SZ4_BUFFER_TEMPL_H__
-#define __SZ4_BUFFER_TEMPL_H__
 /* 
   SZARP: SCADA software 
   
@@ -18,55 +16,30 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
+#ifndef __SZ4_BUFFER_TEMPL_H__
+#define __SZ4_BUFFER_TEMPL_H__
 
 #include <algorithm>
 
 #include "conversion.h"
 #include "szarp_base_common/lua_strings_extract.h"
+#include "factory.h"
 
 namespace sz4 {
 
-template<template<typename DT, typename TT, class BT> class param_entry_type, class types, class data_type, class time_type> generic_param_entry* param_entry_build_t_3(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+template<template<typename DT, typename TT, class BT> class param_entry_type, class types> generic_param_entry* param_entry_build(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	typedef typename types::param_factory factory;
-	return factory().template create<param_entry_type, data_type, time_type, types>(base, param, buffer_directory);
-}
-
-template<template <typename DT, typename TT, class BT> class param_entry_type, class types, class data_type> generic_param_entry* param_entry_build_t_2(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (param->GetTimeType()) {
-		case TParam::SECOND:
-			return param_entry_build_t_3<param_entry_type, types, data_type, second_time_t>(base, param, buffer_directory);
-		case TParam::NANOSECOND:
-			return param_entry_build_t_3<param_entry_type, types, data_type, nanosecond_time_t>(base, param, buffer_directory);
-		default:
-			assert(false);
-	}
-	return NULL;
-}
-
-template<template <typename DT, typename TT, class BT> class param_entry_type, class types> generic_param_entry* param_entry_build_t_1(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	switch (param->GetDataType()) {
-		case TParam::SHORT:
-			return param_entry_build_t_2<param_entry_type, types, short>(base, param, buffer_directory);
-		case TParam::INT:
-			return param_entry_build_t_2<param_entry_type, types, int>(base, param, buffer_directory);
-		case TParam::FLOAT:
-			return param_entry_build_t_2<param_entry_type, types, float>(base, param, buffer_directory);
-		case TParam::DOUBLE:
-			return param_entry_build_t_2<param_entry_type, types, double>(base, param, buffer_directory);
-		default:
-			assert(false);
-	}
-	return NULL;
+	return factory().template create<param_entry_type, types>(base, param, buffer_directory);
 }
 
 template<class types> generic_param_entry* param_entry_build(base_templ<types> *base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetSz4Type()) {
 		case TParam::SZ4_REAL:
-			return param_entry_build_t_1<real_param_entry_in_buffer, types>(base, param, buffer_directory);
+			return param_entry_build<real_param_entry_in_buffer, types>(base, param, buffer_directory);
 		case TParam::SZ4_COMBINED: {
 			param->SetDataType(TParam::INT);
 
-			generic_param_entry* entry = param_entry_build_t_1<combined_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<combined_param_entry_in_buffer, types>(base, param, buffer_directory);
 
 			TParam **f_cache = param->GetFormulaCache();
 			int num_of_params = param->GetNumParsInFormula();
@@ -81,7 +54,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_LUA_OPTIMIZED: {
 			param->SetDataType(TParam::DOUBLE);
 
-			generic_param_entry* entry = param_entry_build_t_1<lua_optimized_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<lua_optimized_param_entry_in_buffer, types>(base, param, buffer_directory);
+
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
@@ -96,7 +70,8 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_LUA: {
 			param->SetDataType(TParam::DOUBLE);
 
-			generic_param_entry* entry = param_entry_build_t_1<lua_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<lua_param_entry_in_buffer, types>(base, param, buffer_directory);
+
 			std::wstring formula = SC::U2S(param->GetLuaScript());
 			std::vector<std::wstring> strings;
 			extract_strings_from_formula(formula.c_str(), strings);
@@ -119,7 +94,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_DEFINABLE: {
 			param->SetDataType(TParam::DOUBLE);
 
-			generic_param_entry* entry = param_entry_build_t_1<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
 
 			TParam **f_cache = param->GetFormulaCache();
 			int num_of_params = param->GetNumParsInFormula();

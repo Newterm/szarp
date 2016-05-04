@@ -22,19 +22,26 @@
 #include "config.h"
 
 #include "sz4/param_entry.h"
+#include "sz4/factory.h"
 
 namespace sz4 {
 
 struct param_entry_factory {
+	template<template<typename DT, typename TT, class BT> class entry_type, class types> struct builder {
+		template<class _data, class _time, class ...Args> static generic_param_entry* op(Args... args) {
+			return new param_entry_in_buffer<entry_type, _data, _time, types>(args...);
+		};
+	};
 
 	template<
 		template<typename DT, typename TT, class BT> class entry_type,
-		typename data_type,
-		typename time_type,
 		typename types
 	>
-	generic_param_entry* create(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-		return new param_entry_in_buffer<entry_type, data_type, time_type, types>(base, param, buffer_directory);
+	generic_param_entry* create(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) const {
+		return factory<
+			generic_param_entry,
+			builder<entry_type, types>
+				>::op(param, base, param, buffer_directory);
 	}
 };
 
