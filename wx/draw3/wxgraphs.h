@@ -45,10 +45,6 @@
 #include <wx/arrimpl.cpp>
 #include <wx/dc.h>
 
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
 /** MUST BE ODD!! */
 #define CURSOR_RECTANGLE_SIZE 9
 
@@ -63,28 +59,6 @@ class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver 
 
 	DrawPtrArray m_draws;
 
-#ifndef NO_GSTREAMER
-	/**Vector holding spectrum values of currently played songs.*/
-	std::vector<float> m_spectrum_vals;
-#endif
-
-#ifndef NO_GSTREAMER
-	/**If set true the slected draw is dancing*/
-	bool m_dancing;
-
-	/**gstreamer object responsible for playing music*/
-	GstElement *m_gstreamer_bin;
-
-	/**Starts graph dance*/
-	void StartDance();
-
-	/**Stops graph dance*/
-	void StopDance();
-
-	/**Draws one frame*/
-	void DrawDance(wxDC *dc);
-
-#endif
 	/**Region that shall be repainted upon reception of idle event*/
 	wxRegion m_invalid_region;
 

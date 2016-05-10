@@ -38,10 +38,6 @@
 #include <wx/wx.h>
 #endif
 
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
 #include <wx/image.h>
 #include <wx/cmdline.h>
 #include <wx/config.h>
@@ -433,11 +429,6 @@ bool DrawApp::OnInit() {
 	splash->Destroy();
 
 	m_cfg_mgr->ResetSplashScreen();
-
-#ifndef NO_GSTREAMER
-	if (!gst_init_check(NULL, NULL, NULL)) 
-		return 1;
-#endif
 
 	return TRUE;
 }

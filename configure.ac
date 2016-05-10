@@ -821,19 +821,6 @@ if test "x$no_libevent" != "xyes"; then
 fi
 AC_SUBST(EVENT_LIBS)
 
-#Check for gstreamer library
-no_gstreamer="yes"
-if test "$with_mingw32" != "yes" ; then
-	PKG_CHECK_MODULES(GSTREAMER, gstreamer-plugins-base-0.10, no_gstreamer="no", [AC_MSG_RESULT([
-				gstreamer not found on your system,
-				configuring without
-			])
-	])
-fi
-if test "x$no_gstreamer" = "xyes" ; then
-        AC_DEFINE(NO_GSTREAMER, 1, [Define to 1 if  gstreamer is not available])
-fi
-
 #Check for glib library
 no_glib="yes";
 if test "x$with_mingw32" != "xyes"; then
@@ -1379,13 +1366,6 @@ fi
 
 echo -n "Configured with sqlite3            "
 if test "$no_sqlite" != "yes" ; then
-        echo "yes"
-else
-        echo "no"
-fi
-
-echo -n "Configured with gstreamer          "
-if test "$no_gstreamer" != "yes" ; then
         echo "yes"
 else
         echo "no"

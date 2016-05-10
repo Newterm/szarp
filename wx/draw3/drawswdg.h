@@ -42,10 +42,6 @@
 #include <wx/datetime.h>
 #include <wx/dnd.h>
 
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
 typedef std::vector<Draw*> DrawPtrArray;
 
 class DrawGraphs : public DrawObserver {
