@@ -79,7 +79,7 @@ sigfunc_t *_signal (int signo, sigfunc_t *func)
  */
 int daemonize (unsigned int flags)
 {
-	int i, fd;
+	int fd;
 	pid_t pid;
 
 	/* first fork */
