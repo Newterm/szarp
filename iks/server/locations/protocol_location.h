@@ -1,15 +1,15 @@
 #ifndef __PROTOCOL_LOCATION_H__
 #define __PROTOCOL_LOCATION_H__
 
-#include <memory>
-#include <unordered_map>
-
 #include "location.h"
 #include "command.h"
 #include "protocol.h"
 #include "locations/error_codes.h"
-
 #include "net/connection.h"
+
+#include <memory>
+#include <unordered_map>
+#include <random>
 
 class ProtocolLocation : public Location {
 public:
