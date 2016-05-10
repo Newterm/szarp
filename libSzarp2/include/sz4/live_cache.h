@@ -22,6 +22,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <deque>
 
 #include "defs.h"
 
