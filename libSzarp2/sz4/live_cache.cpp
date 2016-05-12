@@ -19,7 +19,9 @@
 
 #include <memory>
 
+#ifndef MINGW32
 #include <zmq.hpp>
+#endif
 
 #include "protobuf/paramsvalues.pb.h"
 #include "sz4/block.h"
@@ -45,6 +47,7 @@ void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 }
 
 void live_cache::process_socket(size_t sock_no) {
+#ifndef MINGW32
 	unsigned int event;
 	size_t event_size = sizeof(event);	
 
@@ -62,9 +65,11 @@ void live_cache::process_socket(size_t sock_no) {
 
 		m_socks[sock_no]->getsockopt(ZMQ_EVENTS, &event, &event_size);
 	}
+#endif
 }
 
 void live_cache::run() {
+#ifndef MINGW32
 	std::vector<zmq::pollitem_t> polls;
 
 	for (auto& url : m_urls) {
@@ -88,7 +93,7 @@ void live_cache::run() {
 			if (polls[i].revents & ZMQ_POLLIN)
 				process_socket(i);
 	} while (true);
-
+#endif
 }
 
 void live_cache::start() {
