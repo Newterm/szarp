@@ -249,10 +249,12 @@ int TCPServer::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-port",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
-	if (c == NULL)
+	if (c == NULL){
+		sz_log(2, "using default tcp port %d", m_port);
 		return 0;
+	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
 		sz_log(0, "incorrect value '%s' for tcp-port, number expected",
@@ -288,9 +290,10 @@ int TCPServer::XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num)
 			return 1;
 		} else {
 			sz_log(2, "IP address to connecto to: '%s'", c);
+			return 0;
 		}
 	}
-	return 0;
+	return 1;
 }
 
 int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
@@ -301,10 +304,12 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-keepalive",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
-	if (c == NULL)
+	if (c == NULL) {
+		sz_log(5, "setting TCP Keep-Alive options to default \"%s\"", (m_keepalive) ? "yes":"no");
 		return 0;
+	}
 	if (!xmlStrcmp(c, BAD_CAST "yes")) {
 		m_keepalive = 1;
 		sz_log(5, "setting TCP Keep-Alive options to \"yes\"");
@@ -331,11 +336,13 @@ int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:nodata-timeout",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
+	{
+		sz_log(10, "Setting tcp:nodata_timeout to default %d", m_nodata_timeout);
 		return 0;
-	
+	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
 		sz_log(0, "incorrect value '%s' for tcp:nodata-timeout for device %d -  integer expected",
