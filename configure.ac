@@ -1209,6 +1209,7 @@ AC_OUTPUT( \
 	python/meaner4/Makefile \
 	python/meaner4/unittests/Makefile \
 	python/parhub/Makefile \
+	python/utils/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \
