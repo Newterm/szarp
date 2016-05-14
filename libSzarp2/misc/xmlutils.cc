@@ -27,7 +27,7 @@
 #include "liblog.h"
 
 xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
-		xmlXPathContextPtr xpath_ctx)
+		xmlXPathContextPtr xpath_ctx, bool log_write)
 {
 	xmlXPathObjectPtr xpath_obj;
 	xmlNodePtr node;
@@ -39,11 +39,12 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
 	assert (xpath_obj != NULL);
 
 	if (!xpath_obj->nodesetval || (xpath_obj->nodesetval->nodeNr != 1)) {
-		sz_log(1, "Error parsing XML - one '%s' expected, found %d",
-				(char *)xpath_expr, 
-					xpath_obj->nodesetval ? 
-					xpath_obj->nodesetval->nodeNr :
-					0);
+		if(log_write)
+			sz_log(1, "Error parsing XML - one '%s' expected, found %d",
+					(char *)xpath_expr, 
+						xpath_obj->nodesetval ? 
+						xpath_obj->nodesetval->nodeNr :
+						0);
 		xmlXPathFreeObject(xpath_obj);
 		return NULL;
 	}
@@ -51,8 +52,9 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
 	node = xpath_obj->nodesetval->nodeTab[0];
 	
 	if (!node) {
-		sz_log(1, "Error parsing XML - '%s' is NULL",
-				xpath_expr);
+		if(log_write)
+			sz_log(1, "Error parsing XML - '%s' is NULL",
+					xpath_expr);
 		return NULL;
 	}
 
@@ -62,7 +64,7 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
 		
 
 xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr, 
-		xmlXPathContextPtr xpath_ctx)
+		xmlXPathContextPtr xpath_ctx, bool log_write)
 {
 	xmlXPathObjectPtr xpath_obj;
 	xmlNodePtr node;
@@ -75,18 +77,20 @@ xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr,
 	assert (xpath_obj != NULL);
 
 	if (!xpath_obj->nodesetval || (xpath_obj->nodesetval->nodeNr != 1)) {
-		sz_log(1, "Error parsing XML - one '%s' expected, found %d",
-				(char *)xpath_expr, 
-					xpath_obj->nodesetval ? 
-					xpath_obj->nodesetval->nodeNr :
-					0);
+		if(log_write)
+			sz_log(1, "Error parsing XML - one '%s' expected, found %d",
+					(char *)xpath_expr, 
+						xpath_obj->nodesetval ? 
+						xpath_obj->nodesetval->nodeNr :
+						0);
 		xmlXPathFreeObject(xpath_obj);
 		return NULL;
 	}
 	
 	node = xpath_obj->nodesetval->nodeTab[0]->children;
 	if (!node || !node->content) {
-		sz_log(1, "Error parsing XML - '%s' has no content",
+		if(log_write)
+			sz_log(1, "Error parsing XML - '%s' has no content",
 				xpath_expr);
 		return NULL;
 	}

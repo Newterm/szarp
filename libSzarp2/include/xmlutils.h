@@ -31,7 +31,8 @@
  * @return pointer to node found, NULL if not found of more than 1 found
  */
 xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr, 
-		xmlXPathContextPtr xpath_ctx);
+		xmlXPathContextPtr xpath_ctx,
+		bool log_write = true);
 
 /** Get content of attribute described by XPath expresion.
  * @param xpath_expr expresion describing attribute
@@ -39,7 +40,8 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
  * @return attribute content, NULL if not found
  */
 xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr, 
-		xmlXPathContextPtr xpath_ctx);
+		xmlXPathContextPtr xpath_ctx,
+		bool log_write = true);
 
 /** Dump XML document to string
  * (may contain non-printable chars as TAB, FORM FEED)
