@@ -89,7 +89,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	int res = asprintf(&e, "./@%s", prop);
 	(void)res;
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
 }
@@ -100,7 +100,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	int res = asprintf(&e, "./@extra:%s", prop);
 	(void)res;
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
 }
