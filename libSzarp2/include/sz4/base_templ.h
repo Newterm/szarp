@@ -77,6 +77,9 @@ template<class types>
 block_cache* base_templ<types>::cache() { return &m_cache; }
 
 template<class types>
+live_cache* base_templ<types>::get_live_cache() { return m_live_cache.get(); }
+
+template<class types>
 base_templ<types>::~base_templ() {
 	for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
 		delete *i;

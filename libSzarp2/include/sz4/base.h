@@ -35,10 +35,12 @@
 #include "sz4/lua_interpreter.h"
 #include "sz4/defs.h"
 #include "sz4/param_observer.h"
+#include "sz4/param_observer.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
 namespace sz4 {
 
+class live_cache;
 template<class types> class buffer_templ;
 
 typedef std::vector<
@@ -58,6 +60,8 @@ private:
 	lua_interpreter<types> m_interperter;
 
 	block_cache m_cache;
+
+	std::unique_ptr<live_cache> m_live_cache;
 
 	boost::optional<SZARP_PROBE_TYPE> m_read_ahead;
 public:
@@ -112,6 +116,8 @@ public:
 	ipk_container_type* get_ipk_container();
 
 	block_cache* cache();
+
+	live_cache* get_live_cache();
 
 	~base_templ();
 };

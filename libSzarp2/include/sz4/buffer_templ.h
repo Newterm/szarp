@@ -27,6 +27,34 @@
 
 namespace sz4 {
 
+template<class types> buffer_templ<types>::buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
+			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
+
+	TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner3:program_uruchomiony");
+	if (heart_beat_param)
+		m_heart_beat_entry = get_param_entry(heart_beat_param);
+	else
+		m_heart_beat_entry = NULL;
+}
+
+template<class types> generic_param_entry* buffer_templ<types>::get_param_entry(TParam* param) {
+	if (m_param_ents.size() <= param->GetParamId())
+		m_param_ents.resize(param->GetParamId() + 1, NULL);
+
+	generic_param_entry* entry = m_param_ents[param->GetParamId()];
+	if (entry == NULL) {
+		entry = m_param_ents[param->GetParamId()] = create_param_entry(param);
+
+		auto live_cache = m_base->get_live_cache();
+		if (live_cache)
+			live_cache->register_cache_observer(param, entry);
+
+		entry->register_at_monitor(m_param_monitor);
+	}
+	return entry;
+}
+
+
 template<template<typename DT, typename TT, class BT> class param_entry_type, class types> generic_param_entry* param_entry_build(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	typedef typename types::param_factory factory;
 	return factory().template create<param_entry_type, types>(base, param, buffer_directory);
@@ -171,6 +199,14 @@ template<class types> void buffer_templ<types>::prepare_param(TParam* param) {
 		else
 			param->SetSz4Type(TParam::SZ4_LUA);
 		return;
+	}
+}
+
+template<class types> buffer_templ<types>::~buffer_templ() {
+	for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) {
+		if (*i)
+			(*i)->deregister_from_monitor(m_param_monitor);
+		delete *i;
 	}
 }
 

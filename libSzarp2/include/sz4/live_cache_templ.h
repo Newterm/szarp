@@ -185,30 +185,29 @@ struct generic_live_block_builder {
 	}
 };
 
-template<class entry_builder> live_cache::live_cache(
-		std::vector<std::pair<std::string, TSzarpConfig*>> configuration,
-		time_difference<second_time_t>::type& cache_duration) {
-
-	m_context = new zmq::context_t(1);
-
-	for (auto& c : configuration) {
+template<class entry_builder> live_cache::live_cache(const live_cache_config& config) :
+	m_context(new zmq::context_t(1))
+{
+	for (auto& c : config.urls) {
 		m_urls.push_back(c.first);
 		m_config_id_map.push_back(c.second->GetConfigId());
 
-		auto cache = std::vector<generic_live_block*>();
+		std::vector<generic_live_block*> config_cache;
 
-		auto szarp_config = c.second();
-		TParam* end = szarp_config->GetFirstDrawDefinable();
-		for (TParam* p = szarp_config->GetFirstParam(); p != end;
+		auto szarp_config = c.second;
+		auto end = szarp_config->GetFirstDrawDefinable();
+
+		for (auto p = szarp_config->GetFirstParam();
+				p != end;
 				p = p->GetNext(true)) {
 
 			auto entry(factory<generic_live_block, entry_builder>::op
-				(p, cache_duration));
+				(p, config.retention));
 
-			cache.push_back(entry);
+			config_cache.push_back(entry);
 		}
 
-		m_cache.push_back(std::move(cache));
+		m_cache.push_back(std::move(config_cache));
 	}
 }
 

@@ -99,6 +99,8 @@ public:
 
 	void refferred_param_removed(sz4::generic_param_entry* param_entry) { }
 
+	void set_live_block(sz4::generic_live_block* block) {}
+
 	virtual ~fake_entry_type() {}
 };
 

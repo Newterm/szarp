@@ -94,6 +94,8 @@ public:
 
 	virtual void new_live_value(szarp::ParamValue *value);
 
+	virtual void set_live_block(generic_live_block *block) = 0;
+
 	virtual ~generic_param_entry();
 };
 
@@ -244,7 +246,7 @@ public:
 	}
 
 	void set_live_block(generic_live_block *block) {
-		m_entry->set_live_block(block);
+		m_entry.set_live_block(block);
 	}
 
 	virtual ~param_entry_in_buffer() {

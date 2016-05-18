@@ -56,27 +56,9 @@ template<class types> class buffer_templ {
 
 	void prepare_param(TParam* param);
 public:
-	buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
-			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
-	
-		TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner3:program_uruchomiony");
-		if (heart_beat_param)
-			m_heart_beat_entry = get_param_entry(heart_beat_param);
-		else
-			m_heart_beat_entry = NULL;
-	}
+	buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory);
 
-	generic_param_entry* get_param_entry(TParam* param) {
-		if (m_param_ents.size() <= param->GetParamId())
-			m_param_ents.resize(param->GetParamId() + 1, NULL);
-
-		generic_param_entry* entry = m_param_ents[param->GetParamId()];
-		if (entry == NULL) {
-			entry = m_param_ents[param->GetParamId()] = create_param_entry(param);
-			entry->register_at_monitor(m_param_monitor);
-		}
-		return entry;
-	}
+	generic_param_entry* get_param_entry(TParam* param);
 
 	template<class T, class V> void get_weighted_sum(TParam* param, const T& start, const T &end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T> &wsum) {
 		get_param_entry(param)->get_weighted_sum(start, end, probe_type, wsum);
@@ -130,13 +112,7 @@ public:
 
 	void remove_param(TParam* param);
 
-	~buffer_templ() {
-		for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) {
-			if (*i)
-				(*i)->deregister_from_monitor(m_param_monitor);
-			delete *i;
-		}
-	}
+	~buffer_templ();
 };
 
 typedef buffer_templ<base_types> buffer;

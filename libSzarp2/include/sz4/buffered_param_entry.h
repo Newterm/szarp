@@ -255,6 +255,8 @@ public:
 		generic_param_entry::refferred_param_removed(param_entry);
 	}
 
+	void set_live_block(generic_live_block *block) {};
+
 	virtual ~buffered_param_entry_in_buffer() {};
 };
 

@@ -99,6 +99,7 @@ generic_param_entry::~generic_param_entry() {
 
 }
 
+#include "sz4/live_cache.h"
 #include "sz4/buffer_templ.h"
 
 namespace sz4 {

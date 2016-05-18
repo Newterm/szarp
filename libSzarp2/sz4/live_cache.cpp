@@ -91,6 +91,22 @@ void live_cache::run() {
 
 }
 
+void live_cache::register_cache_observer(TParam *param, live_values_observer* observer) {
+	auto i = std::find(m_config_id_map.begin(), m_config_id_map.end(), param->GetConfigId());
+	if (i == m_config_id_map.end())
+		return;
+
+	size_t idx = std::distance(m_config_id_map.begin(), i);
+	if (m_cache.at(idx).size() < param->GetParamId())
+		return;
+
+	auto block = m_cache[idx][param->GetParamId()];
+	block->set_observer(observer);
+
+	observer->set_live_block(block);
+}
+
+
 void live_cache::start() {
 	std::thread(std::bind(&live_cache::run, this));
 }

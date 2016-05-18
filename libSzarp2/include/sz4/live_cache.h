@@ -46,6 +46,12 @@ class live_values_observer;
 class generic_live_block {
 public:
 	virtual void process_live_value(szarp::ParamValue* value) = 0;
+	virtual void set_observer(live_values_observer* observer) = 0;
+};
+
+struct live_cache_config {
+	std::vector<std::pair<std::string, TSzarpConfig*>> urls;
+	typename time_difference<second_time_t>::type retention;
 };
 
 template<class value_type, class time_type> class live_block : public generic_live_block {
@@ -92,10 +98,7 @@ class live_cache
 	void run();
 public:	
 	template<class entry_builder = generic_live_block_builder>
-	live_cache(
-		std::vector<std::pair<std::string, TSzarpConfig*>> configuration,
-		time_difference<second_time_t>::type& cache_duration
-	);
+	live_cache(const live_cache_config &c);
 
 	void register_cache_observer(TParam *, live_values_observer*);
 
