@@ -84,6 +84,9 @@ struct generic_live_block_builder;
 
 class live_cache
 {
+	std::thread m_thread;
+	int m_cmd_sock[2];
+
 	std::unique_ptr<zmq::context_t> m_context;
 
 	std::vector<std::string> m_urls;
@@ -95,15 +98,16 @@ class live_cache
 
 	void process_msg(szarp::ParamsValues* values, size_t sock_no);
 	void process_socket(size_t sock_no);
+
+	void start();
 	void run();
 public:	
 	template<class entry_builder = generic_live_block_builder>
-	live_cache(const live_cache_config &c);
+	live_cache(const live_cache_config &c, zmq::context_t* context);
 
 	void register_cache_observer(TParam *, live_values_observer*);
 
-	void start();
-
+	~live_cache();
 };
 
 }

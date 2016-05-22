@@ -19,6 +19,9 @@
 #ifndef __SZ4_LIVE_CACHE_TEMPL_H__
 #define __SZ4_LIVE_CACHE_TEMPL_H__
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
 namespace sz4 {
 
 template<class value_type, class time_type>
@@ -141,7 +144,7 @@ void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* va
 
 	{
 		std::lock_guard<std::mutex> guard(m_lock);
-		bool add_new = !m_block.size() || m_block.back().value == v;
+		bool add_new = !m_block.size() || m_block.back().value != v;
 		if (add_new) {
 			if (m_block.size() && (typename time_difference<time_type>::type(t - m_start_time)
 											> m_retention)) {
@@ -174,7 +177,7 @@ void convert_retention(const time_difference<second_time_t>::type& f, time_diffe
 }
 
 template<class value_type, class time_type>
-live_block<value_type, time_type>::live_block(time_difference<second_time_t>::type retention) {
+live_block<value_type, time_type>::live_block(time_difference<second_time_t>::type retention) : m_observer(nullptr) {
 	convert_retention(retention, m_retention);
 }
 
@@ -185,9 +188,15 @@ struct generic_live_block_builder {
 	}
 };
 
-template<class entry_builder> live_cache::live_cache(const live_cache_config& config) :
-	m_context(new zmq::context_t(1))
+template<class entry_builder> live_cache::live_cache(
+	const live_cache_config& config,
+	zmq::context_t* context)
+	:
+	m_context(context)
 {
+	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, m_cmd_sock))
+		throw std::runtime_error("Failed to craete socketpair");
+
 	for (auto& c : config.urls) {
 		m_urls.push_back(c.first);
 		m_config_id_map.push_back(c.second->GetConfigId());
@@ -209,6 +218,8 @@ template<class entry_builder> live_cache::live_cache(const live_cache_config& co
 
 		m_cache.push_back(std::move(config_cache));
 	}
+
+	start();
 }
 
 }

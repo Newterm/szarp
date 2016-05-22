@@ -41,6 +41,7 @@
 namespace sz4 {
 
 class live_cache;
+class live_cache_config;
 template<class types> class buffer_templ;
 
 typedef std::vector<
@@ -65,7 +66,9 @@ private:
 
 	boost::optional<SZARP_PROBE_TYPE> m_read_ahead;
 public:
-	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container);
+	base_templ(const std::wstring& szarp_data_dir,
+			ipk_container_type* ipk_container,
+			live_cache_config* live_config = nullptr);
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum) {
 		buffer_for_param(param)->get_weighted_sum(param, start, end, probe_type, sum);

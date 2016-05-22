@@ -45,33 +45,37 @@ void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 }
 
 void live_cache::process_socket(size_t sock_no) {
-	unsigned int event;
-	size_t event_size = sizeof(event);	
-
-	m_socks[sock_no]->getsockopt(ZMQ_EVENTS, &event, &event_size);
-	while (event & ZMQ_POLLIN) {
-		szarp::ParamsValues values;
-
+	do {
 		zmq::message_t msg;
-		m_socks[sock_no]->recv(&msg);
+		if (!m_socks[sock_no]->recv(&msg, ZMQ_NOBLOCK))
+			return;
 
+		szarp::ParamsValues values;
 		if (values.ParseFromArray(msg.data(), msg.size()))
 			process_msg(&values, sock_no);
 		else	
 			/* XXX: */;
 
-		m_socks[sock_no]->getsockopt(ZMQ_EVENTS, &event, &event_size);
-	}
+	} while (true);
+}
+
+void live_cache::start() {
+	m_thread = std::thread(std::bind(&live_cache::run, this));
 }
 
 void live_cache::run() {
-	std::vector<zmq::pollitem_t> polls;
-
 	for (auto& url : m_urls) {
 		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
 		sock->connect(url.c_str());
+		sock->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+		int zero = 0;
+		sock->setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
 		m_socks.push_back(std::move(sock));
+	}
 
+	std::vector<zmq::pollitem_t> polls;
+
+	for (auto& sock : m_socks) {
 		zmq::pollitem_t poll;
 		poll.socket = *sock;
 		poll.events = ZMQ_POLLIN;
@@ -79,14 +83,26 @@ void live_cache::run() {
 		polls.push_back(poll);
 	}
 
+	for (size_t i = 0; i < polls.size(); i++) 
+		process_socket(i);
+
+	zmq::pollitem_t poll;
+	poll.socket = nullptr;
+	poll.fd = m_cmd_sock[0];
+	poll.events = ZMQ_POLLIN;
+	polls.push_back(poll);
+
 	do {
 		int rc = zmq::poll(&polls[0], polls.size(), -1);
 		if (rc == -1)
 			continue;
 
-		for (size_t i = 0; i < polls.size(); i++) 
+		for (size_t i = 0; i < polls.size() - 1; i++) 
 			if (polls[i].revents & ZMQ_POLLIN)
 				process_socket(i);
+
+		if (polls.back().revents & ZMQ_POLLIN)
+			return;
 	} while (true);
 
 }
@@ -107,9 +123,18 @@ void live_cache::register_cache_observer(TParam *param, live_values_observer* ob
 }
 
 
-void live_cache::start() {
-	std::thread(std::bind(&live_cache::run, this));
+live_cache::~live_cache() {
+	write(m_cmd_sock[1], "a", 1);
+
+	m_thread.join();
+
+	close(m_cmd_sock[0]);
+	close(m_cmd_sock[1]);
 }
+
+template
+live_cache::live_cache<generic_live_block_builder>
+	(const live_cache_config &c, zmq::context_t* context);
 
 template class live_block<short, sz4::second_time_t>;
 template class live_block<double, sz4::second_time_t>;

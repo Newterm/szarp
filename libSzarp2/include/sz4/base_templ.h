@@ -1,8 +1,11 @@
 namespace sz4 {
 
 template<class types>
-base_templ<types>::base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
+base_templ<types>::base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container, live_cache_config* live_config) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
 	m_interperter.initialize(this, m_ipk_container);
+
+	if (live_config)
+		m_live_cache.reset(new live_cache(*live_config, new zmq::context_t(1)));
 }
 
 template<class types> boost::optional<SZARP_PROBE_TYPE>& base_templ<types>::read_ahead() {
