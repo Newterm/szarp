@@ -338,7 +338,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 		(void)ret;
 		assert (expr != NULL);
 
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(node);
 		free(expr);
 
