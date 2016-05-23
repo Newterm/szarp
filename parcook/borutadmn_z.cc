@@ -1249,7 +1249,7 @@ int boruta_daemon::configure_units() {
 			++i, u = u->GetNext()) {
 		std::stringstream ss;
 		ss << "./ipk:unit[position()=" << i + 1 << "]";
-		xmlNodePtr node = uxmlXPathGetNode((const xmlChar*) ss.str().c_str(), xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode((const xmlChar*) ss.str().c_str(), xp_ctx, false);
 		std::string mode;
 		if (get_xml_extra_prop(node, "mode", mode))
 			return 1;
