@@ -168,10 +168,13 @@ int ExecDaemon::XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@exec:frequency",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
+	{
+		sz_log(2, "using exec default frequency %d", m_freq);
 		return 0;
+	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
 		sz_log(0, "incorrect value '%s' for exec:frequency, number expected",
