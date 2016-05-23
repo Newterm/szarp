@@ -367,7 +367,7 @@ int Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	for (TParam* p = unit->GetFirstParam(); p; p = p->GetNext(), i++) {
 		char *expr;
 	        asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i + 1);
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(node);
 		char* c = (char*) xmlGetNsProp(node, BAD_CAST("type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (c == NULL || !strcmp(c, "weight"))
