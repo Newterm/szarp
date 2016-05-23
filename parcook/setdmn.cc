@@ -310,7 +310,7 @@ bool SetDaemon::SearchMinMax(xmlXPathContextPtr xp_ctx, const std::wstring& name
 {
 	char *expr;
 	asprintf(&expr, ".//ipk:param[@name='%s']", SC::S2U(name).c_str());
-	xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+	xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 	assert(node);
 	free(expr);
 	xmlChar* c = xmlGetNsProp(node, BAD_CAST("min"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -382,7 +382,7 @@ bool SetDaemon::ParseIP(xmlXPathContextPtr xp_ctx)
 	char *e;
 	asprintf(&e, "./@extra:tcp-allowed");
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
 		int tokc = 0;
