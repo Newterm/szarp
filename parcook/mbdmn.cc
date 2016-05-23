@@ -638,7 +638,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	const int ret = asprintf(&e, "./@modbus:%s", prop);
 	(void)ret;
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
 }
@@ -1098,7 +1098,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 
 		const int ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
 		(void)ret;
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(node);
 		free(expr);
 
@@ -1625,7 +1625,7 @@ int tcp_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		tokenize(NULL, &toks, &tokc);
 	}
 	if (m_allowed_ips.size() == 0) {
-		dolog(1, "warning: all IP allowed");	
+		dolog(1, "warning: all IP allowed");
 	}
 
 	if (get_tcp_port(xp_ctx, &m_listen_port))
