@@ -555,7 +555,7 @@ int ModbusTCP::XMLCheckAllowedIP(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-allowed",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
 		int tokc = 0;
@@ -595,7 +595,7 @@ int ModbusTCP::XMLCheckServerIP(xmlXPathContextPtr xp_ctx, int dev_num) {
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-address",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
 		m_server_ip = (struct in_addr*) calloc(1, sizeof(struct in_addr));
@@ -622,10 +622,12 @@ int ModbusTCP::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-keepalive",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
-	if (c == NULL)
-		return 1;
+	if (c == NULL){
+		sz_log(5, "setting TCP Keep-Alive options to default \"%s\"", (m_keepalive) ? "yes":"no");
+		return 0;
+	}
 	if (!xmlStrcmp(c, BAD_CAST "yes")) {
 		m_keepalive = 1;
 		sz_log(5, "setting TCP Keep-Alive options to \"yes\"");
@@ -652,11 +654,11 @@ int ModbusTCP::XMLCheckServerTimeout(xmlXPathContextPtr xp_ctx,
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-timeout",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
 		return 0;
-	
+
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
 		sz_log(0, "incorrect value '%s' for modbus:tcp-timeout for device %d -  integer expected",
@@ -685,10 +687,12 @@ int ModbusTCP::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:nodata-timeout",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
-	if (c == NULL)
+	if (c == NULL){
+		sz_log(10, "Setting modbus:nodata-timeout to default %d", m_nodata_timeout);
 		return 0;
+	}
 	
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
@@ -718,10 +722,12 @@ int ModbusTCP::XMLCheckNodataValue(xmlXPathContextPtr xp_ctx,
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:nodata-value",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
-	if (c == NULL)
+	if (c == NULL) {
+		sz_log(10, "Setting modbus:nodata-value to default %g", m_nodata_value);
 		return 0;
+	}
 	
 	f = strtof((char *)c, &e);
 	if ((*c == 0) || (*e != 0)) {
@@ -744,7 +750,7 @@ int ModbusTCP::XMLCheckFloatOrder(xmlXPathContextPtr xp_ctx, int dev_num)
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:FloatOrder",
 			dev_num);
 	assert (e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL) {
 		m_float_order = FLOAT_ORDER_MSWLSW;
@@ -843,7 +849,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 			dev_num, 
 			i + 1);
 		assert (e != NULL);
-		c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
+		c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 		free(e);
 		if (c == NULL) {
 			continue;
