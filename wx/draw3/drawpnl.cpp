@@ -213,12 +213,6 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 	case 'Z':
 		if(event.AltDown())
 			panel->StartSetSearch();
-#ifndef NO_GSTREAMER
-#if 0
-		if (event.ControlDown())
-			panel->dw->Dance();
-#endif
-#endif
 		break;
 	case 'C':
 		if (event.ControlDown())

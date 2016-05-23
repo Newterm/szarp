@@ -136,6 +136,7 @@ libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tboilers.cc \
 			$(IPK_DIR)/tscript.cc \
 			$(DMN_DIR)/ipchandler.cc \
+			$(SOURCE_DIR)/utils/daemonize.cc \
 			$(SOURCE_DIR)/misc/convuri.cc \
 			$(SOURCE_DIR)/misc/crontime.h \
 			$(SOURCE_DIR)/misc/crontime.cc \
@@ -220,8 +221,6 @@ libSzarp2_la_SOURCES = \
 			$(SZ4_DIR)/encode_file.cpp \
 			$(SZ4_DIR)/real_param_entry.cpp \
 			$(SZ4_DIR)/live_cache.cpp
-			\
-			$(SOURCE_DIR)/utils/daemonize.cc
 
 if MINGW32_OPT
 else

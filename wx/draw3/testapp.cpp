@@ -38,10 +38,6 @@
 #include <wx/wx.h>
 #endif
 
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
 #include <wx/image.h>
 #include <wx/cmdline.h>
 #include <wx/config.h>

@@ -34,6 +34,7 @@
 #include <fstream>
 #include <algorithm>
 #include <tuple>
+#include <vector>
 
 class SzCache {	
 

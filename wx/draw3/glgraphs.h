@@ -50,10 +50,6 @@
 #include <FTGL/ftgl.h>
 #include <GL/glu.h>
 
-#ifndef NO_GSTREAMER
-#include <gst/gst.h>
-#endif
-
 class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceiver {
 	bool m_refresh;
 

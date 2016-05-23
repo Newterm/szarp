@@ -577,7 +577,6 @@ Configured with python 2.4         yes
 Configured with ldap               no
 Configured with lber               no
 Configured with sqlite3            yes
-Configured with gstreamer          no
 Configured with vmime              no
 Configured with libevent           yes
 Configured with c-ares             yes

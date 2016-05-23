@@ -67,11 +67,6 @@ WxGraphs::WxGraphs(wxWindow *parent, ConfigManager *cfg) : wxWindow(parent, wxID
 #endif
 	SetFont(f);
 
-#ifndef NO_GSTREAMER
-	m_spectrum_vals.resize(24);
-
-	m_dancing = false;
-#endif
 	m_bg_view = new BackgroundView(this, cfg);
 
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
@@ -174,9 +169,6 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 	wxDC *pdc = m_bg_view->GetDC();
 
 	if (m_draws_wdg->GetNoData() == false) {
-#ifndef NO_GSTREAMER
-		if (!m_dancing) 
-#endif
 			while (i) {
 
 				int x = i.GetX();
@@ -213,10 +205,6 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 
 				++i;
 			}
-#ifndef NO_GSTREAMER
-		else	
-			DrawDance(&dc);
-#endif
 	} else {
 		int w, h, tw, th;
 		GetClientSize(&w, &h);
@@ -587,11 +575,6 @@ void WxGraphs::OnMouseLeftDClick(wxMouseEvent & event)
 		return;
 	}
 }
-
-#ifndef NO_GSTREAMER
-void WxGraphs::DrawDance(wxDC* dc) {
-}
-#endif
 
 void WxGraphs::OnSetFocus(wxFocusEvent& event) {
 }

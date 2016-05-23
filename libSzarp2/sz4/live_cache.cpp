@@ -19,7 +19,9 @@
 
 #include <memory>
 
+#ifndef MINGW32
 #include <zmq.hpp>
+#endif
 
 #include "protobuf/paramsvalues.pb.h"
 #include "sz4/block.h"
@@ -45,6 +47,7 @@ void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 }
 
 void live_cache::process_socket(size_t sock_no) {
+#ifndef MINGW32
 	do {
 		zmq::message_t msg;
 		if (!m_socks[sock_no]->recv(&msg, ZMQ_NOBLOCK))
@@ -57,6 +60,7 @@ void live_cache::process_socket(size_t sock_no) {
 			/* XXX: */;
 
 	} while (true);
+#endif
 }
 
 void live_cache::start() {
@@ -64,6 +68,7 @@ void live_cache::start() {
 }
 
 void live_cache::run() {
+#ifndef MINGW32
 	for (auto& url : m_urls) {
 		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
 		sock->connect(url.c_str());
@@ -104,7 +109,7 @@ void live_cache::run() {
 		if (polls.back().revents & ZMQ_POLLIN)
 			return;
 	} while (true);
-
+#endif
 }
 
 void live_cache::register_cache_observer(TParam *param, live_values_observer* observer) {
