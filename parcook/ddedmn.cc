@@ -237,7 +237,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			i + 1);
 		assert (e != NULL);
 
-		xmlNodePtr n = uxmlXPathGetNode(BAD_CAST e, xp_ctx);
+		xmlNodePtr n = uxmlXPathGetNode(BAD_CAST e, xp_ctx, false);
 		assert(n != NULL);
 		free(e);
 
