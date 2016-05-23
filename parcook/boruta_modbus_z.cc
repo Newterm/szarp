@@ -1645,7 +1645,7 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 			m_log.log(0, "Cannot allocate XPath expression for param number %d", j + 1);
 			return 1;
 		}
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(node);
 		free(expr);
 
