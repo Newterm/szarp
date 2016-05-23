@@ -204,7 +204,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 			sz_log(0, "Cannot allocate XPath expression for param number %d", i);
 			return 1;
 		}
-		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(pnode);
 		free(expr);
 
