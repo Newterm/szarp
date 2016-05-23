@@ -236,7 +236,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 			++i, p = p->GetNext()) {
 		char *expr;
 		asprintf(&expr, ".//ipk:param[position()=%d]", i + 1);
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(node);
 		free(expr);
 		c = (char *)xmlGetNsProp(node, BAD_CAST("address"),
