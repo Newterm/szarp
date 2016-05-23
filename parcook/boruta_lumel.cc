@@ -278,7 +278,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	for (size_t i = 0; i < m_read_count ; i++) {
 		char *expr;
 	        asprintf(&expr, ".//ipk:param[position()=%d]",  i + 1);
-		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
+		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		assert(pnode);
 		free(expr);
 
