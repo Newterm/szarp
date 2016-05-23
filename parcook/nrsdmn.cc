@@ -457,7 +457,7 @@ void UnitExaminator::ConfigExtraSpeed(DaemonConfig* cfg, int unit_num)
 	asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
 			unit_num + 1);
 	assert (expr);
-	xmlChar *c = uxmlXPathGetProp(BAD_CAST expr, xp_ctx);
+	xmlChar *c = uxmlXPathGetProp(BAD_CAST expr, xp_ctx, false);
 	free(expr);
 	if (c != NULL) {
 		m_extraspeed = atoi((char *)c);
