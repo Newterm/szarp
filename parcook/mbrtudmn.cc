@@ -1736,10 +1736,8 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	assert (ret == 0);
 
 	xmlChar *c = uxmlXPathGetProp(BAD_CAST strdup("./@modbus:mode"), xp_ctx);
-	if (c == NULL) {
-		sz_log(0, "Missing modbus mode attribute in configuration");
+	if (c == NULL)
 		return false;
-	}
 	if (!xmlStrcmp(c, BAD_CAST "master")) 
 		m_mode = MB_MODE_MASTER;
 	else if (!xmlStrcmp(c, BAD_CAST "slave"))
@@ -1750,7 +1748,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	}
 	xmlFree(c);
 
-	c = uxmlXPathGetProp(BAD_CAST "./@modbus:parity", xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST "./@modbus:parity", xp_ctx, false);
 	if (!c)
 		m_parity = NO_PARITY;
 	else{
@@ -1768,7 +1766,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	}
 	xmlFree(c);
 
-	c = uxmlXPathGetProp(BAD_CAST "./@modbus:StopBits", xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST "./@modbus:StopBits", xp_ctx, false);
 	if (!c)
 		m_stop_bits = 1;
 	else{
@@ -1783,7 +1781,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	}
 	xmlFree(c);
 
-	c = uxmlXPathGetProp(BAD_CAST "./@modbus:OpenPortEveryTime", xp_ctx);
+	c = uxmlXPathGetProp(BAD_CAST "./@modbus:OpenPortEveryTime", xp_ctx, false);
 	if (!c || xmlStrcmp(c, BAD_CAST "yes"))
 		m_always_init_port = false;
 	else
