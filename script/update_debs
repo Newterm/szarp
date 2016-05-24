@@ -131,7 +131,10 @@ my $list = join(' ', @sequence);
 subst_dpkgcfg() or die "UPDATE ABORTED - unable to modify /etc/dpkg/dpkg.cfg";
 
 my $shall_die = 0;
-system("apt-get -y install $list") == 0 or $shall_die = 1;
+my $updates_present = system("apt-get -y -s install $list | grep ^Inst 1>/dev/null");
+if ($updates_present == 0) {
+	system("apt-get -y install $list") == 0 or $shall_die = 1;
+}
 restore_dpkgcfg();
 
 if ($shall_die) {
