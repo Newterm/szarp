@@ -29,8 +29,6 @@ class ParamValue;
 
 namespace sz4 {
 
-template<class types> class base_templ;
-
 class generic_live_block;
 
 class generic_param_entry : public SzbParamObserver, public live_values_observer {
@@ -131,7 +129,7 @@ template<template <typename DT, typename TT, typename BT> class PT, class V, cla
 		helper.convert();
 	}
 public:
-	param_entry_in_buffer(base_templ<BT>* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
+	param_entry_in_buffer(BT* _base, TParam* param, const boost::filesystem::wpath& base_dir) :
 		generic_param_entry(param), m_entry(_base, param, base_dir / param->GetSzbaseName())
 	{ }
 
@@ -241,7 +239,7 @@ public:
 		m_entry.param_data_changed(param, path);
 	}
 			
-	PT<V, T, base_templ<BT> >& get_contained_entry() {
+	PT<V, T, BT>& get_contained_entry() {
 		return m_entry;
 	}
 

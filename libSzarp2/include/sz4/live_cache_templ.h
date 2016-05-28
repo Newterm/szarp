@@ -36,10 +36,17 @@ bool live_block<value_type, time_type>::get_weighted_sum(const time_type& start,
 {
 	std::lock_guard<std::mutex> guard(m_lock);
 
-	if (m_block.size() == 0)
+	if (m_block.size() == 0) {
+		sum.set_fixed(false);
 		return false;
+	}
 
 	sz4::get_weighted_sum(m_block.begin(), m_block.end(), m_start_time, end, sum);
+
+	if (end > m_block.back().time) {
+		sum.add_no_data_weight(end - m_block.back().time);
+		sum.set_fixed(false);
+	}
 
 	end = m_start_time;
 
@@ -51,11 +58,11 @@ std::pair<bool, time_type> live_block<value_type, time_type>::search_data_left(c
 {
 	std::lock_guard<std::mutex> guard(m_lock);
 
-	if (!m_block.size())
-		return std::make_pair(false, end);
+	if (!m_block.size() || (m_block.size() == 1 && m_start_time == m_block[0].time))
+		return std::make_pair(false, start);
 
-	if (end > m_block.back().time)
-		return std::make_pair(false, time_trait<time_type>::invalid_value);
+	if (end >= m_block.back().time)
+		return std::make_pair(true, time_trait<time_type>::invalid_value);
 
 	if (start < m_start_time)
 		return std::make_pair(false, start);
@@ -72,10 +79,10 @@ time_type live_block<value_type, time_type>::search_data_right(const time_type& 
 {
 	std::lock_guard<std::mutex> guard(m_lock);
 
-	if (!m_block.size())
+	if (!m_block.size() || end <= m_start_time || (m_block.size() == 1 && m_start_time == m_block[0].time))
 		return time_trait<time_type>::invalid_value;
 
-	auto i = sz4::search_data_left_t(m_block.begin(), m_block.end(), start, end, condition);
+	auto i = sz4::search_data_right_t(m_block.begin(), m_block.end(), start, end, condition);
 	if (i == m_block.end())
 		return time_trait<time_type>::invalid_value;
 
@@ -134,6 +141,35 @@ void get_value(szarp::ParamValue* value, double& v) {
 }
 
 template<class value_type, class time_type>
+void live_block<value_type, time_type>::process_live_value(
+		const time_type& t,
+		const value_type& v)
+{
+	typedef typename time_difference<time_type>::type diff_type;
+	std::lock_guard<std::mutex> guard(m_lock);
+
+	if (m_block.size() && m_block.back().value == v) {
+		m_block.back().time = t;
+		return;
+	}
+
+	typedef value_time_pair<value_type, time_type> pair;
+	if (!m_block.size()) {
+		m_start_time = t;
+		m_block.push_back(make_value_time_pair<pair>(v, t));
+		return;
+	}
+
+
+	while (m_block.size() && diff_type(t - m_block[0].time) >= m_retention) {
+		m_start_time = m_block.front().time;
+		m_block.pop_front();
+	}
+
+	m_block.push_back(make_value_time_pair<pair>(v, t));
+}
+
+template<class value_type, class time_type>
 void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* value)
 {
 	time_type t;
@@ -142,24 +178,11 @@ void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* va
 	value_type v;
 	get_value(value, v);
 
-	{
-		std::lock_guard<std::mutex> guard(m_lock);
-		bool add_new = !m_block.size() || m_block.back().value != v;
-		if (add_new) {
-			if (m_block.size() && (typename time_difference<time_type>::type(t - m_start_time)
-											> m_retention)) {
-				m_start_time = m_block.front().time;
-				m_block.pop_front();
-			}
-			m_block.push_back(make_value_time_pair<value_time_pair<value_type, time_type>>(v, t));
-		} else
-			m_block.back().time = t;
-	}
+	process_live_value(t, v);
 
 	auto observer = m_observer.load(std::memory_order_consume);
 	if (observer)
 		observer->new_live_value(value);
-
 }
 
 namespace {

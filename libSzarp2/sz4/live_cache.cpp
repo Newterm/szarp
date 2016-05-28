@@ -18,6 +18,7 @@
 */
 
 #include <memory>
+#include <future>
 
 #ifndef MINGW32
 #include <zmq.hpp>
@@ -36,6 +37,7 @@
 namespace sz4 {
 
 void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
+#ifndef MINGW32
 	auto cache = m_cache[sock_no];
 	for (int i = 0; i < values->param_values_size(); i++) {
 		szarp::ParamValue* value = values->mutable_param_values(i);
@@ -44,6 +46,7 @@ void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 		if (param_no < cache.size())
 			cache[param_no]->process_live_value(value);
 	}
+#endif
 }
 
 void live_cache::process_socket(size_t sock_no) {
@@ -64,10 +67,15 @@ void live_cache::process_socket(size_t sock_no) {
 }
 
 void live_cache::start() {
-	m_thread = std::thread(std::bind(&live_cache::run, this));
+#ifndef MINGW32
+	std::promise<void> promise;
+	auto future = promise.get_future();
+	m_thread = std::thread(&live_cache::run, this, std::move(promise));
+	future.wait();
+#endif
 }
 
-void live_cache::run() {
+void live_cache::run(std::promise<void> promise) {
 #ifndef MINGW32
 	for (auto& url : m_urls) {
 		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
@@ -91,6 +99,8 @@ void live_cache::run() {
 	for (size_t i = 0; i < polls.size(); i++) 
 		process_socket(i);
 
+	promise.set_value();
+
 	zmq::pollitem_t poll;
 	poll.socket = nullptr;
 	poll.fd = m_cmd_sock[0];
@@ -113,6 +123,7 @@ void live_cache::run() {
 }
 
 void live_cache::register_cache_observer(TParam *param, live_values_observer* observer) {
+#ifndef MINGW32
 	auto i = std::find(m_config_id_map.begin(), m_config_id_map.end(), param->GetConfigId());
 	if (i == m_config_id_map.end())
 		return;
@@ -125,16 +136,19 @@ void live_cache::register_cache_observer(TParam *param, live_values_observer* ob
 	block->set_observer(observer);
 
 	observer->set_live_block(block);
+#endif
 }
 
 
 live_cache::~live_cache() {
+#ifndef MINGW32
 	write(m_cmd_sock[1], "a", 1);
 
 	m_thread.join();
 
 	close(m_cmd_sock[0]);
 	close(m_cmd_sock[1]);
+#endif
 }
 
 template

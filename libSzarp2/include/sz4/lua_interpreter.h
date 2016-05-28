@@ -26,9 +26,7 @@
 
 namespace sz4 {
 
-template<typename types> class base_templ;
-
-template<class types> class lua_interpreter {
+template<class base> class lua_interpreter {
 	lua_State* m_lua;
 public:
 	lua_interpreter();
@@ -39,7 +37,7 @@ public:
 
 	void pop_prepared_param();
 
-	void initialize(base_templ<types>* base, typename types::ipk_container_type* container);
+	void initialize(base* _base, typename base::ipk_container_type* container);
 
 	lua_State* lua();
 

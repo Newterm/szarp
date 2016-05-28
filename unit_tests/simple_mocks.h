@@ -68,9 +68,9 @@ public:
 	}
 };
 
-template<class value_type, class time_type, class base_types> class fake_entry_type {
+template<class value_type, class time_type, class base> class fake_entry_type {
 public:
-	fake_entry_type(sz4::base_templ<base_types>* _base, TParam* param, const boost::filesystem::wpath& path) {}
+	fake_entry_type(base* _base, TParam* param, const boost::filesystem::wpath& path) {}
 
 	void get_weighted_sum_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, sz4::weighted_sum<value_type, time_type>& sum) {}
 
@@ -107,13 +107,13 @@ public:
 struct mock_param_factory {
 	template<
 		template<typename DT, typename TT, class BT> class entry_type,
-		typename types
+		typename base
 	>
-	sz4::generic_param_entry* create(sz4::base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	sz4::generic_param_entry* create(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 		if(param->GetName() == L"Status:Meaner3:program_uruchomiony") {
-			return sz4::param_entry_factory().template create<fake_entry_type, types>(base, param, buffer_directory);
+			return sz4::param_entry_factory().template create<fake_entry_type, base>(_base, param, buffer_directory);
 		} else {
-			return sz4::param_entry_factory().template create<entry_type, types>(base, param, buffer_directory);
+			return sz4::param_entry_factory().template create<entry_type, base>(_base, param, buffer_directory);
 		}
 	}
 

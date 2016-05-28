@@ -26,6 +26,10 @@
 
 #include "defs.h"
 
+namespace std {
+template<class T> class promise;
+}
+
 namespace zmq {
 class socket_t;
 class context_t;
@@ -74,6 +78,7 @@ public:
 	void get_first_time(time_type &t);
 	void get_last_time(time_type &t);
 
+  	void process_live_value(const time_type& time, const value_type& value);
 	void process_live_value(szarp::ParamValue* value);
 	void set_observer(live_values_observer* observer);
 
@@ -101,7 +106,7 @@ class live_cache
 	void process_socket(size_t sock_no);
 
 	void start();
-	void run();
+	void run(std::promise<void> promise);
 public:	
 	template<class entry_builder = generic_live_block_builder>
 	live_cache(const live_cache_config &c, zmq::context_t* context);

@@ -27,21 +27,21 @@
 namespace sz4 {
 
 struct param_entry_factory {
-	template<template<typename DT, typename TT, class BT> class entry_type, class types> struct builder {
+	template<template<typename DT, typename TT, class BT> class entry_type, class base> struct builder {
 		template<class _data, class _time, class ...Args> static generic_param_entry* op(Args... args) {
-			return new param_entry_in_buffer<entry_type, _data, _time, types>(args...);
+			return new param_entry_in_buffer<entry_type, _data, _time, base>(args...);
 		};
 	};
 
 	template<
 		template<typename DT, typename TT, class BT> class entry_type,
-		typename types
+		typename base 
 	>
-	generic_param_entry* create(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) const {
+	generic_param_entry* create(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) const {
 		return factory<
 			generic_param_entry,
-			builder<entry_type, types>
-				>::op(param, base, param, buffer_directory);
+			builder<entry_type, base>
+				>::op(param, _base, param, buffer_directory);
 	}
 };
 

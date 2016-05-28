@@ -23,12 +23,12 @@ namespace sz4 {
 
 template<class V, class T> class live_block;
 
-template<class V, class T, class types> class file_block_entry;
+template<class V, class T, class base> class file_block_entry;
 
-template<class value_type, class time_type, class types>
+template<class value_type, class time_type, class base>
 class file_block : public concrete_block<value_type, time_type> {
 public:
-	typedef file_block_entry<value_type, time_type, types> entry_type;
+	typedef file_block_entry<value_type, time_type, base> entry_type;
 	file_block(const time_type& start_time,
 			entry_type* entry,
 			block_cache* cache);
@@ -39,9 +39,9 @@ protected:
 	entry_type *m_entry;
 };
 
-template<class V, class T, class types> class file_block_entry {
+template<class V, class T, class base> class file_block_entry {
 protected:
-	typedef file_block<V, T, types> block_type;
+	typedef file_block<V, T, base> block_type;
 	block_type* m_block;
 
 	T m_start_time;
@@ -73,9 +73,9 @@ public:
 	virtual ~file_block_entry();
 };
 
-template<class V, class T, class types> class sz4_file_block_entry : public file_block_entry<V, T, types> {
+template<class V, class T, class base> class sz4_file_block_entry : public file_block_entry<V, T, base> {
 public:
-	typedef file_block_entry<V, T, types> parent;
+	typedef file_block_entry<V, T, base> parent;
 	sz4_file_block_entry(const T& start_time,
 			const std::wstring& block_path,
 			block_cache* cache);
@@ -83,10 +83,10 @@ public:
 	void refresh_if_needed();
 };
 
-template<class V, class T, class types> class szbase_file_block_entry : public file_block_entry<V, T, types> {
+template<class V, class T, class base> class szbase_file_block_entry : public file_block_entry<V, T, base> {
 	size_t m_read_so_far;
 public:
-	typedef file_block_entry<V, T, types> parent;
+	typedef file_block_entry<V, T, base> parent;
 
 	szbase_file_block_entry(const T& start_time,
 			const std::wstring& block_path,
@@ -95,12 +95,12 @@ public:
 	void refresh_if_needed();
 };
 
-template<class V, class T, class types> class real_param_entry_in_buffer {
+template<class V, class T, class base> class real_param_entry_in_buffer {
 public:
-	typedef file_block_entry<V, T, types> file_block_entry_type;
+	typedef file_block_entry<V, T, base> file_block_entry_type;
 	typedef boost::container::flat_map<T, file_block_entry_type*, std::less<T>, allocator_type<std::pair<T, file_block_entry_type*> > > map_type;
-private:
-	base_templ<types>* m_base;
+protected:
+	base* m_base;
 	map_type m_blocks;
 
 	TParam* m_param;
@@ -116,7 +116,7 @@ private:
 
 	live_block<V, T>* m_live_block;
 public:
-	real_param_entry_in_buffer(base_templ<types> *_base, TParam* param, const boost::filesystem::wpath& param_dir);
+	real_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath& param_dir);
 
 	void get_weighted_sum_impl(const T& start, const T& end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum);
 

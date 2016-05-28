@@ -104,6 +104,6 @@ generic_param_entry::~generic_param_entry() {
 
 namespace sz4 {
 
-template class buffer_templ<base_types>;
+template class buffer_templ<sz4::base_templ<base_types>>;
 
 }

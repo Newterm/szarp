@@ -42,11 +42,9 @@
 
 namespace sz4 {
 
-template<class types> class base_templ;
-
-template<class types> class buffer_templ {
-	typedef typename types::ipk_container_type ipk_container_type;
-	base_templ<types>* m_base;
+template<class base> class buffer_templ {
+	typedef typename base::ipk_container_type ipk_container_type;
+	base* m_base;
 	SzbParamMonitor* m_param_monitor;
 	ipk_container_type* m_ipk_container;
 	boost::filesystem::wpath m_buffer_directory;
@@ -56,7 +54,7 @@ template<class types> class buffer_templ {
 
 	void prepare_param(TParam* param);
 public:
-	buffer_templ(base_templ<types>* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory);
+	buffer_templ(base* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory);
 
 	generic_param_entry* get_param_entry(TParam* param);
 
