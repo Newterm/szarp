@@ -1402,14 +1402,14 @@ void execute_scripts(std::vector<LuaParamInfo*>& param_info) {
 					unsigned short us = result;
 					val = *((short*) &us);
 				} else {
-					sz_log(1, "Param %ls, value overflow %f, setting no data", p->GetName().c_str(), result);
+					sz_log(1, "Param %s, value overflow %f, setting no data", SC::S2U(p->GetName()).c_str(), result);
 				}
 			} else if (result < std::numeric_limits<short>::min())
-				sz_log(1, "Param %ls, value underflow %f, setting no data", p->GetName().c_str(), result);
+				sz_log(1, "Param %s, value underflow %f, setting no data", SC::S2U(p->GetName()).c_str(), result);
 			else
 				val = (short) result;
 
-			sz_log(4, "Setting param %ls, val %hd", p->GetName().c_str(), val); 
+			sz_log(4, "Setting param %s, val %hd", SC::S2U(p->GetName()).c_str(), val);
 		}
 		Probe[(*i)->index] = val;
 	}
