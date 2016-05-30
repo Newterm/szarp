@@ -36,12 +36,16 @@ bool live_block<value_type, time_type>::get_weighted_sum(const time_type& start,
 {
 	std::lock_guard<std::mutex> guard(m_lock);
 
-	if (m_block.size() == 0) {
-		sum.set_fixed(false);
+	if (m_block.size() == 0 || end <= m_start_time)
 		return false;
+
+	if (start >= m_block.back().time) {
+		sum.add_no_data_weight(end - start);
+		sum.set_fixed(false);
+		return true;
 	}
 
-	sz4::get_weighted_sum(m_block.begin(), m_block.end(), m_start_time, end, sum);
+	sz4::get_weighted_sum(m_block.begin(), m_block.end(), start, end, sum);
 
 	if (end > m_block.back().time) {
 		sum.add_no_data_weight(end - m_block.back().time);

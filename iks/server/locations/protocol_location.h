@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <random>
 
-class ProtocolLocation : public Location {
+class ProtocolLocation : public Location, virtual public std::enable_shared_from_this<ProtocolLocation> {
 public:
 	ProtocolLocation( const std::string& name , Protocol::ptr protocol = Protocol::ptr() , Connection* connection = NULL );
 	virtual ~ProtocolLocation();

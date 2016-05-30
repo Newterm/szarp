@@ -79,10 +79,10 @@ void live_cache::run(std::promise<void> promise) {
 #ifndef MINGW32
 	for (auto& url : m_urls) {
 		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
-		sock->connect(url.c_str());
 		sock->setsockopt(ZMQ_SUBSCRIBE, "", 0);
 		int zero = 0;
 		sock->setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+		sock->connect(url.c_str());
 		m_socks.push_back(std::move(sock));
 	}
 
@@ -129,7 +129,7 @@ void live_cache::register_cache_observer(TParam *param, live_values_observer* ob
 		return;
 
 	size_t idx = std::distance(m_config_id_map.begin(), i);
-	if (m_cache.at(idx).size() < param->GetParamId())
+	if (m_cache.at(idx).size() <= param->GetParamId())
 		return;
 
 	auto block = m_cache[idx][param->GetParamId()];

@@ -1,6 +1,7 @@
 #include "../../../config.h"
 #include "szbase_wrapper.h"
 #include "sz4/exceptions.h"
+#include "sz4/live_cache.h"
 #include "sz4/util.h"
 #include "liblog.h"
 
@@ -46,8 +47,9 @@ size_t SzbaseWrapper::base_cache_low_water_mark;
 size_t SzbaseWrapper::base_cache_high_water_mark;
 const size_t SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT = 128 * 1024 * 1024;
 const size_t SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT = 192 * 1024 * 1024;
+const int SzbaseWrapper::BASE_LIVE_CACHE_RETENTION = 15 * 60;
 
-bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_low_water_mark, size_t base_high_water_mark)
+bool SzbaseWrapper::init( const std::string& _szarp_dir , const CfgSections& locs, int live_cache_retetion, size_t base_low_water_mark, size_t base_high_water_mark)
 {
 	if( initialized )
 		return boost::filesystem::path(_szarp_dir) == szarp_dir;
@@ -55,8 +57,29 @@ bool SzbaseWrapper::init( const std::string& _szarp_dir , size_t base_low_water_
 	szarp_dir = _szarp_dir;
 
 	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
+	auto ipk = IPKContainer::GetObject();
 
-	base = new sz4::base( szarp_dir.wstring() , IPKContainer::GetObject() );
+	sz4::live_cache_config live_cfg;
+	live_cfg.retention = live_cache_retetion;
+
+	for (auto loci : locs) {
+		auto loc = loci.second;
+		if (loc.at("type") != "szbase")
+			continue;
+
+		if (!loc.count("hub_url"))
+			continue;
+
+		auto url = loc.at("hub_url");
+		auto base = loc.at("base");
+
+		auto cfg = ipk->GetConfig((const unsigned char*)base.c_str());
+
+		live_cfg.urls.push_back(std::make_pair(url, cfg));
+	}
+
+	base = new sz4::base( szarp_dir.wstring() , ipk ,
+						  live_cfg.urls.size() ? &live_cfg : nullptr );
 
 	SzbaseWrapper::base_cache_high_water_mark = base_high_water_mark;
 	SzbaseWrapper::base_cache_low_water_mark = base_low_water_mark;
