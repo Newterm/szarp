@@ -88,13 +88,9 @@ public:
 		get_param_entry(param)->get_first_time(t);
 	}
 
-	void get_heartbeat_last_time(nanosecond_time_t& t) {
-		m_heart_beat_entry->get_last_time(t);
-	}
+	void get_heartbeat_last_time(nanosecond_time_t& t);
 
-	void get_heartbeat_last_time(second_time_t& t) {
-		m_heart_beat_entry->get_last_time(t);
-	}
+	void get_heartbeat_last_time(second_time_t& t);
 
 	void get_heartbeat_last_time(TParam* param, nanosecond_time_t& t) {
 		get_param_entry(param)->get_last_time(t);

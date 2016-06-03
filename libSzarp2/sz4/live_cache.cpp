@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <future>
+#include <chrono>
 
 #ifndef MINGW32
 #include <zmq.hpp>
@@ -38,7 +39,7 @@ namespace sz4 {
 
 void live_cache::process_msg(szarp::ParamsValues* values, size_t sock_no) {
 #ifndef MINGW32
-	auto cache = m_cache[sock_no];
+	auto& cache = m_cache[m_sock_map[sock_no]];
 	for (int i = 0; i < values->param_values_size(); i++) {
 		szarp::ParamValue* value = values->mutable_param_values(i);
 
@@ -80,9 +81,12 @@ void live_cache::run(std::promise<void> promise) {
 	for (auto& url : m_urls) {
 		auto sock = std::unique_ptr<zmq::socket_t>(new zmq::socket_t(*m_context, ZMQ_SUB));
 		sock->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+
 		int zero = 0;
 		sock->setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+
 		sock->connect(url.c_str());
+
 		m_socks.push_back(std::move(sock));
 	}
 
@@ -124,15 +128,14 @@ void live_cache::run(std::promise<void> promise) {
 
 void live_cache::register_cache_observer(TParam *param, live_values_observer* observer) {
 #ifndef MINGW32
-	auto i = std::find(m_config_id_map.begin(), m_config_id_map.end(), param->GetConfigId());
-	if (i == m_config_id_map.end())
+	unsigned id = param->GetConfigId();
+	if (id >= m_cache.size())
 		return;
 
-	size_t idx = std::distance(m_config_id_map.begin(), i);
-	if (m_cache.at(idx).size() <= param->GetParamId())
+	if (m_cache[id].size() <= param->GetParamId())
 		return;
 
-	auto block = m_cache[idx][param->GetParamId()];
+	auto block = m_cache[id][param->GetParamId()];
 	block->set_observer(observer);
 
 	observer->set_live_block(block);
@@ -149,6 +152,29 @@ live_cache::~live_cache() {
 	close(m_cmd_sock[0]);
 	close(m_cmd_sock[1]);
 #endif
+}
+
+template<> bool live_cache::get_last_meaner_time<second_time_t>(int config_id, second_time_t& t)
+{
+	if (m_cache.size() <= unsigned(config_id))
+		return false;
+
+	using namespace std::chrono;
+	t = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+	
+	return true;
+}
+
+template<> bool live_cache::get_last_meaner_time<nanosecond_time_t>(int config_id, nanosecond_time_t& t)
+{
+	if (m_cache.size() <= unsigned(config_id))
+		return false;
+
+	using namespace std::chrono;
+	t.second = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+	t.nanosecond = 0;
+	
+	return true;
 }
 
 template

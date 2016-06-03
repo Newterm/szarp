@@ -140,6 +140,22 @@ template<class base> generic_param_entry* param_entry_build(base *_base, TParam*
 	}
 }
 
+template<class base> void buffer_templ<base>::get_heartbeat_last_time(second_time_t& t) {
+	auto live = m_base->get_live_cache();
+	if (live && live->get_last_meaner_time(m_heart_beat_entry->get_param()->GetConfigId(), t))
+		return;
+	m_heart_beat_entry->get_last_time(t);
+}
+
+template<class base> void buffer_templ<base>::get_heartbeat_last_time(nanosecond_time_t& t) {
+	m_heart_beat_entry->get_last_time(t);
+
+	auto live = m_base->get_live_cache();
+	if (live && live->get_last_meaner_time(m_heart_beat_entry->get_param()->GetConfigId(), t))
+		return;
+	m_heart_beat_entry->get_last_time(t);
+}
+
 template<class base> void buffer_templ<base>::remove_param(TParam* param) {
 	if (m_param_ents.size() <= param->GetParamId())
 		return;

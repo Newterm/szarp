@@ -257,14 +257,14 @@ void Sz4LiveCache::blockTest() {
 	CPPUNIT_ASSERT_EQUAL(sum_v(5 * 500), sum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(dif_t(500), weight);
 	CPPUNIT_ASSERT_EQUAL(dif_t(1500), sum.no_data_weight());
+	CPPUNIT_ASSERT(!sum.fixed());
 
 	live_block.process_live_value(2000, 10);
+
 	CPPUNIT_ASSERT_EQUAL(sec_t(1499), entry.search_data_left_impl(2000, 1000, PT_SEC10, no_data_search_condition()));
 	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(1500, 3000, PT_SEC10, no_data_search_condition()));
 
-
 	live_block.process_live_value(3000, 10);
-	CPPUNIT_ASSERT(!sum.fixed());
 
 	sum = sum_t();
 
@@ -284,15 +284,26 @@ void Sz4LiveCache::blockTest() {
 
 	CPPUNIT_ASSERT(!sum.fixed());
 
-	CPPUNIT_ASSERT_EQUAL(sec_t(2500), entry.search_data_left_impl(2500, 1000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sec_t(2999), entry.search_data_left_impl(3500, 1000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sec_t(1499), entry.search_data_left_impl(1999, 1000, PT_SEC10, no_data_search_condition()));
+	auto search_cond = no_data_search_condition();
 
-	CPPUNIT_ASSERT_EQUAL(sec_t(1300), entry.search_data_right_impl(1300, 2000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(1500, 2000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sec_t(2000), entry.search_data_right_impl(1500, 3000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sec_t(2100), entry.search_data_right_impl(2100, 3000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(3000, 5000, PT_SEC10, no_data_search_condition()));
+	CPPUNIT_ASSERT_EQUAL(sec_t(2500), entry.search_data_left_impl(2500, 1000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sec_t(2999), entry.search_data_left_impl(3500, 1000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sec_t(1499), entry.search_data_left_impl(1999, 1000, PT_SEC10, search_cond));
+
+	CPPUNIT_ASSERT_EQUAL(sec_t(1300), entry.search_data_right_impl(1300, 2000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(1500, 2000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sec_t(2000), entry.search_data_right_impl(1500, 3000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sec_t(2100), entry.search_data_right_impl(2100, 3000, PT_SEC10, search_cond));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(3000, 5000, PT_SEC10, search_cond));
+
+	sum = sum_t();
+
+	entry.get_weighted_sum_impl(sec_t(3000), sec_t(3500), PT_SEC10, sum);
+	sum.sum(weight);
+	CPPUNIT_ASSERT_EQUAL(dif_t(0), weight);
+	CPPUNIT_ASSERT_EQUAL(dif_t(500), sum.no_data_weight());
+
+	CPPUNIT_ASSERT(!sum.fixed());
 
 }
 

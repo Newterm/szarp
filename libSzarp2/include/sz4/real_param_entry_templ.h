@@ -208,12 +208,11 @@ template<class V, class T, class base>
 void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum) {
 
 	T end(_end);
-	bool live_fixed = false;
+	cache_ret from_live = cache_ret::none;
 	if (m_live_block) {
-		bool done = m_live_block->get_weighted_sum(start, end, sum);
-		if (done)
+		from_live = m_live_block->get_weighted_sum(start, end, sum);
+		if (from_live == cache_ret::complete)
 			return;
-		live_fixed = sum.fixed();
 	}
 
 	refresh_if_needed();
@@ -223,7 +222,8 @@ void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& star
 	if (m_blocks.size() == 0) {
 		//no blocks - nodata
 		sum.add_no_data_weight(end - start);
-		sum.set_fixed(live_fixed);
+		if (from_live == cache_ret::none)
+			sum.set_fixed(false);
 		return;
 	}
 
@@ -257,7 +257,8 @@ void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& star
 
 	if (current < end) {
 		sum.add_no_data_weight(end - current);
-		sum.set_fixed(live_fixed);
+		if (from_live == cache_ret::none)
+			sum.set_fixed(false);
 	}
 }
 

@@ -32,20 +32,22 @@ live_block<value_type, time_type>::set_observer(live_values_observer* observer)
 }
 
 template<class value_type, class time_type>
-bool live_block<value_type, time_type>::get_weighted_sum(const time_type& start, time_type& end, weighted_sum<value_type, time_type>& sum)
+cache_ret live_block<value_type, time_type>::get_weighted_sum(const time_type& start, time_type& end, weighted_sum<value_type, time_type>& sum)
 {
 	std::lock_guard<std::mutex> guard(m_lock);
 
 	if (m_block.size() == 0 || end <= m_start_time)
-		return false;
+		return cache_ret::none;
 
 	if (start >= m_block.back().time) {
 		sum.add_no_data_weight(end - start);
 		sum.set_fixed(false);
-		return true;
+		return cache_ret::complete;
 	}
 
-	sz4::get_weighted_sum(m_block.begin(), m_block.end(), start, end, sum);
+	sz4::get_weighted_sum(m_block.begin(), m_block.end(),
+				std::max(start, m_start_time),
+				end, sum);
 
 	if (end > m_block.back().time) {
 		sum.add_no_data_weight(end - m_block.back().time);
@@ -54,7 +56,7 @@ bool live_block<value_type, time_type>::get_weighted_sum(const time_type& start,
 
 	end = m_start_time;
 
-	return start >= m_start_time;
+	return start >= m_start_time ? cache_ret::complete : cache_ret::partial;
 }
 
 template<class value_type, class time_type>
@@ -226,7 +228,12 @@ template<class entry_builder> live_cache::live_cache(
 
 	for (auto& c : config.urls) {
 		m_urls.push_back(c.first);
-		m_config_id_map.push_back(c.second->GetConfigId());
+		unsigned id = c.second->GetConfigId();
+
+		if (m_cache.size() <= id)
+			m_cache.resize(id + 1);
+
+		m_sock_map.push_back(id);
 
 		std::vector<generic_live_block*> config_cache;
 
@@ -243,11 +250,12 @@ template<class entry_builder> live_cache::live_cache(
 			config_cache.push_back(entry);
 		}
 
-		m_cache.push_back(std::move(config_cache));
+		m_cache[id] = std::move(config_cache);
 	}
 
 	start();
 }
+
 
 }
 

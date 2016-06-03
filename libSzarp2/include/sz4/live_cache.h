@@ -59,6 +59,12 @@ struct live_cache_config {
 	typename time_difference<second_time_t>::type retention;
 };
 
+enum struct cache_ret {
+	complete,
+	partial,
+	none
+};
+
 template<class value_type, class time_type> class live_block : public generic_live_block {
 	std::mutex m_lock;
 	std::deque<value_time_pair<value_type,time_type>> m_block;
@@ -76,14 +82,14 @@ public:
 	time_type search_data_right(const time_type& start, const time_type& end, const search_condition& condition);
 
 	void get_first_time(time_type &t);
-	void get_last_time(time_type &t);
+	virtual void get_last_time(time_type &t);
 
   	void process_live_value(const time_type& time, const value_type& value);
 	void process_live_value(szarp::ParamValue* value);
 	void set_observer(live_values_observer* observer);
 
-	bool get_weighted_sum(const time_type& start, time_type& end,
-				weighted_sum<value_type, time_type>& sum);
+	cache_ret get_weighted_sum(const time_type& start, time_type& end,
+					weighted_sum<value_type, time_type>& sum);
 };
 
 struct generic_live_block_builder;
@@ -98,9 +104,9 @@ class live_cache
 	std::vector<std::string> m_urls;
 	std::vector<std::unique_ptr<zmq::socket_t> > m_socks;
 
-	std::vector<std::vector<generic_live_block*>> m_cache;
+	std::vector<unsigned> m_sock_map;
 
-	std::vector<unsigned> m_config_id_map;
+	std::vector<std::vector<generic_live_block*>> m_cache;
 
 	void process_msg(szarp::ParamsValues* values, size_t sock_no);
 	void process_socket(size_t sock_no);
@@ -110,6 +116,8 @@ class live_cache
 public:	
 	template<class entry_builder = generic_live_block_builder>
 	live_cache(const live_cache_config &c, zmq::context_t* context);
+
+	template<class T> bool get_last_meaner_time(int config_id, T& t);
 
 	void register_cache_observer(TParam *, live_values_observer*);
 
