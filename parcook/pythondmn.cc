@@ -49,7 +49,12 @@ public:
 	void go_sender() ;
 	void go_sz4() ;
 
-	inline void release_sz3() { m_sz3_auto = true; }
+	void release_sz3(py::object & period);
+	inline void release_sz4() { m_sz4_auto = true; }
+	void force_sz4() { m_force_sz4 = true; }
+	inline bool sz4_ready() { return m_zmq != nullptr; }
+	static void cycle_timer_callback(int fd, short event, void* arg);
+
 	inline std::string get_conf_str() { return m_conf_str; }
 	inline zmqhandler* getZmq() { return m_zmq; }
 
@@ -63,55 +68,42 @@ protected:
 	std::string m_conf_str;
 
 	bool m_sz3_auto = false;
+	bool m_sz4_auto = false;
+	bool m_force_sz4 = false;
 
 	zmqhandler * m_zmq;
 	zmq::context_t* m_zmq_ctx;
 
-	struct event m_subsock_event;
-	struct evdns_base* m_evdns_base;
 	struct event_base* m_event_base;
 
 	struct event m_timer;
+	struct timeval m_cycle;
 };
+
+void ipc::release_sz3(py::object & period) {
+	m_sz3_auto = true; 
+	try {
+		m_cycle.tv_sec = (int)py::extract<int>(period);
+	} catch (py::error_already_set const &) {
+		m_cycle.tv_sec = 10;
+	}
+}
 
 int ipc::configure_events() {
 	m_event_base = (struct event_base*) event_init();
 	if (!m_event_base)
 		return 1;
-	m_evdns_base = evdns_base_new(m_event_base, 0);
-	if (!m_evdns_base)
-		return 2;
-	evdns_base_resolv_conf_parse(m_evdns_base, DNS_OPTIONS_ALL, "/etc/resolv.conf");
+	evtimer_set(&m_timer, cycle_timer_callback, this);
 	event_base_set(m_event_base, &m_timer);
 	return 0;
 }
 
 int ipc::configure(int *argc, char *argv[]) {
-	if (int ret = configure_events())
-		return ret;
-
 	m_cfg = new DaemonConfig("pythondmn");
 
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
-		return 1;
-
-	try {
-		char* sub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
-		char* pub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
-		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), *m_zmq_ctx, sub_address, pub_address);
-	} catch (zmq::error_t& e) {
-		return 401;
-	}
-
-	sz_log(2, "ZMQ initialized successfully");
-
-	// todo - if needed
-	//int sock = m_zmq->subsocket();
-	//if (sock >= 0) {
-		//event_base_set(m_event_base, &m_subsock_event);
-	//}
-
-	//sz_log(2, "ZMQ events initialized successfully");
+	configure_events();
+	if (int ret = m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+		return ret;
 
 	m_ipc = new IPCHandler(m_cfg);
 
@@ -138,8 +130,31 @@ int ipc::configure(int *argc, char *argv[]) {
 
 	sz_log(2, "m_read_count: %d, m_send_count: %d", m_read_count, m_send_count);
 
+	if (!m_event_base) return 0;
 
+	m_cycle.tv_sec  = 10;
+	m_cycle.tv_usec = 0;
+
+	try {
+		char* sub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
+		char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1); // we publish on parhub's subscribe address
+		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), *m_zmq_ctx, sub_address, pub_address);
+		sz_log(2, "ZMQ initialized successfully");
+	} catch (zmq::error_t& e) {
+		m_zmq = nullptr;
+		sz_log(0, "ZMQ not initialized!");
+	}
+
+	evtimer_add(&m_timer, &m_cycle);
 	return 0;
+}
+
+void ipc::cycle_timer_callback(int fd, short event, void* arg) {
+	ipc* ipc_ptr = (ipc*) arg;
+
+	if (ipc_ptr->m_sz3_auto) ipc_ptr->go_parcook();
+
+	evtimer_add(&ipc_ptr->m_timer, &ipc_ptr->m_cycle);
 }
 
 int ipc::get_line_number() {
@@ -151,6 +166,11 @@ const std::string& ipc::get_ipk_path() {
 }
 
 void ipc::set_read(size_t index, py::object & val) {
+	if (m_force_sz4) { 
+		set_read_sz4_int(index, val);
+		return;
+	}
+
 	if (index >= m_read_count) {
 		sz_log(7, "ipc::set_read ERROR index (%d) greater than params count (%d)", index, m_read_count);
 		return;
@@ -163,7 +183,6 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 
 	try {
-
 		m_read[index] = py::extract<int>(val);
 		sz_log(9, "ipc::set_read setting value %d to %d", index, m_read[index]);
 	} catch (py::error_already_set const &) {
@@ -175,58 +194,58 @@ void ipc::set_read(size_t index, py::object & val) {
 
 void ipc::set_read_sz4_float(size_t index, py::object & val) {
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_read ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
 		return;
 	}
 
 	time_t timev = time(NULL);
-
 	if (Py_None == val.ptr()) {
-		sz_log(9, "ipc::set_read_sz4_float got None, setting %d to NO_DATA", index);
-		m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		sz_log(9, "Pythondmn float got NONE at %d", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		if (m_sz4_auto) go_sz4();
 		return;
 	}
 
 	try {
-		auto got = (const float)py::extract<const float>(val);
-		sz_log(9, "ipc::set_read_sz4_float got %f, setting %d to NO_DATA", got, index);
-		m_zmq->set_value(index, timev, got);
+		auto got = (float)py::extract<float>(val);
+		sz_log(9, "Pythondmn float got %f at %d", got, index);
+		if (m_zmq) m_zmq->set_value(index, timev, got);
+		if (m_sz4_auto) go_sz4();
 	} catch (py::error_already_set const &) {
-		sz_log(9, "ipc::set_read_sz4_float got NO_DATA");
+		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		PyErr_Clear();
 	}
-
-	go_sz4();
 }
 
 void ipc::set_read_sz4_int(size_t index, py::object & val) {
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_read ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
 		return;
 	}
 
-	std::cout << "Updating " << index << ", ";
 	time_t timev = time(NULL);
 
-	std::cout << "time: " << timev << ". ";
-
 	if (Py_None == val.ptr()) {
-		sz_log(9, "ipc::set_read_sz4_int got None, setting %d to NO_DATA", index);
-		std::cout << "Got None" << std::endl;
-		m_zmq->set_value<time_t, int>(index, timev, SZARP_NO_DATA);
+		sz_log(9, "Pythondmn sz4_int got NONE at %d", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		m_read[index] = SZARP_NO_DATA;
+		if (m_sz4_auto) go_sz4();
 		return;
 	}
 
 	try {
-		auto got = (const int)py::extract<const int>(val);
-		sz_log(9, "ipc::set_read_sz4_int got %d from %d", got, index);
-		std::cout << "Got " << got << std::endl;
-		m_zmq->set_value(index, timev, got);
+		auto got = (int)py::extract<int>(val);
+		sz_log(9, "Pythondmn sz4_int got %d at %d", got, index);
+		m_read[index] = got;
+		if (m_zmq) m_zmq->set_value(index, timev, got);
+		if (m_sz4_auto) go_sz4();
 	} catch (py::error_already_set const &) {
-		sz_log(9, "ipc::set_read_sz4_int got NO_DATA");
-		std::cout << "IPC already set!" << std::endl;
+		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
+		m_read[index] = SZARP_NO_DATA;
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		PyErr_Clear();
 	}
-
-	go_sz4();
 }
 
 void ipc::set_no_data(size_t index) {
@@ -266,6 +285,7 @@ void ipc::go_sz4() {
 	}
 }
 
+
 class pyszbase {
 public:
 	pyszbase() : m_initialized(false) {};
@@ -289,7 +309,7 @@ Szbase* pyszbase::get_szbase_object() {
 	if (!m_initialized)
 		throw std::runtime_error("libpyszbase library not initialized");
 
-	Szbase* szbase = Szbase::GetObject();	
+	Szbase* szbase = Szbase::GetObject();
 	szbase->NextQuery();
 
 	return szbase;
@@ -312,7 +332,7 @@ void pyszbase::init(const std::wstring& szarp_path, const std::wstring& lang) {
 void pyszbase::shutdown() {
 	check_no_init();
 
-	Szbase::Destroy();	
+	Szbase::Destroy();
 	IPKContainer::Destroy();
 
 	m_initialized = false;
@@ -401,7 +421,7 @@ int main( int argc, char ** argv )
 	}
 
 	try {
-				
+
 		Py_Initialize();
 
 		py::object main_module(py::handle<>(py::borrowed(PyImport_AddModule("__main__"))));
@@ -410,7 +430,11 @@ int main( int argc, char ** argv )
 		main_namespace["IPC"] = py::class_<szarp::ipc>("IPC")
 			.def("get_line_number", &szarp::ipc::get_line_number)
 			.def("get_ipk_path", &szarp::ipc::get_ipk_path, py::return_value_policy<py::copy_const_reference>())
-			.def("release_sz3", &szarp::ipc::release_sz3)
+			.def("autoupdate_sz3", &szarp::ipc::release_sz3)
+			.def("autopublish_sz4", &szarp::ipc::release_sz4)
+			.def("sz4_ready", &szarp::ipc::sz4_ready)
+			.def("force_sz4", &szarp::ipc::force_sz4)
+			.def("go_sz4", &szarp::ipc::go_sz4)
 			.def("set_read", &szarp::ipc::set_read)
 			.def("set_read_sz4", &szarp::ipc::set_read_sz4_int)
 			.def("set_read_sz4_int", &szarp::ipc::set_read_sz4_int)
