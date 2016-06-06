@@ -9,7 +9,6 @@
 
 #include "szarp_config.h"
 
-#include "sz4/defs.h"
 #include "sz4/block.h"
 #include "sz4/buffer.h"
 #include "sz4/factory.h"
@@ -19,6 +18,7 @@
 #include "sz4/live_cache_templ.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/real_param_entry_templ.h"
+#include "sz4/defs.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 
