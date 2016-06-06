@@ -39,9 +39,13 @@ public:
 	int get_line_number();
 	const std::string& get_ipk_path();
 
-	void set_read(size_t index, py::object & val) ;
+	bool check_for_no_data(size_t index, py::object & val);
+	void set_read(size_t index, py::object & val);
+	void set_read_sz4_double(size_t index, py::object & val);
 	void set_read_sz4_float(size_t index, py::object & val);
 	void set_read_sz4_int(size_t index, py::object & val);
+	void set_read_sz4_short(size_t index, py::object & val);
+	template <typename T> void set_read_sz4(size_t index, T val);
 	void set_no_data(size_t index) ;
 	int get_send(size_t index) ;
 
@@ -167,7 +171,7 @@ const std::string& ipc::get_ipk_path() {
 
 void ipc::set_read(size_t index, py::object & val) {
 	if (m_force_sz4) { 
-		set_read_sz4_int(index, val);
+		set_read_sz4_int((unsigned int)index, val);
 		return;
 	}
 
@@ -192,61 +196,92 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 }
 
-void ipc::set_read_sz4_float(size_t index, py::object & val) {
-	if (index >= m_read_count) {
-		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
-		return;
-	}
-
-	time_t timev = time(NULL);
+bool ipc::check_for_no_data(unsigned int index, py::object & val) {
 	if (Py_None == val.ptr()) {
-		sz_log(9, "Pythondmn float got NONE at %d", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		if (m_sz4_auto) go_sz4();
-		return;
-	}
-
-	try {
-		auto got = (float)py::extract<float>(val);
-		sz_log(9, "Pythondmn float got %f at %d", got, index);
-		if (m_zmq) m_zmq->set_value(index, timev, got);
-		if (m_sz4_auto) go_sz4();
-	} catch (py::error_already_set const &) {
-		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		PyErr_Clear();
-	}
-}
-
-void ipc::set_read_sz4_int(size_t index, py::object & val) {
-	if (index >= m_read_count) {
-		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
-		return;
-	}
-
-	time_t timev = time(NULL);
-
-	if (Py_None == val.ptr()) {
+		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_int got NONE at %d", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		m_read[index] = SZARP_NO_DATA;
 		if (m_sz4_auto) go_sz4();
-		return;
+		return true;
 	}
+
+	return false;
+}
+
+
+void ipc::set_read_sz4_int(unsigned int index, py::object & val) {
+	if (check_for_no_data(index, val)) return;
 
 	try {
 		auto got = (int)py::extract<int>(val);
-		sz_log(9, "Pythondmn sz4_int got %d at %d", got, index);
-		m_read[index] = got;
-		if (m_zmq) m_zmq->set_value(index, timev, got);
-		if (m_sz4_auto) go_sz4();
+		set_read_sz4<int>(index, got);
 	} catch (py::error_already_set const &) {
+		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
-		m_read[index] = SZARP_NO_DATA;
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		PyErr_Clear();
 	}
 }
+
+void ipc::set_read_sz4_float(unsigned int index, py::object & val) {
+	if (check_for_no_data(index, val)) return;
+
+	try {
+		auto got = (float)py::extract<float>(val);
+		set_read_sz4<float>(index, got);
+	} catch (py::error_already_set const &) {
+		time_t timev = time(NULL);
+		sz_log(9, "Pythondmn sz4_float extract error, setting %d to NO_DATA", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		PyErr_Clear();
+	}
+}
+
+void ipc::set_read_sz4_double(unsigned int index, py::object & val) {
+	if (check_for_no_data(index, val)) return;
+
+	try {
+		auto got = (double)py::extract<double>(val);
+		set_read_sz4<double>(index, got);
+	} catch (py::error_already_set const &) {
+		time_t timev = time(NULL);
+		sz_log(9, "Pythondmn sz4_double extract error, setting %d to NO_DATA", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		PyErr_Clear();
+	}
+}
+
+void ipc::set_read_sz4_short(unsigned int index, py::object & val) {
+	if (check_for_no_data(index, val)) return;
+
+	try {
+		auto got = (short)py::extract<short>(val);
+		set_read_sz4<short>(index, got);
+	} catch (py::error_already_set const &) {
+		time_t timev = time(NULL);
+		sz_log(9, "Pythondmn sz4_short extract error, setting %d to NO_DATA", index);
+		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		PyErr_Clear();
+	}
+}
+
+template <typename T> void ipc::set_read_sz4(unsigned int index, T val) {
+	if (index >= m_read_count) {
+		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		return;
+	}
+
+	time_t timev = time(NULL);
+
+	if (m_zmq) m_zmq->set_value(index, timev, val);
+	if (m_sz4_auto) go_sz4();
+}
+
+template void ipc::set_read_sz4<>(unsigned int index, short val);
+template void ipc::set_read_sz4<>(unsigned int index, int val);
+template void ipc::set_read_sz4<>(unsigned int index, float val);
+template void ipc::set_read_sz4<>(unsigned int index, double val);
 
 void ipc::set_no_data(size_t index) {
 	if (index >= m_read_count) {
@@ -437,8 +472,10 @@ int main( int argc, char ** argv )
 			.def("go_sz4", &szarp::ipc::go_sz4)
 			.def("set_read", &szarp::ipc::set_read)
 			.def("set_read_sz4", &szarp::ipc::set_read_sz4_int)
+			.def("set_read_sz4_short", &szarp::ipc::set_read_sz4_short)
 			.def("set_read_sz4_int", &szarp::ipc::set_read_sz4_int)
 			.def("set_read_sz4_float", &szarp::ipc::set_read_sz4_float)
+			.def("set_read_sz4_double", &szarp::ipc::set_read_sz4_double)
 			.def("set_no_data", &szarp::ipc::set_no_data)
 			.def("get_send", &szarp::ipc::get_send)
 			.def("go_sender", &szarp::ipc::go_sender)
