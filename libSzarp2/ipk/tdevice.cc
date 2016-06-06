@@ -162,7 +162,7 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 			special_value = boost::lexical_cast<int>(attr);
 		} else
 		if (xw.IsAttr("parcook_device")) {
-			parcookDevice = !strcmp((char*)attr, "no");
+			parcookDevice = strcmp((char*)attr, "no");
 		} else
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);
