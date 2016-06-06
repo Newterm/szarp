@@ -287,10 +287,16 @@ enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING, RESOLVING_
  * methods resposinble for connections handling*/
 class client_manager { 
 protected:
+	boruta_daemon *m_boruta;
 	/**maps client drivers to connections*/
 	std::vector<std::vector<client_driver*> > m_connection_client_map;
+	/**timers that deal with inter_unit delays*/
+	typedef std::tuple<struct event*, struct timeval, size_t, client_manager*> timer_def;
+	std::vector<timer_def*> m_unit_delay_timer;
+
 	/**holds ids of current clients for each connection*/
 	std::vector<size_t> m_current_client;
+	/**schedule timers, used to delay queries between units on the sime connection*/
 	/**to be implemented by subclass - returns connecton state*/
 	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no) = 0;
 	/**to be implemented by subclass - return buffer of connection*/
@@ -310,7 +316,14 @@ protected:
 	void connection_error_cb(size_t connection);
 	/** method handling connection establishment event*/
 	void connection_established_cb(size_t connection);
+	/** helper to build a inter unit query delay timer */
+	int build_timer(xmlNodePtr node);
+	/** schedule inter query timer on connection */
+	void schedule_timer(size_t connection);
+	/** scheudule timer callback */
+	static void unit_delay_timer_cb(int fd, short event, void *timer);
 public:
+	client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	/**propagates this event to client drivers*/
 	void finished_cycle();
 	/**propagates this event to client drivers also schedules drivers for those
@@ -329,7 +342,6 @@ public:
 
 /**implementation of class deadling with tcp client drivers*/
 class tcp_client_manager : public client_manager {
-	boruta_daemon *m_boruta;
 	struct tcp_connection {
 		tcp_connection(tcp_client_manager *manager, size_t conn_no, const std::pair<std::string, short> & address);
 		void schedule_timer(int secs, int nsecs);
@@ -366,7 +378,7 @@ protected:
 	virtual void do_schedule(size_t conn_no, size_t client_no);
 	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
-	tcp_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
+	tcp_client_manager(boruta_daemon *boruta) : client_manager(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
@@ -377,7 +389,6 @@ public:
 
 /**implementation of class deadling with serial client drivers*/
 class serial_client_manager : public serial_connection_manager, public client_manager {
-	boruta_daemon *m_boruta;
 	/**confiugrations of serial port for each driver*/
 	std::vector<std::vector<serial_port_configuration> > m_configurations;
 	/**maps serial port paths to a connection number*/
@@ -391,7 +402,7 @@ protected:
 	virtual void do_schedule(size_t conn_no, size_t client_no);
 	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
-	serial_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
+	serial_client_manager(boruta_daemon *boruta) : client_manager(boruta) {}
 	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
 	int initialize();
 	void connection_read_cb(serial_connection *c);
