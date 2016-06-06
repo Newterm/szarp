@@ -55,6 +55,8 @@ ValueInfo::ValueInfo() {
 	count_probes = 0;
 	n_count = 0;
 	m_remark = false;
+	m_fixed = false;
+	m_db_fixed = false;
 }
 
 bool ValueInfo::IsData() const {
@@ -79,6 +81,7 @@ Draw::Draw(DrawsController* draws_controller, DrawsObservers *observers, int dra
 	m_values(this),
 	m_param_has_data(true),
 	m_enabled(true),
+	m_subscribed(false),
 	m_observers(observers)
 {
 }
@@ -260,6 +263,28 @@ void Draw::SetInitialDrawNo(int draw_no) {
 	m_initial_draw_no = draw_no;
 }
 
+bool Draw::GetSubscribed() const
+{
+	return m_subscribed;
+}
+
+void Draw::SetSubscribed(bool subscribed)
+{
+	m_subscribed = subscribed;
+}
+
+bool Draw::HasUnfixedData() const
+{
+	size_t size = m_values.size();
+	for (size_t i = 0; i < size; i++) {
+		auto& v = m_values.Get(i);
+		if (v.state == ValueInfo::PRESENT && !v.m_db_fixed)
+			return true;
+	}
+
+	return false;
+}
+
 bool Draw::GetNoData() const {
 	return !m_param_has_data;
 }
@@ -324,10 +349,11 @@ DrawsController* Draw::GetDrawsController() {
 	return m_draws_controller;
 }
 
-void Draw::AddData(DatabaseQuery *query, bool &data_within_view) {
+void Draw::AddData(DatabaseQuery *query, bool &data_within_view, bool &non_fixed) {
 	bool stats_updated = false;
+	non_fixed = false;
 
-	m_values.AddData(query, data_within_view, stats_updated);
+	m_values.AddData(query, data_within_view, stats_updated, non_fixed);
 
 	m_param_has_data = true;
 
@@ -407,6 +433,15 @@ void Draw::AverageValueCalculationMethodChanged() {
 		}
 	}
 	m_values.RecalculateStats();
+}
+
+NewValuesInsertStatus::NewValuesInsertStatus()
+{
+	m_view_updated = false;
+	m_stats_updated = false;
+	m_non_fixed_added = false;
+	m_needs_stats_recalc = false;
+
 }
 
 ValuesTable::ValuesTable(Draw *draw) {
@@ -628,6 +663,7 @@ void ValuesTable::UpdateStats(int idx) {
 void ValuesTable::CalculateProbeValue(int index) {
 	double sum = 0.0;
 	int count = 0;
+	bool fixed = true;
 	for (int i = - m_draw->m_draws_controller->GetFilter() + index; i <= m_draw->m_draws_controller->GetFilter() + index; ++i) {
 		if (i < 0 || i >= (int)m_values.size())
 			continue;
@@ -637,6 +673,8 @@ void ValuesTable::CalculateProbeValue(int index) {
 			sum += vi.db_val;
 			count++;
 		}
+
+		fixed &= vi.m_db_fixed;
 	}
 
 	ValueInfo &vi = m_values.at(index);
@@ -646,28 +684,38 @@ void ValuesTable::CalculateProbeValue(int index) {
 	else
 		vi.val = SZB_NODATA;
 
+	vi.m_fixed = fixed;
+
 #if 0
 	wxLogInfo(_T("Calculated value of probe %d that is %f"), index, vi.val);
 #endif
 }
 
 
-void ValuesTable::AddData(DatabaseQuery *q, bool &view_values_changed, bool &stats_updated) {
-
+void ValuesTable::AddData(DatabaseQuery *q, bool &view_values_changed, bool &stats_updated, bool &non_fixed) {
 	DatabaseQuery::ValueData& vd = q->value_data;
 	PeriodType pt = vd.period_type;
 	if (pt != m_draw->GetPeriod() || q->draw_info != m_draw->GetDrawInfo()) {
 		return;
 	}
 
+	NewValuesInsertStatus status;
+
 	for (std::vector<DatabaseQuery::ValueData::V>::iterator i = q->value_data.vv->begin();
 			i != q->value_data.vv->end();
 			i++)
-		InsertValue(&(*i), view_values_changed, stats_updated);
+		InsertValue(&(*i), status);
+
+	if (status.m_needs_stats_recalc)
+		RecalculateStats();
+	
+	view_values_changed = status.m_view_updated;
+	stats_updated = status.m_stats_updated;
+	non_fixed = status.m_non_fixed_added;
 
 }
 
-void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_changed, bool& stats_updated) {
+void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, NewValuesInsertStatus &status) {
 	DTime dt(m_draw->GetPeriod(), ToWxDateTime(v->time_second, v->time_nanosecond));
 
 	int view_index = m_draw->m_index.GetStartTime().GetDistance(dt);
@@ -676,8 +724,12 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_
 	if (index < 0 || index >= (int)m_values.size()) 
 		return;
 
-	if (m_values.at(index).IsData())
-		return;
+	if (m_values.at(index).IsData()) {
+		if (m_values.at(index).m_db_fixed)
+			return;
+
+		status.m_needs_stats_recalc = true;
+	}
 
 	ValueInfo& vi = m_values.at(index);
 
@@ -686,6 +738,10 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_
 	vi.first_val = v->first_val;
 	vi.last_val = v->last_val;
 	vi.count_probes = v->count;
+	vi.m_db_fixed = v->fixed;
+
+	if (!v->fixed)
+		status.m_non_fixed_added = true;
 
 	switch (m_draw->m_draw_info->GetAverageValueCalculationMethod()) {
 		case AVERAGE_VALUE_CALCULATION_AVERAGE:
@@ -699,7 +755,7 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_
 			break;
 	}
 
-	UpdateProbesValues(index, stats_updated, view_values_changed);
+	UpdateProbesValues(index, status.m_stats_updated, status.m_view_updated);
 }
 
 void ValuesTable::UpdateProbesValues(int index, bool &stats_updated, bool &view_updated) {
