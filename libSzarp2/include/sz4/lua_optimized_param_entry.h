@@ -30,7 +30,7 @@
 namespace sz4 {
 
 template<class types> class execution_engine : public LuaExec::ExecutionEngine, public lua_average_calc_algo {
-	base_templ<types>* m_base;
+	typename types::base* m_base;
 	LuaExec::Param* m_exec_param;
 	std::vector<double> m_vars;
 	bool m_initialized;
@@ -63,7 +63,7 @@ public:
 
 	typedef double(execution_engine::*compute_method)(LuaExec::ParamRef& ref, const double& time_, SZARP_PROBE_TYPE probe_type);
 
-	execution_engine(base_templ<types>* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
+	execution_engine(typename types::base* _base, TParam* param) : m_base(_base), m_exec_param(param->GetLuaExecParam()), m_initialized(false) {
 	}
 
 	void do_calculate_value(second_time_t time, SZARP_PROBE_TYPE probe_type, double &result, bool& fixed) {
@@ -135,7 +135,7 @@ execution_engine<types>::compute_methods[TParam::LAST_TIME_TYPE + 1][TParam::LAS
 
 template<class value_type, class time_type, class types> class lua_optimized_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine> {
 public:
-	lua_optimized_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine>(_base, param, path) {}
+	lua_optimized_param_entry_in_buffer(typename types::base* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine>(_base, param, path) {}
 
 	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
 		this->m_base->get_heartbeat_first_time(this->m_param, t);

@@ -21,6 +21,7 @@
 #include "sz4/defs.h"
 #include "sz4/block.h"
 #include "sz4/block_cache.h"
+#include "sz4/base.h"
 #include "sz4/lua_interpreter.h"
 #include "sz4/lua_interpreter_templ.h"
 
@@ -58,6 +59,6 @@ int lua_sz4_nan(lua_State* lua) {
 	return 1;
 }
 
-template class lua_interpreter<base_types>;
+template class lua_interpreter<base_templ<base_types>>;
 
 }

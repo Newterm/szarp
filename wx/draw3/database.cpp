@@ -428,6 +428,8 @@ void wsum_to_value(DatabaseQuery::ValueData::V& v,
 		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
 	else
 		v.count = 0;
+
+	v.fixed = wsum.fixed();
 }
 
 template<class T> struct pair_to_sz4_type {};

@@ -35,13 +35,13 @@ public:
 };
 
 template<class types> class rpn_calculate {
-	base_templ<types>* m_base;
+	typename types::base* m_base;
 	TParam* m_param;
 
 public:
-	typedef base_templ<types> base;
+	typedef typename types::base base;
 
-	rpn_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
+	rpn_calculate(typename types::base* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
 	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
@@ -88,7 +88,7 @@ public:
 template<class value_type, class time_type, class types> class rpn_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate> {
 
 public:
-	rpn_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>(_base, param, path) {}
+	rpn_param_entry_in_buffer(typename types::base* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, rpn_calculate>(_base, param, path) {}
 
 	void get_last_time(const std::list<generic_param_entry*>& referred_params, time_type &t) {
 		if (this->m_param->IsNUsed())

@@ -27,9 +27,12 @@ namespace szarp {
 namespace sz4
 {
 
+class generic_live_block;
+
 class live_values_observer {
 public:
 	virtual void new_live_value(szarp::ParamValue *value) = 0;
+	virtual void set_live_block(generic_live_block* block) = 0;
 };
 
 }

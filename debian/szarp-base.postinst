@@ -10,8 +10,33 @@ set -e;
 case "$1" in
     configure)
 
-	/opt/szarp/bin/install_vim || true
-	service rsyslog restart    || true
+    # apply appropriate discard action directive in rsyslogd configuration
+    if command -v "rsyslogd" >/dev/null 2>&1; then
+        echo "Installing rsyslogd configuration for SZARP..."
+
+        RSYSLOG_TEM="/opt/szarp/resources/rsyslog_conf_TEMPLATE"
+        RSYSLOG_CFG="/etc/rsyslog.d/szarp.conf"
+        RSYSLOG_VER=$(rsyslogd -v | awk 'NR==1{print $2}' | awk -F'.' '{print $1}')
+
+        if [ -f "$RSYSLOG_TEM" ] && [ -d "$(dirname "$RSYSLOG_CFG")" ]; then
+            if [ "$RSYSLOG_VER" -gt 6 ]; then
+                sed 's/DISCARD_ACTION/stop/' "$RSYSLOG_TEM" > "$RSYSLOG_CFG"
+            else
+                # tidle character is deprecated since version 7
+                sed 's/DISCARD_ACTION/~/' "$RSYSLOG_TEM" > "$RSYSLOG_CFG"
+            fi
+
+            echo "Configuration for rsyslogd successfully installed."
+        else
+            echo "ERROR: failed to install rsyslogd configuration for SZARP. Abort."
+            exit 1
+        fi
+    else
+        echo "WARNING: no rsyslogd found, SZARP-specific configuration will not be installed."
+    fi
+
+    /opt/szarp/bin/install_vim || true
+    service rsyslog restart    || true
 
     ;;
 

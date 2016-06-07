@@ -134,6 +134,8 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 		virtual void ParamDataChanged(TParam* param);
 
+		virtual void NewValuesAdded(Draw *draw, bool non_fixed);
+
 		virtual void Leaving() {};
 
 		virtual ~State() {};
@@ -173,6 +175,8 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		void Reset();
 
 		void GoToLatestDate();
+
+		void NewValuesAdded(Draw *draw, bool non_fixed);
 
 		void Enter(const DTime& time);
 
@@ -359,6 +363,8 @@ public:
 
 	void HandleDataResponse(DatabaseQuery *query);
 
+	std::vector<TParam*> GetSubscribedParams() const;
+	
 	/**Moves cursor right*/
 	void MoveCursorRight(int n = 1);
 

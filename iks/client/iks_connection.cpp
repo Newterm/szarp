@@ -181,8 +181,7 @@ void IksConnection::handle_error( const bs::error_code& ec )
 			schedule_reconnect();
 			return;
 		case WAITING:
-			assert( false );
-			break;
+			return;
 	}
 
 	std::string empty;
