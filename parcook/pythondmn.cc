@@ -156,7 +156,7 @@ int ipc::configure(int *argc, char *argv[]) {
 void ipc::cycle_timer_callback(int fd, short event, void* arg) {
 	ipc* ipc_ptr = (ipc*) arg;
 
-	if (ipc_ptr->m_sz3_auto) ipc_ptr->go_parcook();
+	if (ipc_ptr->m_sz3_auto && !ipc_ptr->m_force_sz4) ipc_ptr->go_parcook();
 
 	evtimer_add(&ipc_ptr->m_timer, &ipc_ptr->m_cycle);
 }
@@ -171,7 +171,7 @@ const std::string& ipc::get_ipk_path() {
 
 void ipc::set_read(size_t index, py::object & val) {
 	if (m_force_sz4) { 
-		set_read_sz4_int((unsigned int)index, val);
+		set_read_sz4_int(index, val);
 		return;
 	}
 
@@ -220,6 +220,7 @@ void ipc::set_read_sz4_int(unsigned int index, py::object & val) {
 		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
 	}
 }
@@ -234,6 +235,7 @@ void ipc::set_read_sz4_float(unsigned int index, py::object & val) {
 		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_float extract error, setting %d to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
 	}
 }
@@ -248,6 +250,7 @@ void ipc::set_read_sz4_double(unsigned int index, py::object & val) {
 		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_double extract error, setting %d to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
 	}
 }
@@ -262,6 +265,7 @@ void ipc::set_read_sz4_short(unsigned int index, py::object & val) {
 		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_short extract error, setting %d to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
+		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
 	}
 }
