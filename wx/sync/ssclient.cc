@@ -1424,6 +1424,7 @@ char* Client::ExecuteScript(const char* b, const char* s) {
 {								\
 	VAL = 0;						\
 	uint8_t t = (s[i++] - 1) * 126;				\
+	VAL += t; \
 	t = s[i++] - 1;						\
 	VAL += t;						\
 }
