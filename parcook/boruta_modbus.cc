@@ -409,6 +409,15 @@ protected:
 	RSET m_received;
 	RSET m_sent;
 
+	short* m_mins;
+	short* m_maxs;
+
+	short* m_fbds;
+	bool* m_limchecks;
+	bool* m_fbdchecks;
+
+	bool m_check_limits;
+
 	short* m_read;
 	size_t m_read_count;
 	short* m_send;
@@ -455,6 +464,8 @@ protected:
 	void from_sender();
 public:
 	modbus_unit(boruta_driver* driver);
+	~modbus_unit();
+
 	bool register_val_expired(time_t time);
 	virtual int initialize();
 	int configure_unit(TUnit* u, xmlNodePtr node);
@@ -1240,10 +1251,27 @@ bool modbus_unit::create_error_response(unsigned char error, PDU &pdu) {
 
 void modbus_unit::to_parcook() {
 	std::vector<parcook_modbus_val_op*>::iterator k = m_parcook_ops.begin();
-	for (size_t m = 0; m < m_read_count; m++, k++) {
-		m_read[m] = (*k)->val();
-		m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
-	}
+	if (m_check_limits)
+		for (size_t m = 0; m < m_read_count; m++, k++) {
+			short v = (*k)->val();
+			if (m_fbdchecks[m] && v == m_fbds[m]) {
+				m_read[m] = SZARP_NO_DATA;
+				m_log.log(8, "Parcook param no %zu got forbidden value", m, m_read[m]);
+			}
+			else if (m_limchecks[m] && (v < m_mins[m] || v > m_maxs[m])) {
+				m_read[m] = SZARP_NO_DATA;
+				m_log.log(8, "Param no %zu limited, got %zu and changed to NO_DATA", m, v);
+			} else {
+				m_read[m] = v;
+			}
+
+			m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
+		}
+	else for (size_t m = 0; m < m_read_count; m++, k++) {
+			m_read[m] = (*k)->val();
+			m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
+		}
+
 }
 
 void modbus_unit::from_sender() {
@@ -1262,6 +1290,7 @@ bool modbus_unit::register_val_expired(time_t time) {
 }
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
+modbus_unit::~modbus_unit() { delete m_mins; delete m_maxs; delete m_fbds; delete m_limchecks; delete m_fbdchecks; }
 
 int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
@@ -1697,6 +1726,17 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		return 1;
 	}
 
+	get_xml_extra_prop(node, "limits", m_check_limits, true);
+	if (m_check_limits) {
+		m_maxs = new short[u->GetParamsCount()]();
+		m_mins = new short[u->GetParamsCount()]();
+		m_fbds = new short[u->GetParamsCount()]();
+		m_limchecks = new bool[u->GetParamsCount()]();
+		m_fbdchecks = new bool[u->GetParamsCount()]();
+		m_log.log(7, "Daemon will check limits");
+	}
+
+	int ind = 0;
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
 		char *expr;
 		if (i == u->GetParamsCount())
@@ -1717,8 +1757,21 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 
 		if (send)
 			sp = sp->GetNext();
-		else
+		else {
+			m_log.log(0, "Non-send param, checking limits is %zu", m_check_limits);
+			if (m_check_limits) {
+				m_mins[ind] = p->GetMin();
+				m_maxs[ind] = p->GetMax();
+				m_fbds[ind] = p->GetForbidden();
+				m_limchecks[ind] = p->hasLimits();
+				m_fbdchecks[ind] = p->hasForbidden();
+				m_log.log(7, "Param no %zu, checking limits: %zu, checking for forbidden: %zu", ind, m_limchecks[ind], m_fbdchecks[ind]);
+			}
+
+			ind++;
 			p = p->GetNext();
+		}
+
 	}
 	xmlXPathFreeContext(xp_ctx);
 	return 0;
