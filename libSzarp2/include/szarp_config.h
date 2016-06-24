@@ -59,6 +59,7 @@
 #define IPK_NAMESPACE_STRING L"http://www.praterm.com.pl/SZARP/ipk"
 
 #define MAX_PARS_IN_FORMULA 160
+#define SZARP_NO_DATA -32768
 
 class TDevice;
 class TRadio;
@@ -815,6 +816,8 @@ public:
 	    _unit(),
 	    _values(NULL),
 	    _prec(0),
+		_has_forbidden(false),
+		_forbidden_val(SZARP_NO_DATA),
 	    _baseInd(-1),
 	    _inbase(0),
 	    _formula(formula),
@@ -857,7 +860,8 @@ public:
 	 */
 	void Configure(const std::wstring name, const std::wstring shortName, const std::wstring drawName, const std::wstring unit,
 			TValue *values, int prec = 0, int baseInd = -1,
-			int inbase = -1);
+			int inbase = -1,
+			short forbidden_val = SZARP_NO_DATA);
 
 	/**
 	 * Generates XML node with param info.
@@ -1003,6 +1007,12 @@ public:
 	/** @return representation presition (number of digits after comma) for
 	 * integer params (non-negative), 0 for non-integer values */
 	int GetPrec() {	return _prec; }
+
+	/** @return whether has limits */
+	short GetForbidden() const { return _forbidden_val; }
+
+	/** @return whether has a forbidden value */
+	bool HasForbidden() const { return _has_forbidden; }
 
 	/** @return sets presition (number of digits after comma) for
 	 * integer params (non-negative), 0 for non-integer values */
@@ -1213,6 +1223,9 @@ protected:
 			      an integer parameter */
 
 	int _prec;	/**< Precision for integer parameters, for others should be 0 */
+
+	bool _has_forbidden;
+	short _forbidden_val; // value to treat as NO_DATA
 
 	int _baseInd;	/**< Index of parameter in data base. Must be uniq among
 			  all params. For params not saved in data base should
