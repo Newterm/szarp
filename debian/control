@@ -215,3 +215,10 @@ Description: SZARP Filler 2 is a tool for manual szbase data editing.
  This package contains SZARP Filler 2 application that enable user to manually
  edit szbase database. It is written in pyQt4.
 
+Package: szarp-s7dmn
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, libsnap7-dev, libsnap71
+Description: This package contains s7dmn daemon program for communication with Siemens controllers.
+ Reading and writing data is available for all Step7 compatibile controllers.
+
