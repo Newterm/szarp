@@ -218,7 +218,8 @@ Description: SZARP Filler 2 is a tool for manual szbase data editing.
 Package: szarp-s7dmn
 Section: misc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, libsnap7-dev, libsnap71
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, libsnap71
+Build-Depends: libsnap7-dev
 Description: This package contains s7dmn daemon program for communication with Siemens controllers.
  Reading and writing data is available for all Step7 compatibile controllers.
 
