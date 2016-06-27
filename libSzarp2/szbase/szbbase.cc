@@ -48,7 +48,7 @@ const int default_maximum_search_time = 15;			/** maximum deafult serach time */
 
 Szbase::Szbase(const std::wstring& szarp_dir) : m_szarp_dir(szarp_dir), m_config_modification_callback(NULL)
 {
-	m_monitor = new SzbParamMonitor();
+	m_monitor = new SzbParamMonitor(szarp_dir);
 	m_current_query = 0;
 	m_maximum_search_time = default_maximum_search_time;
 	m_ipk_containter = IPKContainer::GetObject();

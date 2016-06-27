@@ -49,7 +49,7 @@ void Sz4BufferTestCase::test1() {
 	param.SetTimeType(TParam::SECOND);
 	param.SetDataType(TParam::INT);
 
-	SzbParamMonitor monitor;
+	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
 	auto buffer = new sz4::buffer_templ<sz4::base_templ<mocks::mock_types>>(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
@@ -137,7 +137,7 @@ void Sz4BufferTestCase::test2() {
 	param.SetTimeType(TParam::SECOND);
 	param.SetDataType(TParam::INT);
 
-	SzbParamMonitor monitor;
+	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
 	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
@@ -230,7 +230,7 @@ void Sz4BufferTestCase::searchTest() {
 	param.SetDataType(TParam::INT);
 
 	
-	SzbParamMonitor monitor;
+	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
 	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
