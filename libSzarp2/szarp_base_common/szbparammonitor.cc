@@ -310,9 +310,9 @@ void SzbParamMonitorImpl::wait_for_changes() {
 
 	m_overlapped.hEvent = m_event[0];
 
-	auto ret = ReadDirectoryChangesW(m_dir_handle, m_buffer, sizeof(m_buffer),
+	auto ret = ReadDirectoryChangesW(m_dir_handle, m_buffer, sizeof(m_buffer), true,
 					FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE,
-					true, nullptr, &m_overlapped);
+					nullptr, &m_overlapped, nullptr);
 	if (!ret)
 		throw std::runtime_error("Failed to intiate listening for directory chagnes");
 }
@@ -325,13 +325,13 @@ SzbParamMonitorImpl::~SzbParamMonitorImpl() {
 
 void SzbParamMonitorImpl::loop() {
 	while (!m_terminate) {
-		auto r = WaitForMultiplesObjects(2, m_event, false, 0);
+		auto r = WaitForMultipleObjects(2, m_event, false, 0);
 		switch (r) {
 			case WAIT_OBJECT_0:
 				process_notification();
 				break;
 
-			case WAIT_OBJECT_1:
+			case WAIT_OBJECT_0 + 1:
 				process_cmds();
 				break;
 
@@ -363,9 +363,9 @@ void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vecto
 	if (name[length - 1] != L'b' && name[length - 1] != L'4')
 		return;
 
-	std::wstring path(name, name + length);
-	auto dir = boost::filesystem::path(path).parent_path();
-	auto i = m_registry.find(dir);
+	boost::filesystem::path path(name, name + length);
+	auto dir = path.parent_path();
+	auto i = m_registry.find(dir.wstring());
 	if (i == m_registry.end()) 
 		return;
 
@@ -373,12 +373,12 @@ void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vecto
 }
 
 void SzbParamMonitorImpl::process_notification() {
-	WORD bytes_tx;
+	DWORD bytes_tx;
 	auto ret = GetOverlappedResult(m_dir_handle, &m_overlapped, &bytes_tx, true);
 	if (!ret)
 		throw std::runtime_error("Failed to get the result");
 
-	PFILE_NOTIFY_INFORMATION info = m_buffer;
+	PFILE_NOTIFY_INFORMATION info = (PFILE_NOTIFY_INFORMATION)m_buffer;
 
 	std::vector<std::pair<SzbMonitorTokenType, std::string>> tokens_and_paths;
 
@@ -388,7 +388,7 @@ void SzbParamMonitorImpl::process_notification() {
 		if (!info->NextEntryOffset)
 			break;
 
-		info = (char*) info + info->NextEntryOffset;
+		info = PFILE_NOTIFY_INFORMATION((uint8_t*) info + info->NextEntryOffset);
 	}
 
 	if (tokens_and_paths.size())
@@ -405,7 +405,7 @@ void SzbParamMonitorImpl::process_cmds() {
 
 		switch (cmd.cmd) {
 			case ADD_CMD:
-				add_dir(cmd.path, cmd.param, cmd.observer, order);
+				add_dir(cmd.path, cmd.param, cmd.observer, cmd.order);
 				break;
 			case DEL_CMD:
 				del_dir(cmd.token);
@@ -416,11 +416,12 @@ void SzbParamMonitorImpl::process_cmds() {
 		}
 	}
 
-	ResetEvent(m_events[1]);
+	ResetEvent(m_event[1]);
 }
 
-void SzbParamMonitorImpl::trigger_command_pipe() {
-	SetEvent(m_events[1]);
+bool SzbParamMonitorImpl::trigger_command_pipe() {
+	SetEvent(m_event[1]);
+	return true;
 }
 
 void SzbParamMonitorImpl::add_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
@@ -448,7 +449,7 @@ void SzbParamMonitorImpl::add_dir(const std::string& path, TParam* param, SzbPar
 void SzbParamMonitorImpl::del_dir(SzbMonitorTokenType token) {
 	auto i = m_registry.begin();
 	while (i != m_registry.end()) {
-		if (i->second.first == token)
+		if (i->second == token)
 			i = m_registry.erase(i);
 		else
 			i++;

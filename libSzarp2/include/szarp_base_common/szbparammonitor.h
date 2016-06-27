@@ -28,7 +28,9 @@
 #include <boost/thread/condition.hpp>
 
 #ifdef MINGW32
+#include <winsock2.h>
 #include <windows.h>
+#include <unordered_map>
 #endif
 
 typedef int SzbMonitorTokenType;
@@ -94,13 +96,16 @@ class SzbParamMonitorImpl : public SzbParamMonitorImplBase {
 	HANDLE m_dir_handle;
 
 	OVERLAPPED m_overlapped;
-	HANDLE m_events[2];
+	HANDLE m_event[2];
 
 	DWORD m_buffer[65535];
 
 	std::unordered_map<std::wstring, SzbMonitorTokenType> m_registry;
 
 	bool m_teminate = false;
+
+	void wait_for_changes();
+	void loop();
 
 	void process_file(PFILE_NOTIFY_INFORMATION info, std::vector<std::pair<SzbMonitorTokenType, std::string>>& tokens_and_paths);
 	void process_notification();

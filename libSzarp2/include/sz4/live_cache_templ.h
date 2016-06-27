@@ -19,8 +19,10 @@
 #ifndef __SZ4_LIVE_CACHE_TEMPL_H__
 #define __SZ4_LIVE_CACHE_TEMPL_H__
 
+#ifndef MINGW32
 #include <sys/types.h>
 #include <sys/socket.h>
+#endif
 
 namespace sz4 {
 
@@ -118,6 +120,7 @@ void live_block<value_type, time_type>::get_last_time(time_type &t) {
 		t = time_trait<time_type>::invalid_value;
 }
 
+#ifndef MINGW32
 namespace {
 
 void get_time(szarp::ParamValue* value, second_time_t &t) {
@@ -145,6 +148,7 @@ void get_value(szarp::ParamValue* value, double& v) {
 }
 
 }
+#endif
 
 template<class value_type, class time_type>
 void live_block<value_type, time_type>::process_live_value(
@@ -178,6 +182,7 @@ void live_block<value_type, time_type>::process_live_value(
 template<class value_type, class time_type>
 void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* value)
 {
+#ifndef MINGW32
 	time_type t;
 	get_time(value, t);
 
@@ -189,6 +194,7 @@ void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* va
 	auto observer = m_observer.load(std::memory_order_consume);
 	if (observer)
 		observer->new_live_value(value);
+#endif
 }
 
 namespace {
@@ -220,9 +226,12 @@ struct generic_live_block_builder {
 template<class entry_builder> live_cache::live_cache(
 	const live_cache_config& config,
 	zmq::context_t* context)
+#ifndef MINGW32
 	:
 	m_context(context)
+#endif
 {
+#ifndef MINGW32
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, m_cmd_sock))
 		throw std::runtime_error("Failed to craete socketpair");
 
@@ -254,6 +263,7 @@ template<class entry_builder> live_cache::live_cache(
 	}
 
 	start();
+#endif
 }
 
 

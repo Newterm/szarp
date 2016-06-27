@@ -96,6 +96,7 @@ struct generic_live_block_builder;
 
 class live_cache
 {
+#ifndef MINGW32
 	std::thread m_thread;
 	int m_cmd_sock[2];
 
@@ -107,6 +108,7 @@ class live_cache
 	std::vector<unsigned> m_sock_map;
 
 	std::vector<std::vector<generic_live_block*>> m_cache;
+#endif
 
 	void process_msg(szarp::ParamsValues* values, size_t sock_no);
 	void process_socket(size_t sock_no);
