@@ -984,6 +984,8 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	if (prefix != m_current_prefix)
 		return;
 
+	m_active_draws_count = 0;
+
 	DrawsSets *dss = m_config_manager->GetConfigByPrefix(prefix);
 	assert(dss);
 

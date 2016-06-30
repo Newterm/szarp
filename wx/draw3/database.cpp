@@ -657,6 +657,19 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) 
 {
+	auto i = observers.begin();
+	while (i != observers.end()) {
+		sz4::param_info pi = i->first.second;
+		if (pi.prefix() == prefix) {
+			base->deregister_observer(
+				i->second,
+				{ pi },
+				[] (const boost::system::error_code&) { /*XXX*/ });
+
+			i = observers.erase(i);
+		} else 
+			std::advance(i, 1);
+	}
 }
 
 bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
