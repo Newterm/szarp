@@ -431,7 +431,7 @@ void szParSelect::OnCheckClicked(wxCommandEvent & ev)
 	} else {
 		LoadParams();
 	}
-	par_sizer->Add(par_trct, 1, wxGROW | wxALL, 8);
+	par_sizer->Layout();
 
 }
 
