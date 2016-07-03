@@ -272,7 +272,7 @@ again:
 #else
 
 SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor *monitor, const std::string& szarp_data_dir)
-			: m_token(0), m_szarp_data_dir(szarp_data_dir)
+			: m_monitor(monitor), m_token(0), m_szarp_data_dir(szarp_data_dir)
 {
 	m_dir_handle = CreateFile(
 			szarp_data_dir.c_str(), 
@@ -295,7 +295,7 @@ SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor *monitor, const std::st
 	}
 
 	m_event[1] = CreateEvent(NULL, true, false, "signal event");
-	if (m_event[1] = INVALID_HANDLE_VALUE) {
+	if (m_event[1] == INVALID_HANDLE_VALUE) {
 		CloseHandle(m_dir_handle);
 		CloseHandle(m_event[1]);
 		throw std::runtime_error("Failed to open directory to monitor");
@@ -325,7 +325,7 @@ SzbParamMonitorImpl::~SzbParamMonitorImpl() {
 
 void SzbParamMonitorImpl::loop() {
 	while (!m_terminate) {
-		auto r = WaitForMultipleObjects(2, m_event, false, 0);
+		auto r = WaitForMultipleObjects(2, m_event, false, INFINITE);
 		switch (r) {
 			case WAIT_OBJECT_0:
 				process_notification();
@@ -342,10 +342,10 @@ void SzbParamMonitorImpl::loop() {
 }
 
 void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vector<std::pair<SzbMonitorTokenType, std::string>>& tokens_and_paths) {
-	if (info->Action != FILE_ACTION_ADDED || info->Action != FILE_ACTION_RENAMED_NEW_NAME)
+	if (info->Action != FILE_ACTION_ADDED && info->Action != FILE_ACTION_RENAMED_NEW_NAME)
 		return;
 
-	size_t length = info->FileNameLength;
+	size_t length = info->FileNameLength / sizeof(info->FileName[0]);
 	if (length < 4)
 		return;
 
@@ -369,7 +369,7 @@ void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vecto
 	if (i == m_registry.end()) 
 		return;
 
-	tokens_and_paths.push_back(std::make_pair(i->second, path.string()));
+	tokens_and_paths.push_back(std::make_pair(i->second, (m_szarp_data_dir / path).string()));
 }
 
 void SzbParamMonitorImpl::process_notification() {
@@ -437,8 +437,10 @@ void SzbParamMonitorImpl::add_dir(const std::string& path, TParam* param, SzbPar
 	}
 
 	boost::filesystem::path relative_path;
-	while (path_iter != dir_path.end())
+	while (path_iter != dir_path.end()) {
 		relative_path /= *path_iter;
+		path_iter++;
+	}
 
 	auto token = m_token++;
 
