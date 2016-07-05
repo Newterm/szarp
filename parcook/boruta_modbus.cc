@@ -728,6 +728,10 @@ public:
 
 class short_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register* m_reg;
+	bool m_has_limits = false;
+	unsigned short m_min = 0;
+	unsigned short m_max = USHRT_MAX;
+
 public:
 	short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log);
 	virtual unsigned short val();
@@ -735,27 +739,43 @@ public:
 
 class bcd_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register* m_reg;
+	bool m_has_limits = false;
+	unsigned short m_min = 0;
+	unsigned short m_max = USHRT_MAX;
+	int m_prec;
+
 public:
 	bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log);
+	bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log  int prec, , T min, T max);
 	virtual unsigned short val();
 };
 
 template<class T> class long_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg_lsw;
 	modbus_register *m_reg_msw;
+	bool m_has_limits = false;
+	T m_min;
+	T m_max;
+	T m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	long_parcook_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec, bool lsw, driver_logger *log);
+	long_parcook_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec, bool lsw, driver_logger *log, T min, T max);
 	virtual unsigned short val();
 };
 
 class double_parcook_modbus_val_op: public parcook_modbus_val_op {
 	modbus_register* m_regs[4];
+	bool m_has_limits = false;
+	double m_min = DBL_MIN;
+	double m_max = DBL_MAX;
+	double m_eps = 0;
 	int m_prec;
 	bool m_lsd;
 public:
 	double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log);
+	double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log, double min, double max);
 	void set_regs(modbus_register* regs[4]);
 	unsigned short val();
 };
@@ -763,10 +783,15 @@ public:
 class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg_integer;
 	modbus_register *m_reg_fraction;
+	bool m_has_limits = false;
+	float m_min = FLT_MIN;
+	float m_max = FLT_MAX;
+	float m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, float min, float max);
 	void set_regs(modbus_register* regs[2]);
 	unsigned short val();
 };
@@ -775,10 +800,15 @@ class decimal3_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg1;
 	modbus_register *m_reg2;
 	modbus_register *m_reg3;
+	bool m_has_limits = false;
+	double m_min = DBL_MIN;
+	double m_max = DBL_MAX;
+	double m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
+	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, double min, double max);
 	void set_regs(modbus_register* regs[3]);
 	unsigned short val();
 };
@@ -822,17 +852,39 @@ template<class T> long_parcook_modbus_val_op<T>::long_parcook_modbus_val_op(
 	parcook_modbus_val_op(log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec), m_lsw(lsw)
 {}
 
+template<class T> long_parcook_modbus_val_op<T>::long_parcook_modbus_val_op(
+		modbus_register* reg_lsw,
+		modbus_register* reg_msw,
+		int prec,
+		bool lsw,
+		driver_logger *log
+		T min, T max)
+	:
+	parcook_modbus_val_op(log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec), m_lsw(lsw), m_min(min), m_max(max)
+{
+	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
+}
 
 short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log) :
 	parcook_modbus_val_op(log),
 	m_reg(reg) 
 {}
 
+short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log, unsigned short min, unsigned short max) :
+	parcook_modbus_val_op(log),
+	m_reg(reg),
+	m_has_limits(true),
+	m_min(min), m_max(max)
+{}
+
+
 unsigned short short_parcook_modbus_val_op::val() {
 	bool valid;
 	unsigned short v = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
+	if (m_has_limits)
+		if (v < m_min || v > m_max) return SZARP_NO_DATA;
 	return v;
 }
 
@@ -841,11 +893,21 @@ bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, drive
 	m_reg(reg) 
 {}
 
+bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log, unsigned short min, unsigned short max) :
+	parcook_modbus_val_op(log),
+	m_reg(reg),
+	m_has_limits(true),
+	m_min(min), m_max(max)
+{}
+
 unsigned short bcd_parcook_modbus_val_op::val() {
 	bool valid;
 	unsigned short val = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
+
+	if (m_has_limits)
+		if (val < m_min || val > m_max) return SZARP_NO_DATA;
 
 	return (val & 0xf)
 		+ ((val >> 4) & 0xf) * 10
@@ -877,6 +939,9 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 	int32_t iv = v.i32 * m_prec; 
 	uint32_t* pv = (uint32_t*) &iv;
 
+	if (m_has_limits)
+		if (iv + m_eps < m_min || iv - m_eps > m_max) return SZARP_NO_DATA;
+
 	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
 
 	if (m_lsw)
@@ -901,6 +966,9 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	}
 
 	float* f = (float*) v2;
+	if (m_has_limits)
+		if (*f + m_eps < m_min || *f - m_eps > m_max) return SZARP_NO_DATA;
+
 	int iv = nearbyint(*f * m_prec);	
 	unsigned int* pv = (unsigned int*) &iv;
 
@@ -912,7 +980,9 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 }
 
 double_parcook_modbus_val_op::double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsd(lsd) {}
-
+double_parcook_modbus_val_op::double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log, float min, float max) : parcook_modbus_val_op(log), m_prec(prec), m_lsd(lsd), m_min(min), m_max(max), m_has_limits(true) {
+	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
+};
 
 void double_parcook_modbus_val_op::set_regs(modbus_register* regs[4]) {
 	m_regs[0] = regs[0];
@@ -945,7 +1015,11 @@ unsigned short double_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
+
 decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {};
+decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, float min, float max) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw), m_min(min), m_max(max), m_has_limits(true) {
+	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
+};
 
 void decimal2_parcook_modbus_val_op::set_regs(modbus_register* regs[2]) {
 	m_reg_integer = regs[0];
@@ -969,6 +1043,9 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 
 	double v = rinteger + (rfraction / 1000.0);
 
+	if (m_has_limits)
+		if (v + m_eps < m_min || v - m_eps > m_max) return SZARP_NO_DATA;
+
 	int32_t iv = nearbyint(v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
 
@@ -980,7 +1057,10 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw) {};
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw), m_has_limits(false), m_min(DBL_MIN), m_max(DBL_MAX), m_eps(0) {};
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, double min, double max) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw), m_has_limits(true), m_min(min), m_max(max) {
+	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
+};
 
 void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
 	m_reg1 = regs[0];
@@ -1011,6 +1091,9 @@ unsigned short decimal3_parcook_modbus_val_op::val() {
 	}
 
 	double v = (10000 * r1) + r2 + (r3 / 1000.0);
+
+	if (m_has_limits)
+		if (v + m_eps < m_min || v - m_eps > m_max) return SZARP_NO_DATA;
 
 	int32_t iv = nearbyint(v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
@@ -1257,10 +1340,6 @@ void modbus_unit::to_parcook() {
 			if (m_fbdchecks[m] && v == m_fbds[m]) {
 				m_read[m] = SZARP_NO_DATA;
 				m_log.log(8, "Parcook param no %zu got forbidden value", m, m_read[m]);
-			}
-			else if (m_limchecks[m] && (v < m_mins[m] || v > m_maxs[m])) {
-				m_read[m] = SZARP_NO_DATA;
-				m_log.log(8, "Param no %zu limited, got %zu and changed to NO_DATA", m, v);
 			} else {
 				m_read[m] = v;
 			}
