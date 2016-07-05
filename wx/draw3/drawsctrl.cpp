@@ -945,6 +945,7 @@ void DrawsController::DoSet(DrawSet *set) {
 	m_current_set_name = set->GetName();
 	m_current_prefix = set->GetDrawsSets()->GetPrefix();
 
+	ChangeObservedParamsRegistration(GetSubscribedParams(), {});
 
 	DrawInfoArray *draws = set->GetDraws();
 
@@ -977,7 +978,6 @@ void DrawsController::DoSet(DrawSet *set) {
 		m_draws[i]->SetSubscribed(false);
 	}
 
-	ChangeObservedParamsRegistration(GetSubscribedParams(), {});
 }
 
 void DrawsController::ConfigurationWasReloaded(wxString prefix) {
