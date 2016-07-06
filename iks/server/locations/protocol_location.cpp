@@ -235,7 +235,7 @@ void ProtocolLocation::send_response(
 			std::bind(
 				static_cast<void(ProtocolLocation::*)(Command*)>(
 					&ProtocolLocation::erase_cmd),
-				this,cmd) );
+				shared_from_this(), cmd) );
 }
 
 void ProtocolLocation::send_fail( ErrorCodes code , const std::string& msg )

@@ -54,7 +54,8 @@ int main( int argc , char** argv )
 		("prefix,P", po::value<std::string>()->default_value(PREFIX), "Szarp prefix")
 		("port,p", po::value<unsigned>()->default_value(9002), "Server port on which we will listen")
 		("base_cache_size_low_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_LOW_WATER_MARK_DEFAULT), "Szbase in-memory cache size low water mark (in bytes)")
-		("base_cache_size_high_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT), "Szbase in-memory cache size high water mark (in bytes)");
+		("base_cache_size_high_water_mark", po::value<size_t>()->default_value(SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT), "Szbase in-memory cache size high water mark (in bytes)")
+		("base_live_cache_retention", po::value<size_t>()->default_value(SzbaseWrapper::BASE_LIVE_CACHE_RETENTION), "Szbase in-memory live cache retention value (in seconds)");
 
 	po::variables_map vm; 
 	CfgPairs pairs;
@@ -152,11 +153,18 @@ int main( int argc , char** argv )
 								? vm["base_cache_size_high_water_mark"].as<size_t>()
 								: SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
 
+			int base_live_cache_retention = vm.count("base_live_cache_retention")
+								? vm["base_live_cache_retention"].as<unsigned>()
+								: SzbaseWrapper::BASE_LIVE_CACHE_RETENTION;
+
 			sz_log(2, "Using %zu as base cache size low water mark", base_cache_size_low_water_mark);
 			sz_log(2, "Using %zu as base cache size high water mark", base_cache_size_high_water_mark);
+			sz_log(2, "Using %d as base live cache retention", base_live_cache_retention);
 			SzbaseWrapper::init( vm["prefix"].as<std::string>()
+							   , locs_cfg
+							   , base_live_cache_retention
 							   , base_cache_size_low_water_mark
-							   , base_cache_size_high_water_mark );
+							   , base_cache_size_high_water_mark);
 
 		}
 

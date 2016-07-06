@@ -52,7 +52,7 @@ void Sz4BufferTestCase::test1() {
 	SzbParamMonitor monitor;
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	sz4::buffer_templ<mocks::mock_types>* buffer = new sz4::buffer_templ<mocks::mock_types>(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
+	auto buffer = new sz4::buffer_templ<sz4::base_templ<mocks::mock_types>>(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
@@ -140,7 +140,7 @@ void Sz4BufferTestCase::test2() {
 	SzbParamMonitor monitor;
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	sz4::buffer_templ<mocks::mock_types> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
+	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
@@ -233,7 +233,7 @@ void Sz4BufferTestCase::searchTest() {
 	SzbParamMonitor monitor;
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	sz4::buffer_templ<mocks::mock_types> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
+	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));

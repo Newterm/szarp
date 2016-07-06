@@ -105,6 +105,12 @@ struct ValueInfo {
 	/**Denotes if there is a remark associated with time this value refers to*/
 	bool m_remark;
 
+	/**Is this a fixed value*/
+	bool m_fixed;
+
+	/**Is the value fixed (as received from db)*/
+	bool m_db_fixed;
+
 	/**@return true if this struct holds value received from database and it is not SZB_NODATA*/
 	bool IsData() const;
 
@@ -113,6 +119,15 @@ struct ValueInfo {
 	bool MayHaveData() const;
 
 	ValueInfo();
+};
+
+struct NewValuesInsertStatus {
+	bool m_view_updated;
+	bool m_stats_updated;
+	bool m_non_fixed_added;
+	bool m_needs_stats_recalc;
+
+	NewValuesInsertStatus();
 };
 
 struct ValuesTable {
@@ -199,7 +214,7 @@ struct ValuesTable {
 	/**Add value to a table.
 	 * @param dq value description
 	 * @param view_values_changed output parameter, set to true if value withing @see m_view interval has changed*/
-	void AddData(DatabaseQuery *q, bool &view_values_changed, bool &stats_updated);
+	void AddData(DatabaseQuery *q, bool &view_values_changed, bool &stats_updated, bool &non_fixed);
 
 	/**Method that calculates actual value of table entries after reception of response from db.
 	 * @param idx index of probe that has been just received from database
@@ -207,7 +222,7 @@ struct ValuesTable {
 	 * @param view_updated output param, indiactes if value of any entry wihin @see m_view interval has changed*/
 	void UpdateProbesValues(int idx, bool &stats_updated, bool &view_updated);
 
-	void InsertValue(DatabaseQuery::ValueData::V *v, bool &view_values_changed, bool &stats_updated);
+	void InsertValue(DatabaseQuery::ValueData::V *v, NewValuesInsertStatus &status);
 
 	size_t size() const;
 	
@@ -292,6 +307,8 @@ private:
 	/**Enabled attribute*/
 	bool m_enabled;
 
+	bool m_subscribed;
+
 	DrawsObservers *m_observers;
 public:
 	Draw(DrawsController* draws_controller, DrawsObservers *observers, int draw_no);
@@ -302,7 +319,7 @@ public:
 	 * @param index position of date in @see m_values table
 	 * @param value of data
 	 * @param sum of all probes composing value*/
-	void AddData(DatabaseQuery *q, bool &data_within_view);
+	void AddData(DatabaseQuery *q, bool &data_within_view, bool &non_fixed);
 
 	DTime GetStartTime() const;
 
@@ -377,6 +394,12 @@ public:
 	void SetDrawNo(int draw_no);
 
 	void SetInitialDrawNo(int draw_no);
+
+	bool GetSubscribed() const;
+
+	void SetSubscribed(bool subscribed);
+
+	bool HasUnfixedData() const;
 
 	/**sets double cursor
 	 * @return true if double cursor was successfully set*/

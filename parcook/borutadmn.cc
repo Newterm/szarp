@@ -109,11 +109,14 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <event2/event.h>
+
 #include "conversion.h"
 #include "liblog.h"
 #include "xmlutils.h"
 #include "tokens.h"
 #include "borutadmn.h"
+#include "daemonutils.h"
 
 bool g_debug = false;
 
@@ -571,13 +574,10 @@ void client_manager::starting_new_cycle() {
 		for (auto* client_driver : clients)
 			client_driver->starting_new_cycle();
 	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
-		size_t& client = m_current_client.at(connection);
 		CONNECTION_STATE state = do_establish_connection(connection);
 		dolog(7, "client_manager::starting_new_cycle connection: %zu state: %d", connection, state);
-		if (state == CONNECTED && client == m_connection_client_map.at(connection).size()) {
-			client = 0;
-			do_schedule(connection, client);
-		}
+		if (state == CONNECTED && m_current_client.at(connection) == m_connection_client_map.at(connection).size())
+			schedule_timer(connection);
 	}
 }
 
@@ -590,8 +590,8 @@ void client_manager::driver_finished_job(client_driver *driver) {
 		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
 		return;
 	}
-	if (++client < m_connection_client_map.at(connection).size())
-		do_schedule(connection, client);
+
+	schedule_timer(connection);
 }
 
 void client_manager::terminate_connection(client_driver *driver) {
@@ -609,12 +609,11 @@ void client_manager::terminate_connection(client_driver *driver) {
 		return;
 	}
 	do_terminate_connection(connection);
-	client += 1;
-	if (client < m_connection_client_map.at(connection).size()) {
-		if (do_establish_connection(connection) != CONNECTED)
-			return;
-		do_schedule(connection, client);
-	}
+
+	if (do_establish_connection(connection) != CONNECTED)
+		return;
+
+	schedule_timer(connection);
 }
 
 void client_manager::connection_read_cb(size_t connection, struct bufferevent *bufev, int fd) { 
@@ -637,23 +636,61 @@ void client_manager::connection_error_cb(size_t connection) {
 	client_driver *d = m_connection_client_map.at(connection).at(current_client);
 	d->connection_error(do_get_connection_buf(connection));
 	do_terminate_connection(connection);
-	size_t clients_count = m_connection_client_map.at(connection).size();
-	current_client += 1;
-	if (current_client == clients_count)
-		return;
 
 	CONNECTION_STATE connection_state = do_establish_connection(connection);
 	if (connection_state == CONNECTED)
-		do_schedule(connection, current_client);	
+		schedule_timer(connection);
 }
 
 void client_manager::connection_established_cb(size_t connection) {
-	size_t &current_client = m_current_client.at(connection);
-	if (current_client == m_connection_client_map.at(connection).size())
-		current_client = 0;
-	do_schedule(connection, current_client);
+	schedule_timer(connection);
 }
 
+int client_manager::build_timer(xmlNodePtr node) {
+	int inter_unit_delay = 0;
+
+	if (get_xml_extra_prop(node, "inter-unit-delay", inter_unit_delay, true))
+		return 1;
+	dolog(2, "Inter unit query delay %d", inter_unit_delay);
+
+	timer_def *timer = new timer_def();
+	std::get<0>(*timer) = evtimer_new(m_boruta->get_event_base(), unit_delay_timer_cb, timer);
+	std::get<1>(*timer) = ms2timeval(inter_unit_delay);
+	std::get<2>(*timer) = m_unit_delay_timer.size();
+	std::get<3>(*timer) = this;
+
+	m_unit_delay_timer.push_back(timer);
+
+	return 0;
+}
+
+void client_manager::schedule_timer(size_t connection)
+{
+	struct timeval tv;
+	if (evtimer_pending(std::get<0>(*m_unit_delay_timer[connection]), &tv))
+		return;
+
+	evtimer_add(std::get<0>(*m_unit_delay_timer[connection]), &std::get<1>(*m_unit_delay_timer[connection]));
+}
+
+void client_manager::unit_delay_timer_cb(int fd, short event, void *_timer) {
+	timer_def *timer = (timer_def*)_timer;
+
+	size_t connection = std::get<2>(*timer);
+	client_manager *_this = std::get<3>(*timer);
+
+	if (_this->do_get_connection_state(connection) != CONNECTED)
+		return;
+
+	size_t& current_client = _this->m_current_client.at(connection);
+	if (current_client == _this->m_connection_client_map.at(connection).size())
+		current_client = 0;
+	else if (++current_client == _this->m_connection_client_map.at(connection).size())
+		return;
+
+	_this->do_schedule(connection, current_client);
+}
+	
 tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, const std::pair<std::string, short>& _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
 
 void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
@@ -790,11 +827,15 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 		if (get_xml_extra_prop(node, "connection-retry-gap", c.retry_gap, true))
 			return 1;
 
+
 		c.establishment_timeout = 10;
 		if (get_xml_extra_prop(node, "connection-establishment-timeout", c.establishment_timeout, true))
 			return 1;
-
 		dolog(1, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
+
+		if (build_timer(node))
+			return 1;
+
 		m_tcp_connections.push_back(c);
 	}
 
@@ -807,6 +848,7 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, sho
 
 int tcp_client_manager::initialize() {
 	m_current_client.resize(m_connection_client_map.size());
+	m_unit_delay_timer.resize(m_connection_client_map.size());
 
 	for (size_t i = 0; i < m_connection_client_map.size(); i++)
 		m_current_client.at(i) = m_connection_client_map.at(i).size();
@@ -961,6 +1003,9 @@ int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, short* read, 
 		m_configurations.resize(m_configurations.size() + 1);
 		m_ports_client_no_map[spc.path] = j;
 		m_serial_connections.push_back(serial_connection(j, this));
+
+		if (build_timer(node))
+			return 1;
 	} else {
 		j = i->second;
 	}

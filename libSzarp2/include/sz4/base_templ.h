@@ -1,16 +1,22 @@
 namespace sz4 {
 
 template<class types>
-base_templ<types>::base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
-	m_interperter.initialize(this, m_ipk_container);
+base_templ<types>::base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container, live_cache_config* live_config) : m_szarp_data_dir(szarp_data_dir), m_ipk_container(ipk_container) {
+	m_interperter.reset(new lua_interpreter<base>());
+	m_interperter->initialize(this, m_ipk_container);
+
+	if (live_config)
+		m_live_cache.reset(new live_cache(*live_config, new zmq::context_t(1)));
+
+
 }
 
 template<class types> boost::optional<SZARP_PROBE_TYPE>& base_templ<types>::read_ahead() {
 	return m_read_ahead;
 }
 
-template<class types> buffer_templ<types>* base_templ<types>::buffer_for_param(TParam* param) {
-	buffer_templ<types>* buf;
+template<class types> buffer_templ<base_templ<types>>* base_templ<types>::buffer_for_param(TParam* param) {
+	buffer_templ<base>* buf;
 	if (param->GetConfigId() >= m_buffers.size())
 		m_buffers.resize(param->GetConfigId() + 1, NULL);
 	buf = m_buffers[param->GetConfigId()];
@@ -18,9 +24,9 @@ template<class types> buffer_templ<types>* base_templ<types>::buffer_for_param(T
 	if (buf == NULL) {
 		std::wstring prefix = param->GetSzarpConfig()->GetPrefix();	
 #if BOOST_FILESYSTEM_VERSION == 3
-		buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").wstring());
+		buf = m_buffers[param->GetConfigId()] = new buffer_templ<base>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").wstring());
 #else
-		buf = m_buffers[param->GetConfigId()] = new buffer_templ<types>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").file_string());
+		buf = m_buffers[param->GetConfigId()] = new buffer_templ<base>(this, &m_monitor, m_ipk_container, prefix, (m_szarp_data_dir / prefix / L"szbase").file_string());
 #endif
 	}
 	return buf;
@@ -36,7 +42,7 @@ void base_templ<types>::remove_param(TParam* param) {
 	if (param->GetConfigId() >= m_buffers.size())
 		return;
 
-	buffer_templ<types>* buf = m_buffers[param->GetConfigId()];
+	buffer_templ<base>* buf = m_buffers[param->GetConfigId()];
 	if (buf == NULL)
 		return;
 
@@ -68,7 +74,7 @@ template<class types>
 SzbParamMonitor& base_templ<types>::param_monitor() { return m_monitor; }
 
 template<class types>
-lua_interpreter<types>& base_templ<types>::get_lua_interpreter() { return m_interperter; }
+lua_interpreter<base_templ<types>>& base_templ<types>::get_lua_interpreter() { return *m_interperter; }
 
 template<class types>
 typename base_templ<types>::ipk_container_type* base_templ<types>::get_ipk_container() { return m_ipk_container; }
@@ -77,8 +83,11 @@ template<class types>
 block_cache* base_templ<types>::cache() { return &m_cache; }
 
 template<class types>
+live_cache* base_templ<types>::get_live_cache() { return m_live_cache.get(); }
+
+template<class types>
 base_templ<types>::~base_templ() {
-	for (typename std::vector<buffer_templ<types>*>::iterator i = m_buffers.begin(); i != m_buffers.end(); i++)
+	for (auto i = m_buffers.begin(); i != m_buffers.end(); i++)
 		delete *i;
 	m_monitor.terminate();
 }

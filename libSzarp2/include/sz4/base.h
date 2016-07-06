@@ -35,10 +35,13 @@
 #include "sz4/lua_interpreter.h"
 #include "sz4/defs.h"
 #include "sz4/param_observer.h"
+#include "sz4/param_observer.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
 namespace sz4 {
 
+class live_cache;
+class live_cache_config;
 template<class types> class buffer_templ;
 
 typedef std::vector<
@@ -48,20 +51,26 @@ typedef std::vector<
 template<class types> class base_templ {
 public:
 	typedef typename types::ipk_container_type ipk_container_type;
+	typedef typename types::param_factory param_factory;
+	typedef base_templ<types> base;
 private:
 	const boost::filesystem::wpath m_szarp_data_dir;
-	std::vector<buffer_templ<types>*> m_buffers;
+	std::vector<buffer_templ<base>*> m_buffers;
 	SzbParamMonitor m_monitor;
 	ipk_container_type* m_ipk_container;
 
 	fixed_stack_type m_fixed_stack;
-	lua_interpreter<types> m_interperter;
+	std::unique_ptr<lua_interpreter<base>> m_interperter;
 
 	block_cache m_cache;
 
+	std::unique_ptr<live_cache> m_live_cache;
+
 	boost::optional<SZARP_PROBE_TYPE> m_read_ahead;
 public:
-	base_templ(const std::wstring& szarp_data_dir, ipk_container_type* ipk_container);
+	base_templ(const std::wstring& szarp_data_dir,
+			ipk_container_type* ipk_container,
+			live_cache_config* live_config = nullptr);
 
 	template<class V, class T> void get_weighted_sum(TParam* param, const T& start, const T& end, SZARP_PROBE_TYPE probe_type, weighted_sum<V, T>& sum) {
 		buffer_for_param(param)->get_weighted_sum(param, start, end, probe_type, sum);
@@ -93,7 +102,7 @@ public:
 
 	boost::optional<SZARP_PROBE_TYPE>& read_ahead();
 
-	buffer_templ<types>* buffer_for_param(TParam* param);
+	buffer_templ<base>* buffer_for_param(TParam* param);
 
 	generic_param_entry* get_param_entry(TParam* param);
 
@@ -107,11 +116,13 @@ public:
 
 	SzbParamMonitor& param_monitor();
 
-	lua_interpreter<types>& get_lua_interpreter();
+	lua_interpreter<base>& get_lua_interpreter();
 
 	ipk_container_type* get_ipk_container();
 
 	block_cache* cache();
+
+	live_cache* get_live_cache();
 
 	~base_templ();
 };

@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <cppunit/extensions/HelperMacros.h>
 #include <boost/filesystem.hpp>
+#include <zmq.hpp>
 
 #include "conversion.h"
 #include "szarp_config.h"
@@ -24,6 +25,7 @@
 #include "sz4/base.h"
 #include "sz4/util.h"
 #include "sz4/buffer.h"
+#include "sz4/live_cache.h"
 #include "sz4/definable_param_cache.h"
 #include "sz4/real_param_entry.h"
 #include "sz4/real_param_entry_templ.h"
@@ -34,6 +36,7 @@
 
 #include "sz4/buffer_templ.h"
 #include "sz4/base_templ.h"
+#include "sz4/live_cache.h"
 #include "sz4/lua_interpreter_templ.h"
 
 #include "test_serach_condition.h"

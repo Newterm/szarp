@@ -35,20 +35,20 @@
 
 namespace sz4 {
 
-template<class value_type, class time_type, class types>
-file_block<value_type, time_type, types>::file_block(const time_type& start_time
+template<class value_type, class time_type, class base>
+file_block<value_type, time_type, base>::file_block(const time_type& start_time
 	, entry_type* entry
 	, block_cache* cache)
 	: concrete_block<value_type, time_type>(start_time, cache)
 	, m_entry(entry)
 {}
 
-template<class value_type, class time_type, class types>
-file_block<value_type, time_type, types>::~file_block() {
+template<class value_type, class time_type, class base>
+file_block<value_type, time_type, base>::~file_block() {
 	m_entry->block_deleted();
 }
 
-template<class V, class T, class types> file_block_entry<V, T, types>::file_block_entry(const T& start_time
+template<class V, class T, class base> file_block_entry<V, T, base>::file_block_entry(const T& start_time
 	, const std::wstring& block_path
 	, block_cache* cache) 
 	: m_block(nullptr)
@@ -59,58 +59,58 @@ template<class V, class T, class types> file_block_entry<V, T, types>::file_bloc
 {
 }
 
-template<class V, class T, class types> T file_block_entry<V, T, types>::start_time() {
+template<class V, class T, class base> T file_block_entry<V, T, base>::start_time() {
 	return m_start_time;
 }
 
-template<class V, class T, class types> T file_block_entry<V, T, types>::end_time() {
+template<class V, class T, class base> T file_block_entry<V, T, base>::end_time() {
 	refresh_if_needed();
 	return m_block->end_time();
 }
 
-template<class V, class T, class types>
-void file_block_entry<V, T, types>::get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
+template<class V, class T, class base>
+void file_block_entry<V, T, base>::get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum) {
 	refresh_if_needed();
 	m_block->get_weighted_sum(start, end, wsum);
 }
 
-template<class V, class T, class types>
-T file_block_entry<V, T, types>::search_data_right(const T& start, const T& end, const search_condition& condition) {
+template<class V, class T, class base>
+T file_block_entry<V, T, base>::search_data_right(const T& start, const T& end, const search_condition& condition) {
 	refresh_if_needed();
 	return m_block->search_data_right(start, end, condition);
 }
 
-template<class V, class T, class types>
-T file_block_entry<V, T, types>::search_data_left(const T& start, const T& end, const search_condition& condition) {
+template<class V, class T, class base>
+T file_block_entry<V, T, base>::search_data_left(const T& start, const T& end, const search_condition& condition) {
 	refresh_if_needed();
 	return m_block->search_data_left(start, end, condition);
 }
 
-template<class V, class T, class types>
-void file_block_entry<V, T, types>::set_needs_refresh() {
+template<class V, class T, class base>
+void file_block_entry<V, T, base>::set_needs_refresh() {
 	m_needs_refresh = true;
 }
 
-template<class V, class T, class types>
-void file_block_entry<V, T, types>::block_deleted() {
+template<class V, class T, class base>
+void file_block_entry<V, T, base>::block_deleted() {
 	m_block = NULL;
 }
 
-template<class V, class T, class types>
-file_block_entry<V, T, types>::~file_block_entry() {
+template<class V, class T, class base>
+file_block_entry<V, T, base>::~file_block_entry() {
 	delete m_block;
 }
 
 
-template<class V, class T, class types>
-sz4_file_block_entry<V, T, types>::sz4_file_block_entry(const T& start_time
+template<class V, class T, class base>
+sz4_file_block_entry<V, T, base>::sz4_file_block_entry(const T& start_time
 	, const std::wstring& block_path
 	, block_cache* cache)
 	: parent(start_time, block_path, cache)
 {}
 
-template<class V, class T, class types>
-void sz4_file_block_entry<V, T, types>::refresh_if_needed() {
+template<class V, class T, class base>
+void sz4_file_block_entry<V, T, base>::refresh_if_needed() {
 	if (!this->m_block) {
 		this->m_block = new typename parent::block_type(this->m_start_time, this, this->m_cache);
 		this->m_needs_refresh = true;
@@ -134,16 +134,16 @@ void sz4_file_block_entry<V, T, types>::refresh_if_needed() {
 	this->m_needs_refresh = false;
 }
 
-template<class V, class T, class types>
-szbase_file_block_entry<V, T, types>::szbase_file_block_entry(const T& start_time
+template<class V, class T, class base>
+szbase_file_block_entry<V, T, base>::szbase_file_block_entry(const T& start_time
 	, const std::wstring& block_path
 	, block_cache* cache)
 	: parent(start_time, block_path, cache)
 	, m_read_so_far(0)
 {}
 
-template<class V, class T, class types>
-void szbase_file_block_entry<V, T, types>::refresh_if_needed() {
+template<class V, class T, class base>
+void szbase_file_block_entry<V, T, base>::refresh_if_needed() {
 	if (!this->m_block) {
 		this->m_block = new typename parent::block_type(this->m_start_time, this, this->m_cache);
 		this->m_needs_refresh = true;
@@ -191,8 +191,8 @@ void szbase_file_block_entry<V, T, types>::refresh_if_needed() {
 }
 
 
-template<class V, class T, class types>
-real_param_entry_in_buffer<V, T, types>::real_param_entry_in_buffer(base_templ<types> *_base
+template<class V, class T, class base>
+real_param_entry_in_buffer<V, T, base>::real_param_entry_in_buffer(base *_base
 	, TParam* param
 	, const boost::filesystem::wpath& param_dir)
 	: m_base(_base)
@@ -204,12 +204,16 @@ real_param_entry_in_buffer<V, T, types>::real_param_entry_in_buffer(base_templ<t
 	, m_live_block(nullptr)
 {}
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum) {
 
 	T end(_end);
-	if (m_live_block && m_live_block->get_weighted_sum(start, end, sum))
-		return;
+	cache_ret from_live = cache_ret::none;
+	if (m_live_block) {
+		from_live = m_live_block->get_weighted_sum(start, end, sum);
+		if (from_live == cache_ret::complete)
+			return;
+	}
 
 	refresh_if_needed();
 
@@ -218,7 +222,8 @@ void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& sta
 	if (m_blocks.size() == 0) {
 		//no blocks - nodata
 		sum.add_no_data_weight(end - start);
-		sum.set_fixed(false);
+		if (from_live == cache_ret::none)
+			sum.set_fixed(false);
 		return;
 	}
 
@@ -252,12 +257,13 @@ void real_param_entry_in_buffer<V, T, types>::get_weighted_sum_impl(const T& sta
 
 	if (current < end) {
 		sum.add_no_data_weight(end - current);
-		sum.set_fixed(false);
+		if (from_live == cache_ret::none)
+			sum.set_fixed(false);
 	}
 }
 
-template<class V, class T, class types>
-T real_param_entry_in_buffer<V, T, types>::search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+template<class V, class T, class base>
+T real_param_entry_in_buffer<V, T, base>::search_data_right_impl(const T& start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
 	refresh_if_needed();
 
 	if (m_blocks.size()) {
@@ -285,9 +291,9 @@ T real_param_entry_in_buffer<V, T, types>::search_data_right_impl(const T& start
 		return time_trait<T>::invalid_value;
 }
 
-template<class V, class T, class types>
-T real_param_entry_in_buffer<V, T, types>::search_data_left_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, const search_condition& condition) {
-	T end(_end);
+template<class V, class T, class base>
+T real_param_entry_in_buffer<V, T, base>::search_data_left_impl(const T& _start, const T& end, SZARP_PROBE_TYPE, const search_condition& condition) {
+	T start(_start);
 
 	if (m_live_block) {
 		auto result = m_live_block->search_data_left(start, end, condition);
@@ -295,7 +301,7 @@ T real_param_entry_in_buffer<V, T, types>::search_data_left_impl(const T& start,
 		if (result.first)
 			return result.second;
 
-		end = result.second;
+		start = result.second;
 	}
 
 	refresh_if_needed();
@@ -327,8 +333,8 @@ T real_param_entry_in_buffer<V, T, types>::search_data_left_impl(const T& start,
 	return time_trait<T>::invalid_value;
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::refresh_if_needed() {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::refresh_if_needed() {
 	if (m_has_paths_to_update) {
 		boost::mutex::scoped_lock lock(m_mutex);
 		for (std::vector<std::string>::iterator i = m_paths_to_update.begin(); i != m_paths_to_update.end(); i++) {
@@ -345,8 +351,8 @@ void real_param_entry_in_buffer<V, T, types>::refresh_if_needed() {
 	}
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::refresh_file(const std::string& path) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::refresh_file(const std::string& path) {
 	bool sz4_file;
 	T time = path_to_date<T>(path, sz4_file);
 	if (!time_trait<T>::is_valid(time))
@@ -361,8 +367,8 @@ void real_param_entry_in_buffer<V, T, types>::refresh_file(const std::string& pa
 	}
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::refresh_file_list() {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 	namespace fs = boost::filesystem;
 
 	typedef std::tuple<T, std::wstring, bool> file_entry;
@@ -398,15 +404,15 @@ void real_param_entry_in_buffer<V, T, types>::refresh_file_list() {
 		auto& file_path = std::get<1>(f);
 		bool sz4 = std::get<2>(f);
 
-		file_block_entry<V, T, types> *entry(nullptr);
+		file_block_entry<V, T, base> *entry(nullptr);
 		if (sz4) {
-			entry = new sz4_file_block_entry<V, T, types>(
+			entry = new sz4_file_block_entry<V, T, base>(
 						file_time, file_path, m_base->cache());
 			if (time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
 				m_first_sz4_date = file_time;
 		} else {
 			if (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
-				entry = new szbase_file_block_entry<V, T, types>(
+				entry = new szbase_file_block_entry<V, T, base>(
 						file_time, file_path, m_base->cache());
 		}
 
@@ -416,8 +422,8 @@ void real_param_entry_in_buffer<V, T, types>::refresh_file_list() {
 	}
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::get_first_time(const std::list<generic_param_entry*>&, T &t) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::get_first_time(const std::list<generic_param_entry*>&, T &t) {
 	if (m_live_block) {
 		m_live_block->get_first_time(t);
 		if (time_trait<T>::is_valid(t))
@@ -432,8 +438,8 @@ void real_param_entry_in_buffer<V, T, types>::get_first_time(const std::list<gen
 		t = m_blocks.begin()->first;
 }
 
-template<class V, class T, class types>
-void  real_param_entry_in_buffer<V, T, types>::get_last_time(const std::list<generic_param_entry*>&, T &t) {
+template<class V, class T, class base>
+void  real_param_entry_in_buffer<V, T, base>::get_last_time(const std::list<generic_param_entry*>&, T &t) {
 	if (m_live_block) {
 		m_live_block->get_last_time(t);
 		if (time_trait<T>::is_valid(t))
@@ -450,8 +456,8 @@ void  real_param_entry_in_buffer<V, T, types>::get_last_time(const std::list<gen
 	}
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::register_at_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 #if BOOST_FILESYSTEM_VERSION == 3
 	monitor->add_observer(entry, m_param, m_param_dir.string(), 0);
 #else
@@ -459,26 +465,26 @@ void real_param_entry_in_buffer<V, T, types>::register_at_monitor(generic_param_
 #endif
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::deregister_from_monitor(generic_param_entry* entry, SzbParamMonitor* monitor) {
 	monitor->remove_observer(entry);
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::param_data_changed(TParam*, const std::string& path) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::param_data_changed(TParam*, const std::string& path) {
 	boost::mutex::scoped_lock lock(m_mutex);
 	m_paths_to_update.push_back(path);
 	m_has_paths_to_update = true;
 }
 
-template<class V, class T, class types>
-void real_param_entry_in_buffer<V, T, types>::set_live_block(generic_live_block* block) {
+template<class V, class T, class base>
+void real_param_entry_in_buffer<V, T, base>::set_live_block(generic_live_block* block) {
 	m_live_block = dynamic_cast<live_block<V, T>*>(block);	
 	assert(block && m_live_block);
 }
 
-template<class V, class T, class types>
-real_param_entry_in_buffer<V, T, types>::~real_param_entry_in_buffer() {
+template<class V, class T, class base>
+real_param_entry_in_buffer<V, T, base>::~real_param_entry_in_buffer() {
 	for (auto kv : m_blocks)
 		delete kv.second;
 }

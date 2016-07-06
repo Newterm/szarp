@@ -34,11 +34,11 @@
 namespace sz4 {
 
 template<class types> class lua_caluclate : public lua_average_calc_algo {
-	base_templ<types>* m_base;
+	typename types::base* m_base;
 	TParam* m_param;
 	bool m_param_ok;
 public:
-	lua_caluclate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param), m_param_ok(false) {
+	lua_caluclate(typename types::base* base, TParam* param) : m_base(base), m_param(param), m_param_ok(false) {
 		m_param_ok = m_base->get_lua_interpreter().prepare_param(param);
 	}
 
@@ -65,7 +65,7 @@ public:
 
 template<class value_type, class time_type, class types> class lua_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, lua_caluclate> {
 public:
-	lua_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, lua_caluclate>(_base, param, path) {}
+	lua_param_entry_in_buffer(typename types::base* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, lua_caluclate>(_base, param, path) {}
 
 	void get_first_time(std::list<generic_param_entry*>& referred_params, time_type &t) {
 		this->m_base->get_heartbeat_first_time(this->m_param, t);

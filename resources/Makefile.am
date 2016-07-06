@@ -20,6 +20,7 @@ RESOURCES = \
 		@srcdir@/szarp_in.cfg \
 		@srcdir@/parstart_TEMPLATE \
 		@srcdir@/parstart_cfg_TEMPLATE \
+		@srcdir@/rsyslog_conf_TEMPLATE \
 		@srcdir@/SZARP_CFG_TEMPLATE \
 		@srcdir@/ssc.desktop \
 		@srcdir@/scc.desktop \
@@ -105,10 +106,6 @@ dictionary:
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources
 	$(INSTALL) dictionary.xml $(DESTDIR)@prefix@/resources
 
-rsyslog: rsyslog.conf
-	$(INSTALL) -D rsyslog.conf $(DESTDIR)/etc/rsyslog.d/szarp.conf
-
-
 if !DEB_BUILD
 
 apache2:
@@ -157,7 +154,7 @@ install-data-local: copyfiles links
 
 endif
 
-install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary rsyslog
+install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary
 
 uninstall-local: uninstall-apache2
 	rm -rf $(DESTDIR)@prefix@/resources/* $(DESTDIR)/etc/apache2/sites-available/szarp

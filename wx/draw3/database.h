@@ -93,6 +93,9 @@ struct DatabaseQuery {
 			int error;
 			/** Error string*/
 			wchar_t *error_str;
+			/** Fixed value, i.e. it's not gonna change in the future, 
+			    no need to ask for it */
+			bool fixed;
 		};
 		std::vector<V> *vv;
 		bool refresh;

@@ -54,7 +54,7 @@ struct test_types {
 void Sz4LuaParam::test1() {
 	IPKContainerMock1 mock;
 	sz4::base_templ<test_types> base(L"", &mock);
-	sz4::buffer_templ<test_types>* buff = base.buffer_for_param(mock.GetParam(L""));
+	auto buff = base.buffer_for_param(mock.GetParam(L""));
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum;
 	sz4::weighted_sum<double, sz4::second_time_t>::time_diff_type weight;
@@ -119,7 +119,7 @@ void Sz4LuaParam::test2() {
 #else
 	sz4::base_templ<unit_test::test_types> base(base_path.file_string(), &mock);
 #endif
-	sz4::buffer_templ<unit_test::test_types>* buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
+	auto buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
 	
 	TestObserver o;

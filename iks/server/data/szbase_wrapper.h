@@ -5,6 +5,7 @@
 #include "szbase/szbdate.h"
 #include "sz4/base.h"
 
+#include "utils/config.h"
 #include "utils/exception.h"
 #include "data/probe_type.h"
 
@@ -33,7 +34,7 @@ public:
 	static std::string get_dir()
 	{	return szarp_dir.string(); }
 
-	static bool init( const std::string& _szarp_dir , size_t base_low_water_mark , size_t base_high_water_mark);
+	static bool init( const std::string& _szarp_dir , const CfgSections& locs, int live_cache_retention, size_t base_low_water_mark, size_t base_high_water_mark);
 	static bool is_initialized() { return initialized; }
 
 	static time_t next( time_t t , ProbeType pt , int num = 1 );
@@ -105,6 +106,7 @@ private:
 public:
 	static const size_t BASE_CACHE_LOW_WATER_MARK_DEFAULT;
 	static const size_t BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
+	static const int BASE_LIVE_CACHE_RETENTION;
 
 };
 

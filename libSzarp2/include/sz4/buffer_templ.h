@@ -27,24 +27,52 @@
 
 namespace sz4 {
 
-template<template<typename DT, typename TT, class BT> class param_entry_type, class types> generic_param_entry* param_entry_build(base_templ<types>* base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
-	typedef typename types::param_factory factory;
-	return factory().template create<param_entry_type, types>(base, param, buffer_directory);
+template<class base> buffer_templ<base>::buffer_templ(base* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
+			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
+
+	TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner3:program_uruchomiony");
+	if (heart_beat_param)
+		m_heart_beat_entry = get_param_entry(heart_beat_param);
+	else
+		m_heart_beat_entry = NULL;
 }
 
-template<class types> generic_param_entry* param_entry_build(base_templ<types> *base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+template<class base> generic_param_entry* buffer_templ<base>::get_param_entry(TParam* param) {
+	if (m_param_ents.size() <= param->GetParamId())
+		m_param_ents.resize(param->GetParamId() + 1, NULL);
+
+	generic_param_entry* entry = m_param_ents[param->GetParamId()];
+	if (entry == NULL) {
+		entry = m_param_ents[param->GetParamId()] = create_param_entry(param);
+
+		auto live_cache = m_base->get_live_cache();
+		if (live_cache)
+			live_cache->register_cache_observer(param, entry);
+
+		entry->register_at_monitor(m_param_monitor);
+	}
+	return entry;
+}
+
+
+template<template<typename DT, typename TT, class BT> class param_entry_type, class base> generic_param_entry* param_entry_build(base* _base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
+	typedef typename base::param_factory factory;
+	return factory().template create<param_entry_type, base>(_base, param, buffer_directory);
+}
+
+template<class base> generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetSz4Type()) {
 		case TParam::SZ4_REAL:
-			return param_entry_build<real_param_entry_in_buffer, types>(base, param, buffer_directory);
+			return param_entry_build<real_param_entry_in_buffer, base>(_base, param, buffer_directory);
 		case TParam::SZ4_COMBINED: {
 			param->SetDataType(TParam::INT);
 
-			auto entry = param_entry_build<combined_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<combined_param_entry_in_buffer, base>(_base, param, buffer_directory);
 
 			TParam **f_cache = param->GetFormulaCache();
 			int num_of_params = param->GetNumParsInFormula();
 			for (int i = 0; i < num_of_params; i++) {
-				generic_param_entry* refferred_entry = base->get_param_entry(f_cache[i]);
+				generic_param_entry* refferred_entry = _base->get_param_entry(f_cache[i]);
 				refferred_entry->add_refferring_param(entry);
 				entry->add_refferred_param(refferred_entry);
 			}
@@ -54,14 +82,14 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_LUA_OPTIMIZED: {
 			param->SetDataType(TParam::DOUBLE);
 
-			auto entry = param_entry_build<lua_optimized_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<lua_optimized_param_entry_in_buffer, base>(_base, param, buffer_directory);
 
 			LuaExec::Param* exec_param = param->GetLuaExecParam();
 			for (std::vector<LuaExec::ParamRef>::iterator i = exec_param->m_par_refs.begin();
 					i != exec_param->m_par_refs.end();
 					i++) 
 				if (i->m_param != param) {
-					generic_param_entry* refferred_entry = base->get_param_entry(i->m_param);
+					generic_param_entry* refferred_entry = _base->get_param_entry(i->m_param);
 					refferred_entry->add_refferring_param(entry);
 					entry->add_refferred_param(refferred_entry);
 				}
@@ -70,13 +98,13 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_LUA: {
 			param->SetDataType(TParam::DOUBLE);
 
-			auto entry = param_entry_build<lua_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<lua_param_entry_in_buffer, base>(_base, param, buffer_directory);
 
 			std::wstring formula = SC::U2S(param->GetLuaScript());
 			std::vector<std::wstring> strings;
 			extract_strings_from_formula(formula.c_str(), strings);
 
-			typename types::ipk_container_type* ipk_container = base->get_ipk_container();
+			typename base::ipk_container_type* ipk_container = _base->get_ipk_container();
 			for (std::vector<std::wstring>::iterator i = strings.begin(); i != strings.end(); i++) {
 				if (std::count(i->begin(), i->end(), L':') != 3)
 					continue;
@@ -85,7 +113,7 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 				if (rparam == NULL || param == rparam)
 					continue;
 
-				generic_param_entry* refferred_entry = base->get_param_entry(rparam);
+				generic_param_entry* refferred_entry = _base->get_param_entry(rparam);
 				refferred_entry->add_refferring_param(entry);
 				entry->add_refferred_param(refferred_entry);
 			}
@@ -94,12 +122,12 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 		case TParam::SZ4_DEFINABLE: {
 			param->SetDataType(TParam::DOUBLE);
 
-			auto entry = param_entry_build<rpn_param_entry_in_buffer, types>(base, param, buffer_directory);
+			auto entry = param_entry_build<rpn_param_entry_in_buffer, base>(_base, param, buffer_directory);
 
 			TParam **f_cache = param->GetFormulaCache();
 			int num_of_params = param->GetNumParsInFormula();
 			for (int i = 0; i < num_of_params; i++) {
-				generic_param_entry* refferred_entry = base->get_param_entry(f_cache[i]);
+				generic_param_entry* refferred_entry = _base->get_param_entry(f_cache[i]);
 				refferred_entry->add_refferring_param(entry);
 				entry->add_refferred_param(refferred_entry);
 			}
@@ -112,7 +140,23 @@ template<class types> generic_param_entry* param_entry_build(base_templ<types> *
 	}
 }
 
-template<class types> void buffer_templ<types>::remove_param(TParam* param) {
+template<class base> void buffer_templ<base>::get_heartbeat_last_time(second_time_t& t) {
+	auto live = m_base->get_live_cache();
+	if (live && live->get_last_meaner_time(m_heart_beat_entry->get_param()->GetConfigId(), t))
+		return;
+	m_heart_beat_entry->get_last_time(t);
+}
+
+template<class base> void buffer_templ<base>::get_heartbeat_last_time(nanosecond_time_t& t) {
+	m_heart_beat_entry->get_last_time(t);
+
+	auto live = m_base->get_live_cache();
+	if (live && live->get_last_meaner_time(m_heart_beat_entry->get_param()->GetConfigId(), t))
+		return;
+	m_heart_beat_entry->get_last_time(t);
+}
+
+template<class base> void buffer_templ<base>::remove_param(TParam* param) {
 	if (m_param_ents.size() <= param->GetParamId())
 		return;
 
@@ -133,13 +177,13 @@ template<class types> void buffer_templ<types>::remove_param(TParam* param) {
 	m_param_ents[param->GetParamId()] = NULL;
 }
 
-template<class types> generic_param_entry* buffer_templ<types>::create_param_entry(TParam* param) {
+template<class base> generic_param_entry* buffer_templ<base>::create_param_entry(TParam* param) {
 	prepare_param(param);
 
 	return param_entry_build(m_base, param, m_buffer_directory);
 }
 
-template<class types> void buffer_templ<types>::prepare_param(TParam* param) {
+template<class base> void buffer_templ<base>::prepare_param(TParam* param) {
 	if (param->GetSz4Type() != TParam::SZ4_NONE)
 		return;
 
@@ -171,6 +215,14 @@ template<class types> void buffer_templ<types>::prepare_param(TParam* param) {
 		else
 			param->SetSz4Type(TParam::SZ4_LUA);
 		return;
+	}
+}
+
+template<class base> buffer_templ<base>::~buffer_templ() {
+	for (std::vector<generic_param_entry*>::iterator i = m_param_ents.begin(); i != m_param_ents.end(); i++) {
+		if (*i)
+			(*i)->deregister_from_monitor(m_param_monitor);
+		delete *i;
 	}
 }
 

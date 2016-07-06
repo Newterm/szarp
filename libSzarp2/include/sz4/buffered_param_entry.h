@@ -26,7 +26,7 @@ namespace sz4 {
 
 template<class value_type, class time_type, class types, template<class types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
 protected:
-	base_templ<types>* m_base;
+	typename types::base* m_base;
 	TParam* m_param;
 	bool m_invalidate_non_fixed;
 
@@ -36,7 +36,7 @@ protected:
 	typedef std::vector<cache_type> cache_vector;
 	cache_vector m_cache;
 public:
-	buffered_param_entry_in_buffer(base_templ<types>*_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param), m_invalidate_non_fixed(false)
+	buffered_param_entry_in_buffer(typename types::base*_base, TParam* param, const boost::filesystem::wpath&) : m_base(_base), m_param(param), m_invalidate_non_fixed(false)
 	{
 		for (SZARP_PROBE_TYPE p = PT_FIRST; p < PT_LAST; p = SZARP_PROBE_TYPE(p + 1))
 			m_cache.push_back(definable_param_cache<value_type, time_type>(p, _base->cache()));
@@ -254,6 +254,8 @@ public:
 		m_param->SetSz4Type(TParam::SZ4_NONE);
 		generic_param_entry::refferred_param_removed(param_entry);
 	}
+
+	void set_live_block(generic_live_block *block) {};
 
 	virtual ~buffered_param_entry_in_buffer() {};
 };

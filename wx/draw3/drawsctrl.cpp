@@ -89,6 +89,9 @@ void DrawsController::State::ParamDataChanged(TParam* param) {
 	}
 }
 
+void DrawsController::State::NewValuesAdded(Draw *draw, bool non_fixed)
+{ }
+
 void DrawsController::DisplayState::MoveCursorLeft(int n) {
 	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index - n);
 	m_c->EnterState(WAIT_DATA_LEFT, t);
@@ -165,6 +168,25 @@ void DrawsController::DisplayState::Enter(const DTime& time) {
 
 	m_c->m_observers.NotifyCurrentProbeChanged(d, pi, m_c->m_current_index, dist);
 
+	std::vector<TParam*> to_sub;
+	for (int i = 0; i < m_c->m_active_draws_count; i++) {
+		if (!m_c->m_draws[i]->HasUnfixedData())
+			continue;
+
+		if (m_c->m_draws[i]->GetSubscribed())
+			continue;
+
+		auto di = m_c->m_draws[i]->GetDrawInfo();
+		if (!di->IsValid())
+			continue;
+
+		to_sub.push_back(di->GetParam()->GetIPKParam());
+		m_c->m_draws[i]->SetSubscribed(true);
+	}
+
+	m_c->ChangeObservedParamsRegistration({ }, to_sub);
+
+
 	if (wxIsBusy())
 		wxEndBusyCursor();
 }
@@ -176,6 +198,21 @@ void DrawsController::DisplayState::Leaving() {
 
 const DTime& DrawsController::DisplayState::GetStateTime() const {
 	return m_c->m_current_time;
+}
+
+void DrawsController::DisplayState::NewValuesAdded(Draw *draw, bool non_fixed)
+{
+	if (non_fixed) {
+		if (draw->GetSubscribed())
+			return;
+		m_c->ChangeObservedParamsRegistration({}, { draw->GetDrawInfo()->GetParam()->GetIPKParam() });
+		draw->SetSubscribed(true);
+	} else {
+		if (!draw->GetSubscribed() || draw->HasUnfixedData())
+			return;
+		m_c->ChangeObservedParamsRegistration({ draw->GetDrawInfo()->GetParam()->GetIPKParam() }, {});
+		draw->SetSubscribed(false);
+	}
 }
 
 void DrawsController::StopState::Enter(const DTime& time) {
@@ -649,7 +686,7 @@ std::vector<TParam*> GetSetParams(DrawSet* set) {
 }
 
 DrawsController::~DrawsController() {
-	ChangeObservedParamsRegistration(GetSetParams(m_draw_set), std::vector<TParam*>());
+	ChangeObservedParamsRegistration(GetSubscribedParams(), std::vector<TParam*>());
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		delete m_draws[i];
@@ -706,6 +743,17 @@ void DrawsController::DatabaseResponse(DatabaseQuery *query) {
 	}
 }
 
+std::vector<TParam*> DrawsController::GetSubscribedParams() const
+{
+	std::vector<TParam*> v;
+
+	for (int i = 0; i < m_active_draws_count; i++)
+		if (m_draws[i]->GetDrawInfo()->IsValid() && m_draws[i]->GetSubscribed())
+			v.push_back(m_draws[i]->GetDrawInfo()->GetParam()->GetIPKParam());
+
+	return v;
+}
+
 void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 	int draw_no = query->draw_no;
 	if (size_t(draw_no) >= m_draws.size()
@@ -718,13 +766,16 @@ void DrawsController::HandleDataResponse(DatabaseQuery *query) {
 	bool data_within_view = false;
 	bool no_data = m_draws.at(draw_no)->GetNoData();
 
-	m_draws[draw_no]->AddData(query, data_within_view);
+	bool non_fixed;
+	m_draws[draw_no]->AddData(query, data_within_view, non_fixed);
 
 	if (no_data)
 		m_observers.NotifyNoData(m_draws[draw_no]);
 
 	if (draw_no == m_selected_draw && data_within_view)
 		m_state->NewDataForSelectedDraw();
+
+	m_state->NewValuesAdded(m_draws[draw_no], non_fixed);
 
 	delete query;
 }
@@ -894,6 +945,8 @@ void DrawsController::DoSet(DrawSet *set) {
 	m_current_set_name = set->GetName();
 	m_current_prefix = set->GetDrawsSets()->GetPrefix();
 
+	ChangeObservedParamsRegistration(GetSubscribedParams(), {});
+
 	DrawInfoArray *draws = set->GetDraws();
 
 	if (m_draws.size() < draws->size()) {
@@ -922,6 +975,7 @@ void DrawsController::DoSet(DrawSet *set) {
 	for (size_t i = 0; i < m_draws.size(); i++) {
 		m_draws[i]->SetDrawNo(i);
 		m_draws[i]->SetInitialDrawNo(i);
+		m_draws[i]->SetSubscribed(false);
 	}
 
 }
@@ -929,6 +983,8 @@ void DrawsController::DoSet(DrawSet *set) {
 void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	if (prefix != m_current_prefix)
 		return;
+
+	m_active_draws_count = 0;
 
 	DrawsSets *dss = m_config_manager->GetConfigByPrefix(prefix);
 	assert(dss);
@@ -954,8 +1010,6 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 		
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyDrawInfoReloaded(m_draws[i]);
-
-	ChangeObservedParamsRegistration(std::vector<TParam*>(), GetSetParams(GetSet()));
 }
 
 void DrawsController::SetRemoved(wxString prefix, wxString name) {
@@ -979,7 +1033,7 @@ void DrawsController::Set(DrawSet *set) {
 	if (set == NULL)
 		return;
 
-	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
+	std::vector<TParam*> previous_params(GetSubscribedParams());
 
 	DoSet(set);
 
@@ -989,6 +1043,7 @@ void DrawsController::Set(DrawSet *set) {
 		m_selected_draw = 0;
 
 	for (int i = 0; i < m_active_draws_count; i++) {
+		m_draws[i]->SetSubscribed(false);
 		int j = (i + m_selected_draw) % m_active_draws_count;
 		if (m_draws[j]->GetEnable()) {
 			m_selected_draw = j;
@@ -1002,10 +1057,7 @@ void DrawsController::Set(DrawSet *set) {
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
-	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
-
 	m_state->Reset();
-
 }
 
 void DrawsController::DoSwitchNextDraw(int dir) {
@@ -1087,8 +1139,6 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 
 	m_double_cursor = false;
 
-	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
-
 	DoSet(set);
 
 	DTime period_time = DTime(pt, time).AdjustToPeriod();
@@ -1110,7 +1160,6 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
 	wxLogInfo(_T("Set '%s' choosen, selected draw index; %d"), set->GetName().c_str(), draw_to_select);
-	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
 
 	EnterState(SEARCH_BOTH, period_time);
 }
@@ -1152,8 +1201,6 @@ void DrawsController::Set(int draw_no) {
 void DrawsController::Set(DrawSet *set, int draw_to_select) {
 	m_double_cursor = false;
 
-	std::vector<TParam*> previous_params(GetSetParams(GetSet()));
-
 	DoSet(set);
 
 	m_selected_draw = draw_to_select;
@@ -1162,8 +1209,6 @@ void DrawsController::Set(DrawSet *set, int draw_to_select) {
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
-
-	ChangeObservedParamsRegistration(previous_params, GetSetParams(GetSet()));
 
 	EnterState(WAIT_DATA_NEAREST, m_state->GetStateTime());
 }

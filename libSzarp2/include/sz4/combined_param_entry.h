@@ -36,13 +36,13 @@ public:
 };
 
 template<class types> class combined_calculate {
-	base_templ<types>* m_base;
+	typename types::base* m_base;
 	TParam* m_param;
 
 public:
-	typedef base_templ<types> base;
+	typedef typename types::base base;
 
-	combined_calculate(base_templ<types>* base, TParam* param) : m_base(base), m_param(param) {
+	combined_calculate(typename types::base* base, TParam* param) : m_base(base), m_param(param) {
 	}
 
 	template<class T> std::tr1::tuple<double, bool> calculate_value(T time, SZARP_PROBE_TYPE probe_type) {
@@ -88,7 +88,7 @@ public:
 template<class value_type, class time_type, class types> class combined_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, combined_calculate> {
 
 public:
-	combined_param_entry_in_buffer(base_templ<types>* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, combined_calculate>(_base, param, path) {}
+	combined_param_entry_in_buffer(typename types::base* _base, TParam* param, const boost::filesystem::wpath& path) : buffered_param_entry_in_buffer<value_type, time_type, types, combined_calculate>(_base, param, path) {}
 };
 
 
