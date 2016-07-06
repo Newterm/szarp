@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include "compiler.h"
 
+#include "szcache.h"
 
 class CommandHandler {
 public:
@@ -58,6 +59,9 @@ public:
 			: Exception(what_arg) { }
 	};
 #endif
+protected:
+	SzCache _szcache;
+		
 };
 
 #endif /* __COMMAND_HANDLER_H */

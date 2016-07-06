@@ -10,12 +10,21 @@ SOURCE_DIR=@srcdir@
 
 # Compilations flags
 AM_CPPFLAGS = \
+	-DPREFIX=\"@prefix@\" \
 	-I@srcdir@/.. \
 	-I@srcdir@/../../../libSzarp/include \
-	-I@srcdir@/../../../libSzarp2/include
+	-I@srcdir@/../../../libSzarp2/include \
+	-I@srcdir@/../../../libSzarp2/include/szbase \
+	@XML_CFLAGS@ @LUA_CFLAGS@ $(BOOST_CPPFLAGS)
+
+LIBSZARP=../../../libSzarp/libSzarp.la
+LIBSZARP2=../../../libSzarp2/libSzarp2.la
 
 LDADD = \
-	@CPPUNIT_LIBS@
+	$(LIBSZARP) $(LIBSZARP2) \
+	@CPPUNIT_LIBS@ \
+	@LUA_LIBS@ @XML_LIBS@ @BOOST_SYSTEM_LIB@ \
+	@BOOST_DATE_TIME_LIB@ @BOOST_LOCALE_LIB@
 
 bin_PROGRAMS = command-handlers-unit-tests
 
@@ -23,5 +32,6 @@ command_handlers_unit_tests_SOURCES = \
 		unit_tests.cpp \
 		command_handlers_unit_test.cpp \
 		../commands.cc \
-		../szcache.cpp
+		../szcache.cpp \ 
+		../shm_connection.cc
 

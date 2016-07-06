@@ -27,17 +27,22 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 
+#ifdef MINGW32
+#include <winsock2.h>
+#include <windows.h>
+#include <unordered_map>
+#endif
+
 typedef int SzbMonitorTokenType;
 
 class SzbParamMonitor;
 
-#ifndef MINGW32
-class SzbParamMonitorImpl {
+class SzbParamMonitorImplBase {
+protected:
+	bool m_terminate = false;
+
 	boost::thread m_thread;
 	boost::mutex m_mutex;
-	bool m_terminate;
-
-	SzbParamMonitor* m_monitor;
 
 	enum CMD {
 		ADD_CMD,
@@ -54,29 +59,69 @@ class SzbParamMonitorImpl {
 		unsigned order;
 	};
 
+	std::list<command> m_queue;
+
+	virtual bool trigger_command_pipe() = 0;
+public:
+	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
+	bool end_monitoring_dir(SzbMonitorTokenType token);
+
+	bool terminate();
+};
+
+#ifndef MINGW32
+class SzbParamMonitorImpl : public SzbParamMonitorImplBase {
+
+	SzbParamMonitor* m_monitor;
+
 	int m_cmd_socket[2];
 	int m_inotify_socket;
-	std::list<command> m_queue;
 
 	void process_notification();
 	void process_cmds();
 	void loop();
-	bool trigger_command_pipe();
+	bool trigger_command_pipe() override;
 public:
-	SzbParamMonitorImpl(SzbParamMonitor *monitork);
-	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
-	bool end_monitoring_dir(SzbMonitorTokenType token);
+	SzbParamMonitorImpl(SzbParamMonitor *monitork, const std::string& szarp_data_dir);
 	void run();
-	bool terminate();
 };
+
 #else
-class SzbParamMonitorImpl {
+class SzbParamMonitorImpl : public SzbParamMonitorImplBase {
+	SzbMonitorTokenType m_token;
+
+	std::string m_szarp_data_dir;		
+
+	SzbParamMonitor* m_monitor;
+	HANDLE m_dir_handle;
+
+	OVERLAPPED m_overlapped;
+	HANDLE m_event[2];
+
+	DWORD m_buffer[65535];
+
+	std::unordered_map<std::wstring, SzbMonitorTokenType> m_registry;
+
+	bool m_teminate = false;
+
+	void wait_for_changes();
+	void loop();
+
+	void process_file(PFILE_NOTIFY_INFORMATION info, std::vector<std::pair<SzbMonitorTokenType, std::string>>& tokens_and_paths);
+	void process_notification();
+
+	void process_cmds();
+
+	void add_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
+	void del_dir(SzbMonitorTokenType token);
+
+	bool trigger_command_pipe() override;
 public:
-	SzbParamMonitorImpl(SzbParamMonitor *monitork);
-	bool start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order);
-	bool end_monitoring_dir(SzbMonitorTokenType token);
+	SzbParamMonitorImpl(SzbParamMonitor *monitor, const std::string& szarp_data_dir);
+
 	void run();
-	bool terminate();
+
+	~SzbParamMonitorImpl();
 };
 
 #endif
@@ -96,7 +141,7 @@ class SzbParamMonitor {
 
 	void modify_dir_token(SzbMonitorTokenType old_wd, SzbMonitorTokenType new_wd);
 public:
-	SzbParamMonitor();	
+	SzbParamMonitor(const std::wstring& szarp_data_dir);
 	void dir_registered(SzbMonitorTokenType token, TParam *param, SzbParamObserver* observer, const std::string& path, unsigned order);
 	void failed_to_register_dir(TParam *param, SzbParamObserver* observer, const std::string& path);
 	void files_changed(const std::vector<std::pair<SzbMonitorTokenType, std::string> >& tokens_and_paths);

@@ -114,7 +114,7 @@ void ParamsUpdater::SubPar::update_param() {
 	using namespace boost::posix_time;
 
 	if( pt ) {
-		time_t t = system_clock::to_time_t( system_clock::now() );
+		time_t t = parent->data_feeder->get_latest( pname, *pt );
 		time_t ptime = SzbaseWrapper::round( t , *pt );
 
 		parent->params.param_value_changed(

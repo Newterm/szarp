@@ -67,6 +67,8 @@
 #include "tparcook.h"
 #include "texecute.h"
 
+/** hary: nanosleep */
+#include <time.h>
 
 /** arguments processing, see info argp */
 #include <argp.h>
@@ -176,12 +178,18 @@ int main(int argc, char* argv[])
 	int i;
 	TProber* prober;
 	time_t last_cycle; /**< time of last cycle */
+	char* probes_buffer_size;
 
 	libpar_read_cmdline(&argc, argv);
-	
+
 	/* parse params */
 	arguments.no_daemon = 0;
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+
+	/* read params from szarp.cfg file */
+	libpar_init_with_filename("/etc/szarp/szarp.cfg", 1);
+
+	probes_buffer_size = libpar_getpar("", "probes_buffer_size", 0);
 
 	/* Check for other copies of program. */
 	if ((i = check_for_other (argc, argv))) {
@@ -189,7 +197,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	prober = new TProber();
+	if (probes_buffer_size) {
+		prober = new TProber(atoi(probes_buffer_size));
+		free(probes_buffer_size);
+	} else {
+		prober = new TProber();
+	}
+
 	assert (prober != NULL);
 	
 	/* Set signal handling */
@@ -232,13 +246,20 @@ int main(int argc, char* argv[])
 				0);/* close stdout and stderr descriptors */
 	sz_log(2, "prober started");
 	
+	time_t periods = 1;
+	if (prober->IsBuffered()) periods = prober->GetBuffSize();
+
 	last_cycle = 0;
+	int cycle_count = 0;
 	while (1) {
 		/* Get current time */
 		time_t t;
 		time(&t);
 
+		sz_log(9, "prober: t:%ld last:%ld cycle_count:%d periods:%ld",t,last_cycle,cycle_count,periods);
 		time_t plan = prober->WaitForCycle(BASE_PERIOD, t);
+
+		sz_log(9, "prober: done waiting plan:%ld",plan);
 
 		if ((t - last_cycle > BASE_PERIOD) && (last_cycle > 0)) {
 			sz_log(1, "prober: cycle lasted for %ld seconds, planned %ld", t - last_cycle, plan);
@@ -248,12 +269,47 @@ int main(int argc, char* argv[])
 			continue;
 		}
 		last_cycle = t;
-
+		
 		/* Connect with parcook. */
 		prober->ReadParams();
 
+		if (prober->IsBuffered()) {
+			prober->ReadDataSnapshot();
+		}
+
+		cycle_count = (cycle_count + 1) % periods;
+		if (cycle_count != 0) continue;
+
 		/* Write data to base. */
-		prober->WriteParams();
+		if (prober->IsBuffered()) {
+			int curr_pos = prober->GetCurrPos();
+			int write_pos = prober->GetWritePos();
+			sz_log(3, "curr_pos:%d write_pos:%d", curr_pos, write_pos);
+			if (write_pos != -1 && curr_pos != write_pos) {
+				if (curr_pos == (write_pos - 1) % periods) {
+					sz_log(1, "prober: fixing -1 pos drift");
+					while (prober->GetCurrPos() != write_pos) {
+						prober->ReadParams();
+						prober->ReadDataSnapshot();
+						struct timespec to_sleep;
+						to_sleep.tv_sec = 0; to_sleep.tv_nsec = 1000;
+						nanosleep(&to_sleep, nullptr);
+					}	
+							
+				} else if (curr_pos == (write_pos + 1) % periods) {
+					sz_log(1, "prober: fixing +1 pos drift");
+					prober->WriteParamsMissed(1);
+					prober->SetWritePos(curr_pos);
+				} else {
+					/* This is indeed fixable with more buffering */
+					//prober->WriteParamsMissed(nlost);	
+					sz_log(0, "prober: unfixable pos diff - data lost");
+					prober->SetWritePos(curr_pos);
+				}
+			}
+			prober->WriteParamsBuffered();
+		} else
+			prober->WriteParams();
 	}
 	
 	return 0;
