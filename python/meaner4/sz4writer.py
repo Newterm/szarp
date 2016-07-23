@@ -52,14 +52,14 @@ class Sz4Writer(MeanerBase):
 			sparam = self.save_params[pindex]
 
 			_datetime = datetime.strptime(time_string, time_format)
-			time_sec = time.mktime(_datetime.timetuple())
-			time_nanosec = _datetime.time().microsecond * 1000
+			time_sec = int(time.mktime(_datetime.timetuple()))
+			time_nanosec = int(_datetime.time().microsecond * 1000)
 
 			value = self.prepare_value(value_string, sparam.param)
 			sparam.process_value(value, time_sec, time_nanosec)
 
 if __name__ == "__main__":
-	writer = Sz4Writer(sys.argv[1] + '/sz4')
+	writer = Sz4Writer(sys.argv[1] + '/szbase')
 	writer.configure(sys.argv[1] + '/config/params.xml')
 
 	writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
