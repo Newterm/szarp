@@ -33,11 +33,11 @@ class IPK:
 		self.params = [
 			param.from_node(p) for p in ipk.xpath("//s:device//s:param", namespaces={'s': IPK_NAMESPACE })
 		]
+		self.device_params_count = len(self.params)
 
 		self.params.extend(
 			param.from_node(p) for p in ipk.xpath("//s:defined//s:param", namespaces={'s': IPK_NAMESPACE })
 		)
-
 		self.parcook_params_count = len(self.params)
 
 		self.params.extend(
@@ -49,10 +49,10 @@ class IPK:
 			param_map[p.param_name] = p	
 
 	def adjust_param_index(self, index):
-		if index < self.parcook_params_count:
+		if index < self.device_params_count:
 			return (False, index)
-		elif index < self.parcook_params_count + LOG_PARAM_COUNT:
+		elif index < self.device_params_count + LOG_PARAM_COUNT:
 			return (True, None)
 		else:
-			return (True, index - LOG_PARAM_COUNT)
+			return (False, index - LOG_PARAM_COUNT)
 
