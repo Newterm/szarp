@@ -184,17 +184,6 @@ do_start () {
 	fi
 }
 
-do_check() {
-	if [ -x __INSTALL_DIR__/bin/i2smo ]; then
-		echo "Verifying configuration: __INSTALL_DIR__/bin/i2smo"
-		python /opt/szarp/bin/i2smo --quiet
-		if [ $? != 0 ]; then
-			echo "Invalid configuration -- won't continue" 1>&2
-			exit 1
-		fi
-	fi
-}
-
 do_stop() {
 	if [ x$SSS = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/sss
@@ -338,24 +327,25 @@ case "$1" in
 	;;
 
   stop)
-  		do_check
+		# stop shouldn't use i2smo, it causes weird problems with:
+		# - package upgrade
+		# - package reconfiguration
 		do_stop
 	;;
-  restart|reload)
-	do_check
-	do_stop
-	do_start
 
-	;;
-  status)
-	echo "SZARP programs run: "
-	ps axw | grep -v 'grep' | grep "__INSTALL_DIR__/bin" \
-		| cut -d ':' -f '2-' | cut -b '4-'
-	;;
-  forcestop)
-  		echo "Stopping SZARP without performing checks.." 1>&2
+  restart|reload)
+		# isn't called on systemd
+		# systemd calls stop (if it thinks it is necessary), then start
 		do_stop
+		do_start
 	;;
+
+  status)
+		echo "SZARP programs run: "
+		ps axw | grep -v 'grep' | grep "__INSTALL_DIR__/bin" \
+			| cut -d ':' -f '2-' | cut -b '4-'
+	;;
+
   *)
 	echo "Usage: parstart {start|stop|forcestop|restart|reload|status}"
 	exit 1
