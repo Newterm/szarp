@@ -230,8 +230,24 @@ typedef struct phLineInfo tLineInfo;
 
 void calculate_average(short *probes, int param_no, int probe_type)
 {
+	tParamInfo *pi = ParsInfo[param_no];
+
 	sz_log(7, "Entering calculate average, probe type: %d", probe_type);
-	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
+	if (pi->param->IsMeterParam()) {
+		if (Cnts[param_no][probe_type]) {
+			// doesn't matter whether param is combined or not - daemon does the NO_DATA handling
+			probes[param_no] = Sums[param_no][0];
+			sz_log(7, "Passing %hhu for meter param", probes[param_no]);
+		} else {
+			probes[param_no] = SZARP_NO_DATA;
+			sz_log(7, "Passing NO_DATA for meter param");
+		}
+
+		Cnts[param_no][probe_type] = 0;
+		return;
+	}
+
+	if (pi->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
 			probes[param_no] = Sums[param_no][probe_type] / (int) Cnts[param_no][probe_type];
 		else
@@ -239,7 +255,6 @@ void calculate_average(short *probes, int param_no, int probe_type)
 		return;
 	}
 
-	tParamInfo *pi = ParsInfo[param_no];
 	if (pi->type != tParamInfo::MSW)
 		//we will update both sums when updating msw
 		return;
@@ -266,6 +281,23 @@ void calculate_average(short *probes, int param_no, int probe_type)
 
 template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
 {
+	if (ParsInfo[param_no]->param->IsMeterParam()) {
+		if (probe_type == 0) {
+			Sums[param_no][0] = (int) ivt[param_no];
+
+			if (Sums[param_no][0] != SZARP_NO_DATA) {
+				Cnts[param_no][0] = 1;
+				Cnts[param_no][1] = 1;
+				Sums[param_no][1] = Sums[param_no][0];
+				Cnts[param_no][2] = 1;
+				Sums[param_no][2] = Sums[param_no][0];
+			}
+		}
+
+		ovt[param_no][abuf] = Sums[param_no][probe_type];
+		return;
+	}
+
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 			Sums[param_no][probe_type] -= (int) ovt[param_no][abuf];
@@ -1585,7 +1617,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	/* NOW update probes history */
 	for (ii = 0; ii < VTlen; ii++)
 		update_value(ii, 0, Probe, Probes, abuf);
-
 	sz_log(10, "publishing new values");
 	publish_values(Probe, zmq_socket);
 

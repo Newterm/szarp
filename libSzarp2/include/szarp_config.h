@@ -843,6 +843,7 @@ public:
 #endif
 #endif
 	    _sum_unit(),
+	    _meter_par(false),
 	    _sum_divisor(6.),
 	    _dataType(SHORT),
 	    _timeType(SECOND),
@@ -909,6 +910,8 @@ public:
 	const std::wstring& GetFormula() { return _formula; }
 
 	const std::wstring& GetSumUnit() { return _sum_unit; }
+
+	const bool& IsMeterParam() { return _meter_par; }
 
 	const double& GetSumDivisor() { return _sum_divisor; }
 
@@ -1280,6 +1283,9 @@ protected:
 #endif
 	/** unit that shall be used to display summaried values of this params*/
 	std::wstring _sum_unit;
+
+	/** parameter is taken from a meter (always take it's latest value) */
+	bool _meter_par;
 
 	/** summaried values of this param shall be divided by this factor*/
 	double _sum_divisor;
