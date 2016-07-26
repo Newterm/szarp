@@ -170,6 +170,9 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			if (xw.IsAttr("sum_unit")) {
 				_sum_unit = SC::U2S(attr);
 			} else
+			if (xw.IsAttr("is_meter")) {
+				_meter_par = boost::lexical_cast<bool>(attr);
+			} else
 			if (xw.IsAttr("sum_divisor")) {
 				_sum_divisor = boost::lexical_cast<double>(attr);
 			} else
@@ -458,6 +461,12 @@ TParam::parseXML(xmlNodePtr node)
     c = xmlGetNoNsProp(node, X "sum_unit");
     if (c) {
 	    _sum_unit = SC::U2S(c);
+	    xmlFree(c);
+    }
+
+    c = xmlGetNoNsProp(node, X "is_meter");
+    if (c) {
+	    _meter_par = boost::lexical_cast<bool>(c);
 	    xmlFree(c);
     }
 
