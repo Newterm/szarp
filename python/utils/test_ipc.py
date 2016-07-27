@@ -28,6 +28,7 @@ __status__    = "beta"
 __email__     = "coders AT newterm.pl"
 
 # imports
+import sys
 from lxml import etree
 from collections import namedtuple
 
@@ -57,10 +58,15 @@ class TestIPC:
 		root = params_xml.getroot()
 
 		# search root element for <device> with pythondmn and given script
+		dmn_dev = None
 		for dev in root.findall('./{http://www.praterm.com.pl/SZARP/ipk}device'):
 			if dev.get('daemon') == pythondmn_path and dev.get('path') == script_path:
 				dmn_dev = dev	# save element
 				break
+
+		if dmn_dev is None:
+			sys.stderr.write("ERROR: Cannot find <device> element, bad 'daemon' or 'path' attribute?\n")
+			sys.exit(1)
 
 		# fetch parameter list (units are merged)
 		for unit in dmn_dev.findall('./{http://www.praterm.com.pl/SZARP/ipk}unit'):
