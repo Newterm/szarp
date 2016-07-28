@@ -137,7 +137,7 @@ In a configuration stage, you have to set 4-letter name of a configuration
 (called *configuration prefix*), for example use "test". Answer "yes" to a
 question about creating `szbase` directory.
 
-Now look at the `/etc/szarp` directory. There are two files: 
+Now look at the `/etc/szarp` directory. There are two files:
 
  * `parstart.cfg` - this files defines what SZARP services should be run on
    system start. By default computer is considered as SZARP server only when
@@ -173,7 +173,7 @@ load. Go to the directory `/opt/szarp/test` and create subdirectory called
 <params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra" version="1.0" read_freq="10" send_freq="10" title="Test configuration">
   <device daemon="/opt/szarp/bin/execdmn" path="/opt/szarp/test/get_la.sh" exec:frequency="10">
     <unit id="1" type="1" subtype="1" bufsize="1">
-      <param name="Test:System:average system load" short_name="lavg" unit="-" prec="2" base_ind="auto">
+      <param name="Test:System:Average System Load" draw_name="Average Load" short_name="lavg" unit="-" prec="2" base_ind="auto">
         <raport title="System report" order="1"/>
         <draw title="System" min="0" max="100" order="1"/>
       </param>
