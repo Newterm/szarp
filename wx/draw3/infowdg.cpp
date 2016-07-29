@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
+/*
  *  draw3 SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -66,7 +66,7 @@ InfoWidget::InfoWidget(wxWindow *parent, wxWindowID id) :
 	other_value = value_text2 = new wxStaticText(value_panel2, -1,
 			_T(" "), wxDefaultPosition, wxSize(130, -1),
 			wxALIGN_CENTER | wxST_NO_AUTORESIZE);
-	
+
 	wxBoxSizer *panel_sizer = new wxBoxSizer(wxVERTICAL);
 	panel_sizer->Add(value_text, 1, wxEXPAND | wxALL, 2);
 	value_panel->SetSizer(panel_sizer);
@@ -83,8 +83,8 @@ InfoWidget::InfoWidget(wxWindow *parent, wxWindowID id) :
 			_T(" "), wxDefaultPosition);
 
 	avg_text = new wxStaticText(this, -1,
-			_T(" "), wxDefaultPosition); 
-		
+			_T(" "), wxDefaultPosition);
+
 	sizer1 = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer *sizer1_1 = new wxBoxSizer(wxHORIZONTAL);
 	sizer1_2 = new wxBoxSizer(wxHORIZONTAL);
@@ -101,8 +101,8 @@ InfoWidget::InfoWidget(wxWindow *parent, wxWindowID id) :
 	SetSizer(sizer1);
 
 	ShowExtraPanel(false);
-	
-	m_update_time = 
+
+	m_update_time =
 		m_update_values =
 		m_update_current_value = false;
 
@@ -153,7 +153,7 @@ void InfoWidget::SetDrawInfo(Draw *draw) {
 void InfoWidget::NewData(Draw *draw, int idx) {
 	if (draw->GetSelected() == false)
 		return;
-	if (idx == draw->GetCurrentIndex()) 
+	if (idx == draw->GetCurrentIndex())
 		m_update_current_value = true;
 }
 
@@ -171,7 +171,7 @@ void InfoWidget::CurrentProbeChanged(Draw* draw, int pi, int ni, int d) {
 	const Draw::VT& vt = draw->GetValuesTable();
 
 	m_update_current_value = true;
-	
+
 	m_current_time = draw->GetCurrentTime();
 	m_update_time = true;
 
@@ -263,7 +263,7 @@ void InfoWidget::DrawSelected(Draw *draw) {
 	m_draw = draw;
 	SetDrawInfo(draw);
 
-	m_update_time = 
+	m_update_time =
 		m_update_values =
 		m_update_current_value = true;
 
@@ -272,7 +272,7 @@ void InfoWidget::DrawSelected(Draw *draw) {
 
 		int end = vt.m_stats.m_end;
 		double val = vt.Get(end).val;
-		
+
 		int idx = end - vt.m_view.Start();
 
 		SetOtherValue(val);
@@ -290,7 +290,7 @@ void InfoWidget::UpdateValues() {
 		avg_text->SetLabel(_T(""));
 		return;
 	}
-	
+
 	wxString info_string = wxString(_("min.=")) + m_draw->GetDrawInfo()->GetValueStr(vt.m_min, _T("- -"))
 			+ _T(" ; ") + _("avg.=") +  m_draw->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_count, _T("- -"))
 			+ _T(" ; ") + _("\u03c3 =") +  m_draw->GetDrawInfo()->GetValueStr(vt.m_sdev, _T("- -"))
@@ -310,7 +310,9 @@ void InfoWidget::UpdateValues() {
 	}
 
 	if (!std::isnan(vt.m_data_probes_ratio))
-		info_string += _T("  ") + wxString::Format(_T("(%%%.2f)"), vt.m_data_probes_ratio * 100);
+		info_string += _T(" ; ") + wxString::Format(_("ratio: %.2f"), vt.m_data_probes_ratio);
+	if (!std::isnan(vt.m_nodata_probes_count))
+		info_string += _T(" ; ") + wxString::Format(_("no data: %d"), vt.m_nodata_probes_count);
 
 	avg_text->SetLabel(info_string);
 	avg_text->Refresh();
@@ -337,19 +339,19 @@ void InfoWidget::SetEmpty()
 #else
 	value_panel->SetBackgroundColour(DRAW3_BG_COLOR);
 	value_panel2->SetBackgroundColour(DRAW3_BG_COLOR);
-#endif	
+#endif
 	SetEmptyVals();
 }
 
 void InfoWidget::SetEmptyVals() {
 	value_text->SetLabel(_T("- -"));
-	
+
 	date_text->SetLabel(_T(""));
 
 	value_text2->SetLabel(_T("- -"));
-	
+
 	date_text2->SetLabel(_T(""));
-	
+
 	avg_text->SetLabel(_T(""));
 }
 

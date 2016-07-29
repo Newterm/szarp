@@ -154,6 +154,9 @@ struct ValuesTable {
 	/**Number of fetched probes that are not no-data values*/
 	int m_data_probes_count;
 
+	/**Nodata probes count */
+	int m_nodata_probes_count;
+
 	/**Data probes percentage*/
 	double m_data_probes_ratio;
 
