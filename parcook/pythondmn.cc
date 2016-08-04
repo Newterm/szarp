@@ -196,7 +196,7 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 }
 
-bool ipc::check_for_no_data(unsigned int index, py::object & val) {
+bool ipc::check_for_no_data(size_t index, py::object & val) {
 	if (Py_None == val.ptr()) {
 		time_t timev = time(NULL);
 		sz_log(9, "Pythondmn sz4_int got NONE at %d", index);
@@ -210,7 +210,7 @@ bool ipc::check_for_no_data(unsigned int index, py::object & val) {
 }
 
 
-void ipc::set_read_sz4_int(unsigned int index, py::object & val) {
+void ipc::set_read_sz4_int(size_t index, py::object & val) {
 	if (check_for_no_data(index, val)) return;
 
 	try {
@@ -225,7 +225,7 @@ void ipc::set_read_sz4_int(unsigned int index, py::object & val) {
 	}
 }
 
-void ipc::set_read_sz4_float(unsigned int index, py::object & val) {
+void ipc::set_read_sz4_float(size_t index, py::object & val) {
 	if (check_for_no_data(index, val)) return;
 
 	try {
@@ -240,7 +240,7 @@ void ipc::set_read_sz4_float(unsigned int index, py::object & val) {
 	}
 }
 
-void ipc::set_read_sz4_double(unsigned int index, py::object & val) {
+void ipc::set_read_sz4_double(size_t index, py::object & val) {
 	if (check_for_no_data(index, val)) return;
 
 	try {
@@ -255,7 +255,7 @@ void ipc::set_read_sz4_double(unsigned int index, py::object & val) {
 	}
 }
 
-void ipc::set_read_sz4_short(unsigned int index, py::object & val) {
+void ipc::set_read_sz4_short(size_t index, py::object & val) {
 	if (check_for_no_data(index, val)) return;
 
 	try {
@@ -270,7 +270,7 @@ void ipc::set_read_sz4_short(unsigned int index, py::object & val) {
 	}
 }
 
-template <typename T> void ipc::set_read_sz4(unsigned int index, T val) {
+template <typename T> void ipc::set_read_sz4(size_t index, T val) {
 	if (index >= m_read_count) {
 		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
 		return;
@@ -282,10 +282,10 @@ template <typename T> void ipc::set_read_sz4(unsigned int index, T val) {
 	if (m_sz4_auto) go_sz4();
 }
 
-template void ipc::set_read_sz4<>(unsigned int index, short val);
-template void ipc::set_read_sz4<>(unsigned int index, int val);
-template void ipc::set_read_sz4<>(unsigned int index, float val);
-template void ipc::set_read_sz4<>(unsigned int index, double val);
+template void ipc::set_read_sz4<>(size_t index, short val);
+template void ipc::set_read_sz4<>(size_t index, int val);
+template void ipc::set_read_sz4<>(size_t index, float val);
+template void ipc::set_read_sz4<>(size_t index, double val);
 
 void ipc::set_no_data(size_t index) {
 	if (index >= m_read_count) {
