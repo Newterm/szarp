@@ -67,7 +67,9 @@ public:
 			_val_op(""), 
 			_prec(0),
 			_min(std::numeric_limits<double>::lowest()),
-			_max(std::numeric_limits<double>::max())
+			_max(std::numeric_limits<double>::max()),
+			_has_min(false),
+			_has_max(false)
 		{}
 
 		SzParam(int addr,
@@ -80,7 +82,9 @@ public:
 			_val_op(vop),
 			_prec(prec),
 			_min(std::numeric_limits<double>::lowest()),
-			_max(std::numeric_limits<double>::max())
+			_max(std::numeric_limits<double>::max()),
+			_has_min(false),
+			_has_max(false)
 		{}
 	
 		bool isValid()
@@ -106,13 +110,21 @@ public:
 		{ return _min; }
 		double getMax()
 		{ return _max; }
-		
+		bool hasMin()
+		{ return _has_min; }
+		bool hasMax()
+		{ return _has_max; }
+
 		void setPrec(int prec)
 		{ _prec = prec; }
 		void setMin(double min)
 		{ _min = min; }
 		void setMax(double max)
 		{ _max = max; }
+		void setHasMin(bool has_min)
+		{ _has_min = has_min; }
+		void setHasMax(bool has_max)
+		{ _has_max = has_max; }
 
 	private:
 		int _addr;
@@ -121,12 +133,17 @@ public:
 		int _prec;
 		double _min;
 		double _max;
+		bool _has_min;
+		bool _has_max;
 	};
 
 	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
 	bool ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xmlNodePtr& node );
 	SzParam ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
 	
+	/** Used for testing only */
+	void AddParam( unsigned long int idx, SzParam param );
+
 	void clearWriteBuffer() 
 	{ _param_lsws.clear(); }
 	void clearReadBuffer() 
@@ -161,32 +178,37 @@ public:
 	double getMax(unsigned long int pid)
 	{ return _params[pid].getMax(); }
 	
-	static bool almost_equal(double value, double value_to) {
-		double abs_value = std::abs(value);
-		double abs_value_to = std::abs(value_to);
-		double abs_diff = std::abs(value - value_to);
+	bool hasMin(unsigned long int pid)
+	{ return _params[pid].hasMin(); }
+	bool hasMax(unsigned long int pid)
+	{ return _params[pid].hasMax(); }
 
-		if (value == value_to) return true;
-		
-		if (value == 0 || value_to == 0 || abs_diff < std::numeric_limits<double>::min())
-			return (abs_diff < (std::numeric_limits<double>::epsilon() 
-				* std::numeric_limits<double>::min()));
-
-		return ((abs_diff / std::min((abs_value + abs_value_to), 
-			std::numeric_limits<double>::max())) < std::numeric_limits<double>::epsilon());
-	}
-	
-	static bool epsilon_smaller(double value, double value_than)
-	{
-		if (almost_equal(value,value_than)) return false;
-		return (value < value_than);
-	}
-
-	static bool epsilon_greater(double value, double value_than)
-	{
-		if (almost_equal(value,value_than)) return false;
-		return (value > value_than);
-	}
+	/**
+	 * Floating point comparison is not an easy problem. 
+	 * We instead try to use an approach similar to what
+	 * SZARP always does with floating point when writing
+	 * to DB. Using epsilon would be a risk of allowing
+	 * a value that looks out of range into the szbase.
+	 *
+	 * ex. max = 1.1111, value = 1.1110999999...
+	 * With epislon 0.0000001 value would be accepted
+	 * but from SZARP perspective these are different
+	 * numbers 11111 and 11110 (because of cropping).
+	 */
+	bool out_of_range(double value, long int pid) {
+		// For integers use default precision for comparison 
+		int prec = getPrec(pid);
+		long int_value = (long)(value * pow10(prec));
+		if (hasMin(pid)) {
+			long min = (long)(getMin(pid) * pow10(prec));
+			if (int_value < min) return true;
+		}
+		if (hasMax(pid)) {
+			long max = (long)(getMax(pid) * pow10(prec));
+			if (int_value > max) return true;
+		}
+		return false;
+	}	
 
 	template <typename DataWriter>
 	void writeFloat( unsigned long int pid, DataBuffer data, DataWriter write)
@@ -311,10 +333,8 @@ public:
 		sz_log(10, "Send value (float) id:%lu, val:%f", lsw_pid, float_value);
 		
 		/* Use min/max from lsw and msw param configuration together */
-		if (epsilon_smaller(static_cast<double>(float_value), getMin(lsw_pid)) ||
-				epsilon_greater(static_cast<double>(float_value), getMax(lsw_pid)) ||
-				epsilon_smaller(static_cast<double>(float_value), getMin(pid)) ||
-				epsilon_greater(static_cast<double>(float_value), getMax(pid)))
+		if (out_of_range(float_value, lsw_pid) || 
+				out_of_range(float_value, pid))
 		{
 			sz_log(10, "Param id:%lu value:%f is out of limits:", lsw_pid, float_value);
 			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
@@ -363,10 +383,8 @@ public:
 		uint8_t* pblock8 = reinterpret_cast<uint8_t*>(&int_value);
 
 		/* Use min/max from lsw and msw param configuration together */
-		if (epsilon_smaller(static_cast<double>(int_value), getMin(lsw_pid)) ||
-				epsilon_greater(static_cast<double>(int_value), getMax(lsw_pid)) ||
-				epsilon_smaller(static_cast<double>(int_value), getMin(pid)) ||
-				epsilon_greater(static_cast<double>(int_value), getMax(pid)))
+		if (out_of_range(int_value, lsw_pid) ||
+				out_of_range(int_value, pid))
 		{
 			sz_log(10, "Param id:%lu value:%d is out of limits:", lsw_pid, int_value);
 			sz_log(10, "[%f,%f]", getMin(lsw_pid), getMax(lsw_pid));
@@ -410,9 +428,7 @@ public:
 			return false;
 		}
 
-		if (epsilon_smaller(static_cast<double>(value), getMin(pid)) || 
-				epsilon_greater(static_cast<double>(value), getMax(pid)))
-		{
+		if (out_of_range(value, pid)) {
 			sz_log(10, "Param id:%lu value:%d is out of limits:", pid, value);
 			sz_log(10, "[%f,%f]", getMin(pid), getMax(pid));
 			sz_log(10, "Aborting query write");
