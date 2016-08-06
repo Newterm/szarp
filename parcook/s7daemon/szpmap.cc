@@ -51,6 +51,7 @@ bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xm
 			       	xmlGetLineNo(node));
 	} else {
 		szp.setMin(boost::lexical_cast<double>((char*)prop));
+		szp.setHasMin(true);
 		xmlFree(prop);
 	}
 	
@@ -60,6 +61,7 @@ bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xm
 			       	xmlGetLineNo(node));
 	} else {
 		szp.setMax(boost::lexical_cast<double>((char*)prop));
+		szp.setHasMax(true);
 		xmlFree(prop);
 	}
 
@@ -102,4 +104,10 @@ bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNod
 	_params[idx] = szp;
 	return true;
 }
+
+void SzParamMap::AddParam( unsigned long int idx, SzParam param ) 
+{
+	_params[idx] = param;
+}
+
 
