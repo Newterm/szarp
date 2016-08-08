@@ -120,7 +120,7 @@ void Draw::MoveToTime(const DTime& time) {
 
 	assert(start_time.IsValid());
 
-	if (start_time == time)
+	if (start_time == time || !time.IsValid())
 		return;
 
 	int d = start_time.GetDistance(time);

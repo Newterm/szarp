@@ -450,7 +450,7 @@ void DrawsController::SearchBothPreferCloser::Enter(const DTime& search_from) {
 
 void DrawsController::SearchBothPreferCloser::HandleRightResponse(wxDateTime& time) {
 	m_right_result = DTime(m_c->GetPeriod(), time);
-	if (m_right_result == m_search_time) {
+	if (m_right_result == m_search_time && m_right_result.IsValid()) {
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
 	} else {
