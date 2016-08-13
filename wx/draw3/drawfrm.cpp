@@ -856,10 +856,16 @@ void DrawFrame::LoadMenuBarConfig(wxMenuBar *menu_bar)
 	wxConfigBase *cfg = wxConfig::Get();
 	bool is_avg_hidden;
 	bool is_ifs_hidden;
-	if (cfg->Read(_T("HIDE_AVERAGE"), &is_avg_hidden))
+	if (cfg->Read(_T("HIDE_AVERAGE"), &is_avg_hidden)) {
 		menu_bar->FindItem(XRCID("ShowAverage"))->Check(!is_avg_hidden);
-	if (cfg->Read(_T("HIDE_INTERFACE"), &is_ifs_hidden))
+	} else {
+		menu_bar->FindItem(XRCID("ShowAverage"))->Check(true);
+	}
+	if (cfg->Read(_T("HIDE_INTERFACE"), &is_ifs_hidden)) {
 		menu_bar->FindItem(XRCID("ShowInterface"))->Check(!is_ifs_hidden);
+	} else {
+		menu_bar->FindItem(XRCID("ShowInterface"))->Check(true);
+	}
 }
 
 void DrawFrame::OnUserParams(wxCommandEvent &evt) {
