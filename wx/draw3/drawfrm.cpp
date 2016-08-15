@@ -866,6 +866,7 @@ void DrawFrame::LoadMenuBarConfig(wxMenuBar *menu_bar)
 	} else {
 		menu_bar->FindItem(XRCID("ShowInterface"))->Check(true);
 	}
+	menu_bar->FindItem(XRCID("ShowAverage"))->Enable(!is_ifs_hidden);
 }
 
 void DrawFrame::OnUserParams(wxCommandEvent &evt) {
