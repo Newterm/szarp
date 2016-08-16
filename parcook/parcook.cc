@@ -1392,7 +1392,7 @@ void execute_scripts(std::vector<LuaParamInfo*>& param_info) {
 		bool ret = execute_script(p, result);
 
 		short val = SZARP_NO_DATA;
-		if ((ret == true) && !isnan(result)) {
+		if ((ret == true) && !std::isnan(result)) {
 			int prec = p->GetPrec();
 			if (prec < 5) for (int i = prec; i > 0; i--, result*= 10);
 
