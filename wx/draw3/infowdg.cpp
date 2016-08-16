@@ -293,7 +293,7 @@ void InfoWidget::UpdateValues() {
 
 	wxString info_string = wxString(_("min.=")) + m_draw->GetDrawInfo()->GetValueStr(vt.m_min, _T("- -"))
 			+ _T(" ; ") + _("avg.=") +  m_draw->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_count, _T("- -"))
-			+ _T(" ; ") + _("\u03c3 =") +  m_draw->GetDrawInfo()->GetValueStr(vt.m_sdev, _T("- -"))
+			+ _T(" ; ") + _("\u03c3=") +  m_draw->GetDrawInfo()->GetValueStr(vt.m_sdev, _T("- -"))
 			+ _T(" ; ") + _("max.=") + m_draw->GetDrawInfo()->GetValueStr(vt.m_max, _T("- -"));
 
 	if (m_double_cursor) {
@@ -306,13 +306,13 @@ void InfoWidget::UpdateValues() {
 		double eval = vt.Get(end).val;
 
 		if (!std::isnan(sval) && !std::isnan(eval))
-			info_string += wxString::Format(_(" dif: %s"), m_draw->GetDrawInfo()->GetValueStr(eval - sval, _T("- -")).c_str());
+			info_string += _T(" ;") + wxString::Format(_(" dif: %s"), m_draw->GetDrawInfo()->GetValueStr(eval - sval, _T("- -")).c_str());
 	}
 
-	if (!std::isnan(vt.m_data_probes_ratio))
-		info_string += _T(" ; ") + wxString::Format(_("ratio: %.2f"), vt.m_data_probes_ratio);
 	if (!std::isnan(vt.m_nodata_probes_count))
 		info_string += _T(" ; ") + wxString::Format(_("no data: %d"), vt.m_nodata_probes_count);
+	if (!std::isnan(vt.m_data_probes_ratio))
+		info_string += _T(" (") + wxString(_("ratio: ")) + m_draw->GetDrawInfo()->GetValueStr(vt.m_data_probes_ratio, _T("- -")) + _T(")");
 
 	avg_text->SetLabel(info_string);
 	avg_text->Refresh();
