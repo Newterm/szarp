@@ -14,10 +14,15 @@
 #include <vector>
 #include <time.h>
 
+#ifdef MINGW32
+#undef GetObject
+#endif
+
 #include <liblog.h>
+#include "szarp_config.h"
+#include "szbbase.h"
 #include "szarp_base_common/szbparamobserver.h"
 #include "szarp_base_common/szbparammonitor.h"
-#include "szbbase.h"
 #include "szbbuf.h"
 #include "szbhash.h"
 
@@ -26,15 +31,18 @@
 #include "proberconnection.h"
 #include "szarp_base_common/lua_utils.h"
 
-#ifdef MINGW32
-#include "mingw32_missing.h"
-#undef GetObject
-#endif
-
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
 #include "loptcalculate.h"
 #endif
+#endif
+
+#ifdef MINGW32
+#include "mingw32_missing.h"
+#endif
+
+#ifdef MINGW32
+#undef GetObject
 #endif
 
 using std::find;
@@ -48,7 +56,7 @@ const int default_maximum_search_time = 15;			/** maximum deafult serach time */
 
 Szbase::Szbase(const std::wstring& szarp_dir) : m_szarp_dir(szarp_dir), m_config_modification_callback(NULL)
 {
-	m_monitor = new SzbParamMonitor();
+	m_monitor = new SzbParamMonitor(szarp_dir);
 	m_current_query = 0;
 	m_maximum_search_time = default_maximum_search_time;
 	m_ipk_containter = IPKContainer::GetObject();

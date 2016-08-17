@@ -36,6 +36,8 @@
 #include <tuple>
 #include <vector>
 
+#include "shm_connection.h"
+
 class SzCache {	
 
 	public:	
@@ -107,8 +109,12 @@ class SzCache {
 
 		SzSizeAndLast   getSizeAndLast(SzTime start, SzTime end, SzPath path);
 		SzTime		writeData(std::vector<int16_t>& vals, SzTime start, SzTime end, SzPath path);
-			
+		
 	private:
+		static int toReadFromShm(SzPath path);
+		static int getShmPos();		
+		static int getShmCount();		
+		static std::vector<int16_t> getShmData(SzPath path);
 
 		/** Search utils */
 		SzRange		searchFirstLast(SzPath path) const;
@@ -118,16 +124,18 @@ class SzCache {
 		/** Filesystem utils */
 		SzPath					checkPath(SzPath path) const;
 		std::set<SzPath>			globify(const SzPath& path) const;
-		std::pair<SzPath,SzPath>		splitPath(const SzPath& path) const;
 		bool					validatePathMember(std::string member) const;
 		bool					directoryExists(const SzPath& path) const;
 		bool					fileExists(const SzPath& path) const;
 		static std::size_t			getFileSize(const SzPath& path);
 
+		static std::pair<SzPath,SzPath> splitPath(const SzPath& path);
+
 		/** Epoch time <-> CACHE file path  and index translations */
-		SzPathIndex	getPathIndex(SzTime szt, SzPath dir) const;
-		SzTime		getTime(SzIndex idx, SzPath path) const;
-		SzIndex		lastIndex(SzPath path) const;
+		static SzPathIndex getPathIndex(SzTime szt, SzPath dir);
+		static SzTime getTime(SzIndex idx, SzPath path);
+		static SzIndex lastIndex(SzPath path);
+
 		SzPath		moveMonth(SzPath path, bool forward) const;
 		SzPath		nextMonth(SzPath path) const;
 		SzPath		prevMonth(SzPath path) const;
@@ -137,10 +145,12 @@ class SzCache {
 		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
 		
 		static void	logMsg(int level, std::string msg);
-
+	
 		/** CACHE file representation */
 		class SzCacheFile;
-		
+
+		static ShmConnection _shm_conn;
+
 		SzPath _cacheRootDir;
 		int _numMonths;
 };

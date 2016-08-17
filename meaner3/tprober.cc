@@ -43,7 +43,12 @@
 #define WRITE_EACH 1
 
 
-TProber::TProber() : TWriter(sec10), buffer(NULL), all_written(true)
+TProber::TProber(int probes_buffer_size): 
+TWriter(sec10), 
+buffer(NULL), 
+all_written(true), 
+m_probes_buffer_size(probes_buffer_size),
+m_pos_to_write(-1)
 {
 }
 
@@ -67,6 +72,43 @@ time_t TProber::WaitForCycle(time_t period, time_t t)
 	return ret;
 }
 
+bool TProber::IsBuffered()
+{
+	if (m_probes_buffer_size != 0) return true;
+	return false;
+}
+
+int TProber::GetBuffSize()
+{
+	return m_probes_buffer_size;
+}
+
+int TProber::GetWritePos()
+{
+	return m_pos_to_write;
+}
+
+void TProber::SetWritePos(int pos_to_write)
+{
+	m_pos_to_write = pos_to_write;
+}
+
+int TProber::GetCurrPos()
+{	
+	return parcook->GetDataPos();
+}
+
+int TProber::ReadDataSnapshot()
+{	
+	int read_count = 0;
+	for (int i = 0; i < params_len; i++) {
+		if (params[i] != NULL) {
+			read_count = parcook->GetData(i, buffer + GetBuffSize()*i);
+		}
+	}
+	return read_count;
+} 
+
 int TProber::LoadConfig(const char *section)
 {
 	int ret = TWriter::LoadConfig(section, "cachedir");
@@ -85,10 +127,19 @@ int TProber::LoadIPK()
 		return -1;
 	}
 	assert (params_len > 0);
-	buffer = (short int*) malloc(params_len * sizeof(short int) * WRITE_EACH);
-	assert (buffer != NULL);
-	for (int i = 0; i < params_len; i++) {
-		buffer[i] = SZB_FILE_NODATA;
+
+	if (IsBuffered()) {
+		buffer = (short int*) malloc(params_len * sizeof(short int) * GetBuffSize());
+		assert (buffer != NULL);
+		for (int i = 0; i < params_len * GetBuffSize(); i++) {
+			buffer[i] = SZB_FILE_NODATA;
+		}
+	} else {
+		buffer = (short int*) malloc(params_len * sizeof(short int) * WRITE_EACH);
+		assert (buffer != NULL);
+		for (int i = 0; i < params_len; i++) {
+			buffer[i] = SZB_FILE_NODATA;
+		}
 	}
 	return ret;
 }
@@ -151,4 +202,112 @@ void TProber::WriteParams(bool force_write)
 		sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
 	}
 }
-		
+
+void TProber::WriteParamsBuffered(bool force_write)
+{
+	time_t t;
+	int err = 0, ok = 0;
+
+	time(&t);
+	t = t - (t % BASE_PERIOD);
+	sz_log(9, "Write params buffered %ld", (long int)t);
+
+	/* block signals */
+	g_signals_blocked = 1;
+
+	for (int i = 0; i < params_len; i++) {
+		if (params[i] != NULL) {
+			int param_off = GetBuffSize() * i;
+			int read_count = parcook->GetData(i, buffer + param_off);
+			if (m_pos_to_write == -1)
+				m_pos_to_write = parcook->GetDataPos();			
+			
+/*
+			sz_log(9, "Read count: %d, buffer size: %d", read_count, GetBuffSize());
+			std::ostringstream os;
+			for (int j = 0; j < read_count; ++j) os << buffer[param_off + j] << " ";
+			sz_log(3, "Buf(%d):[%s] read_count:%d",i,os.str().c_str(),read_count); 		
+			*/
+
+			if (read_count > 0) {
+				if (params[i]->WriteProbes(fs::wpath(data_dir), t, 
+					buffer + param_off,
+					read_count)) {
+					err++;
+				} else {
+					ok++;
+				}
+			}
+		}
+	}
+
+	all_written = true;
+
+	sz_log(5, "prober: writing params: %d ok, %d errors",
+			ok, err);
+
+	/* unblock signals */
+	g_signals_blocked = 0;
+	if (g_should_exit and !force_write) {
+		/* block signals */
+		sigset_t sigmask;
+		sigfillset(&sigmask);
+		sigdelset(&sigmask, SIGKILL);
+		sigdelset(&sigmask, SIGSTOP);
+		sigprocmask(SIG_SETMASK, &sigmask, NULL);
+		/* call terminate handler */
+		g_TerminateHandler(0);
+		/* unblock terminate signal raised by g_TerminateHandler */
+		sigemptyset(&sigmask);
+		sigaddset(&sigmask, SIGTERM);
+		sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
+	}
+}
+
+void TProber::WriteParamsMissed(int to_write, bool force_write)
+{
+	time_t t;
+	int err = 0, ok = 0;
+
+	time(&t);
+	t = t - (t % BASE_PERIOD);
+	sz_log(9, "Write params missing %ld", (long int)t);
+
+	/* block signals */
+	g_signals_blocked = 1;
+
+	for (int i = 0; i < params_len; i++) {
+		if (params[i] != NULL) {
+			int param_off = GetBuffSize() * i;
+			if (params[i]->WriteProbes(fs::wpath(data_dir), t, 
+				buffer + param_off,
+				to_write)) {
+				err++;
+			} else {
+				ok++;
+			}
+		}
+	}
+
+	all_written = true;
+
+	sz_log(5, "prober: writing missing params: %d ok, %d errors",
+			ok, err);
+
+	/* unblock signals */
+	g_signals_blocked = 0;
+	if (g_should_exit and !force_write) {
+		/* block signals */
+		sigset_t sigmask;
+		sigfillset(&sigmask);
+		sigdelset(&sigmask, SIGKILL);
+		sigdelset(&sigmask, SIGSTOP);
+		sigprocmask(SIG_SETMASK, &sigmask, NULL);
+		/* call terminate handler */
+		g_TerminateHandler(0);
+		/* unblock terminate signal raised by g_TerminateHandler */
+		sigemptyset(&sigmask);
+		sigaddset(&sigmask, SIGTERM);
+		sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
+	}
+}

@@ -44,6 +44,9 @@ const int SzCache::cSzCacheSize = 2;
 const int16_t SzCache::cSzCacheNoData = -32768;
 const std::string SzCache::cSzCacheExt = ".szc";
 
+/** Static */
+ShmConnection SzCache::_shm_conn;
+
 /** mmap() allocator for std::vector */
 
 template <class T> class mmap_allocator
@@ -118,8 +121,31 @@ template<> class mmap_allocator<void>
 
 /** SzSzache inner szc file representation */
 class SzCache::SzCacheFile {
-
 	public:
+		void appendFromShm(SzPath path) 
+		{
+			int to_read = toReadFromShm(path);
+			if (to_read > 0) {
+				logMsg(9, "SzCache::cacheMap: to read from SHM: " + std::to_string(to_read));
+				std::vector<int16_t> shm_data = getShmData(path);
+					
+				/*
+				logMsg(9, "SzCache::cacheMap: values in SHM: " + std::to_string(shm_data.size()));
+				std::ostringstream os;
+				for(auto v = shm_data.begin(); v != shm_data.end(); ++v) os << " " << *v;
+				os << " pos: " << getShmPos() << " count: " << getShmCount();
+				logMsg(9, "SHM: [" + os.str() + "]");
+				*/
+
+				if ((size_t)to_read >= shm_data.size())
+					_records.insert(_records.end(), shm_data.begin(), shm_data.end());
+				else 
+					_records.insert(_records.end(), shm_data.end() - to_read, shm_data.end());
+				
+				logMsg(9, "SzCache::cacheMap: file: " + path 
+					+ " loaded probes + SHM: " + std::to_string(_records.size()));
+			}
+		}		
 		SzIndexResult cacheSearchRight(SzIndex sind, SzIndex eind) 
 		{
 			logMsg(3, std::string("cacheSearchRight(") 
@@ -127,6 +153,9 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind <= eind; sind++) {
+				if (sind < 0 || static_cast<size_t>(sind) >= _records.size()) 
+					return SzIndexResult(false,-1);
+
 				int16_t val = _records[sind];
 				
 				/*
@@ -148,6 +177,9 @@ class SzCache::SzCacheFile {
 				+ std::to_string(eind) + std::string(")"));
 
 			for (; sind >= eind; sind--) {
+				if (sind < 0 || static_cast<size_t>(sind) >= _records.size()) 
+					return SzIndexResult(false,-1);
+
 				int16_t val = _records[sind];
 				
 				/*
@@ -209,6 +241,12 @@ class SzCache::SzCacheFile {
 			_records.assign(data, data + length);
 			close(fd);
 			munmap(mdata,length);
+			
+			logMsg(9, "SzCache::cacheMap: file: " + path 
+				+ " loaded probes: " + std::to_string(_records.size()));
+			
+			appendFromShm(path);
+			
 		};
 
 		/** 
@@ -309,7 +347,7 @@ SzCache::SzRange SzCache::availableRange() const
 	return SzRange(timegm(gmt), last);
 }
 
-SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
+SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir)
 {
 	logMsg(3, std::string("getPathIndex(") + std::to_string(szt)
 		+ std::string(",") + dir + std::string(")"));
@@ -324,18 +362,20 @@ SzCache::SzPathIndex SzCache::getPathIndex( SzTime szt, SzPath dir) const
 	int idx = (gmt->tm_mday - 1) * 24 * 3600 + gmt->tm_hour * 3600 + gmt->tm_min * 60 + gmt->tm_sec;
 	
 	idx = std::floor(idx / cSzCacheProbe);
+	//idx = std::floor((idx - (idx % cSzCacheProbe)) / cSzCacheProbe);
 
 	return SzPathIndex(SzPath(os.str()),SzIndex(idx));
 }
 
-SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path) const
+SzCache::SzTime	SzCache::getTime(SzIndex idx, SzPath path)
 {
 	logMsg(3, std::string("getTime(") + std::to_string(idx)
 		+ std::string(",") + path + std::string(")"));
 
 	std::tm gmt;
 	if (idx == -1) 
-		idx = getFileSize(path) / cSzCacheSize - 1;
+		idx = lastIndex(path);
+		//idx = getFileSize(path) / cSzCacheSize - 1;
 
 	std::pair<std::string,std::string> p = splitPath(path);
 	/* @TODO: some error checking on this stream */
@@ -399,7 +439,7 @@ std::size_t SzCache::getFileSize(const SzPath& path)
 	return res.st_size;
 }
 
-std::pair<std::string,std::string> SzCache::splitPath(const SzPath& path) const
+std::pair<std::string,std::string> SzCache::splitPath(const SzPath& path)
 {
 	std::size_t pos = path.rfind("/");
 	if (pos != std::string::npos)
@@ -479,14 +519,22 @@ SzCache::SzTime SzCache::searchAt(SzTime start, SzPath path) const
 		}	
 
 	} catch (std::exception& e) {
+		logMsg(1, "SzCache::cacheMap: Exception " + std::string(e.what()));
 		return SzTime(-1);
 	}
 	return start;
 }
 
-SzCache::SzIndex SzCache::lastIndex(SzPath path) const
-{
-	return ( getFileSize(path) / cSzCacheSize - 1 );
+SzCache::SzIndex SzCache::lastIndex(SzPath path)
+{	
+	int in_file = std::floor(getFileSize(path) / cSzCacheSize);
+	int to_read = 0;
+	try { 	
+		to_read = toReadFromShm(path);
+	} catch (std::runtime_error re) {
+		logMsg(0, "SzCache::lastIndex: Exception: " + std::string(re.what()));	
+	}
+	return (in_file + to_read - 1);
 }
 
 SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
@@ -514,8 +562,12 @@ SzCache::SzTime SzCache::searchFor(SzTime start, SzTime end, SzPath path) const
 	{
 		if (fileExists(spath)) {
 			SzCacheFile scf;
-			scf.cacheMap(spath);
-			
+
+			try { scf.cacheMap(spath); } catch (std::runtime_error re) {
+				// Some exception, but file exists so try to go on
+				logMsg(1, "SzCache::cacheMap: Exception " + std::string(re.what()));
+			}
+
 			SzIndexResult szir; 
 			
 			if (spath.compare(epath)!=0)
@@ -629,7 +681,14 @@ void SzCache::writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, 
 		SzCacheFile szf;
 		szf.cacheMap(path);
 		while (wcount > 0) {
-			vals.push_back(szf[sind]);
+
+			try { 
+				vals.push_back(szf[sind]);
+			} catch (std::exception& e) {
+				logMsg(1, "SzCache::writeFile:" + std::string(e.what()));
+				vals.push_back(cSzCacheNoData);
+			}
+
 			sind++;
 			--wcount;
 		}
@@ -668,6 +727,70 @@ SzCache::SzTime SzCache::writeData(std::vector<int16_t>& vals, SzTime start, SzT
 		writeFile(vals, spi.second, epi.second, spi.first);
 		return ntime;
 	}
+}
+
+int SzCache::toReadFromShm(SzPath path)
+{	
+	SzTime time_now = std::time(nullptr);
+		
+	SzPath dir_path = path.substr(0, path.rfind("/"));
+	SzPathIndex path_index_now = getPathIndex(time_now, dir_path);
+	
+	if (path_index_now.first.compare(path) != 0) {
+		logMsg(9, "SzCache::toReadFromShm: File: " + path + " not current so no SHM needed");
+		return 0;
+	}
+
+	// Hack - remove the additional .szc after getPathIndex call
+	//szpi_now.first = szpi_now.first.substr(0, szpi_now.first.rfind("/"));
+	//logMsg(5, "path: " + path + " now: " + szpi_now.first);
+
+	int expected = path_index_now.second;
+	logMsg(9, "SzCache::toReadFromShm: Expecting " + std::to_string(expected) + " probes in file");
+
+	if (expected < 0) return 0;
+		//throw std::runtime_error("SzCache::toReadFromShm: expected < 0");
+	
+	int in_file = std::floor(getFileSize(path) / sizeof(int16_t));
+	logMsg(9, "SzCache::toReadFromShm: " + path + " = " + std::to_string(in_file) + " probes");
+	
+	int probes_diff = expected - in_file;
+	
+	if (probes_diff < 0) return 0;
+		//throw std::runtime_error("SzCache::toReadFromShm: probes_diff < 0");
+			
+	logMsg(9, "SzCache::toReadFromShm: To be loaded frm SHM: " + std::to_string(probes_diff));
+	
+	return probes_diff;
+}
+
+int SzCache::getShmPos()
+{
+	return _shm_conn.get_pos();
+}
+ 	
+int SzCache::getShmCount()		
+{
+	return _shm_conn.get_count();
+}
+
+std::vector<int16_t> SzCache::getShmData(SzPath path)
+{
+	int index = -1;
+		
+	if (!_shm_conn.registered()) _shm_conn.register_signals();
+	if (!_shm_conn.configured()) _shm_conn.configure();
+	if (!_shm_conn.connected()) _shm_conn.connect();
+
+	_shm_conn.update_segment();
+	
+	try {
+		index = _shm_conn.param_index_from_path(path);
+	} catch (std::runtime_error e) {
+		logMsg(0, "SzCache::getShmData: Failed to get shared memory for %s" + path);
+	}
+	
+	return _shm_conn.get_values(index);
 }
 
 void SzCache::logMsg(int level, std::string msg)

@@ -120,7 +120,7 @@ void Draw::MoveToTime(const DTime& time) {
 
 	assert(start_time.IsValid());
 
-	if (start_time == time)
+	if (start_time == time || !time.IsValid())
 		return;
 
 	int d = start_time.GetDistance(time);
@@ -476,6 +476,7 @@ void ValuesTable::ClearStats() {
 	m_count = 0;
 	m_probes_count = 0;
 	m_data_probes_count = 0;
+	m_nodata_probes_count = 0;
 
 	m_sum = 
 	m_sum2 = 
@@ -627,7 +628,10 @@ void ValuesTable::UpdateStats(int idx) {
 	m_probes_count += v.max_probes;
 	m_data_probes_count += v.count_probes;
 	if (m_probes_count)
+	{
 		m_data_probes_ratio = double(m_data_probes_count) / m_probes_count;
+		m_nodata_probes_count = m_probes_count - m_data_probes_count;
+	}
 
 	if (!v.IsData())
 		return;

@@ -36,14 +36,55 @@
 #include <boost/filesystem.hpp>
 
 #include "liblog.h"
+#include "conversion.h"
 
 #include "szarp_base_common/szbparamobserver.h"
 #include "szarp_base_common/szbparammonitor.h"
 
 typedef int SzbMonitorTokenType;
 
+bool SzbParamMonitorImplBase::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
+	command cmd;
+	cmd.cmd = ADD_CMD;
+	cmd.path = path;
+	cmd.observer = observer;
+	cmd.param = param;
+	cmd.order = order;
+	{
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_queue.push_back(cmd);
+	}
+	return trigger_command_pipe();
+}
+
+bool SzbParamMonitorImplBase::end_monitoring_dir(SzbMonitorTokenType token) {
+	command cmd;
+	cmd.cmd = DEL_CMD;
+	cmd.token = token;
+	{
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_queue.push_back(cmd);
+	}
+	return trigger_command_pipe();
+}
+
+bool SzbParamMonitorImplBase::terminate() {
+	command cmd;
+	cmd.cmd = END_CMD;
+	{
+		boost::mutex::scoped_lock lock(m_mutex);
+		m_queue.push_back(cmd);
+	}
+	if (!trigger_command_pipe())
+		return false;
+
+	m_thread.join();
+	return true;
+}
+
+
 #ifndef MINGW32
-SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor* monitor) : m_monitor(monitor) {
+SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor* monitor, const std::string&) : m_monitor(monitor) {
 	m_terminate = false;
 	m_cmd_socket[0] = m_cmd_socket[1] = -1;
 
@@ -228,69 +269,203 @@ again:
 	return true;
 }
 
-bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
-	command cmd;
-	cmd.cmd = ADD_CMD;
-	cmd.path = path;
-	cmd.observer = observer;
-	cmd.param = param;
-	cmd.order = order;
-	{
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_queue.push_back(cmd);
-	}
-	return trigger_command_pipe();
-}
-
-bool SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
-	command cmd;
-	cmd.cmd = DEL_CMD;
-	cmd.token = token;
-	{
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_queue.push_back(cmd);
-	}
-	return trigger_command_pipe();
-}
-
-bool SzbParamMonitorImpl::terminate() {
-	command cmd;
-	cmd.cmd = END_CMD;
-	{
-		boost::mutex::scoped_lock lock(m_mutex);
-		m_queue.push_back(cmd);
-	}
-	if (!trigger_command_pipe())
-		return false;
-
-	m_thread.join();
-	return true;
-}
-
 #else
 
-SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor *monitor) {}
+SzbParamMonitorImpl::SzbParamMonitorImpl(SzbParamMonitor *monitor, const std::string& szarp_data_dir)
+			: m_monitor(monitor), m_token(0), m_szarp_data_dir(szarp_data_dir)
+{
+	m_dir_handle = CreateFile(
+			szarp_data_dir.c_str(), 
+			FILE_LIST_DIRECTORY,
+			FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL,
+			OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+			NULL);
 
-bool SzbParamMonitorImpl::start_monitoring_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
+	if (m_dir_handle == INVALID_HANDLE_VALUE)
+		throw std::runtime_error("Failed to open directory to monitor");
+
+	std::memset(&m_overlapped, 0, sizeof(m_overlapped));
+
+	m_event[0] = CreateEvent(NULL, true, false, "monitor event");
+	if (m_overlapped.hEvent == INVALID_HANDLE_VALUE) {
+		CloseHandle(m_dir_handle);
+		throw std::runtime_error("Failed to open directory to monitor");
+	}
+
+	m_event[1] = CreateEvent(NULL, true, false, "signal event");
+	if (m_event[1] == INVALID_HANDLE_VALUE) {
+		CloseHandle(m_dir_handle);
+		CloseHandle(m_event[1]);
+		throw std::runtime_error("Failed to open directory to monitor");
+	}
+
+	wait_for_changes();
+}
+
+void SzbParamMonitorImpl::wait_for_changes() {
+	ResetEvent(m_event[0]);
+	std::memset(&m_overlapped, 0, sizeof(m_overlapped));
+
+	m_overlapped.hEvent = m_event[0];
+
+	auto ret = ReadDirectoryChangesW(m_dir_handle, m_buffer, sizeof(m_buffer), true,
+					FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE,
+					nullptr, &m_overlapped, nullptr);
+	if (!ret)
+		throw std::runtime_error("Failed to intiate listening for directory chagnes");
+}
+
+SzbParamMonitorImpl::~SzbParamMonitorImpl() {
+	CloseHandle(m_dir_handle);
+	CloseHandle(m_event[0]);
+	CloseHandle(m_event[1]);
+}
+
+void SzbParamMonitorImpl::loop() {
+	while (!m_terminate) {
+		auto r = WaitForMultipleObjects(2, m_event, false, INFINITE);
+		switch (r) {
+			case WAIT_OBJECT_0:
+				process_notification();
+				break;
+
+			case WAIT_OBJECT_0 + 1:
+				process_cmds();
+				break;
+
+			default:
+				throw std::runtime_error("Invalid return value from WaitForMultiplesObjects");
+		}
+	}
+}
+
+void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vector<std::pair<SzbMonitorTokenType, std::string>>& tokens_and_paths) {
+	if (info->Action != FILE_ACTION_ADDED && info->Action != FILE_ACTION_RENAMED_NEW_NAME)
+		return;
+
+	size_t length = info->FileNameLength / sizeof(info->FileName[0]);
+	if (length < 4)
+		return;
+
+	WCHAR* name = info->FileName;
+
+	if (name[length - 4] != L'.')
+		return;
+
+	if (name[length - 3] != L's')
+		return;
+
+	if (name[length - 2] != L'z')
+		return;
+
+	if (name[length - 1] != L'b' && name[length - 1] != L'4')
+		return;
+
+	boost::filesystem::path path(name, name + length);
+	auto dir = path.parent_path();
+	auto i = m_registry.find(dir.wstring());
+	if (i == m_registry.end()) 
+		return;
+
+	tokens_and_paths.push_back(std::make_pair(i->second, (m_szarp_data_dir / path).string()));
+}
+
+void SzbParamMonitorImpl::process_notification() {
+	DWORD bytes_tx;
+	auto ret = GetOverlappedResult(m_dir_handle, &m_overlapped, &bytes_tx, true);
+	if (!ret)
+		throw std::runtime_error("Failed to get the result");
+
+	PFILE_NOTIFY_INFORMATION info = (PFILE_NOTIFY_INFORMATION)m_buffer;
+
+	std::vector<std::pair<SzbMonitorTokenType, std::string>> tokens_and_paths;
+
+	while (true) {
+		process_file(info, tokens_and_paths);
+
+		if (!info->NextEntryOffset)
+			break;
+
+		info = PFILE_NOTIFY_INFORMATION((uint8_t*) info + info->NextEntryOffset);
+	}
+
+	if (tokens_and_paths.size())
+		m_monitor->files_changed(tokens_and_paths);
+
+	wait_for_changes();
+}
+
+void SzbParamMonitorImpl::process_cmds() {
+	boost::mutex::scoped_lock lock(m_mutex);
+	while (m_queue.size()) {
+		command cmd = m_queue.front();
+		m_queue.pop_front();
+
+		switch (cmd.cmd) {
+			case ADD_CMD:
+				add_dir(cmd.path, cmd.param, cmd.observer, cmd.order);
+				break;
+			case DEL_CMD:
+				del_dir(cmd.token);
+				break;
+			case END_CMD:
+				m_terminate = true;
+				break;
+		}
+	}
+
+	ResetEvent(m_event[1]);
+}
+
+bool SzbParamMonitorImpl::trigger_command_pipe() {
+	SetEvent(m_event[1]);
 	return true;
 }
 
-bool SzbParamMonitorImpl::end_monitoring_dir(SzbMonitorTokenType token) {
-	return true;
+void SzbParamMonitorImpl::add_dir(const std::string& path, TParam* param, SzbParamObserver* observer, unsigned order) {
+	boost::filesystem::path root_dir(m_szarp_data_dir);
+	boost::filesystem::path dir_path(path);
+
+	auto root_iter = root_dir.begin();
+	auto path_iter = dir_path.begin();
+
+	while (root_iter != root_dir.end() && path_iter != dir_path.end() && *root_iter == *path_iter) {
+		root_iter++;
+		path_iter++;
+	}
+
+	boost::filesystem::path relative_path;
+	while (path_iter != dir_path.end()) {
+		relative_path /= *path_iter;
+		path_iter++;
+	}
+
+	auto token = m_token++;
+
+	m_registry.insert(std::make_pair(relative_path.wstring(), token));
+	m_monitor->dir_registered(token, param, observer, path, order);
 }
 
-
+void SzbParamMonitorImpl::del_dir(SzbMonitorTokenType token) {
+	auto i = m_registry.begin();
+	while (i != m_registry.end()) {
+		if (i->second == token)
+			i = m_registry.erase(i);
+		else
+			i++;
+	}
+}
 
 void SzbParamMonitorImpl::run()
-{}
-
-bool SzbParamMonitorImpl::terminate() {
-	return true;
+{
+	m_thread = boost::thread(boost::bind(&SzbParamMonitorImpl::loop, this));
 }
 
 #endif
 
-SzbParamMonitor::SzbParamMonitor() : m_monitor_impl(this) {
+SzbParamMonitor::SzbParamMonitor(const std::wstring& szarp_data_dir) : m_monitor_impl(this, SC::S2L(szarp_data_dir)) {
 	m_monitor_impl.run();
 }
 

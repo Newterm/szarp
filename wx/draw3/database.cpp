@@ -522,6 +522,7 @@ public:
 
 
 void Sz4Base::SearchData(DatabaseQuery* query) {
+
 	TParam* p = query->param;
 	DatabaseQuery::SearchData& sd = query->search_data;
 
@@ -536,23 +537,26 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 	}
 
 	sz4::nanosecond_time_t response;
+
+	sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+	sz4::nanosecond_time_t start = pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond);
+
 	if (sd.direction > 0) {
 		response = base->search_data_right(
 			p,
-			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
-			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
+			start,
+			end,
 			PeriodToProbeType(sd.period_type),
 			no_data_search_condition()
 		);
 	} else {
-		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
 		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
 			end.second = 0;
 			end.nanosecond = 0;
 		}
 		response = base->search_data_left(
 			p,
-			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
+			start,
 			end,
 			PeriodToProbeType(sd.period_type),
 			no_data_search_condition());

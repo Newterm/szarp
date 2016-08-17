@@ -840,7 +840,7 @@ void GCDCGraphs::GetDistance(size_t draw_index, int x, int y, double &d, wxDateT
 			d2 = (x - xj) * (x - xj) + (y - yj) * (y - yj);
 		}
 
-		if (!std::isfinite(d1) && !std::isfinite(d1))
+		if (!std::isfinite(d1) && !std::isfinite(d2))
 			continue;
 
 		if (!std::isfinite(d2) || d1 < d2) {

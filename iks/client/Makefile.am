@@ -7,7 +7,7 @@ AM_CPPFLAGS = \
 	-I@srcdir@/../common \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
-	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@
+	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ 
 
 LDADD = @PTHREAD_CFLAGS@ \
 	@BOOST_LDFLAGS@ @BOOST_ASIO_LIB@ @BOOST_SYSTEM_LIB@ \

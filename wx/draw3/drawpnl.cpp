@@ -585,10 +585,13 @@ void DrawPanel::OnShowInterface(wxCommandEvent &evt)
 		/* Create size event with size before resize */
 		wxSizeEvent se(GetSize());
 
-		if (is_checked)
+		if (is_checked) {
 			tw->Show(menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked());
-		else
+		} else {
 			tw->Show(is_checked);
+		}
+
+		menu_bar->FindItem(XRCID("ShowAverage"))->Enable(is_checked);
 
 		iw->Show(is_checked);
 		ssw->Show(is_checked);

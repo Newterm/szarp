@@ -64,7 +64,7 @@ std::vector<std::string> SzbParamMonitorTest::createDirectories() {
 }
 
 void SzbParamMonitorTest::writeTest() {
-	SzbParamMonitor m;
+	SzbParamMonitor m(L"");
 	TestObserver o1, o2;
 	int fd = -1;
 
@@ -130,7 +130,7 @@ void SzbParamMonitorTest::writeTest() {
 }
 
 void SzbParamMonitorTest::renameTest() {
-	SzbParamMonitor m;
+	SzbParamMonitor m(L"");
 	TestObserver o1;
 	int fd = -1;
 

@@ -1,6 +1,8 @@
 # rsyslogd confguration for SZARP
 
-# Base daemons
+if $programname == 'parstart' then /var/log/szarp/parstart.log
+& DISCARD_ACTION
+
 if $programname == 'analiza' then /var/log/szarp/analiza.log
 & DISCARD_ACTION
 

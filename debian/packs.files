@@ -120,3 +120,6 @@ Files: opt/szarp/bin/{filler2,szb2filler}
 Files: opt/szarp/resources/filler2.desktop
 Files: usr/share/applications/filler2.desktop
 
+Package: szarp-s7dmn
+Files: opt/szarp/bin/s7dmn
+

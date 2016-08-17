@@ -1,3 +1,3 @@
 
-SUBDIRS = pyszbase protobuf meaner4 parhub utils
+SUBDIRS = pyszbase protobuf meaner4 parhub utils pytimer
 

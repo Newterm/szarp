@@ -21,11 +21,13 @@
 #include <future>
 #include <chrono>
 
+#include "config.h"
+
 #ifndef MINGW32
 #include <zmq.hpp>
+#include "protobuf/paramsvalues.pb.h"
 #endif
 
-#include "protobuf/paramsvalues.pb.h"
 #include "sz4/block.h"
 #include "sz4/defs.h"
 #include "szarp_config.h"
@@ -156,6 +158,7 @@ live_cache::~live_cache() {
 
 template<> bool live_cache::get_last_meaner_time<second_time_t>(int config_id, second_time_t& t)
 {
+#ifndef MINGW32
 	if (m_cache.size() <= unsigned(config_id))
 		return false;
 
@@ -163,10 +166,12 @@ template<> bool live_cache::get_last_meaner_time<second_time_t>(int config_id, s
 	t = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 	
 	return true;
+#endif
 }
 
 template<> bool live_cache::get_last_meaner_time<nanosecond_time_t>(int config_id, nanosecond_time_t& t)
 {
+#ifndef MINGW32
 	if (m_cache.size() <= unsigned(config_id))
 		return false;
 
@@ -175,6 +180,7 @@ template<> bool live_cache::get_last_meaner_time<nanosecond_time_t>(int config_i
 	t.nanosecond = 0;
 	
 	return true;
+#endif
 }
 
 template

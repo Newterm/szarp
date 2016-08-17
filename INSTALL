@@ -19,7 +19,7 @@ NOTE:
 This method of installation is not recommended - you will need to manually setup
 some configuration files, crontab entries and so on. This method is not used
 by us or any SZARP user we know. If you want to play with source code, we
-recommend to install Debian packages so all the staff will be in correct place.
+recommend to install Debian packages so all the stuff will be in correct place.
 Then you can replace binaries with your own compiled versions or run them
 directly from your working directory.
 

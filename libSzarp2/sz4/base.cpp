@@ -22,7 +22,9 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
+#ifndef MINGW32
 #include <zmq.hpp>
+#endif
 
 #include "szarp_config.h"
 
