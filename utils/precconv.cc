@@ -135,9 +135,10 @@ out:
 
 	if (to == 0) {
 		if (dbl) {
-			val = (unsigned short)wcstol(value.c_str(), NULL, 10);
+			wchar_t* eptr;
+			val = (unsigned short)wcstol(value.c_str(), &eptr, 10);
 			val = val << 16;
-			val = val + (unsigned short)wcstol(value2.c_str(), NULL, 10);
+			val = val + (unsigned short)wcstol(value2.c_str(), &eptr, 10);
 		}
 #define BUF_SIZE 128
 		wchar_t buffer[BUF_SIZE];
@@ -157,7 +158,8 @@ out:
 				return 0;
 			}
 		}
-		double d = wcstod(value.c_str(), NULL);
+		wchar_t *eptr;
+		double d = wcstod(value.c_str(), &eptr);
 		for (int i = 0; i < p->GetPrec(); i++) {
 			d *= 10;
 		}

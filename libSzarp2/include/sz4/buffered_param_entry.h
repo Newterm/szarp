@@ -98,7 +98,7 @@ public:
 		
 		boost::scoped_ptr<calculation_method<types> > ee;
 		bool first = true;
-		time_type& current(start);
+		time_type& current(from);
 		while (current < to) {
 			value_type value;
 			bool fixed = true;

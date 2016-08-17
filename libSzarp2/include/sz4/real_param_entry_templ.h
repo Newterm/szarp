@@ -391,6 +391,9 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 
 		if (m_blocks.find(file_time) != m_blocks.end())
 			continue;
+
+		if (sz4 && (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time))
+			m_first_sz4_date = file_time;
 		
 		new_files.push_back(file_entry(file_time, file_path, sz4));
 	}
@@ -408,8 +411,6 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 		if (sz4) {
 			entry = new sz4_file_block_entry<V, T, base>(
 						file_time, file_path, m_base->cache());
-			if (time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
-				m_first_sz4_date = file_time;
 		} else {
 			if (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
 				entry = new szbase_file_block_entry<V, T, base>(

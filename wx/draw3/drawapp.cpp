@@ -458,6 +458,8 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("4"), _T("sz4"), _("use sz4 base format"));
 
+	parser.AddSwitch(_T("3"), _T("sz3"), _("use sz3 base format"));
+
 	parser.AddSwitch(_T("i"), _T("iks"), _("use iks server"));
 
 	parser.AddSwitch(_T("V"), _T("version"), 
@@ -529,8 +531,15 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	else
 		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
 
+#ifdef MINGW32
+	m_base_type = SZ4_BASE;
+#endif
+
 	if (parser.Found(_T("4")))
 		m_base_type = SZ4_BASE;
+
+	if (parser.Found(_T("3")))
+		m_base_type = SZBASE_BASE;
 
 	if (parser.Found(_T("i"))) {
 		m_base_type = IKS_BASE;

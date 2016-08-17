@@ -55,6 +55,9 @@ class FileFactory:
 		def close(self):
 			self.file.close()
 
+		def truncate(self, size):
+			self.file.truncate(size)
+
 	def open(self, path, mode):
 		return self.File(path, mode)
 

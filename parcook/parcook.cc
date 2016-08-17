@@ -352,6 +352,7 @@ typedef struct phEquatInfo tEquatInfo;
 
 tEquatInfo Equations;
 
+ushort DParamsCount;
 ushort VTlen;
 
 unsigned int BasePeriod;
@@ -1229,6 +1230,7 @@ void LanchDaemon(int i, char* linedmnpat)
 	LinesInfo[i].ParBase = VTlen;
 	/* increase global params count */
 	VTlen += LinesInfo[i].ParTotal;
+	DParamsCount += LinesInfo[i].ParTotal;
 	
 	key = ftok(linedmnpat, LinesInfo[i].LineNum);
 	if (key == -1) {
@@ -1313,6 +1315,7 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 	unsigned int i;
 
 	VTlen = 0;
+	DParamsCount = 0;
 
 	BasePeriod = ipk->GetReadFreq();
 	NumberOfLines = ipk->GetDevicesCount();
@@ -1571,6 +1574,9 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 		/* detach line segment */
 		shmdt((void *) LinesInfo[i].ValTab);
 	} /* for each line daemon */
+	for (ii = DParamsCount; ii < VTlen; ii++) {
+		Probe[ii] = SZARP_NO_DATA;
+	}
 	/* process formulas, Calcul modifies only Probes[] table */
 	for (ii = 0; ii < Equations.len; ii++) {
 		Calcul(ii);
