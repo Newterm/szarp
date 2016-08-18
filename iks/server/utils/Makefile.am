@@ -7,6 +7,7 @@ MAINTAINERCLEANFILES = Makefile.in
 # Compilations flags
 AM_CPPFLAGS = \
 	-DPREFIX=\"@prefix@\" \
+	-DBOOST_ENABLE_ASSERT_HANDLER \
 	-I@srcdir@/../ \
 	-I@srcdir@/../../../libSzarp/include \
 	-I@srcdir@/../../../libSzarp2/include \
@@ -24,6 +25,7 @@ LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \
 lib_LIBRARIES = libiks-server-utils.a
 
 libiks_server_utils_a_SOURCES = \
+	assertion_hnd.cpp \
 	ptree.cpp \
 	config_.cpp \
 	colors.cpp
