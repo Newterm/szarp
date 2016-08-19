@@ -103,10 +103,14 @@ endif
 
 if MINGW32_OPT
 PROTOBUF =
+PROTOBUF_ALL =
 else
 PROTOBUF = \
 			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
-			$(SOURCE_DIR)/include/paramsvalues.pb.h
+			$(SOURCE_DIR)/include/protobuf/paramsvalues.pb.h
+PROTOBUF_ALL = \
+            $(PROTOBUF) \
+			$(SOURCE_DIR)/protobuf/paramsvalues.pb.h
 endif
 
 
@@ -238,9 +242,9 @@ libSzarpLuaParser_la_SOURCES = \
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
                        $(EXTRA_HEADERS) \
-		       tools/ipk_config 
-		       
-                      
+                       tools/ipk_config \
+                       $(PROTOBUF_ALL)
+
 bin_SCRIPTS= \
              tools/ipk_config \
              $(TOOLS_DIR)/ipk_add_template \
