@@ -114,7 +114,12 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 	sz_log(9, "   <<<   %s", line.c_str());
 
-	emit_line_received( line );
+	try {
+		emit_line_received( line );
+	} catch(const std::exception& e ) {
+		// we can catch here as boost signals and slots are in-place function calls by design
+		sz_log(0, "Exception occurred during emit_line_received: %s" , e.what());
+	}
 
 	do_read_line();
 }

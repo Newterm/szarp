@@ -8,6 +8,7 @@ MAINTAINERCLEANFILES = Makefile.in
 lib_LIBRARIES = libiks-common.a
 
 AM_CPPFLAGS = @BOOST_CPPFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ \
+		-DBOOST_ENABLE_ASSERT_HANDLER \
 	   -I@srcdir@/../../libSzarp/include \
 	   -I@srcdir@/../../libSzarp2/include \
 	   -I@srcdir@/../../include \
@@ -16,4 +17,4 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ \
 
 noinst_HEADERS = data/probe_type.h utils/exception.h locations/error_codes.h
 
-libiks_common_a_SOURCES = data/probe_type.cpp utils/ptree.cpp
+libiks_common_a_SOURCES = data/probe_type.cpp utils/ptree.cpp utils/assertion_hnd.cpp

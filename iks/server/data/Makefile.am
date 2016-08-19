@@ -7,6 +7,7 @@ MAINTAINERCLEANFILES = Makefile.in
 # Compilations flags
 AM_CPPFLAGS = \
 	-DPREFIX=\"@prefix@\" \
+	-DBOOST_ENABLE_ASSERT_HANDLER \
 	-I@srcdir@/../ \
 	-I@srcdir@/../../common \
 	-I@srcdir@/../../../libSzarp/include \
