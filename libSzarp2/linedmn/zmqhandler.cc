@@ -97,6 +97,12 @@ zmqhandler::zmqhandler(
 	m_pub_sock.connect(pub_address.c_str());
 	if (m_send.size())
 		m_sub_sock.connect(sub_address.c_str());
+
+	int zero = 0;
+	m_pub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+	m_sub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+
+	m_sub_sock.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 }
 
 template<class T, class V> void zmqhandler::set_value(size_t index, const T& t, const V& value) {
@@ -156,18 +162,17 @@ void zmqhandler::receive() {
 	if (!m_send.size())
 		return;
 
-	unsigned int event;
-	size_t event_size = sizeof(event);	
-	m_sub_sock.getsockopt(ZMQ_EVENTS, &event, &event_size);
-	while (event & ZMQ_POLLIN) {
-		szarp::ParamsValues values;
+	do {
 		zmq::message_t msg;
-		m_sub_sock.recv(&msg);
+		if (!m_sub_sock.recv(&msg, ZMQ_NOBLOCK))
+			return;
 
+		szarp::ParamsValues values;
 		if (values.ParseFromArray(msg.data(), msg.size()))
 			process_msg(values);
+		else	
+			/* XXX: */;
 
-		m_sub_sock.getsockopt(ZMQ_EVENTS, &event, &event_size);
-	}
+	} while (true);
 }
 
