@@ -283,7 +283,7 @@ class ProbesProtocol(basic.LineReceiver):
 		return RangeProducer(self)
 
 	def connectionMade(self):
-		print('connection made from %s' % (self.transport.getPeer()))
+		debug('connection made from %s' % (self.transport.getPeer()))
 		# queue of producers for not-yet-served requests
 		self._requests = []
 		self._producer = None
@@ -294,7 +294,7 @@ class ProbesProtocol(basic.LineReceiver):
 		"""
 		if len(self._requests) > 0:
 			self._producer = self._requests.pop(0)
-			print "STARTING PRODUCER", self._producer
+			debug("STARTING PRODUCER %s" % (self._producer))
 			self.transport.registerProducer(self._producer, True)
 			self._producer.resumeProducing()
 		else:
@@ -316,7 +316,7 @@ class ProbesProtocol(basic.LineReceiver):
 		self.addRequest(self.parse(line))
 		
 	def connectionLost(self, reason):
-		print('connection lost from %s' % (self.transport.getPeer()))
+		debug('connection lost from %s' % (self.transport.getPeer()))
 
 
 class ProbesFactory(protocol.ServerFactory):
