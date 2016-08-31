@@ -232,20 +232,8 @@ void calculate_average(short *probes, int param_no, int probe_type)
 {
 	tParamInfo *pi = ParsInfo[param_no];
 
-	sz_log(7, "Entering calculate average, probe type: %d", probe_type);
-	if (pi->param->IsMeterParam()) {
-		if (Cnts[param_no][probe_type]) {
-			// doesn't matter whether param is combined or not - daemon does the NO_DATA handling
-			probes[param_no] = Sums[param_no][0];
-			sz_log(7, "Passing %hhu for meter param", probes[param_no]);
-		} else {
-			probes[param_no] = SZARP_NO_DATA;
-			sz_log(7, "Passing NO_DATA for meter param");
-		}
-
-		Cnts[param_no][probe_type] = 0;
+	if (pi->param->IsMeterParam())
 		return;
-	}
 
 	if (pi->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
@@ -279,22 +267,45 @@ void calculate_average(short *probes, int param_no, int probe_type)
 	sz_log(7, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
 }
 
+void update_valid_meter(const int& i,const int& v) {
+	Cnts[i][0] = 1;
+	Sums[i][0] = v;
+	Cnts[i][1] = 1;
+	Sums[i][1] = v;
+	Cnts[i][2] = 1; // valid data flag
+	Sums[i][2] = v;
+}
+
 template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
 {
 	if (ParsInfo[param_no]->param->IsMeterParam()) {
-		if (probe_type == 0) {
-			Sums[param_no][0] = (int) ivt[param_no];
 
-			if (Sums[param_no][0] != SZARP_NO_DATA) {
-				Cnts[param_no][0] = 1;
-				Cnts[param_no][1] = 1;
-				Sums[param_no][1] = Sums[param_no][0];
-				Cnts[param_no][2] = 1;
-				Sums[param_no][2] = Sums[param_no][0];
+		if (ParsInfo[param_no]->type == tParamInfo::LSW) return; // update everything on msw
+
+		if (probe_type == 0 && ivt[param_no] != SZARP_NO_DATA) { // we are on 10secs
+			if (ParsInfo[param_no]->type == tParamInfo::MSW) { // and on msw
+				int lsw = ParsInfo[param_no]->lsw;
+				if (ivt[lsw] != SZARP_NO_DATA) { // we have matching 10secs!
+					update_valid_meter(lsw, (int) ivt[lsw]);
+					update_valid_meter(param_no, (int) ivt[param_no]);
+				} // do not update msw when lsw is invalid (let it stay the same)
+			} else {// if msw
+				update_valid_meter(param_no, (int) ivt[param_no]);
 			}
 		}
 
-		ovt[param_no][abuf] = Sums[param_no][probe_type];
+		if (Cnts[param_no][probe_type]) {
+			//ivt[param_no] = Sums[param_no][probe_type]; // what about ZMQ's 10secs on lsw?
+			ovt[param_no][abuf] = Sums[param_no][probe_type];
+			if (abuf == 0) {
+				//last probe in a segment, bring down valid data flag
+				Cnts[param_no][probe_type] = 0;
+			}
+		} else {
+			ivt[param_no] = SZARP_NO_DATA; // make sure we send nodata to ZMQ on 10secs
+			ovt[param_no][abuf] = SZARP_NO_DATA;
+		}
+		
 		return;
 	}
 
