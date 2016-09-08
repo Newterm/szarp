@@ -233,7 +233,7 @@ void calculate_average(short *probes, int param_no, int probe_type)
 	tParamInfo *pi = ParsInfo[param_no];
 
 	if (pi->param->IsMeterParam())
-		return;
+		return; // we don't want to average
 
 	if (pi->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
@@ -267,45 +267,55 @@ void calculate_average(short *probes, int param_no, int probe_type)
 	sz_log(7, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
 }
 
-void update_valid_meter(const int& i,const int& v) {
+void update_valid_meter(const int i, const int v) {
+	sz_log(7, "Updating value for meter %d, new value: %d", i, v);
 	Cnts[i][0] = 1;
 	Sums[i][0] = v;
 	Cnts[i][1] = 1;
-	Sums[i][1] = v;
 	Cnts[i][2] = 1; // valid data flag
-	Sums[i][2] = v;
 }
+
+template<class OVT>
+void check_meter(const int i, const int p, const int a, short*& ivt, OVT& ovt) {
+	sz_log(7, "Checking meter %d, probe type: %d, abuf: %d, count: %d, sum: %d", i, p, a, Cnts[i][p], Sums[i][0]);
+	if (Cnts[i][p]) {
+		if (a == 0) {
+			//last probe in the segment, bring down valid data flag
+			Cnts[i][p] = 0;
+		}
+
+		ovt[i][a] = Sums[i][0];
+		if (p != 0) ivt[i] = Sums[i][0]; // on 10secs ignore 
+	} else {
+		ivt[i] = SZARP_NO_DATA; // make sure we send nodata to ZMQ on 10secs
+		ovt[i][a] = SZARP_NO_DATA;
+	}
+}
+
+
 
 template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
 {
-	if (ParsInfo[param_no]->param->IsMeterParam()) {
+	auto pi = ParsInfo[param_no];
 
-		if (ParsInfo[param_no]->type == tParamInfo::LSW) return; // update everything on msw
-
-		if (probe_type == 0 && ivt[param_no] != SZARP_NO_DATA) { // we are on 10secs
-			if (ParsInfo[param_no]->type == tParamInfo::MSW) { // and on msw
-				int lsw = ParsInfo[param_no]->lsw;
-				if (ivt[lsw] != SZARP_NO_DATA) { // we have matching 10secs!
-					update_valid_meter(lsw, (int) ivt[lsw]);
-					update_valid_meter(param_no, (int) ivt[param_no]);
-				} // do not update msw when lsw is invalid (let it stay the same)
-			} else {// if msw
+	if (pi->param->IsMeterParam()) {
+		sz_log(7, "Entering update value for meter param %ls, probe type: %d", ParsInfo[param_no]->param->GetName().c_str(), probe_type);
+		if (pi->type == tParamInfo::SINGLE) {
+			if (probe_type == 0 && ivt[param_no] != SZARP_NO_DATA) {
 				update_valid_meter(param_no, (int) ivt[param_no]);
 			}
 		}
 
-		if (Cnts[param_no][probe_type]) {
-			//ivt[param_no] = Sums[param_no][probe_type]; // what about ZMQ's 10secs on lsw?
-			ovt[param_no][abuf] = Sums[param_no][probe_type];
-			if (abuf == 0) {
-				//last probe in a segment, bring down valid data flag
-				Cnts[param_no][probe_type] = 0;
-			}
-		} else {
-			ivt[param_no] = SZARP_NO_DATA; // make sure we send nodata to ZMQ on 10secs
-			ovt[param_no][abuf] = SZARP_NO_DATA;
+		else if (pi->type != tParamInfo::LSW) { // msw or combined
+			int lsw = ParsInfo[param_no]->lsw;
+			if (probe_type == 0 && (ivt[lsw] != SZARP_NO_DATA || ivt[param_no] != SZARP_NO_DATA)) {// we have matching 10secs!
+				update_valid_meter(lsw, (int) ivt[lsw]);
+				update_valid_meter(param_no, (int) ivt[param_no]);
+
+			} // do not update msw when lsw is invalid (let it stay the same)
 		}
-		
+
+		check_meter(param_no, probe_type, abuf, ivt, ovt); // check lsw too!
 		return;
 	}
 
