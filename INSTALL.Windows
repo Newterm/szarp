@@ -48,7 +48,7 @@ cross-compiler on Debian.
 
 # apt-get install mingw32 mingw32-binutils mingw32-runtime
 
-2.2. Preparing of directories.
+2.2. Preparing directories.
 
 Now create directories for libraries, headers and tools:
 
