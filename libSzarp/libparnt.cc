@@ -215,6 +215,21 @@ void libpar_init()
 {
 	libpar_init_with_filename(NULL, 1);
 }
+
+//load 'szarp.cfg' from folder. Path to a directory must end with '/'
+void libpar_init_from_folder(std::string folder_path)
+{
+	if(folder_path.empty())
+		return; //empty string
+	std::string config_name = CFGNAME;
+
+	//make sure path to folder ends with '/'
+	if(folder_path.back() != '/')
+		folder_path.push_back('/');
+	
+	//add config file name 'szarp.cfg'
+	libpar_init_with_filename((folder_path + config_name).c_str(), 1);
+}
 #endif
 
 /* 
