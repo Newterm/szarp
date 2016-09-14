@@ -106,7 +106,7 @@ You should see:
 
   hellowin.exe: PE32 executable for MS Windows (console) Intel 80386 32-bit
 
-To run this program install wine - it is nececcary also for runing configure
+To run this program install wine - it is necessary also for running configure
 later:
 
 # apt-get install wine
