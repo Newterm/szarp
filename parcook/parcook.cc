@@ -232,12 +232,12 @@ void calculate_average(short *probes, int param_no, int probe_type)
 {
 	tParamInfo *pi = ParsInfo[param_no];
 
-	if (pi->param->IsMeterParam()) {
-		sz_log(7, "Updating probe, param %d, probe type: %d, value: %d, count: %d, sum: %lld", param_no, probe_type, probes[param_no], Cnts[param_no][probe_type], Sums[param_no][0]);
-		if (Cnts[param_no][probe_type]) {
-			probes[param_no] = Sums[param_no][0];
+	if (pi->param->IsMeterParam()) { // we don't care for lsw/msw/single as they are accounted for in update section
+		sz_log(7, "Updating meter probe, param %d, probe type: %d, value: %d, count: %d, sum: %lld", param_no, probe_type, probes[param_no], Cnts[param_no][probe_type], Sums[param_no][0]);
+		if (Cnts[param_no][probe_type]) { // if Sums hold valid data
+			probes[param_no] = Sums[param_no][0]; // update new probe with it
 		} else {
-			probes[param_no] = SZARP_NO_DATA;
+			probes[param_no] = SZARP_NO_DATA; // otherwise explicitly no_data (won't mess up parhub as it is called at the end of processing)
 		}
 
 		return; // we don't want to average
@@ -277,10 +277,10 @@ void calculate_average(short *probes, int param_no, int probe_type)
 
 void update_valid_meter(const int i, const int v) {
 	sz_log(7, "Updating value for meter %d, new value: %d", i, v);
-	Cnts[i][0] = 1;
-	Sums[i][0] = v;
+	Sums[i][0] = v; // Update valid data
+	Cnts[i][0] = 1; // and valid data flags
 	Cnts[i][1] = 1;
-	Cnts[i][2] = 1; // valid data flag
+	Cnts[i][2] = 1;
 }
 
 
@@ -293,24 +293,28 @@ template<class OVT> void update_value(int param_no, int probe_type, short* ivt, 
 		if (pi->type == tParamInfo::SINGLE) {
 			if (ivt[param_no] != SZARP_NO_DATA) {
 				if (probe_type == 0) { // we only update on 10secs (always most recent data)
+					sz_log(7, "Probe was valid data");
 					update_valid_meter(param_no, (int) ivt[param_no]);
-				} 
+				} // if no data don't update (nodata handling later on - until the last data block don't pass nodata)
 			} else {
-				if (abuf == 1) Cnts[param_no][probe_type] = 0; // new data block - bring down data flag
+				if (abuf == 0) Cnts[param_no][probe_type] = 0; // last data block and no new data - bring down valid data flag
 			}
 		}
 
 		else if (pi->type != tParamInfo::LSW) { // msw or combined
 			int lsw = ParsInfo[param_no]->lsw;
-			// todo: add doubles! (it is not necessary though)
-			if (ivt[lsw] != SZARP_NO_DATA || ivt[param_no] != SZARP_NO_DATA) {// we have matching 10secs!
-				if (probe_type == 0) {
-					update_valid_meter(lsw, (int) ivt[lsw]); // update both from the same probe! (super important)
+			// todo: add doubles! (it is not necessary though as daemon has to validate data)
+			if (ivt[lsw] != SZARP_NO_DATA || ivt[param_no] != SZARP_NO_DATA) {
+				if (probe_type == 0) { // we have matching 10 secs (probe type 0 and data)
+					update_valid_meter(lsw, (int) ivt[lsw]); // update both from the same probe (super important)
 					update_valid_meter(param_no, (int) ivt[param_no]);
 				} 
 			} else {
-				if (abuf == 1) Cnts[param_no][probe_type] = 0;
-			} // do not update msw when lsw is invalid (let it stay the same)
+				if (abuf == 0) { 
+					Cnts[param_no][probe_type] = 0;
+					Cnts[lsw][probe_type] = 0;
+				} // we need to take down both data flags (lsw's is not calculate elsewhere)
+			}
 		}
 
 		return;
