@@ -206,17 +206,9 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				else
 					xw.XMLError("XML file error: param time_type has invalid value, expected one of: second, nanosecond");
 			} else
-			if (xw.IsAttr("min_lim")) {
-				_acc_min = boost::lexical_cast<short>(attr);
-				_has_limits = true;
-			} else
-			if (xw.IsAttr("max_lim")) {
-				_acc_max = boost::lexical_cast<short>(attr);
-				_has_limits = true;
-			} else
 			if (xw.IsAttr("forbidden")) {
-				_frbdn_val = boost::lexical_cast<short>(attr);
-				_has_fbd = true;
+				_forbidden_val = boost::lexical_cast<short>(attr);
+				_has_forbidden = true;
 			} else {
 				xw.XMLWarningNotKnownAttr();
 			}
@@ -491,22 +483,10 @@ TParam::parseXML(xmlNodePtr node)
 	xmlFree(c);
     }
 
-	c = xmlGetNoNsProp(node, X "min_lim"); 
+    c = xmlGetNoNsProp(node, X "forbidden");
     if (c) {
-		_acc_min = boost::lexical_cast<short>(((char*)c));
-		_has_limits = true;
-		xmlFree(c);
-	}
-    c = xmlGetNoNsProp(node, X "max_lim"); 
-    if (c) {
-		_acc_max = boost::lexical_cast<short>(((char*)c));
-		_has_limits = true;
-		xmlFree(c);
-	}
-    c = xmlGetNoNsProp(node, X "forbidden"); 
-    if (c) {
-		_frbdn_val = boost::lexical_cast<short>(((char*)c));
-		_has_fbd = true;
+		_forbidden_val = boost::lexical_cast<short>(((char*)c));
+		_has_forbidden = true;
 		xmlFree(c);
 	}
 
@@ -734,15 +714,8 @@ TParam::generateXMLNode(void)
 	xmlSetProp(r, X "prec", BUF);
     }
 
-	if (_has_limits) { 
-		ITOA(_acc_min);
-		xmlSetProp(r, X "min_lim", BUF); 
-		ITOA(_acc_max);
-		xmlSetProp(r, X "max_lim", BUF);
-	} 
-	
-	if (_has_fbd) { 
-		ITOA(_frbdn_val);
+	if (_has_forbidden) { 
+		ITOA(_forbidden_val);
 		xmlSetProp(r, X "forbidden", BUF);
 	}
 
@@ -992,7 +965,7 @@ void
 TParam::Configure(const std::wstring name, const std::wstring shortName, const std::wstring drawName, const std::wstring unit,
 			TValue *values, int prec, int baseInd,
 			int inbase,
-			int min_lim, int max_lim, int forbidden)
+			short forbidden_val)
 {
     _name = name;
     _shortName = shortName;
@@ -1013,12 +986,9 @@ TParam::Configure(const std::wstring name, const std::wstring shortName, const s
     else {
 	_param_type = TParam::P_DEFINABLE;
     }
-	_has_limits = _acc_min != min_lim || _acc_max != max_lim;
-	_has_fbd    = _frbdn_val != forbidden;
+	_has_forbidden = _forbidden_val != SZARP_NO_DATA;
 
-	_acc_min = min_lim;
-	_acc_max = max_lim;
-	_frbdn_val = forbidden;
+	_forbidden_val = forbidden_val;
 
     _prepared = false;
     _f_const = false;

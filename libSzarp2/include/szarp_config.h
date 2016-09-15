@@ -54,9 +54,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include "szbase/szbdefines.h"
+#include "szdefines.h"
 #include <libxml/xmlreader.h>
-
-#include <climits>
 
 #define IPK_NAMESPACE_STRING L"http://www.praterm.com.pl/SZARP/ipk"
 
@@ -818,10 +817,8 @@ public:
 	    _values(NULL),
 	    _prec(0),
 		_has_limits(false),
-		_acc_min(SHRT_MIN),
-		_acc_max(SHRT_MAX),
-		_has_fbd(false),
-		_frbdn_val(-32768),
+		_has_forbidden(false),
+		_forbidden_val(SZARP_NO_DATA),
 	    _baseInd(-1),
 	    _inbase(0),
 	    _formula(formula),
@@ -863,9 +860,9 @@ public:
 	 * Configures param attributes.
 	 */
 	void Configure(const std::wstring name, const std::wstring shortName, const std::wstring drawName, const std::wstring unit,
-			TValue *values, int prec = 0, int baseInd = -1, 
+			TValue *values, int prec = 0, int baseInd = -1,
 			int inbase = -1,
-			int min_lim = SHRT_MIN, int max_lim = SHRT_MAX, int forbidden = -32768);
+			short forbidden_val = SZARP_NO_DATA);
 
 	/**
 	 * Generates XML node with param info.
@@ -1012,20 +1009,11 @@ public:
 	 * integer params (non-negative), 0 for non-integer values */
 	int GetPrec() {	return _prec; }
 
-	/** @return minimal accepted value */
-	short GetMin()  { return _acc_min; }
-
-	/** @return maximal accepted value */
-	short GetMax()  { return _acc_max; }
-
-	/** @return whether has limits (minimal / maximal accepted value) */
-	bool hasLimits() { return _has_limits; }
-
 	/** @return whether has limits */
-	short GetForbidden() { return _frbdn_val; }
+	short GetForbidden() const { return _forbidden_val; }
 
 	/** @return whether has a forbidden value */
-	bool hasForbidden() { return _has_fbd; }
+	bool hasForbidden() const { return _has_forbidden; }
 
 	/** @return sets presition (number of digits after comma) for
 	 * integer params (non-negative), 0 for non-integer values */
@@ -1237,11 +1225,8 @@ protected:
 
 	int _prec;	/**< Precision for integer parameters, for others should be 0 */
 
-	bool _has_limits;
-	short _acc_min; // minimal value to be accepted
-	short _acc_max; // maximal value to be accepted
-	bool _has_fbd;
-	short _frbdn_val; // value to treat as NO_DATA
+	bool _has_forbidden;
+	short _forbidden_val; // value to treat as NO_DATA
 
 	int _baseInd;	/**< Index of parameter in data base. Must be uniq among
 			  all params. For params not saved in data base should

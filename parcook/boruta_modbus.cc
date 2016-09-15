@@ -372,6 +372,25 @@ public:
 	virtual unsigned short val() = 0;
 };
 
+class forbidden_proxy: public parcook_modbus_val_op {
+	parcook_modbus_val_op* op;
+	short forbidden;
+public:
+	forbidden_proxy(parcook_modbus_val_op* op, short v): op(op), forbidden(v) {}
+	virtual ~forbidden_proxy() {
+		delete op;
+	}
+
+	virtual unsigned short val() = 0 {
+		auto v = op->val();
+		if (v != forbidden) {
+			return v;
+		}
+
+		return SZARP_NO_DATA;
+	}
+}
+
 //maps values from sender to parcook registers
 class sender_modbus_val_op {
 protected:
@@ -409,14 +428,7 @@ protected:
 	RSET m_received;
 	RSET m_sent;
 
-	short* m_mins;
-	short* m_maxs;
-
-	short* m_fbds;
-	bool* m_limchecks;
-	bool* m_fbdchecks;
-
-	bool m_check_limits;
+	bool m_check_forbidden;
 
 	short* m_read;
 	size_t m_read_count;
@@ -438,6 +450,8 @@ protected:
 	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
 	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
 	int get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
+
+	virtual void pushValOp(parcook_modbus_val_op* op, param);
 
 	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
@@ -464,7 +478,7 @@ protected:
 	void from_sender();
 public:
 	modbus_unit(boruta_driver* driver);
-	~modbus_unit();
+	virtual ~modbus_unit();
 
 	bool register_val_expired(time_t time);
 	virtual int initialize();
@@ -728,10 +742,6 @@ public:
 
 class short_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register* m_reg;
-	bool m_has_limits = false;
-	unsigned short m_min = 0;
-	unsigned short m_max = USHRT_MAX;
-
 public:
 	short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log);
 	virtual unsigned short val();
@@ -739,43 +749,27 @@ public:
 
 class bcd_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register* m_reg;
-	bool m_has_limits = false;
-	unsigned short m_min = 0;
-	unsigned short m_max = USHRT_MAX;
-	int m_prec;
-
 public:
 	bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log);
-	bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log  int prec, , T min, T max);
 	virtual unsigned short val();
 };
 
 template<class T> class long_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg_lsw;
 	modbus_register *m_reg_msw;
-	bool m_has_limits = false;
-	T m_min;
-	T m_max;
-	T m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	long_parcook_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec, bool lsw, driver_logger *log);
-	long_parcook_modbus_val_op(modbus_register *reg_lsw, modbus_register *reg_msw, int prec, bool lsw, driver_logger *log, T min, T max);
 	virtual unsigned short val();
 };
 
 class double_parcook_modbus_val_op: public parcook_modbus_val_op {
 	modbus_register* m_regs[4];
-	bool m_has_limits = false;
-	double m_min = DBL_MIN;
-	double m_max = DBL_MAX;
-	double m_eps = 0;
 	int m_prec;
 	bool m_lsd;
 public:
 	double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log);
-	double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log, double min, double max);
 	void set_regs(modbus_register* regs[4]);
 	unsigned short val();
 };
@@ -783,15 +777,10 @@ public:
 class decimal2_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg_integer;
 	modbus_register *m_reg_fraction;
-	bool m_has_limits = false;
-	float m_min = FLT_MIN;
-	float m_max = FLT_MAX;
-	float m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
-	decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, float min, float max);
 	void set_regs(modbus_register* regs[2]);
 	unsigned short val();
 };
@@ -800,15 +789,10 @@ class decimal3_parcook_modbus_val_op : public parcook_modbus_val_op {
 	modbus_register *m_reg1;
 	modbus_register *m_reg2;
 	modbus_register *m_reg3;
-	bool m_has_limits = false;
-	double m_min = DBL_MIN;
-	double m_max = DBL_MAX;
-	double m_eps = 0;
 	int m_prec;
 	bool m_lsw;
 public:
 	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log);
-	decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, double min, double max);
 	void set_regs(modbus_register* regs[3]);
 	unsigned short val();
 };
@@ -852,39 +836,17 @@ template<class T> long_parcook_modbus_val_op<T>::long_parcook_modbus_val_op(
 	parcook_modbus_val_op(log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec), m_lsw(lsw)
 {}
 
-template<class T> long_parcook_modbus_val_op<T>::long_parcook_modbus_val_op(
-		modbus_register* reg_lsw,
-		modbus_register* reg_msw,
-		int prec,
-		bool lsw,
-		driver_logger *log
-		T min, T max)
-	:
-	parcook_modbus_val_op(log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec), m_lsw(lsw), m_min(min), m_max(max)
-{
-	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
-}
 
 short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log) :
 	parcook_modbus_val_op(log),
 	m_reg(reg) 
 {}
 
-short_parcook_modbus_val_op::short_parcook_modbus_val_op(modbus_register *reg, driver_logger *log, unsigned short min, unsigned short max) :
-	parcook_modbus_val_op(log),
-	m_reg(reg),
-	m_has_limits(true),
-	m_min(min), m_max(max)
-{}
-
-
 unsigned short short_parcook_modbus_val_op::val() {
 	bool valid;
 	unsigned short v = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
-	if (m_has_limits)
-		if (v < m_min || v > m_max) return SZARP_NO_DATA;
 	return v;
 }
 
@@ -893,21 +855,11 @@ bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, drive
 	m_reg(reg) 
 {}
 
-bcd_parcook_modbus_val_op::bcd_parcook_modbus_val_op(modbus_register *reg, driver_logger *log, unsigned short min, unsigned short max) :
-	parcook_modbus_val_op(log),
-	m_reg(reg),
-	m_has_limits(true),
-	m_min(min), m_max(max)
-{}
-
 unsigned short bcd_parcook_modbus_val_op::val() {
 	bool valid;
 	unsigned short val = m_reg->get_val(valid);
 	if (!valid)
 		return SZARP_NO_DATA;
-
-	if (m_has_limits)
-		if (val < m_min || val > m_max) return SZARP_NO_DATA;
 
 	return (val & 0xf)
 		+ ((val >> 4) & 0xf) * 10
@@ -939,9 +891,6 @@ template<class T> unsigned short long_parcook_modbus_val_op<T>::val() {
 	int32_t iv = v.i32 * m_prec; 
 	uint32_t* pv = (uint32_t*) &iv;
 
-	if (m_has_limits)
-		if (iv + m_eps < m_min || iv - m_eps > m_max) return SZARP_NO_DATA;
-
 	m_log->log(10, "Int value: %d, unsigned int: %u", iv, *pv);
 
 	if (m_lsw)
@@ -966,9 +915,6 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 	}
 
 	float* f = (float*) v2;
-	if (m_has_limits)
-		if (*f + m_eps < m_min || *f - m_eps > m_max) return SZARP_NO_DATA;
-
 	int iv = nearbyint(*f * m_prec);	
 	unsigned int* pv = (unsigned int*) &iv;
 
@@ -980,9 +926,7 @@ template<> unsigned short long_parcook_modbus_val_op<float>::val() {
 }
 
 double_parcook_modbus_val_op::double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsd(lsd) {}
-double_parcook_modbus_val_op::double_parcook_modbus_val_op(int prec, bool lsd, driver_logger *log, float min, float max) : parcook_modbus_val_op(log), m_prec(prec), m_lsd(lsd), m_min(min), m_max(max), m_has_limits(true) {
-	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
-};
+
 
 void double_parcook_modbus_val_op::set_regs(modbus_register* regs[4]) {
 	m_regs[0] = regs[0];
@@ -1015,11 +959,7 @@ unsigned short double_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-
 decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {};
-decimal2_parcook_modbus_val_op::decimal2_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, float min, float max) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw), m_min(min), m_max(max), m_has_limits(true) {
-	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
-};
 
 void decimal2_parcook_modbus_val_op::set_regs(modbus_register* regs[2]) {
 	m_reg_integer = regs[0];
@@ -1043,9 +983,6 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 
 	double v = rinteger + (rfraction / 1000.0);
 
-	if (m_has_limits)
-		if (v + m_eps < m_min || v - m_eps > m_max) return SZARP_NO_DATA;
-
 	int32_t iv = nearbyint(v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
 
@@ -1057,10 +994,7 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw), m_has_limits(false), m_min(DBL_MIN), m_max(DBL_MAX), m_eps(0) {};
-decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log, double min, double max) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw), m_has_limits(true), m_min(min), m_max(max) {
-	for (short i = 0, m_eps = 0.1; i <= prec; i++, m_eps/=10);
-};
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {}
 
 void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
 	m_reg1 = regs[0];
@@ -1091,9 +1025,6 @@ unsigned short decimal3_parcook_modbus_val_op::val() {
 	}
 
 	double v = (10000 * r1) + r2 + (r3 / 1000.0);
-
-	if (m_has_limits)
-		if (v + m_eps < m_min || v - m_eps > m_max) return SZARP_NO_DATA;
 
 	int32_t iv = nearbyint(v * m_prec);
 	uint32_t* pv = (uint32_t*) &iv;
@@ -1334,22 +1265,10 @@ bool modbus_unit::create_error_response(unsigned char error, PDU &pdu) {
 
 void modbus_unit::to_parcook() {
 	std::vector<parcook_modbus_val_op*>::iterator k = m_parcook_ops.begin();
-	if (m_check_limits)
-		for (size_t m = 0; m < m_read_count; m++, k++) {
-			short v = (*k)->val();
-			if (m_fbdchecks[m] && v == m_fbds[m]) {
-				m_read[m] = SZARP_NO_DATA;
-				m_log.log(8, "Parcook param no %zu got forbidden value", m, m_read[m]);
-			} else {
-				m_read[m] = v;
-			}
-
-			m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
-		}
 	else for (size_t m = 0; m < m_read_count; m++, k++) {
-			m_read[m] = (*k)->val();
-			m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
-		}
+		m_read[m] = (*k)->val();
+		m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
+	}
 
 }
 
@@ -1369,14 +1288,22 @@ bool modbus_unit::register_val_expired(time_t time) {
 }
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
-modbus_unit::~modbus_unit() { delete m_mins; delete m_maxs; delete m_fbds; delete m_limchecks; delete m_fbdchecks; }
+
+void modbus_unit::pushValOp(parcook_modbus_val_op* op, TParam* p) {
+	if (m_check_forbidden && p->HasForbidden()) {
+		m_parcook_ops.push_back(new forbidden_proxy(op, p->GetForbidden()));
+	} else {
+		m_parcook_ops.push_back(op);
+	}
+}
 
 int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
-	else 
-		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[addr], &m_log));
+	else {
+		pushValOp(new short_parcook_modbus_val_op(m_registers[addr], &m_log), param);
+	}
 
 	if (!send)
 		m_received.insert(std::make_pair(rt, addr));
@@ -1393,7 +1320,7 @@ int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int p
 		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
 		return 1;
 	}
-	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log));
+	pushValOp(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log), param);
 
 	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
 
@@ -1547,8 +1474,7 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 		m_log.log(0, "Unsupported val_op2 attribute value - %s, line %ld", val_op2.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
-	double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
-	m_parcook_ops.push_back(op);
+	pushValOp(new double_parcook_modbus_val_op(prec, is_lsd, &m_log));
 
 	modbus_register* regs[4];
 	for (int i = 0; i < 4; i++) {
@@ -1579,26 +1505,26 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (m_registers.find(msw) == m_registers.end())
 		m_registers[msw] = new modbus_register(this, &m_log);
 
-	if (val_type == "float")  {
-		if (!send) {
-			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
+	if (!send) {
+		if (val_type == "float")  {
+			auto op = new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log)
 			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
+			auto op = new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log);
+			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+		}
+		pushValOp(op, param);
+	} else {
+		if (val_type == "float")  {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
 			m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
 				param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
-		}
-	} else {
-		if (!send) {
-			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
-			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
 			return 1;
 		}
 	}
-
 
 	m_received.insert(std::make_pair(rt, lsw));
 	m_received.insert(std::make_pair(rt, msw));
@@ -1632,7 +1558,7 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 	if (!send) {
 		decimal2_parcook_modbus_val_op* op = new decimal2_parcook_modbus_val_op(prec, is_lsw, &m_log);
 		op->set_regs(regs);
-		m_parcook_ops.push_back(op);
+		pushValOp(op, param);
 		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu",
 			       	SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 	} else {
@@ -1681,7 +1607,7 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 
 	decimal3_parcook_modbus_val_op* op = new decimal3_parcook_modbus_val_op(prec, is_lsw, &m_log);
 	op->set_regs(regs);
-	m_parcook_ops.push_back(op);
+	pushValOp(op, param);
 	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, reg1: %hu, reg2: %hu, reg3: %hu",
 		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
 		is_lsw ? "lsw" : "msw", addrs[0], addrs[1], addrs[2]);
@@ -1805,17 +1731,11 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		return 1;
 	}
 
-	get_xml_extra_prop(node, "limits", m_check_limits, true);
-	if (m_check_limits) {
-		m_maxs = new short[u->GetParamsCount()]();
-		m_mins = new short[u->GetParamsCount()]();
-		m_fbds = new short[u->GetParamsCount()]();
-		m_limchecks = new bool[u->GetParamsCount()]();
-		m_fbdchecks = new bool[u->GetParamsCount()]();
-		m_log.log(7, "Daemon will check limits");
+	get_xml_extra_prop(node, "limits", m_check_forbidden, true);
+	if (m_check_forbidden) {
+		m_log.log(7, "Daemon will check forbidden values");
 	}
 
-	int ind = 0;
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
 		char *expr;
 		if (i == u->GetParamsCount())
@@ -1836,20 +1756,8 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 
 		if (send)
 			sp = sp->GetNext();
-		else {
-			m_log.log(0, "Non-send param, checking limits is %zu", m_check_limits);
-			if (m_check_limits) {
-				m_mins[ind] = p->GetMin();
-				m_maxs[ind] = p->GetMax();
-				m_fbds[ind] = p->GetForbidden();
-				m_limchecks[ind] = p->hasLimits();
-				m_fbdchecks[ind] = p->hasForbidden();
-				m_log.log(7, "Param no %zu, checking limits: %zu, checking for forbidden: %zu", ind, m_limchecks[ind], m_fbdchecks[ind]);
-			}
-
-			ind++;
+		else
 			p = p->GetNext();
-		}
 
 	}
 	xmlXPathFreeContext(xp_ctx);
