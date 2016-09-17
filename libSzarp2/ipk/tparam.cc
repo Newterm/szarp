@@ -1168,7 +1168,8 @@ TParam::calculateConst(const std::wstring& formula)
 			SC::S2A(formula).c_str());
 		return SZB_NODATA;
 	    }
-	    stack[sp++] = wcstod(chptr, NULL);
+            wchar_t *eptr;
+	    stack[sp++] = wcstod(chptr, &eptr);
 	    chptr = wcschr(chptr, L' ');
 	}
 	else {
@@ -1378,7 +1379,8 @@ TParam::PrepareDefinable() throw(TCheckException)
 	// equation or one value?
 	if ((_formula.find(L' ') == std::wstring::npos) && (isdigit(_formula[0]))) {
 	    // one value
-	    _f_const_value = wcstod(_formula.c_str(), NULL) / pow(10.0, GetPrec());
+	    wchar_t* eptr;
+	    _f_const_value = wcstod(_formula.c_str(), &eptr) / pow(10.0, GetPrec());
 	    _f_const = true;
 	    sz_log(9, "Const (%ls), value: %f", _name.c_str(), _f_const_value);
 	}

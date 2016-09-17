@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
   SZARP: SCADA software 
   Darek Marcinkiewicz <reksio@newterm.pl>
@@ -19,26 +20,21 @@
 
 """
 
-from daemon import runner
-import meaner4
+import unittest
+import timedelta
+import StringIO
 
-class Meaner4App:
-	def __init__(self):
-		self.stdin_path = "/dev/null"
-		self.stdout_path = "/var/log/szarp/meaner4.stdin.log"
-		self.stderr_path = "/var/log/szarp/meaner4.stderr.log"
-		self.pidfile_path = "/var/run/meaner4.pid"
-		self.pidfile_timeout = 5
+class EncodeDecodeTest(unittest.TestCase):
+	def test_decode_encode_def(self):
+		v = 33958800
 
-	def run(self):
-		meaner4.go()
+		encoded = timedelta.encode(v)
+		self.assertEqual(4, len(encoded))
 
-if __name__ == "__main__":
-	app = runner.DaemonRunner(Meaner4App())
-	try:
-		app.do_action()
-	except runner.DaemonRunnerStopFailureError as ex:
-		# if the script was not running, the pid file won't be locked
-		# and we don't want the stop action to fail
-		if str(ex).find("not locked") < 0:
-			raise ex
+		self.assertEqual(chr(0xe2), encoded[0])
+		self.assertEqual(chr(0x06), encoded[1])
+		self.assertEqual(chr(0x2b), encoded[2])
+		self.assertEqual(chr(0x90), encoded[3])
+
+		decoded, _ = timedelta.decode(StringIO.StringIO(encoded))
+		self.assertEqual(33958800, decoded)

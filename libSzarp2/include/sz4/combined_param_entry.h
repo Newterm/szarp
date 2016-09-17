@@ -69,7 +69,7 @@ public:
 
 		if (weight_msw) {
 			if (weight_msw > weight_lsw)
-				sum_lsw += sum_type(65535) * (weight_msw - weight_lsw);
+				sum_lsw += sum_type(0x8000) * (weight_msw - weight_lsw);
 
 			sum_type sum = sum_msw * 65536 + sum_lsw;
 

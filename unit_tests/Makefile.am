@@ -30,6 +30,7 @@ unit_tests_SOURCES = \
 		sz4_definable_param.cpp \
 		sz4_wsum.cpp \
 		sz4_live_cache.cpp \
+		sz4_decode_test.cpp \
 		simple_mocks.h 
 
 sz4_extr_simple_SOURCES = sz4_extr_simple.cpp

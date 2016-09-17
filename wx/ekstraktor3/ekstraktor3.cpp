@@ -165,7 +165,17 @@ bool EkstrApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	if (!parser.Found(_T("base"), &base)) {
 		base = wxString();
 	}
-	sz4 = parser.Found(_T("sz4"));
+#ifdef MINGW32 
+	sz4 = true;
+#else
+	sz4 = false;
+#endif
+	if (parser.Found(_T("sz4"))) {
+		sz4 = true;
+	}
+	if (parser.Found(_T("sz3"))) {
+		sz4 = false;
+	}
 	return true;
 }
 
@@ -178,6 +188,7 @@ void EkstrApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddOption(_T("base"), wxEmptyString, _("base name"),
 			 wxCMD_LINE_VAL_STRING);
 	parser.AddSwitch(_T("4"), _T("sz4") , _("use sz4 database engine"));
+	parser.AddSwitch(_T("3"), _T("sz3") , _("use sz3 database engine"));
 }
 
 IMPLEMENT_APP(EkstrApp)

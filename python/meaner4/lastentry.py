@@ -79,9 +79,14 @@ class LastEntry:
 		file_size = file.tell()
 		file.seek(0, 0)
 
+		pos = 0
 		while file.tell() < file_size:
-			value = file.read(self.param.value_lenght)
-			self.value = self.param.value_from_binary(value)
+			binary = file.read(self.param.value_lenght)
+			try:
+				self.value = self.param.value_from_binary(binary)
+			except:
+				file.truncate(pos)	
+				break
 
 			self.value_start_time = self.time
 
@@ -89,5 +94,13 @@ class LastEntry:
 				self.time_size = 0
 				break
 
-			self.read_time(file)	
+			pos = file.tell()
+			try:
+				self.read_time(file)	
+			except:
+				file.truncate(pos)
+				self.time_size = 0
+				break
+
+			pos = file.tell()
 

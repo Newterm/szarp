@@ -55,12 +55,13 @@ function usage {
     echo "    -c - user curl to get szbase_stamp"
     echo "    -b speed limit transfer speed to speed kbps"
     echo "    -t <time> ssh connection timeout"
+    echo "    -4 sync sz4 base"
     echo "    <ADDRESS> - address to connect to"
     echo "    <BASE> - base to send"
     echo
 }
 
-OPTS=`getopt -q -o cb:p:t: -n $ME -- "$@"`
+OPTS=`getopt -q -o 4cb:p:t: -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
     usage
@@ -70,6 +71,7 @@ fi
 eval set -- "$OPTS"
 
 BWLIMIT=0
+APPEND_VERIFY="--append-verify "
 
 while true; do
     case "$1" in
@@ -83,6 +85,10 @@ while true; do
 	    ;;
 	-c)
 	    USE_CURL=yes
+	    shift
+	    ;;
+	-4)
+	    APPEND_VERIFY=""
 	    shift
 	    ;;
 	-t)
@@ -99,6 +105,7 @@ while true; do
 	    ;;
     esac
 done
+SZBASE_EXTRA=" $APPEND_VERIFY --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb"
 
 # sprawdza sposób wywo³ania i ustawia poziom gadatliwo¶ci wyj¶cia
 function get_verbose_level () {

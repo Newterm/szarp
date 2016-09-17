@@ -188,6 +188,9 @@ class Converter:
 		return ret
 
 	def convert_param(self, sp, pname, pno):
+		if not sp.param.written_to_base:
+			return
+
 		value = None
 		prev_time = None
 		param_path = sp.param_path.param_path
@@ -202,11 +205,15 @@ class Converter:
 
 			time, ntime = self.file_start_end_time(path)
 			if sz4_time is not None and sz4_time <= time:
+				if value is not None:
+					sp.update_last_time_unlocked(prev_time, 0)
 				sp.close()
 				return
 			
-			if prev_time is not None and time > prev_time:
-				sp.process_value(sp.param.nan(), time, 0)
+			if prev_time is not None and value is not None and time > prev_time and not sp.param.isnan(value):
+				sp.update_last_time_unlocked(prev_time, 0)
+				value = sp.param.nan()
+				sp.write_value(value, prev_time, 0)
 
 			is_szc = path.endswith(".szc")
 			delta = 10 if is_szc else 600 
@@ -214,19 +221,22 @@ class Converter:
 			values = self.read_file(param_path, path, is_szc)
 			for v in values:
 				if value is None:
-					sp.process_value(v, time, 0)
-					v = value
-
-				if value != v:
+					if not sp.param.isnan(v):
+						sp.process_value(v, time, 0)
+						value = v
+				elif value != v:
 					sp.update_last_time_unlocked(time, 0)
 					sp.write_value(v, time, 0)
 					value = v
+
 
 				time += delta
 				if not time < ntime:
 					break
 
  				if sz4_time is not None and sz4_time <= time:
+					if value is not None:
+						sp.update_last_time_unlocked(time, 0)
 					sp.close()
 					return
 				
