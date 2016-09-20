@@ -3,8 +3,8 @@ SZARP - System Zbierania Archiwizacji i Prezentacji danych
 
 #### http://www.szarp.org/ ####
 
-*Copyright © 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa*
-*Copyright © 1995-2009 Praterm S.A.*
+*Copyright © 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa*  
+*Copyright © 1995-2009 Praterm S.A.*  
 *Copyright © 1991-2016 various authors (see [AUTHORS](AUTHORS) file)*
 
 Table of contents
