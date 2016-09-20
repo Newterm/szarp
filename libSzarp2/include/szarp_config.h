@@ -911,7 +911,7 @@ public:
 
 	const std::wstring& GetSumUnit() { return _sum_unit; }
 
-	const bool& IsMeterParam() { return _meter_par; }
+	const bool IsMeterParam() const { return _meter_par; }
 
 	const double& GetSumDivisor() { return _sum_divisor; }
 
