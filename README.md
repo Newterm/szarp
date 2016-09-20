@@ -3,9 +3,9 @@ SZARP - System Zbierania Archiwizacji i Prezentacji danych
 
 #### http://www.szarp.org/ ####
 
-*Copyright © 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa*  
-*Copyright © 1995-2009 Praterm S.A.*  
-*Copyright © 1991-2015 various authors (see [AUTHORS](AUTHORS) file)*  
+*Copyright © 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa*
+*Copyright © 1995-2009 Praterm S.A.*
+*Copyright © 1991-2016 various authors (see [AUTHORS](AUTHORS) file)*
 
 Table of contents
 -----------------
@@ -68,10 +68,10 @@ is also a web server available for serving parameters' values through HTTP.
 
 In the third layer there are **client programs**, including:
 
-* *Reporter* - a program for viewing current (10-seconds averages) values of
+* *Raporter* - a program for viewing current (10-seconds averages) values of
   parameters.
 * *Controller* - a program for signalizing parameters' values irregularities.
-* *Extractor* - a program for exporting data from databases to spreadsheet
+* *Ekstraktor* - a program for exporting data from databases to spreadsheet
   files.
 * *Draw* - a powerful tool for viewing and analyzing historical data.
 
