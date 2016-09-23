@@ -7,9 +7,9 @@ confinement: strict
 
 apps:
   draw3:
-    command: opt/szarp/draw3
+    command: opt/szarp/bin/draw3
   szrsync:
-    command: opt/szarp/szrsync
+    command: opt/szarp/bin/szrsync
 parts:
   szarp-terminal:
     plugin: autotools
