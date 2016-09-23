@@ -33,6 +33,7 @@ from ipk import IPK
 import unicodedata
 import argparse
 from argparse import RawTextHelpFormatter
+import shlex
 
 class Sz4Writer(MeanerBase):
 	def __init__(self, path):
@@ -50,17 +51,10 @@ class Sz4Writer(MeanerBase):
 		f = open(path, 'r')
 
 		for line in f:
-			m = re.search("\"(.*?)\"",line).group()
-			if m.startswith('"') and m.endswith('"'):
-				m = m[1:-1]
-			if m.startswith(' '):
-				m = m[1:]
-			pname = m
-
-			spl = line.split(" ")
-			time_string = spl[-6] + "-" + spl[-5] + "-" + spl[-4] + " " + spl[-3] + ":" + spl[-2]
-
-			value_string = spl[-1]
+			spl = shlex.split(line)
+			pname = spl[0]
+			time_string = spl[1] + "-" + spl[2] + "-" + spl[3] + " " + spl[4] + ":" + spl[5]
+			value_string = spl[6]
 
 			pindex = self.name2index[unicode(pname, 'utf-8')]
 			if pindex is None:
@@ -93,9 +87,9 @@ class Sz4Writer(MeanerBase):
 			sparam.process_value(value, int(time_sec), time_nanosec)
 
 parser = argparse.ArgumentParser(description='TIME_FORMAT command line argument is an optional time format which doesn\'t work with .szw input file format.\n\nSZARP database writer.\n\nExample of use:\n		./sz4writer.py /opt/szarp/base /opt/szarp/base/file.szw\n\nExample of time format:\n		"%Y-%m-%d %H:%M:%S"\n	Where:\n		%Y - year\n		%m - month\n		%d - day\n		%H - hour\n		%M - minute\n		%S - second\n	For more directives check out the python "datetime" documentation', formatter_class=RawTextHelpFormatter)
-parser.add_argument('[PATH_TO_BASE]', help = 'path to base')
-parser.add_argument('[INPUT_FILE]', help = 'path to file which is going to be written as .sz4')
-parser.add_argument('[TIME_FORMAT - optional]', nargs='?')
+parser.add_argument('[path to base]', help = 'path to base')
+parser.add_argument('[input file]', help = 'path to file which is going to be written as .sz4')
+parser.add_argument('[time format]', nargs='?')
 if len(sys.argv)==1:
 	parser.print_help()
 	sys.exit(1)
@@ -108,5 +102,5 @@ if __name__ == "__main__":
 
 	if ".szw" in sys.argv[2]:
 		writer.process_szw_file(sys.argv[2], "%Y-%m-%d %H:%M" if len(sys.argv) == 3 else sys.argv[3])
-	else:
+	elif ".sz4" in sys.argv[2]:
 		writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
