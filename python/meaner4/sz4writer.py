@@ -26,7 +26,6 @@ sys.path.append("/opt/szarp/lib/python/meaner4")
 import os
 import time
 from datetime import datetime
-import re
 
 from meanerbase import MeanerBase
 from ipk import IPK
@@ -104,3 +103,5 @@ if __name__ == "__main__":
 		writer.process_szw_file(sys.argv[2], "%Y-%m-%d %H:%M" if len(sys.argv) == 3 else sys.argv[3])
 	elif ".sz4" in sys.argv[2]:
 		writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
+	else:
+		print "Wrong input file format ! Aborting"
