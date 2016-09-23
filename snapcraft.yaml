@@ -4,10 +4,16 @@ summary: SZARP Terminal application
 description: SZARP is Linux SCADA software - system for data acquisition, archiving and raporting.
 confinement: strict
 
+
+apps:
+  draw3:
+    opt/szarp/draw3
+  szrsync:
+    opt/szarp/szrsync
 parts:
   szarp-terminal:
     plugin: autotools
-    source: git://github.com/Newterm/szarp
+    source: .
     stage-packages:
       - cpp
       - cpp-5
