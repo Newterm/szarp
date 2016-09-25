@@ -8,7 +8,9 @@ confinement: strict
 apps:
   draw3:
     command: opt/szarp/bin/draw3
+    plugs: [x11, unity7]
   szrsync:
+    plugs: [network, network-bind]
     command: opt/szarp/bin/szrsync
 parts:
   szarp-terminal:
