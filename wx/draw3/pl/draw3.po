@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-14 11:27+0200\n"
+"POT-Creation-Date: 2016-09-07 11:08+0200\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -25,8 +25,7 @@ msgstr "Wczytywanie konfiguracji: "
 msgid "Users' sets"
 msgstr "Zestawy użytkowników"
 
-#: cfgmgr.cpp:828 cfgmgr.cpp:863
-#: cfgmgr.cpp:887 cfgmgr.cpp:911
+#: cfgmgr.cpp:828 cfgmgr.cpp:863 cfgmgr.cpp:887 cfgmgr.cpp:911
 msgid "Local sets"
 msgstr "Zestawy lokalne"
 
@@ -37,19 +36,14 @@ msgstr ""
 "Nie udało się stworzyć katalogu %s. Zestawy definiowane nie mogą zostać "
 "zapisane."
 
-#: cfgmgr.cpp:1208 drawfrm.cpp:716
-#: drawpsc.cpp:426 drawpsc.cpp:439
-#: drawpsc.cpp:448 drawpsc.cpp:457
-#: paramslist.cpp:269 paramslist.cpp:305
-#: paramslist.cpp:322 paredit.cpp:218
-#: remarks.cpp:1349 remarks.cpp:1450
-#: remarks.cpp:1496 remarks.cpp:1544
-#: seldraw.cpp:569
+#: cfgmgr.cpp:1208 drawfrm.cpp:716 drawpsc.cpp:426 drawpsc.cpp:439
+#: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
+#: paramslist.cpp:322 paredit.cpp:219 remarks.cpp:1349 remarks.cpp:1450
+#: remarks.cpp:1496 remarks.cpp:1544 seldraw.cpp:569
 msgid "Error"
 msgstr "Błąd"
 
-#: cfgmgr.cpp:1384 paredit.cpp:643
-#: GUI/resources.xrc:1503
+#: cfgmgr.cpp:1384 database.cpp:656 paredit.cpp:750 GUI/resources.xrc:1503
 msgid "User:Param:"
 msgstr "Parametr:Użytkownika:"
 
@@ -66,8 +60,7 @@ msgstr "SZARP plik z definicją zestawu (*.xds)|*.xds|All files (*.*)|*.*"
 msgid "Export of set to file: %s failed"
 msgstr "Export zestawu do pliku %s nie powiódł się"
 
-#: cfgmgr.cpp:1433 defcfg.cpp:2014
-#: defcfg.cpp:2021 paramslist.cpp:243
+#: cfgmgr.cpp:1433 defcfg.cpp:2014 defcfg.cpp:2021 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
 msgid "Error!"
 msgstr "Błąd"
@@ -77,8 +70,7 @@ msgstr "Błąd"
 msgid "%s (%s)"
 msgstr ""
 
-#: cfgmgr.cpp:1447 cfgmgr.cpp:1449
-#: cfgmgr.cpp:1518
+#: cfgmgr.cpp:1447 cfgmgr.cpp:1449 cfgmgr.cpp:1518
 msgid "imported"
 msgstr "zaimportowany"
 
@@ -129,8 +121,7 @@ msgstr "Nie udało się zaimporować zestawu z pliku :%s"
 msgid "Operation failed."
 msgstr "Operacja się nie powiodła."
 
-#: dbmgr.cpp:153 dbmgr.cpp:174
-#: dbmgr.cpp:177
+#: dbmgr.cpp:153 dbmgr.cpp:174 dbmgr.cpp:177
 #, c-format
 msgid "Error in connection with probe server: %s"
 msgstr "Bład połączenia z serwerem próbek: %s"
@@ -205,63 +196,51 @@ msgstr "Operacja importu wykresów zakończyła się poprawnie."
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 drawview.cpp:205
-#: gcdcgraphs.cpp:717 glgraphs.cpp:1359
+#: disptime.cpp:74 drawview.cpp:205 gcdcgraphs.cpp:717 glgraphs.cpp:1359
 msgid "january"
 msgstr "styczeń"
 
-#: disptime.cpp:75 drawview.cpp:208
-#: gcdcgraphs.cpp:720 glgraphs.cpp:1362
+#: disptime.cpp:75 drawview.cpp:208 gcdcgraphs.cpp:720 glgraphs.cpp:1362
 msgid "february"
 msgstr "luty"
 
-#: disptime.cpp:76 drawview.cpp:211
-#: gcdcgraphs.cpp:723 glgraphs.cpp:1365
+#: disptime.cpp:76 drawview.cpp:211 gcdcgraphs.cpp:723 glgraphs.cpp:1365
 msgid "march"
 msgstr "marzec"
 
-#: disptime.cpp:77 drawview.cpp:214
-#: gcdcgraphs.cpp:726 glgraphs.cpp:1368
+#: disptime.cpp:77 drawview.cpp:214 gcdcgraphs.cpp:726 glgraphs.cpp:1368
 msgid "april"
 msgstr "kwiecień"
 
-#: disptime.cpp:78 drawview.cpp:217
-#: gcdcgraphs.cpp:729 glgraphs.cpp:1371
+#: disptime.cpp:78 drawview.cpp:217 gcdcgraphs.cpp:729 glgraphs.cpp:1371
 msgid "may"
 msgstr "maj"
 
-#: disptime.cpp:79 drawview.cpp:220
-#: gcdcgraphs.cpp:732 glgraphs.cpp:1374
+#: disptime.cpp:79 drawview.cpp:220 gcdcgraphs.cpp:732 glgraphs.cpp:1374
 msgid "june"
 msgstr "czerwiec"
 
-#: disptime.cpp:80 drawview.cpp:223
-#: gcdcgraphs.cpp:735 glgraphs.cpp:1377
+#: disptime.cpp:80 drawview.cpp:223 gcdcgraphs.cpp:735 glgraphs.cpp:1377
 msgid "july"
 msgstr "lipiec"
 
-#: disptime.cpp:81 drawview.cpp:226
-#: gcdcgraphs.cpp:738 glgraphs.cpp:1380
+#: disptime.cpp:81 drawview.cpp:226 gcdcgraphs.cpp:738 glgraphs.cpp:1380
 msgid "august"
 msgstr "sierpień"
 
-#: disptime.cpp:82 drawview.cpp:229
-#: gcdcgraphs.cpp:741 glgraphs.cpp:1383
+#: disptime.cpp:82 drawview.cpp:229 gcdcgraphs.cpp:741 glgraphs.cpp:1383
 msgid "septermber"
 msgstr "wrzesień"
 
-#: disptime.cpp:83 drawview.cpp:232
-#: gcdcgraphs.cpp:744 glgraphs.cpp:1386
+#: disptime.cpp:83 drawview.cpp:232 gcdcgraphs.cpp:744 glgraphs.cpp:1386
 msgid "october"
 msgstr "październik"
 
-#: disptime.cpp:84 drawview.cpp:235
-#: gcdcgraphs.cpp:747 glgraphs.cpp:1389
+#: disptime.cpp:84 drawview.cpp:235 gcdcgraphs.cpp:747 glgraphs.cpp:1389
 msgid "november"
 msgstr "listopad"
 
-#: disptime.cpp:85 drawview.cpp:238
-#: gcdcgraphs.cpp:750 glgraphs.cpp:1392
+#: disptime.cpp:85 drawview.cpp:238 gcdcgraphs.cpp:750 glgraphs.cpp:1392
 msgid "december"
 msgstr "grudzień"
 
@@ -273,94 +252,111 @@ msgstr " %Y%n godzina %H:%M"
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n godz. %H:%M"
 
-#: drawapp.cpp:275
+#: drawapp.cpp:289
 msgid "Setting locale..."
 msgstr "Ładowanie ustawień lokalizacyjnych..."
 
-#: drawapp.cpp:280
+#: drawapp.cpp:294
 msgid "Reading params from szarp.cfg..."
 msgstr "Ładowanie parametrów z szarp.cfg..."
 
-#: drawapp.cpp:286
+#: drawapp.cpp:300
 msgid "Initializing IPKContainer..."
 msgstr "Inicjalizacja kontenera IPK..."
 
-#: drawapp.cpp:294
+#: drawapp.cpp:308
 msgid "Initializing szbase..."
 msgstr "Inicjalizacja szbase..."
 
-#: drawapp.cpp:296
+#: drawapp.cpp:310
 msgid "Initializing XML Resources..."
 msgstr "Inicjalizacja zasobów XML..."
 
-#: drawapp.cpp:300
+#: drawapp.cpp:314
 msgid "Starting database query mechanism..."
 msgstr "Uruchamianie mechanizmu odpytywania bazy..."
 
-#: drawapp.cpp:332
+#: drawapp.cpp:352
 msgid "Loading configuration..."
 msgstr "Wczytywanie konfiguracji..."
 
-#: drawapp.cpp:358
+#: drawapp.cpp:378
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file."
 msgstr ""
 "Błąd podczas ładowania domyślnej konfiguracji. Sprawdź swój plik szarp.cfg"
 
-#: drawapp.cpp:364
+#: drawapp.cpp:384
 msgid "Missing starting base specification."
 msgstr "Nie określono bazy startowej"
 
-#: drawapp.cpp:384
+#: drawapp.cpp:404
 msgid "Initizalizing remarks..."
 msgstr "Inicjalizacja obsługi komentarzy..."
 
-#: drawapp.cpp:389
+#: drawapp.cpp:409
 msgid "Creating Frame Manager..."
 msgstr "Tworzenie menadżera ramek..."
 
-#: drawapp.cpp:424
+#: drawapp.cpp:439
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw wersja 3.00."
 
-#: drawapp.cpp:427
+#: drawapp.cpp:442
 msgid "X windows geometry specification"
 msgstr "specyfikacja geometrii jak dla X windows"
 
-#: drawapp.cpp:432 testapp.cpp:189
+#: drawapp.cpp:447 testapp.cpp:186
 msgid "base name"
 msgstr "nazwa bazy"
 
-#: drawapp.cpp:437 testapp.cpp:194
+#: drawapp.cpp:452 testapp.cpp:191
 msgid "open url in existing window"
 msgstr "otwórz url w istniejącym oknie"
 
-#: drawapp.cpp:440
+#: drawapp.cpp:455
 msgid "open window in full screen mode"
 msgstr ""
 
-#: drawapp.cpp:442 testapp.cpp:197
+#: drawapp.cpp:457 testapp.cpp:194
 msgid "verbose logging"
 msgstr "gadatliwe logowanie"
 
-#: drawapp.cpp:444
+#: drawapp.cpp:459
 msgid "use sz4 base format"
 msgstr ""
 
-#: drawapp.cpp:447 testapp.cpp:200
+#: drawapp.cpp:461
+msgid "use sz3 base format"
+msgstr ""
+
+#: drawapp.cpp:463
+msgid "use iks server"
+msgstr ""
+
+#: drawapp.cpp:466 testapp.cpp:197
 msgid "print version number and exit"
 msgstr "wypisz numer wersji i wyjdź"
 
-#: drawapp.cpp:451 testapp.cpp:204
+#: drawapp.cpp:469
+#, fuzzy
+msgid "IKS server address"
+msgstr "Adres serwera próbek"
+
+#: drawapp.cpp:472
+msgid "IKS server port"
+msgstr "IKS serwer port"
+
+#: drawapp.cpp:475 testapp.cpp:201
 msgid "libparnt value initialization"
 msgstr ""
 
-#: drawapp.cpp:454 testapp.cpp:207
+#: drawapp.cpp:478 testapp.cpp:204
 msgid "debug level"
 msgstr "poziom komunikatów debugujących"
 
-#: drawapp.cpp:490
+#: drawapp.cpp:509
 msgid "V"
 msgstr ""
 
@@ -424,11 +420,11 @@ msgstr "Nie zdefiniowane przez użytkownika"
 msgid "You may only remove user defined sets."
 msgstr "Możesz edytować tylko zestawy zdefiniowane przez użytkownika."
 
-#: drawfrm.cpp:292 incsearch.cpp:752
+#: drawfrm.cpp:292 incsearch.cpp:754
 msgid "Do you really want to remove this set?"
 msgstr "Czy na pewno chcesz usunąć ten zestawy?"
 
-#: drawfrm.cpp:293 incsearch.cpp:753
+#: drawfrm.cpp:293 incsearch.cpp:755
 msgid "Set removal"
 msgstr "Usunięcie zestawu"
 
@@ -465,85 +461,83 @@ msgstr ""
 "Konfiguracja '%s' nie może zostać przeładowana. Przypuszczalnie nowa wersja "
 "konfiguracji zawiera błędy."
 
-#: drawfrm.cpp:880
+#: drawfrm.cpp:887
 msgid "English"
 msgstr "Angielski"
 
-#: drawfrm.cpp:881
+#: drawfrm.cpp:888
 msgid "French"
 msgstr "Francuski"
 
-#: drawfrm.cpp:882
+#: drawfrm.cpp:889
 msgid "German"
 msgstr "Niemiecki"
 
-#: drawfrm.cpp:883
+#: drawfrm.cpp:890
 msgid "Hungarian"
 msgstr "Węgierski"
 
-#: drawfrm.cpp:884
+#: drawfrm.cpp:891
 msgid "Italian"
 msgstr "Włoski"
 
-#: drawfrm.cpp:885
+#: drawfrm.cpp:892
 msgid "Polish"
 msgstr "Polski"
 
-#: drawfrm.cpp:886
+#: drawfrm.cpp:893
 msgid "Serbian"
 msgstr "Serbski"
 
-#: drawfrm.cpp:891 drawfrm.cpp:897
+#: drawfrm.cpp:898 drawfrm.cpp:904
 msgid "automatic"
 msgstr "automatyczny"
 
-#: drawfrm.cpp:896
+#: drawfrm.cpp:903
 msgid "Current language is "
 msgstr "Obecny język to "
 
-#: drawfrm.cpp:899
+#: drawfrm.cpp:906
 msgid "Choose language"
 msgstr "Wybierz język"
 
-#: drawfrm.cpp:925
+#: drawfrm.cpp:932
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Aktualny język został zmieniony. Musisz zrestartować program draw3"
 
-#: drawfrm.cpp:926
+#: drawfrm.cpp:933
 msgid "Language changed"
 msgstr "Język zmieniony"
 
-#: drawfrm.cpp:934
+#: drawfrm.cpp:941
 msgid "Classic"
 msgstr "Klasyczny"
 
-#: drawfrm.cpp:935
+#: drawfrm.cpp:942
 msgid "'3D'"
 msgstr ""
 
-#: drawfrm.cpp:936
+#: drawfrm.cpp:943
 msgid "Antialiased"
 msgstr "Wykresy antyaliasowane"
 
-#: drawfrm.cpp:947
+#: drawfrm.cpp:954
 msgid "currently selected"
 msgstr "aktualnie wybrany"
 
-#: drawfrm.cpp:949
+#: drawfrm.cpp:956
 msgid "Choose graphs window style"
 msgstr "Wybierz styl okna z wykresami"
 
-#: drawfrm.cpp:955 drawfrm.cpp:959
-#: drawfrm.cpp:963
+#: drawfrm.cpp:962 drawfrm.cpp:966 drawfrm.cpp:970
 msgid "You need to restart application for this change to take effect."
 msgstr "Musisz ponownie uruchomić program draw3, by ta zmiana odniosła skutek."
 
-#: drawfrm.cpp:955 drawfrm.cpp:959
-#: drawfrm.cpp:963
+#: drawfrm.cpp:962 drawfrm.cpp:966 drawfrm.cpp:970
 msgid "Graphs view changed."
 msgstr "Widok okna wykresów zmieniony."
 
-#: drawfrm.cpp:974 drawfrm.cpp:998
+#: drawfrm.cpp:981 drawfrm.cpp:1005
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
@@ -551,49 +545,47 @@ msgstr ""
 "Usługa komentarzy nie została skonfigurowana. Musisz podać nazwę użytkownika "
 "hasło i adres serwera by móc korzystać z komentarzy."
 
-#: drawfrm.cpp:974 drawfrm.cpp:998
+#: drawfrm.cpp:981 drawfrm.cpp:1005
 msgid "Remarks not configured."
 msgstr "Komentarze nie są skonfigurowane."
 
-#: drawfrm.cpp:1050
+#: drawfrm.cpp:1057
 msgid "Enter password:"
 msgstr "Wprowadź hasło:"
 
-#: drawfrm.cpp:1051
+#: drawfrm.cpp:1058
 msgid "New password"
 msgstr "Nowe hasło"
 
-#: drawfrm.cpp:1165
+#: drawfrm.cpp:1172
 msgid "Choose file to extract data to"
 msgstr "Wybierz plik docelowy"
 
-#: drawfrm.cpp:1168
+#: drawfrm.cpp:1175
 msgid "Comma Separated Values (*.csv)"
 msgstr ""
 
-#: drawfrm.cpp:1225 incsearch.cpp:798
-#: incsearch.cpp:811 paramslist.cpp:351
+#: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Error in communicatoin with server: "
 msgstr "Bład komunikacji z serwerem: %s"
 
-#: drawfrm.cpp:1225 incsearch.cpp:798
-#: incsearch.cpp:811 paramslist.cpp:351
+#: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Failed to update paramaters"
 msgstr "Nie udało się zmienić parametru"
 
-#: drawfrm.cpp:1231
+#: drawfrm.cpp:1238
 msgid "Network params and sets were updated"
 msgstr "Parametry i/lub zestawy sieciowe zostały zaktualizowane"
 
-#: drawfrm.cpp:1231
+#: drawfrm.cpp:1238
 msgid "Params and sets updated."
 msgstr "Parametry i zestawy zaktualizowane."
 
-#: drawfrm.cpp:1234
+#: drawfrm.cpp:1241
 msgid "There are no new network params or sets"
 msgstr "Nie ma nowych parametrów/zestawów sieciowych"
 
-#: drawfrm.cpp:1234
+#: drawfrm.cpp:1241
 msgid "No new params and sets."
 msgstr "Brak nowych parametrów/zestawów."
 
@@ -601,10 +593,8 @@ msgstr "Brak nowych parametrów/zestawów."
 msgid "You must provide a draw name."
 msgstr "Musisz podać nazwę wykresu."
 
-#: drawpick.cpp:166 drawpick.cpp:172
-#: drawpick.cpp:178 drawpick.cpp:186
-#: drawpick.cpp:194 drawpick.cpp:200
-#: drawpick.cpp:208 drawpick.cpp:217
+#: drawpick.cpp:166 drawpick.cpp:172 drawpick.cpp:178 drawpick.cpp:186
+#: drawpick.cpp:194 drawpick.cpp:200 drawpick.cpp:208 drawpick.cpp:217
 #: drawpick.cpp:229
 msgid "Wrong value"
 msgstr "Nieprawidłowa wartość"
@@ -652,8 +642,7 @@ msgstr ""
 "mniejsza niż wartość 'Koniec skalowanego wykresu' oraz większa lub równa "
 "początkowi osi wykresu"
 
-#: drawpick.cpp:369 incsearch.cpp:713
-#: GUI/resources.xrc:297
+#: drawpick.cpp:369 incsearch.cpp:715 GUI/resources.xrc:297
 msgid "Edit"
 msgstr "Edytuj"
 
@@ -677,7 +666,7 @@ msgstr "Wartość minimalna"
 msgid "Max value"
 msgstr "Wartość maksymalna"
 
-#: drawpick.cpp:471 incsearch.cpp:712
+#: drawpick.cpp:471 incsearch.cpp:714
 msgid "Remove"
 msgstr "Usuń"
 
@@ -713,8 +702,7 @@ msgstr "Czy na pewno chcesz usunąć ten wykres?"
 msgid "Removal"
 msgstr "Usunięcie"
 
-#: drawpick.cpp:712 drawpick.cpp:900
-#: drawpick.cpp:979
+#: drawpick.cpp:712 drawpick.cpp:900 drawpick.cpp:979
 msgid "Editing parameter set "
 msgstr "Edycja zestawu parametrów"
 
@@ -750,11 +738,11 @@ msgstr "Musisz ustawić tytuł."
 msgid "No title"
 msgstr "Brak tytułu"
 
-#: drawpick.cpp:863 paredit.cpp:811
+#: drawpick.cpp:863 paredit.cpp:918
 msgid "Error while editing network set: "
 msgstr "Błąd podczas edycji zestawu sieciowego:"
 
-#: drawpick.cpp:863 paredit.cpp:811
+#: drawpick.cpp:863 paredit.cpp:918
 msgid "Editing network set error"
 msgstr "Błąd edycji parametru"
 
@@ -762,8 +750,7 @@ msgstr "Błąd edycji parametru"
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten zestaw."
 
-#: drawpick.cpp:871 paredit.cpp:820
-#: remarks.cpp:1528
+#: drawpick.cpp:871 paredit.cpp:927 remarks.cpp:1528
 msgid "Insufficient privileges"
 msgstr "Brak uprawnień"
 
@@ -775,104 +762,127 @@ msgstr "Nie udało się pobrać zestawów sieciowych: %s"
 msgid "Failed to fetch network sets"
 msgstr "Nie udało się pobrać zestawów sieciowych"
 
-#: drawpick.cpp:890 drawpick.cpp:972
-#: drawpick.cpp:1002 drawpnl.cpp:644
-#: drawpnl.cpp:679 drawtb.cpp:78
-#: paredit.cpp:679
+#: drawpick.cpp:890 drawpick.cpp:972 drawpick.cpp:1002 drawpnl.cpp:641
+#: drawpnl.cpp:676 drawtb.cpp:78 paredit.cpp:786
 msgid "Find"
 msgstr "Wyszukaj"
 
-#: drawprint.cpp:713
+#: drawprint.cpp:592
+msgid ""
+"\n"
+"/ISOLatin1Encoding [\n"
+"/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/space/exclam/quotedbl/numbersign/"
+"dollar/percent/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/"
+"minus/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/"
+"semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/"
+"S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/asciicircum/underscore/"
+"quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/"
+"braceright/asciitilde/.notdef/.notdef/Lslash/lslash/Nacute/nacute/aogonek/"
+"Cacute/cacute/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/dotlessi/grave/acute/Oacute/tilde/macron/breve/dotaccent/Eogonek/"
+"eogonek/Sacute/sacute/.notdef/hungarumlaut/ogonek/caron/space/exclamdown/"
+"cent/sterling/currency/yen/brokenbar/section/dieresis/copyright/ordfeminine/"
+"guillemotleft/logicalnot/hyphen/registered/macron/degree/plusminus/"
+"twosuperior/oacute/acute/mu/paragraph/periodcentered/.notdef/Zacute/zacute/."
+"notdef/z/onehalf/threequarters/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/Ograve/Oacute/.notdef/.notdef/.notdef/"
+"multiply/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/."
+"notdef/oacute/.notdef/.notdef/.notdef/divide/.notdef/.notdef/.notdef/."
+"notdef/.notdef/.notdef/.notdef/.notdef\n"
+"] def\n"
+msgstr ""
+
+#: drawprint.cpp:737
 msgid "For period: "
 msgstr "Za okres: "
 
-#: drawprint.cpp:716
+#: drawprint.cpp:740
 msgid "DECADE "
 msgstr "DEKADA"
 
-#: drawprint.cpp:719
+#: drawprint.cpp:743
 msgid "YEAR "
 msgstr "ROK "
 
-#: drawprint.cpp:722
+#: drawprint.cpp:746
 msgid "MONTH "
 msgstr "MIESIAC "
 
-#: drawprint.cpp:725
+#: drawprint.cpp:749
 msgid "WEEK "
 msgstr "TYDZIEŃ "
 
-#: drawprint.cpp:728
+#: drawprint.cpp:752
 msgid "DAY "
 msgstr "DZIEŃ "
 
-#: drawprint.cpp:731
+#: drawprint.cpp:755
 msgid "HOUR "
 msgstr "GODZINA "
 
-#: drawprint.cpp:734
+#: drawprint.cpp:758
 msgid "5MINUTE "
 msgstr "5 MINUT"
 
-#: drawprint.cpp:737
+#: drawprint.cpp:761
 msgid "MINUTE "
 msgstr "MINUTA"
 
-#: drawprint.cpp:740
+#: drawprint.cpp:764
 msgid "30SEC "
 msgstr ""
 
-#: drawprint.cpp:743
+#: drawprint.cpp:767
 msgid "SEASON "
 msgstr "SEZON "
 
-#: drawprint.cpp:757
+#: drawprint.cpp:781
 msgid "From: "
 msgstr "Od:"
 
-#: drawprint.cpp:759
+#: drawprint.cpp:783
 msgid " to: "
 msgstr " do: "
 
-#: drawprint.cpp:806 drawprint.cpp:1064
-#: drawprint.cpp:1081 infowdg.cpp:294
+#: drawprint.cpp:830 drawprint.cpp:1088 drawprint.cpp:1105 infowdg.cpp:294
 msgid "min.="
 msgstr "min.="
 
-#: drawprint.cpp:807 drawprint.cpp:1065
-#: drawprint.cpp:1082 infowdg.cpp:295
+#: drawprint.cpp:831 drawprint.cpp:1089 drawprint.cpp:1106 infowdg.cpp:295
 msgid "avg.="
 msgstr "śr.="
 
-#: drawprint.cpp:808 drawprint.cpp:1066
-#: drawprint.cpp:1083 infowdg.cpp:297
+#: drawprint.cpp:832 drawprint.cpp:1090 drawprint.cpp:1107 infowdg.cpp:297
 msgid "max.="
 msgstr "max.="
 
-#: drawprint.cpp:1067 drawprint.cpp:1084
+#: drawprint.cpp:1091 drawprint.cpp:1108
 msgid "s.d.="
 msgstr "odchyl. stand.="
 
-#: drawprint.cpp:1091 drawprint.cpp:1350
-#: summwin.cpp:285
+#: drawprint.cpp:1115 drawprint.cpp:1374 summwin.cpp:285
 msgid "From:"
 msgstr "Od:"
 
-#: drawprint.cpp:1100 drawprint.cpp:1359
-#: summwin.cpp:286
+#: drawprint.cpp:1124 drawprint.cpp:1383 summwin.cpp:286
 msgid "To:"
 msgstr "Do:"
 
-#: drawprint.cpp:1113
+#: drawprint.cpp:1137
 msgid "X/Y Correlation:"
 msgstr "Korelacja X/Y:"
 
-#: drawprint.cpp:1125
+#: drawprint.cpp:1149
 msgid "X/Y Rank correlation:"
 msgstr "Korel. rang. X/Y:"
 
-#: drawprint.cpp:1180 drawprint.cpp:1226
-#: drawprint.cpp:1417
+#: drawprint.cpp:1204 drawprint.cpp:1250 drawprint.cpp:1441
 msgid "Print Preview"
 msgstr "Podgląd wydruku"
 
@@ -904,8 +914,7 @@ msgstr ""
 "Niezgodność konfiguracji, nie możesz ustawiać wartości parametrów. Spróbuj "
 "zsynchronizować dane."
 
-#: drawswdg.cpp:338 statdiag.cpp:345
-#: xydiag.cpp:297
+#: drawswdg.cpp:338 statdiag.cpp:345 xydiag.cpp:297
 msgid "Select date"
 msgstr "Wybierz datę"
 
@@ -921,9 +930,7 @@ msgstr "Wartości sumaryczne"
 msgid "Split cursor"
 msgstr "Rozdwojony kursor"
 
-#: drawtb.cpp:81 drawtb.cpp:151
-#: GUI/resources.xrc:1037
-#: GUI/resources.xrc:1399
+#: drawtb.cpp:81 drawtb.cpp:151 GUI/resources.xrc:1037 GUI/resources.xrc:1399
 msgid "Filter"
 msgstr "Filtr"
 
@@ -943,12 +950,8 @@ msgstr "Klawiatura ekranowa"
 msgid "Go to latest date"
 msgstr "Idż do najnowszej danej"
 
-#: drawtb.cpp:89 remarks.cpp:489
-#: GUI/resources.xrc:400
-#: GUI/resources.xrc:614
-#: GUI/resources.xrc:619
-#: GUI/resources.xrc:1364
-#: GUI/resources.xrc:1435
+#: drawtb.cpp:89 remarks.cpp:489 GUI/resources.xrc:400 GUI/resources.xrc:614
+#: GUI/resources.xrc:619 GUI/resources.xrc:1364 GUI/resources.xrc:1435
 msgid "Remarks"
 msgstr "Komentarze"
 
@@ -960,13 +963,11 @@ msgstr "Wyjdź"
 msgid "New version available"
 msgstr "Nowa wersja zainstalowana"
 
-#: drawview.cpp:197 gcdcgraphs.cpp:709
-#: glgraphs.cpp:1351
+#: drawview.cpp:197 gcdcgraphs.cpp:709 glgraphs.cpp:1351
 msgid "summer season"
 msgstr "sezon letni"
 
-#: drawview.cpp:199 gcdcgraphs.cpp:711
-#: glgraphs.cpp:1353
+#: drawview.cpp:199 gcdcgraphs.cpp:711 glgraphs.cpp:1353
 msgid "winter season"
 msgstr "sezon zimowy"
 
@@ -992,7 +993,7 @@ msgstr ""
 "Nie zdefiniowano żadnych zestawów użytkownika. Czy chcesz stworzyć nowy "
 "zestaw?"
 
-#: gcdcgraphs.cpp:379 wxgraphs.cpp:227
+#: gcdcgraphs.cpp:379 wxgraphs.cpp:215
 msgid "No data"
 msgstr "Brak danych"
 
@@ -1032,43 +1033,48 @@ msgstr "Wyczyść"
 msgid "Ok"
 msgstr "Ok"
 
-#: incsearch.cpp:147 statdiag.cpp:159
-#: xygraph.cpp:81 xyzgraph.cpp:1393
+#: incsearch.cpp:147 statdiag.cpp:159 xygraph.cpp:81 xyzgraph.cpp:1393
 msgid "Close"
 msgstr "Zamknij"
 
-#: incsearch.cpp:149 statdiag.cpp:162
-#: xydiag.cpp:181 xygraph.cpp:86
-#: xygraph.cpp:87 xyzgraph.cpp:1400
-#: xyzgraph.cpp:1401
+#: incsearch.cpp:149 statdiag.cpp:162 xydiag.cpp:181 xygraph.cpp:86
+#: xygraph.cpp:87 xyzgraph.cpp:1400 xyzgraph.cpp:1401
 msgid "Help"
 msgstr "Pomoc"
 
-#: incsearch.cpp:763
+#: incsearch.cpp:765
 msgid "Do you really want to remove this graph?"
 msgstr "Czy na pewno chcesz usunąć ten wykres?"
 
-#: incsearch.cpp:764
+#: incsearch.cpp:766
 msgid "Graph removal"
 msgstr "Usunięcie zestawu"
 
-#: incsearch.cpp:806
+#: incsearch.cpp:808
 msgid "You are not allowed to remove this set"
 msgstr "Nie masz uprawnień by usunąć ten zestaw"
 
-#: incsearch.cpp:806 paramslist.cpp:360
-#: paramslist.cpp:368
+#: incsearch.cpp:808 paramslist.cpp:360 paramslist.cpp:368
 msgid "Failed to remove paramater"
 msgstr "Nie udało się usunąć parametru"
 
 #: infowdg.cpp:296
-msgid "σ ="
+msgid "σ="
 msgstr ""
 
 #: infowdg.cpp:309
 #, c-format
 msgid " dif: %s"
 msgstr " różnica: %s"
+
+#: infowdg.cpp:313
+#, fuzzy, c-format
+msgid "no data: %d"
+msgstr "brak danych"
+
+#: infowdg.cpp:315
+msgid "ratio: "
+msgstr "ratio: "
 
 #: paramslist.cpp:243 paramslist.cpp:298
 msgid "Choose parameter first"
@@ -1086,8 +1092,7 @@ msgstr "Ostrzeżenie!"
 msgid "Select parameter first!"
 msgstr "Najpierw wybierz parametr!"
 
-#: paramslist.cpp:268 paramslist.cpp:304
-#: paramslist.cpp:321
+#: paramslist.cpp:268 paramslist.cpp:304 paramslist.cpp:321
 #, c-format
 msgid ""
 "Configuration that this param refers to - '%s' is not present, parameter is "
@@ -1104,72 +1109,88 @@ msgstr "Nie udało się usunąc parametru:"
 msgid "You are not allowed to remove this paramter"
 msgstr "Nie posiadasz uprawnień by usunąć ten parametr."
 
-#: paredit.cpp:130
+#: paredit.cpp:131
 msgid "Expression:"
 msgstr "Wyrażenie:"
 
-#: paredit.cpp:140
+#: paredit.cpp:141
 msgid "Searching date"
 msgstr "Szukanie daty"
 
-#: paredit.cpp:222
+#: paredit.cpp:223
 msgid "Information"
 msgstr "Informacja"
 
-#: paredit.cpp:294
+#: paredit.cpp:368
+msgid "One of the given parameters doesn't exist. Check them again."
+msgstr "Jeden z podanych parametrów nie istnieje. Sprawdź je ponownie."
+
+#: paredit.cpp:368
+msgid "Invalid param"
+msgstr "Nieprawidłowy parametr"
+
+#: paredit.cpp:374
+msgid "Comma next to a number found. Do you want to correct it?"
+msgstr "Znaleziono przecinek w liczbie. Czy powinien zostać poprawiony?"
+
+#: paredit.cpp:374
+msgid "Comma found"
+msgstr "Znaleziono przecinek"
+
+#: paredit.cpp:383
 msgid "You must provide a formula."
 msgstr "Podaj formułę"
 
-#: paredit.cpp:294
+#: paredit.cpp:383
 msgid "Formula missing."
 msgstr "Nie podano formuły."
 
-#: paredit.cpp:300
+#: paredit.cpp:389
 msgid "You must provide a param name."
 msgstr "Musisz podać nazwę parametru."
 
-#: paredit.cpp:300
+#: paredit.cpp:389
 msgid "Parameter name missing."
 msgstr "Brak nazwy parametru."
 
-#: paredit.cpp:306
+#: paredit.cpp:395
 msgid "You must set a reference configuration."
 msgstr "Musisz podać konfigurację odniesienia."
 
-#: paredit.cpp:306
+#: paredit.cpp:395
 msgid "Reference configuration missing."
 msgstr "Brak konfiguracji odniesienia."
 
-#: paredit.cpp:491
+#: paredit.cpp:598
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "Błąd podczas kompilacji parametru %s"
 
-#: paredit.cpp:512
+#: paredit.cpp:619
 #, c-format
 msgid "Invalid expression %s"
 msgstr "Niepoprawne wyrażenie %s"
 
-#: paredit.cpp:585
+#: paredit.cpp:692
 #, c-format
 msgid "Found time: %s"
 msgstr "Znaleziony czas: %s"
 
-#: paredit.cpp:587
+#: paredit.cpp:694
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: paredit.cpp:587
+#: paredit.cpp:694
 msgid "No date found"
 msgstr "Nie znaleziono danych spełniających podany warunek"
 
-#: paredit.cpp:641
+#: paredit.cpp:748
 #, c-format
 msgid "User:%s:"
 msgstr "Parametr:%s:"
 
-#: paredit.cpp:820
+#: paredit.cpp:927
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten parametr."
 
@@ -1313,8 +1334,7 @@ msgstr "Błąd."
 msgid "Date"
 msgstr "Data"
 
-#: remarksdialog.cpp:53
-#: GUI/resources.xrc:127
+#: remarksdialog.cpp:53 GUI/resources.xrc:127
 msgid "Title"
 msgstr "Tytuł"
 
@@ -1375,38 +1395,31 @@ msgstr "Uruchamiam draw3..."
 msgid "Statistics window"
 msgstr "Wartości średnie"
 
-#: statdiag.cpp:67 timewdg.cpp:85
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:89 xydiag.cpp:70 ids.h:186
 msgid "DECADE"
 msgstr "DEKADA"
 
-#: statdiag.cpp:67 timewdg.cpp:86
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:90 xydiag.cpp:70 ids.h:186
 msgid "YEAR"
 msgstr "ROK"
 
-#: statdiag.cpp:67 timewdg.cpp:87
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:91 xydiag.cpp:70 ids.h:186
 msgid "MONTH"
 msgstr "MIESIĄC"
 
-#: statdiag.cpp:67 timewdg.cpp:88
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:92 xydiag.cpp:70 ids.h:186
 msgid "WEEK"
 msgstr "TYDZIEŃ"
 
-#: statdiag.cpp:67 timewdg.cpp:89
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:93 xydiag.cpp:70 ids.h:186
 msgid "DAY"
 msgstr "DZIEŃ"
 
-#: statdiag.cpp:67 timewdg.cpp:90
-#: xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:94 xydiag.cpp:70 ids.h:186
 msgid "30 MINUTES"
 msgstr "30 MINUT"
 
-#: statdiag.cpp:76 xydiag.cpp:89
-#: xydiag.cpp:98
+#: statdiag.cpp:76 xydiag.cpp:89 xydiag.cpp:98
 msgid "Choose draw"
 msgstr "Wybierz wykres"
 
@@ -1462,13 +1475,11 @@ msgstr "Maksimum"
 msgid "Hour sum"
 msgstr "Wartość sumaryczna"
 
-#: statdiag.cpp:156 xydiag.cpp:177
-#: GUI/resources.xrc:386
+#: statdiag.cpp:156 xydiag.cpp:177 GUI/resources.xrc:386
 msgid "OK"
 msgstr "OK"
 
-#: statdiag.cpp:269 statdiag.cpp:270
-#: statdiag.cpp:271 statdiag.cpp:272
+#: statdiag.cpp:269 statdiag.cpp:270 statdiag.cpp:271 statdiag.cpp:272
 #: statdiag.cpp:274
 msgid "no data"
 msgstr "brak danych"
@@ -1477,8 +1488,7 @@ msgstr "brak danych"
 msgid "You need to choose draw first."
 msgstr "Najpierw wybierz wykres."
 
-#: statdiag.cpp:286 xydiag.cpp:211
-#: xydiag.cpp:213
+#: statdiag.cpp:286 xydiag.cpp:211 xydiag.cpp:213
 msgid "Draw missing"
 msgstr "Brakujący wykres"
 
@@ -1509,18 +1519,16 @@ msgstr ""
 msgid "Data contains %.2f%% probes from current period"
 msgstr "Procent próbek z aktualnego okresu, zawierających dane: %.2f%%"
 
-#: testapp.cpp:184
+#: testapp.cpp:181
 #, fuzzy
 msgid "Test app version 1.00."
 msgstr "Szarp Draw wersja 3.00."
 
-#: timeformat.cpp:42 timeformat.cpp:58
-#: timeformat.cpp:62 timeformat.cpp:95
+#: timeformat.cpp:42 timeformat.cpp:58 timeformat.cpp:62 timeformat.cpp:95
 msgid "week"
 msgstr "tydz."
 
-#: timeformat.cpp:59 timeformat.cpp:63
-#: timeformat.cpp:86
+#: timeformat.cpp:59 timeformat.cpp:63 timeformat.cpp:86
 msgid "hour"
 msgstr "godz."
 
@@ -1532,23 +1540,23 @@ msgstr " %H:%M"
 msgid " %R"
 msgstr " %R"
 
-#: timewdg.cpp:91 ids.h:186
+#: timewdg.cpp:95 ids.h:186
 msgid "5 MINUTES"
 msgstr "5 MINUT"
 
-#: timewdg.cpp:92 ids.h:186
+#: timewdg.cpp:96 ids.h:186
 msgid "MINUTE"
 msgstr "MINUTA"
 
-#: timewdg.cpp:93 ids.h:186
+#: timewdg.cpp:97 ids.h:186
 msgid "30 SECONDS"
 msgstr "30 SEKUND"
 
-#: timewdg.cpp:94 ids.h:186
+#: timewdg.cpp:98 ids.h:186
 msgid "SEASON"
 msgstr "SEZON"
 
-#: timewdg.cpp:140
+#: timewdg.cpp:144
 msgid "Select period to display"
 msgstr "Wybierz rodzaj średniej"
 
@@ -1640,8 +1648,7 @@ msgstr "Zmień parametry wykresu"
 msgid "Print\tCtrl-P"
 msgstr "Drukuj\tCtrl-P"
 
-#: xygraph.cpp:75 xyzgraph.cpp:1388
-#: GUI/resources.xrc:1186
+#: xygraph.cpp:75 xyzgraph.cpp:1388 GUI/resources.xrc:1186
 msgid "Page Settings\tCtrl+Shift+S"
 msgstr "Ustawienia strony\tCtrl+Shift+S"
 
@@ -1858,8 +1865,7 @@ msgstr "Komentarze:"
 msgid "Edit pack"
 msgstr "Edytuj paczkę"
 
-#: GUI/resources.xrc:456
-#: GUI/resources.xrc:1957
+#: GUI/resources.xrc:456 GUI/resources.xrc:1957
 msgid "Time:"
 msgstr "Czas:"
 
@@ -1903,8 +1909,7 @@ msgstr "Godz.:"
 msgid "Minute:"
 msgstr "Minuta:"
 
-#: GUI/resources.xrc:533
-#: GUI/resources.xrc:543
+#: GUI/resources.xrc:533 GUI/resources.xrc:543
 msgid "Value:"
 msgstr "Wartość:"
 
@@ -1936,8 +1941,7 @@ msgstr "O&pcje"
 msgid "Close window"
 msgstr "Zamknij okno"
 
-#: GUI/resources.xrc:681
-#: GUI/resources.xrc:1936
+#: GUI/resources.xrc:681 GUI/resources.xrc:1936
 msgid "Author:"
 msgstr "Autor:"
 

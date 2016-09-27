@@ -159,6 +159,12 @@ private:
 
 	void CreateDefinedParam();
 
+	bool ValidateComma(const wxString &);
+
+	bool ParamExists(const std::string &);
+
+	bool ValidateParamNames();
+
 	CodeEditor *m_formula_input;
 
 	wxSpinCtrl *m_prec_spin;
