@@ -328,6 +328,13 @@ public:
 	const std::wstring& what() const  { return m_error; }
 };
 
+class ParamConversionWarning {
+	std::wstring m_warning;
+public:
+	ParamConversionWarning(std::wstring warning) : m_warning(warning) {}
+	const std::wstring& what() const { return m_warning; }
+};
+
 template<class container_type> class ParamConverterTempl {
 	container_type* m_ipk_container;
 	Param* m_param;

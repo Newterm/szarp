@@ -57,6 +57,8 @@
 #include "insort.h"
 #include "conversion.h"
 #include "definable_parser.h"
+#include "szbbase.h"
+#include "loptcalculate.h"
 
 #include "log_params.h"
 #define LOG_PREFIX_LEN 8
@@ -701,7 +703,7 @@ TSzarpConfig::PrepareDrawDefinable()
 		try {
 			p->PrepareDefinable();
 		} catch( TCheckException& e ) {
-			sz_log(0,"Invalid draw definable formula %s",SC::S2A(p->GetName()).c_str());
+			sz_log(0,"Invalid drawdefinable formula %s", SC::S2L(p->GetName()).c_str());
 		}
 	p = p->GetNext();
     }
@@ -993,7 +995,7 @@ bool TSzarpConfig::checkConfiguration()
 bool TSzarpConfig::checkFormulas()
 {
 	bool ret = true;
-
+	bool lua_syntax_ok = true;
 	try {
 		PrepareDrawDefinable();
 	} catch( TCheckException& e) {
@@ -1014,7 +1016,87 @@ bool TSzarpConfig::checkFormulas()
 			ret = false;
 		}
 
+	/** This loop checks every formula for lua syntax */
+	for(TParam* p = GetFirstParam(); p; p=GetNextParam(p)) {
+		if(p->GetLuaScript() && !checkLuaSyntax(p)){
+			lua_syntax_ok = false;
+		}
+	}
+
+	/** This loop check drawdefinables formulas for SZARP optimalization if lua syntax was correct */
+	if(lua_syntax_ok)	{
+		IPKContainer::Init(L"/opt/szarp/", L"/opt/szarp/", L"pl");
+		for(TParam* p = GetFirstDrawDefinable(); p; p = p->GetNext(false)) {
+			if(p->GetLuaScript() && !optimizeLuaParam(p)) {
+					ret = false;
+			}
+		}
+	}
+
+	ret = ret && lua_syntax_ok;
 	return ret;
+}
+
+bool TSzarpConfig::checkLuaSyntax(TParam *p)
+{
+	lua_State* lua = Lua::GetInterpreter();
+	if (compileLuaFormula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
+		return true;
+	else {
+		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
+		return false;
+	}
+}
+
+bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const char *formula_name)
+{
+	std::ostringstream paramfunction;
+
+	using std::endl;
+
+	paramfunction <<
+	"return function ()"	<< endl <<
+	"	local p = szbase"	<< endl <<
+	"	local PT_MIN10 = ProbeType.PT_MIN10" << endl <<
+	"	local PT_HOUR = ProbeType.PT_HOUR" << endl <<
+	"	local PT_HOUR8 = ProbeType.PT_HOUR8" << endl <<
+	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
+	"	local PT_WEEK = ProbeType.PT_WEEK" << endl <<
+	"	local PT_MONTH = ProbeType.PT_MONTH" << endl <<
+	"	local PT_YEAR = ProbeType.PT_YEAR" << endl <<
+	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
+	"	local szb_move_time = szb_move_time" << endl <<
+	"	local state = {}" << endl <<
+	"	return function (t,pt)" << endl <<
+	"		local v = nil" << endl <<
+	formula << endl <<
+	"		return v" << endl <<
+	"	end" << endl <<
+	"end"	<< endl;
+
+	std::string str = paramfunction.str();
+
+	const char* content = str.c_str();
+
+	int ret = luaL_loadbuffer(lua, content, std::strlen(content), formula_name);
+	if (ret != 0)
+		return false;
+
+	ret = lua_pcall(lua, 0, 1, 0);
+	if (ret != 0)
+		return false;
+
+	return true;
+}
+
+bool TSzarpConfig::optimizeLuaParam(TParam* p) {
+	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
+	p->SetLuaExecParam(ep);
+
+	IPKContainer* container = IPKContainer::GetObject();
+	if (LuaExec::optimize_lua_param(p, container))
+		return true;
+	return false;
 }
 
 bool TSzarpConfig::checkRepetitions(int quiet)
@@ -1033,7 +1115,7 @@ bool TSzarpConfig::checkRepetitions(int quiet)
 			++the_same_repetitions_number;
 		else if( the_same_repetitions_number > 1 ) {
 			if( !quiet )
-				sz_log(1, "There is %d repetitions of: %s", the_same_repetitions_number, SC::S2A(str[j-1]).c_str());
+				sz_log(1, "There are %d repetitions of: %s", the_same_repetitions_number, SC::S2L(str[j-1]).c_str());
 
 			all_repetitions_number += the_same_repetitions_number;
 			the_same_repetitions_number = 1;
@@ -1041,7 +1123,7 @@ bool TSzarpConfig::checkRepetitions(int quiet)
 	}
 
 	return all_repetitions_number == 0;
-}				
+}
 
 bool TSzarpConfig::checkSend()
 {

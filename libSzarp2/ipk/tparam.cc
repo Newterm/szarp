@@ -196,7 +196,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				else if (!xmlStrcmp(attr, BAD_CAST "int"))
 					_dataType = INT;
 				else
-					xw.XMLError("XML file error: param data_type has invalid value, expected one of: float, double, short, int");
+					xw.XMLError("param data_type has invalid value, expected one of: float, double, short, int");
 			} else
 			if (xw.IsAttr("time_type")) {
 				if (!xmlStrcmp(attr, BAD_CAST "second"))
@@ -337,7 +337,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							else if (!strcmp((char*)attr, "ipc"))
 								_ftype = LUA_IPC;
 							else {
-								xw.XMLError("XML file error: unknown value for 'lua_formula' attribute");
+								xw.XMLError("unknown value for 'lua_formula' attribute");
 							}
 						} else
 						if (xw.IsAttr("lua_start_offset")) {
@@ -355,7 +355,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							}
 
 							if (star_date_time == boost::posix_time::not_a_date_time) {
-								xw.XMLError("XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
+								xw.XMLError("lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\"");
 							} else {
 								struct tm t = to_tm(star_date_time);
 								_lua_start_date_time = timegm(&t);
@@ -1050,8 +1050,8 @@ TParam::GetDrawFormula() throw(TCheckException)
 	    if (tp == NULL) {
 		sz_log(0,
 		    "definable.cfg: parameter with name %s not found in formula for parameter %s",
-		    SC::S2A(absolute_name).c_str(),
-		    SC::S2A(_name).c_str());
+		    SC::S2L(absolute_name).c_str(),
+		    SC::S2L(_name).c_str());
 
 		throw TCheckException();
 	    }
@@ -1342,7 +1342,7 @@ TParam::PrepareDefinable() throw(TCheckException)
 
 	tp = _parentSzarpConfig->getParamByName(absolute_name);
 	if (NULL == tp) {
-	    sz_log(0, "Error in formula '%s', param: '%s' not found", SC::S2A(_formula).c_str(), SC::S2A(absolute_name).c_str());
+	    sz_log(0, "Error in formula '%s', param: '%s' not found", SC::S2U(_formula).c_str(), SC::S2L(absolute_name).c_str());
 	    _f_cache.clear();
 		throw TCheckException();
 	}
