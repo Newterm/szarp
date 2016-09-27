@@ -104,4 +104,4 @@ if __name__ == "__main__":
 	elif ".sz4" in sys.argv[2]:
 		writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
 	else:
-		print "Wrong input file format ! Aborting"
+		print "Wrong input file format ! Aborting" 
