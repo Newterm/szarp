@@ -176,3 +176,4 @@ parts:
       - xdg-user-dirs
       - xdg-utils
       - zip
+      - sysvinit-tools
