@@ -57,7 +57,6 @@ void usage(void)
 
 int main(int argc, char* argv[])
 {
-	int i;
 	char *input;
 	char *ipk_path;
 
@@ -107,19 +106,12 @@ int main(int argc, char* argv[])
 	sc = new TSzarpConfig();
 	const int reader_result = sc->loadXMLReader(SC::L2S(path));
 
-	i = reader_result || dom_result;
-	
-	if (i) {
-		cerr << "Error while reading configuration." << endl;
-		return 1;
-	}
-
-	//check for parameters repetitions in params.xml
 	int ret = !sc->checkConfiguration();
 
 	delete sc;
 	free(input);
 	xmlCleanupParser();
+	ret = (reader_result || dom_result) || ret;
 
 	sz_logdone();
 

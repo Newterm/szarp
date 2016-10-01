@@ -25,6 +25,7 @@
 #include <wx/filesys.h>
 #include <wx/file.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/regex.h>
 
 #include <libxml/tree.h>
 #include <sys/types.h>
@@ -74,7 +75,7 @@ public:
 ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmgr, RemarksHandler* remarks_handler) : DBInquirer(dbmgr)
 {
 	SetHelpText(_T("draw3-ext-parametersset"));
-	
+
 	m_widget_mode = EDITING_PARAM;
 	m_search_direction = NOT_SEARCHING;
 
@@ -283,11 +284,99 @@ void ParamEdit::CreateDefinedParam() {
 
 }
 
+bool ParamEdit::ParamExists(const std::string &param)
+{
+	//param must be ***:***:***:*** if not it is not valid
+	size_t n = std::count(param.begin(), param.end(), ':');
+	if( n != 3 ) return false;
+
+	wxString confid(param.substr(0, param.find(std::string(":"))).c_str(), wxConvUTF8);
+	wxString pname(param.substr(param.find(std::string(":"))+1, std::string::npos).c_str(), wxConvUTF8);
+	
+	SortedSetsArray sorted(DrawSet::CompareSets);
+	DrawsSets* conf = m_cfg_mgr->GetConfigByPrefix(confid);
+	if (conf == NULL) return false;
+	sorted = conf->GetSortedDrawSetsNames(true);
+	
+	//check if param exists
+	int count = sorted.size();
+	for (int i = 0; i < count; i++) { 
+		DrawSet* set = sorted.Item(i);
+		for (size_t j = 0; j < set->GetDraws()->size(); j++) {
+			DrawInfo* info = m_cfg_mgr->GetDraw(confid, set->GetName(), j);
+			if (info == NULL) 
+				continue;
+			if (pname.Cmp(info->GetParam()->GetParamName()) == 0)
+			{
+				return true;
+			}
+		}
+	}
+	
+	//check user defined params
+	DefinedDrawsSets * defined = m_cfg_mgr->GetDefinedDrawsSets();
+	std::vector<DefinedParam*> definedParams = defined->GetDefinedParams();
+
+	for (std::vector<DefinedParam*>::iterator i = definedParams.begin();i != definedParams.end(); i++) {
+		if (confid.Cmp((*i)->GetBasePrefix())== 0 && pname.Cmp((*i)->GetParamName()) == 0 )
+			return true;
+	}
+
+	//no matching param was found, return false
+	return false;
+}
+
+bool ParamEdit::ValidateParamNames()
+{
+	std::vector<std::string> params;
+	std::string text = std::string(m_formula_input->GetText().mb_str());
+	int found = -1;
+	int pstart, pend;
+
+	//find all param names in formula. Param lies between "p(" and ", t, pt)"
+	while( (found = text.find(std::string("p("), found+1)) != std::string::npos)
+	{
+		pstart = text.find(std::string("\""), found+1);
+		if(pstart == std::string::npos) return false;
+
+		pend = text.find(std::string("\""), pstart+1);
+		if(pend == std::string::npos) return false;
+
+		found = text.find(std::string(", t, pt)"), found+1);
+		if(found == std::string::npos || found != pend+1) return false;
+		
+		params.push_back(text.substr(pstart+1, pend - pstart - 1));
+		found += 5;
+	}
+
+	for(unsigned int i = 0; i < params.size(); ++i)
+	{
+		if(!ParamExists(params[i])) return false;
+	}
+	return true;
+}
+
 void ParamEdit::OnOK(wxCommandEvent &e) {
+
 
 	if (m_edited_param == NULL && m_creating_new == false) {
 		EndModal(wxID_OK);
 		return;
+	}
+	
+	if(!ValidateParamNames()){
+		wxMessageBox(_("One of the given parameters doesn't exist. Check them again."), _("Invalid param"),
+			wxOK | wxICON_ERROR, this);
+		return;
+	}
+
+	if (!ValidateComma(m_formula_input->GetText())) {
+		int answer = wxMessageBox(_("Comma next to a number found. Do you want to correct it?"), _("Comma found"),
+			wxYES_NO | wxICON_WARNING, this);
+		if(answer == wxYES)	
+		{	
+			return;
+		}
 	}
 
 	if (m_formula_input->GetText().Trim().IsEmpty()) {
@@ -330,6 +419,11 @@ void ParamEdit::OnCancel(wxCommandEvent & event) {
 		SetReturnCode(wxID_CANCEL);
 		Show(false);
 	}
+}
+
+
+bool ParamEdit::ValidateComma(const wxString &s){
+	return !wxRegEx(wxString(",[0-9]", wxConvUTF8)).Matches(s);
 }
 
 void ParamEdit::TransferToWindow(DefinedParam *param) {

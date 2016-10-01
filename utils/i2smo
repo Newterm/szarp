@@ -2,8 +2,8 @@
 # -*- coding: UTF-8 -*-
 # vim: set fileencoding=utf-8 :
 #
-# SZARP: SCADA software 
-# 
+# SZARP: SCADA software
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -37,6 +37,9 @@ import re
 import glob
 import unicodedata
 
+namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
+namespace_extra = "{http://www.praterm.com.pl/SZARP/ipk-extra}"
+
 error_count = 0
 quiet = False
 def printerr(msg, prefix="ERROR: "):
@@ -53,6 +56,9 @@ def printnote(msg, prefix="NOTE: "):
 note_list = []
 def add_note(msg):
 	note_list.append(msg)
+
+def add_ns(ns, param):
+	return ns + param
 
 def print_notes():
 	for note in note_list:
@@ -72,7 +78,6 @@ def unicode_to_ascii(string):
 
 def get_szarp_uncommited():
 	# without realpath client.info() strips the symlink
-	szarp_path = os.path.realpath("/etc/szarp/default/")
 	client = pysvn.Client()
 	is_svn_repo = True
 	try:
@@ -89,8 +94,17 @@ def get_szarp_uncommited():
 		uncommited_present = None
 	return is_svn_repo, uncommited_present
 
-
-conf_parser = "/opt/szarp/bin/ipk2szarp"
+def get_szarp_path():
+	if args.input_file is None:
+		szarp_default = os.path.realpath("/etc/szarp/default")
+		return szarp_default
+	else:
+		if os.path.exists(args.input_file):
+			config = os.path.dirname(args.input_file)
+			return os.path.dirname(config)
+		else:
+			printerr(args.input_file + " does not exist")
+			sys.exit(1)
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
@@ -102,50 +116,41 @@ def check_svn():
 		if not quiet:
 			add_note(realpath + " is not added to svn, maybe it should?")
 
-def parse_config_file():
+def get_params_scheme():
+	"""
+	Getting params.xml to push it scheme to other functions
+	"""
 	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
-	if args.input_file is None:
-		szarp_path = os.path.realpath("/etc/szarp/default")
-		xml_path = szarp_path + "/config/params.xml"
-	else:
-		xml_path = args.input_file
-	xml_file = etree.parse(xml_path, options)
-	params = xml_file.getroot()
-	parameters = list(params)
-	return parameters
+	params_path = os.path.join(szarp_path, "config", "params.xml")
+	params_scheme = etree.parse(params_path, options)
+	return params_scheme
 
 def get_isl_list():
+	"""
+	Get list of isl file containing in szarp-server base from /config/isl/
+	"""
 	isl_regex = re.compile(r".{1,}\.isl")
-	ls = subprocess.Popen(("ls", os.path.realpath("/etc/szarp/default")+"/config/isl/"), stdout=subprocess.PIPE)
+	ls = subprocess.Popen(("ls", os.path.join(szarp_path, "config", "isl")), stdout=subprocess.PIPE)
 	isl_ls = ls.communicate()[0]
 	isl_list = []
 	for isl in isl_ls.split('\n'):
-		if isl_regex.search(isl):
+		if isl.endswith(".isl"):
 			isl_list.append(isl)
 	return isl_list
 
-def check_if_file_exist(parameters):
-	file_to_check = re.compile(r"\/opt\/szarp\/.")
-	not_found_files = []
-	for device in parameters:
-		for attr, value in device.items():
-			find_file = file_to_check.search(value)
-			if find_file is not None:
-				if os.path.exists(value) is False:
-					if not value in not_found_files:
-						if device.get("daemon").endswith("testdmn") and attr == "path":
-							# the source data file may not exist at this moment
-							printnote("source data file for testdmn: '%s' does not exist" % value)
-						else:
-							printerr(value + " does not exist!")
-						not_found_files.append(value)
+def parse_config_file():
+	config = params.getroot()
+	elements = list(config)
+	return elements
 
-def check_for_daemons(parameters):
+def check_for_daemons():
+	"""
+	Testing - looking for custom daemons, looking for extra:param base in dbmdmn daemon
+	"""
 	md5sum_regex = re.compile(r"[a-f0-9]{32}")
 	daemon_regex = re.compile(r"(?<=\/opt\/szarp\/bin\/).*")
 	daemons_list = []
-	namespace_extra = "{http://www.praterm.com.pl/SZARP/ipk-extra}"
-	for device in parameters:
+	for device in elements:
 		for attr, value in device.items():
 			if attr == "daemon":
 				if not value in daemons_list:
@@ -168,133 +173,218 @@ def check_for_daemons(parameters):
 						daemon_md5sum = 0
 					if md5sum_check != daemon_md5sum is not None:
 						add_note("custom daemon found in " + value)
-				if re.search(r"dbdmn.{0,}", value):
+				if value == "dbdmn":
 					for unit in device:
 						for param in unit:
-							param_path = param.get(namespace_extra + "param")
+							param_path = param.get(add_ns(namespace_extra, "param"))
 							if param_path is not None:
 								base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
 								base_path = "/opt/szarp/" + base
 								if not os.path.exists(base_path):
 									printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
 
-def check_send_elements(parameters):
-	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
-	for device in parameters:
-		if device.tag == namespace + "device":
-			for unit in device:
-				for elements in unit:
-					if elements.tag == namespace + "param":
-						find_unit = False
-						for attr, value in elements.items():
-							if attr == "unit":
-								find_unit = True
-						if find_unit is False:
-							printerr("atribute 'unit' in node 'param' not found (line  " + str(elements.sourceline) + ")")
-					elif elements.tag == namespace + "send":
-						try:
-							if elements.getnext().tag != namespace + "send":
-								add_note("found wrong order of 'send' elements (line " + str(elements.sourceline) + ")")
-						except:
-							pass
-						for attr, value in elements.items():
-							found_param_or_value = False
-							if attr == "param" or attr == "value":
-								found_param_or_value = True
-								break
-							elif attr == "min" or attr == "max":
-								if "," in value:
-									printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(elements.sourceline) + ")")
-						if found_param_or_value is False:
-							printerr("found send without param or value (line " + str(elements.sourceline) + ")")
+def check_if_file_exist():
+	file_to_check = re.compile(r"\/opt\/szarp\/.")
+	not_found_files = []
+	for device in elements:
+		for attr, value in device.items():
+			find_file = file_to_check.search(value)
+			if find_file is not None:
+				if os.path.exists(value) is False:
+					if not value in not_found_files:
+						if device.get("daemon").endswith("testdmn") and attr == "path":
+							# the source data file may not exist at this moment
+							add_note("source data file for testdmn: '%s' does not exist" % value)
+						else:
+							printerr(value + " does not exist!")
+						not_found_files.append(value)
 
-def check_if_parameter_exist(isl_list):
+def check_if_parameter_exist():
+	"""
+	Main function for going through isl files and check whether parameter exists
+	"""
 	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
 	params_list = []
 	for isl_file in isl_list:
-		szarp_path = os.path.realpath("/etc/szarp/default")
-		isl_path = szarp_path + "/config/isl/" + isl_file
+		isl_path = os.path.join(szarp_path, "config", "isl", isl_file)
 		xml_file = etree.parse(isl_path, options)
 		isl = xml_file.getroot()
-		parameters = list(isl)
-		for first_branch in parameters:
-			for attr, value in first_branch.items():
-				if "localhost" in value:
-					internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
-					if not internal_parameter.group(0) in params_list:
-						params_list.append(internal_parameter.group(0))
-					else:
-						continue
-					if args.input_file is None:
-						szarp_path = os.path.realpath("/etc/szarp/default")
-						base_path = szarp_path + "/szbase" + internal_parameter.group(0)
-						if not glob.glob(base_path + '*'):
-							add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
-			for second_branch in first_branch:
-				for attr, value in second_branch.items():
-					if "localhost" in value:
-						internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
-						if not internal_parameter.group(0) in params_list:
-							params_list.append(internal_parameter.group(0))
-						else:
-							continue
-						if args.input_file is None:
-							szarp_path = os.path.realpath("/etc/szarp/default")
-							base_path = szarp_path + "/szbase" + internal_parameter.group(0)
-							if not glob.glob(base_path + '*'):
-								add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
-				for third_branch in second_branch:
-					for attr, value in third_branch.items():
-						if "localhost" in value:
-							internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
-							if not internal_parameter.group(0) in params_list:
-								params_list.append(internal_parameter.group(0))
-							else:
-								continue
-							if args.input_file is None:
-								szarp_path = os.path.realpath("/etc/szarp/default")
-								base_path = szarp_path + "/szbase" + internal_parameter.group(0)
-								if not glob.glob(base_path + '*'):
-									add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
-					for fourth_branch in third_branch:
-							for attr, value in fourth_branch.items():
-								if "localhost" in value:
-									internal_parameter = re.search(r"(?<=[0-9]{4}).+(?=@)", value)
-									if not internal_parameter.group(0) in params_list:
-										params_list.append(internal_parameter.group(0))
-									else:
-										continue
-									if args.input_file is None:
-										szarp_path = os.path.realpath("/etc/szarp/default")
-										base_path = szarp_path + "/szbase" + internal_parameter.group(0)
-										if not glob.glob(base_path + '*'):
-											add_note("parameter " + internal_parameter.group(0) + " doesn't exist, called in isl:uri in " + isl_file + " (below line " + str(first_branch.sourceline) + ")")
+		isl_element = list(isl)
+		find_parameter_from_isl(isl_element, params_list, isl_file)
 
-def check_no_base_ind(config):
-	namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
-	param_list = []
-	for device in config:
-		if device.tag == namespace + "device":
+param_list = []
+def get_parameters_from_device():
+	for device in elements:
+		if device.tag == add_ns(namespace, "device"):
 			for unit in device:
-				for element in unit:
-					if element.tag == namespace + "param":
-						param_list.append(element)
-		if device.tag == namespace + "defined":
-			for element in device:
-				if element.tag == namespace + "param":
-					param_list.append(element)
+				if unit.tag == add_ns(namespace, "unit"):
+					for param in unit:
+						if param.tag == add_ns(namespace, "param"):
+							param_list.append(param)
+
+def get_parameters_from_defined():
+	for defined in elements:
+		if defined.tag == add_ns(namespace, "defined"):
+			for param in defined:
+				if param.tag == add_ns(namespace, "param"):
+					param_list.append(param)
+
+def get_parameters_from_drawdefinable():
+	for drawdefinable in elements:
+		if drawdefinable.tag == add_ns(namespace, "drawdefinable"):
+			for param in drawdefinable:
+				if param.tag == add_ns(namespace, "param"):
+					param_list.append(param)
+
+def check_no_base_ind():
+	get_parameters_from_device()
+	get_parameters_from_defined()
 	for param in param_list:
 		if param.get("base_ind") is None:
 			name = unicode_to_ascii(param.get("name"))
 			add_note("parameter '%s' no base_ind, won't be written to szbase (line %d)" % (name, param.sourceline))
+	get_parameters_from_drawdefinable()
 
-def test_config_file(config):
-	check_if_file_exist(config)
-	check_for_daemons(config)
-	check_send_elements(config)
+def check_params_xmlschema():
+	"""
+	Testing params with XMLSchema
+	"""
+	try:
+		xsdpath = os.path.join("/opt", "szarp", "resources", "dtd", "ipk-params.xsd")
+		xsd = etree.XMLSchema(file=xsdpath)
+		try:
+			xsd.assertValid(params)
+		except BaseException as ex:
+			add_note(xsd.error_log)
+	except Exception as e:
+		printerr(e)
 
-def test_isl_file(isl_list):
-	check_if_parameter_exist(isl_list)
+def check_under_device_elements():
+	"""
+	Testing draw elements for: value min/max ratio, valuescace/minscale/maxscale
+		ratio
+	Testing send elements for: unit in param node, wrong order of send elements,
+		param or value in send element, attribue min/max, separated by comma or dot
+	"""
+	for device in elements:
+		if device.tag == add_ns(namespace, "device"):
+			for unit in device:
+				for element in unit:
+					if element.tag == add_ns(namespace, "param"):
+						for draw in element:
+							if draw.tag == add_ns(namespace, "draw"):
+								min_value = 0
+								max_value = 0
+								scale_value = 0
+								min_scale_value = 0
+								max_scale_value = 0
+								for attr, value in draw.items():
+									if attr == "min":
+										min_value = value
+									elif attr == "max":
+										max_value = value
+									elif attr == "scale":
+										scale_value = value
+									elif attr == "minscale":
+										min_scale_value = value
+									elif attr == "maxscale":
+										max_scale_value = value
+								if float(min_value) > float(max_value):
+									add_note("in element draw found wrong min/max ratio (line " + str(draw.sourceline) + ")")
+								if float(min_scale_value) > float(max_scale_value) > float(scale_value):
+									add_note("in element draw found wrong scale/minscale/maxscale ratio (line " + str(draw.sourceline) + ")")
+					elif element.tag == add_ns(namespace, "send"):
+						try:
+							if element.getnext().tag != add_ns(namespace, "send"):
+								add_note("found wrong order of 'send' elements (line " + str(element.sourceline) + ")")
+						except:
+							pass
+						try:
+							for attr, value in element.items():
+								found_param_or_value = False
+								if attr == "param" or attr == "value":
+									found_param_or_value = True
+									break
+								elif attr == "min" or attr == "max":
+									if "," in value:
+										printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(element.sourceline) + ")")
+							if found_param_or_value is False:
+								printerr("found send without param or value (line " + str(element.sourceline) + ")")
+						except:
+							pass
+
+def find_parameter_from_isl(branch, params_list, isl_file):
+	"""
+	Recursion function for finding parameter from isl
+	"""
+	for child_branch in branch:
+		for attr, value in child_branch.items():
+			if "localhost" in value:
+				try:
+					internal_parameter = re.search(r"(?<=[0-9]{4}\/).+(?=@)", value)
+					parameter_name = str(internal_parameter.group(0))
+					if not parameter_name in params_list:
+						params_list.append(parameter_name)
+					else:
+						continue
+					if not find_parameter_from_params(parameter_name):
+						add_note("parameter \'" + parameter_name + "\' doesn't exist, called in isl:uri in " + isl_file + " (around line " + str(child_branch.sourceline) + ")")
+				except:
+					add_note("found bad call on isl:uri \'" + value + "\' in " + isl_file + " (around line " + str(child_branch.sourceline) + ")")
+		find_parameter_from_isl(child_branch, params_list, isl_file)
+
+def find_parameter_from_params(parameter_name):
+	for param in param_list:
+		name_to_check = prepare_param_name(param.get("name"))
+		if parameter_name in name_to_check:
+			return True
+	return False
+
+def prepare_param_name(param_name):
+	def conv(x):
+		if x in [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9",
+			  u"a", u"b", u"c", u"d", u"e", u"f", u"g", u"h", u"i", u"j",
+			  u"k", u"l", u"m", u"n", u"o", u"p", u"q", u"r", u"s", u"t",
+			  u"u", u"v", u"w", u"x", u"y", u"z",
+			  u"A", u"B", u"C", u"D", u"E", u"F", u"G", u"H", u"I", u"J",
+					 u"K", u"L", u"M", u"N", u"O", u"P", u"Q", u"R", u"S", u"T",
+			  u"U", u"V", u"W", u"X", u"Y", u"Z"]:
+			return x
+
+		if x == u":":
+			return "/"
+
+		pmap = { u"ą" : u"a", u"Ą" : u"A", u"ć" : u"c", u"Ć" : u"C",
+			 u"ę" : u"e", u"Ę" : u"E", u"ł" : u"l", u"Ł" : u"L",
+			 u"ń" : u"n", u"Ń" : u"N", u"ó" : u"o", u"Ó" : u"O",
+			 u"ś" : u"s", u"Ś" : u"S", u"ż" : u"z", u"Ż" : u"Z",
+			 u"ź" : u"z", u"Ź" : u"Z" }
+
+		if x in pmap:
+			return pmap[x]
+
+		return u"_"
+
+	return "".join([ conv(x) for x in param_name ])
+	# param_name = param_name.replace("/", "_")
+	# param_name = param_name.replace(":", "/")
+	# param_name = param_name.replace("-", "_")
+	# param_name = param_name.replace(",", "_")
+	# param_name = param_name.replace(".", "_")
+	# param_name = param_name.replace(" ", "_")
+	# param_name = param_name.replace("+", "_")
+	# param_name = param_name.replace("[", "_")
+	# param_name = param_name.replace("]", "_")
+	# return param_name
+
+def do_tests():
+	check_params_xmlschema()
+	check_if_file_exist()
+	check_for_daemons()
+	check_under_device_elements()
+
+def test_isl_file():
+	check_if_parameter_exist()
 
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
@@ -308,6 +398,7 @@ parser.add_argument('-q', '--quiet', action='store_true',
 
 args = parser.parse_args()
 
+conf_parser = "/opt/szarp/bin/ipk2szarp"
 command = [conf_parser]
 
 if args.debug:
@@ -318,28 +409,30 @@ if args.input_file:
 
 quiet = args.quiet
 
-process = Popen(command, stderr=PIPE)
+process = Popen(command, stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
+if stdout:
+	add_note(stdout.rstrip())
 if stderr:
 	printerr(stderr.rstrip(), '')
-return_code = process.returncode
 
-if return_code == 0:
-	if not quiet:
-		add_note("if configuration has changed: /etc/init.d/parstart restart")
-	check_svn()
-	config = parse_config_file()
-	test_config_file(config)
-	if args.additional_test:
+if not quiet:
+	add_note("if configuration has changed: /etc/init.d/parstart restart")
+check_svn()
+szarp_path = get_szarp_path()
+params = get_params_scheme()
+elements = parse_config_file()
+do_tests()
+if args.additional_test:
+	check_no_base_ind()
+	if os.path.exists(os.path.join(szarp_path, "config", "isl")):
 		isl_list = get_isl_list()
-		test_isl_file(isl_list)
-		check_no_base_ind(config)
-	print_notes()
-	if error_count == 0:
-		if not quiet:
-			printok("OK")
-	else:
-		sys.exit(1)
+		test_isl_file()
+print_notes()
+if error_count == 0:
+	if not quiet:
+		printok("OK")
 else:
+	printerr("params.xml not wellformed, check previous logs!")
 	printerr("ERROR", '')
-	sys.exit(return_code)
+	sys.exit(1)

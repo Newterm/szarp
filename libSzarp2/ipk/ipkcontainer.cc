@@ -147,10 +147,10 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool lo
 
 #if BOOST_FILESYSTEM_VERSION == 3
 	if (ipk->loadXML(_file.wstring(), prefix)) {
-			sz_log(2, "Unable to load config from file:%ls", _file.wstring().c_str());
+			sz_log(2, "Unable to load config from file: %s", SC::S2U(_file.wstring()).c_str());
 #else
 	if (ipk->loadXML(_file.file_string(), prefix)) {
-			sz_log(2, "Unable to load config from file:%ls", _file.file_string().c_str());
+			sz_log(2, "Unable to load config from file: %s", SC::S2U(_file.file_string()).c_str());
 #endif
 
 		delete ipk;
@@ -286,10 +286,10 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 		
 #if BOOST_FILESYSTEM_VERSION == 3
 		if (ipk->loadXML(_file.wstring(), prefix)) {
-			sz_log(2, "Unable to load config from file:%ls", _file.wstring().c_str());
+			sz_log(2, "Unable to load config from file: %s", SC::S2L(_file.wstring()).c_str());
 #else
 		if (ipk->loadXML(_file.file_string(), prefix)) {
-			sz_log(2, "Unable to load config from file:%ls", _file.file_string().c_str());
+			sz_log(2, "Unable to load config from file: %s", SC::S2L(_file.file_string()).c_str());
 #endif
 			delete ipk;
 			return NULL;

@@ -3,14 +3,13 @@
 <!--
   SZARP (C) 2002 Pawe³ Pa³ucha
   pawel@praterm.com.pl
-  
+
   DTD for SZARP params configuration file.
-  
+
   $Id: ipk-params.rng 6723 2009-05-15 13:52:04Z reksio $
 -->
 
-
-<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
 
 <!--
   G³ównym elementem jest element 'param', zawiera on ca³± strukturê
@@ -30,646 +29,1298 @@
 	documentation_base_url - opcjonalny, adres bazowy dokumentacji parametrów
 -->
 
-  <define name="params">
-    <element name="params" ns="http://www.praterm.com.pl/SZARP/ipk" >
-      <ref name="attlist.params"/>
-      <interleave>
-        <oneOrMore>
-          <ref name="device"/>
-        </oneOrMore>
-        <optional>
-          <ref name="defined"/>
-        </optional>
-        <optional>
-          <ref name="drawdefinable"/>
-        </optional>
-        <optional>
-          <ref name="boilers"/>
-        </optional>
-        <optional>
-          <ref name="seasons"/>
-        </optional>
-        <optional>
-          <ref name="checker"/>
-        </optional>
-      </interleave>
-    </element>
-  </define>
-  <define name="attlist.params" combine="interleave">
-    <attribute name="version"/>
-    <optional>
-      <attribute name="read_freq" a:defaultValue="10"/>
-    </optional>
-    <optional>
-      <attribute name="send_freq" a:defaultValue="10"/>
-    </optional>
-    <optional>
-      <attribute name="title"/>
-    </optional>
-    <optional>
-      <attribute name="documentation_base_url"/>
-    </optional>
-    <optional>
-      <attribute name="ps_address"/>
-    </optional>
-    <optional>
-      <attribute name="ps_port"/>
-    </optional>
-    <zeroOrMore>
-      <ref name="extra-attribute"/>
-    </zeroOrMore>
-  </define>
-  
+	<define name="params">
+		<element name="params" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.params"/>
+			<interleave>
+				<oneOrMore>
+					<ref name="device"/>
+				</oneOrMore>
+				<optional>
+					<ref name="defined"/>
+				</optional>
+				<optional>
+					<ref name="drawdefinable"/>
+				</optional>
+				<optional>
+					<ref name="seasons"/>
+				</optional>
+				<optional>
+					<ref name="checker"/>
+				</optional>
+			</interleave>
+		</element>
+	</define>
+	<define name="attlist.params" combine="interleave">
+		<attribute name="version">
+			<value>1.0</value>
+		</attribute>
+		<attribute name="read_freq">
+			<data type="integer"/>
+		</attribute>
+		<attribute name="send_freq">
+			<data type="integer"/>
+		</attribute>
+		<attribute name="title">
+			<text/>
+		</attribute>
+		<optional>
+			<attribute name="documentation_base_url"/>
+		</optional>
+		<optional>
+			<attribute name="ps_address"/>
+		</optional>
+		<optional>
+			<attribute name="ps_port"/>
+		</optional>
+		<!-- ipk-icinga -->
+		<optional>
+			<attribute name="host_template" ns="http://www.praterm.com.pl/SZARP/ipk-icinga"/>
+		</optional>
+		<optional>
+			<attribute name="parent" ns="http://www.praterm.com.pl/SZARP/ipk-icinga"/>
+		</optional>
+		<optional>
+			<attribute name="address" ns="http://www.praterm.com.pl/SZARP/ipk-icinga"/>
+		</optional>
+	</define>
+
   <!--
-    Element 'device' zawiera opis grupy parametrów obs³ugiwanej przez
-    jednego demona linii. Musi zawieraæ co najmniej jeden element 'radio'
-    albo co najmniej jeden element 'unit'. Mo¿e te¿ zawieraæ elementy (na
-    pocz±tku) i atrybuty z innych przestrzeni nazw.
-    Atrybuty:
-    	daemon - ¶cie¿ka do demona linii odpowiedzialnego za 
-    	obs³ugê opisywanej linii komunikacyjnej,
-    	path - ¶cie¿ka do urz±dzenia zwi±zanego z lini±
-    	(najczê¶ciej odpowiedniego portu szeregowego),
-    	speed - prêdko¶æ portu szeregowego w bodach,
-    	stop - ilo¶æ bitów stopu - 1 lub 2,
-    	protocol - wersja protoko³u (obecnie 0 lub 1), parametr ma
-    	znaczenie dla niektórych demonów linii,
-    	special - specjalna warto¶æ dla niektórych linii (w starej
-    	konfiguracji pierwsza linia w pliku line<x>.cfg), np. dla
-    	uproszczonego protoko³u RS232 bez adresowania linii (liczba).
+	Element 'device' zawiera opis grupy parametrów obs³ugiwanej przez
+	jednego demona linii. Musi zawieraæ co najmniej jeden element 'radio'
+	albo co najmniej jeden element 'unit'. Mo¿e te¿ zawieraæ elementy (na
+	pocz±tku) i atrybuty z innych przestrzeni nazw.
+	Atrybuty:
+		daemon - ¶cie¿ka do demona linii odpowiedzialnego za
+		obs³ugê opisywanej linii komunikacyjnej,
+		path - ¶cie¿ka do urz±dzenia zwi±zanego z lini±
+		(najczê¶ciej odpowiedniego portu szeregowego),
+		speed - prêdko¶æ portu szeregowego w bodach,
+		stop - ilo¶æ bitów stopu - 1 lub 2,
+		protocol - wersja protoko³u (obecnie 0 lub 1), parametr ma
+		znaczenie dla niektórych demonów linii,
+		special - specjalna warto¶æ dla niektórych linii (w starej
+		konfiguracji pierwsza linia w pliku line<x>.cfg), np. dla
+		uproszczonego protoko³u RS232 bez adresowania linii (liczba).
   -->
-  
-  <define name="device">
-    <element name="device" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.device"/>
-      <choice>
-        <oneOrMore>
-          <ref name="radio"/>
-        </oneOrMore>
-        <oneOrMore>
-          <ref name="unit"/>
-        </oneOrMore>
-      </choice>
-    </element>
-  </define>
-  <define name="attlist.device" combine="interleave">
-    <optional>
-      <attribute name="daemon"/>
-    </optional>
-    <optional>
-      <attribute name="path"/>
-    </optional>
-    <optional>
-      <attribute name="speed"/>
-    </optional>
-    <optional>
-      <attribute name="stop">
-        <choice>
-          <value>1</value>
-          <value>2</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="protocol"/>
-    </optional>
-    <optional>
-      <attribute name="special"/>
-    </optional>
-    <optional>
-      <attribute name="options"/>
-    </optional>
-    <zeroOrMore>
-      <ref name="extra-attribute"/>
-    </zeroOrMore>
-  </define>
-  
+
+	<define name="device">
+		<element name="device" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.device"/>
+			<choice>
+				<oneOrMore>
+					<ref name="radio"/>
+				</oneOrMore>
+				<oneOrMore>
+					<ref name="unit"/>
+				</oneOrMore>
+			</choice>
+		</element>
+	</define>
+	<define name="attlist.device" combine="interleave">
+		<attribute name="daemon">
+			<text/>
+		</attribute>
+		<optional>
+			<attribute name="path">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="speed">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="stop">
+				<choice>
+					<value>1</value>
+					<value>2</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="special">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="moxa_port"/>
+		</optional>
+		<optional>
+			<attribute name="ip_addr"/>
+		</optional>
+		<optional>
+			<attribute name="options"/>
+		</optional>
+		<!-- ipk-extra -->
+		<optional>
+			<attribute name="packet" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="bittime" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="dev_name" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="SendDelay" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="protocol" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="atc-ip" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="StopBits" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>0</value>
+					<value>1</value>
+					<value>2</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="precision" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-data-port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-cmd-port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="opc_server" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="pyro_host" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="pyro_port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="zerond" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>yes</value>
+					<value>no</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="CheckCRC" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>enable</value>
+					<value>disable</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="ReceiveTimeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="docpath" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="OpenPortEveryTime" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>yes</value>
+					<value>no</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="databits" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="byte_interval" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="slot" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="id" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="mode" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>master</value>
+					<value>slave</value>
+					<value>client</value>
+					<value>server</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="address" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="frequency" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="DelayBetweenChars" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="delay_between_chars" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="rack" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<value>0</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="delay_between_requests" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="stopbits" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>0</value>
+					<value>1</value>
+					<value>2</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="ip" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="tcp-ip" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="daemon-mode" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>tcp-server</value>
+					<value>tcp-client</value>
+					<value>serial-server</value>
+					<value>serial-client</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-mode" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>client</value>
+					<value>server</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="read_freq" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="appname" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="uri" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="parity" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>EVEN</value>
+					<value>NONE</value>
+					<value>ODD</value>
+					<value>even</value>
+					<value>none</value>
+					<value>odd</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-allowed" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-address" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-keepalive" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>yes</value>
+					<value>no</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="nodata-timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="nodata-value" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="expire" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<!-- ipk-icinga -->
+		<optional>
+			<attribute name="no_data_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+	</define>
+
   <!--
-    Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
-    radiowego). Musi zawieraæ co najmniej jeden element 'unit'.
-    Atrybuty:
-    	id - wymagany, identyfikator u¿ywany przez modem radiowy.
+	Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
+	radiowego). Musi zawieraæ co najmniej jeden element 'unit'.
+	Atrybuty:
+		id - wymagany, identyfikator u¿ywany przez modem radiowy.
   -->
-  
-  <define name="radio">
-    <element name="radio" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.radio"/>
-      <oneOrMore>
-        <ref name="unit"/>
-      </oneOrMore>
-    </element>
-  </define>
-  <define name="attlist.radio" combine="interleave">
-    <attribute name="id"/>
-  </define>
-  
+
+	<define name="radio">
+		<element name="radio" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.radio"/>
+			<oneOrMore>
+				<ref name="unit"/>
+			</oneOrMore>
+		</element>
+	</define>
+	<define name="attlist.radio" combine="interleave">
+		<attribute name="id"/>
+	</define>
+
   <!--
-    Element 'unit' opisuje jednostkê komunikacji. Zawiera co najmniej jeden
-    elemen 'param' lub 'send'.
-    Atrybuty:
-    	id - wymagany, identyfikator jednostki - pojedynczy znak ASCII
-    	unikalny w obrêbie linii komunikacyjnej,
-    	type - wymagany, typ raportu - warto¶æ interpretowana przez
-    	sterownik (liczba),
-    	subtype - wymagany, podtyp raportu, warto¶æ interpetowana przez
-    	sterownik (liczba),
-    	bufsize - wielko¶æ bufora u¶redniania dla parametrów w bajtach.
+	Element 'unit' opisuje jednostkê komunikacji. Zawiera co najmniej jeden
+	elemen 'param' lub 'send'.
+	Atrybuty:
+		id - wymagany, identyfikator jednostki - pojedynczy znak ASCII
+		unikalny w obrêbie linii komunikacyjnej,
+		type - wymagany, typ raportu - warto¶æ interpretowana przez
+		sterownik (liczba),
+		subtype - wymagany, podtyp raportu, warto¶æ interpetowana przez
+		sterownik (liczba),
+		bufsize - wielko¶æ bufora u¶redniania dla parametrów w bajtach.
   -->
-  
-  <define name="unit">
-    <element name="unit" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.unit"/>
-      <oneOrMore>
-        <choice>
-          <ref name="param"/>
-          <ref name="send"/>
-        </choice>
-      </oneOrMore>
-    </element>
-  </define>
-  <define name="attlist.unit" combine="interleave">
-    <attribute name="id"/>
-    <attribute name="type"/>
-    <attribute name="subtype"/>
-    <attribute name="bufsize"/>
-    <zeroOrMore>
-      <ref name="extra-attribute"/>
-    </zeroOrMore>
-  </define>
-  
+
+	<define name="unit">
+		<element name="unit" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.unit"/>
+			<oneOrMore>
+				<choice>
+					<ref name="param"/>
+					<ref name="send"/>
+				</choice>
+			</oneOrMore>
+		</element>
+	</define>
+	<define name="attlist.unit" combine="interleave" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+		<attribute name="id"/>
+		<attribute name="type">
+			<data type="integer"/>
+		</attribute>
+		<attribute name="subtype">
+			<data type="integer"/>
+		</attribute>
+		<attribute name="bufsize">
+			<data type="integer"/>
+		</attribute>
+		<optional>
+			<attribute name="hdd_temp_port">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="moxa_port"/>
+		</optional>
+		<optional>
+			<attribute name="ip_addr"/>
+		</optional>
+		<!-- ipk-extra -->
+		<optional>
+			<attribute name="limits" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="docpath" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="CheckCRC" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>enable</value>
+					<value>disable</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="ReceiveTimeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="SendDelay" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="proto" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>zet</value>
+					<value>datapaf</value>
+					<value>lumel</value>
+					<value>fp210</value>
+					<value>wmtp</value>
+					<value>modbus</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="optical" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>true</value>
+					<value>false</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="mode" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>master</value>
+					<value>slave</value>
+					<value>client</value>
+					<value>server</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="dev_name" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="nodata-value" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="medium" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>tcp</value>
+					<value>serial</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="inter-unit-query" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="path" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="inter-unit-delay" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="query-interval" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="max_read_attempts" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="read_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="read-timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="char_size" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="serial_protocol_variant" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>ascii</value>
+					<value>rtu</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="stopbits" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>0</value>
+					<value>1</value>
+					<value>2</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="parity" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>EVEN</value>
+					<value>NONE</value>
+					<value>ODD</value>
+					<value>even</value>
+					<value>none</value>
+					<value>odd</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="use_tcp_2_serial_proxy" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>yes</value>
+					<value>no</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tcp-address" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="tcp-port" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="id" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="speed" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="plc" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>zet</value>
+					<value>sk</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="single-register-pdu" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>0</value>
+					<value>1</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="DoubleOrder" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>msdlsd</value>
+					<value>lsdmsd</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="FloatOrder" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>msblsb</value>
+					<value>lsbmsb</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="nodata-timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="address" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<!-- ipk-icinga -->
+		<optional>
+			<attribute name="no_data_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+	</define>
+
   <!--
-    Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
-    'define' oraz elementy 'value', 'raport', 'draw', 'analysis'. Mo¿e te¿ zawieraæ
-    elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
-    Atrybuty:
-    	name - wymagany, pe³na tekstowa nazwa parametru, powinna
-    	zawieraæ trzy cz³ony oddzielone dwukropkami, poza dwukropkami
-    	mo¿e zawieraæ dowolne znaki, zaleca siê jednak ograniczyæ do
-    	liter (mog± byæ polskie) i cyfr, nazwa MUSI byæ unikalna w
-    	obrêbie ca³ej konfiguracji,
-    	short_name - wymagany, nazwa skrócona (do 4 znaków), dowolna
-    	draw_name - nazwa krótka u¿ywana jako nazwa wykresu, powinna
-    	mieæ do 20 znaków, je¿eli jest pusta bêdzie u¿ywana nazwa
-    	pe³na,
-    	unit - wymagana, nazwa jednostki, domy¶lnie '-' (brak jednostki),
-    	base_ind - indeks w bazie, liczba nieujemna dla starego formatu
-    	bazy, "auto" dla nowego formatu bazy, je¶li nie wystêpuje,
-    	oznacza to ¿e parametr nie jest zapisywany do bazy,
-    	prec - dla parametrów liczbowych - ilo¶æ miejsc po przecinku,
-    	tobase - atrybut nie powinien wystêpowaæ w konfiguracjach, ale
+	Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
+	'define' oraz elementy 'value', 'raport', 'draw', 'analysis'. Mo¿e te¿ zawieraæ
+	elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
+	Atrybuty:
+		name - wymagany, pe³na tekstowa nazwa parametru, powinna
+		zawieraæ trzy cz³ony oddzielone dwukropkami, poza dwukropkami
+		mo¿e zawieraæ dowolne znaki, zaleca siê jednak ograniczyæ do
+		liter (mog± byæ polskie) i cyfr, nazwa MUSI byæ unikalna w
+		obrêbie ca³ej konfiguracji,
+		short_name - wymagany, nazwa skrócona (do 4 znaków), dowolna
+		draw_name - nazwa krótka u¿ywana jako nazwa wykresu, powinna
+		mieæ do 20 znaków, je¿eli jest pusta bêdzie u¿ywana nazwa
+		pe³na,
+		unit - wymagana, nazwa jednostki, domy¶lnie '-' (brak jednostki),
+		base_ind - indeks w bazie, liczba nieujemna dla starego formatu
+		bazy, "auto" dla nowego formatu bazy, je¶li nie wystêpuje,
+		oznacza to ¿e parametr nie jest zapisywany do bazy,
+		prec - dla parametrów liczbowych - ilo¶æ miejsc po przecinku,
+		tobase - atrybut nie powinien wystêpowaæ w konfiguracjach, ale
 	jest obecny w szablonach, wiêc zosta³ uwzglêdniony w DTD
   -->
-  
-  <define name="param">
-    <element name="param" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.param"/>
-      <interleave>
-        <zeroOrMore>
-          <ref name="value"/>
-        </zeroOrMore>
-        <optional>
-          <ref name="define"/>
-        </optional>
-        <optional>
-          <ref name="editable"/>
-        </optional>
-        <zeroOrMore>
-          <ref name="raport"/>
-        </zeroOrMore>
-        <zeroOrMore>
-          <ref name="draw"/>
-        </zeroOrMore>
-        <zeroOrMore>
-          <ref name="analysis"/>
-        </zeroOrMore>
-        <optional>
-          <ref name="doc"/>
-        </optional>
-      </interleave>
-    </element>
-  </define>
-  <define name="attlist.param" combine="interleave">
-    <attribute name="name"/>
-    <attribute name="short_name"/>
-    <optional>
-      <attribute name="draw_name"/>
-    </optional>
-    <optional>
-      <attribute name="unit" a:defaultValue="-"/>
-    </optional>
-    <optional>
-      <attribute name="base_ind"/>
-    </optional>
-    <optional>
-      <attribute name="prec"/>
-    </optional>
-    <optional>
-      <attribute name="tobase"/>
-    </optional>
-    <optional>
-      <attribute name="sum_unit"/>
-    </optional>
-    <optional>
-      <attribute name="sum_divisor" a:defaultValue="6"/>
-    </optional>
-    <optional>
-      <attribute name="type"/>
-    </optional>
-    <optional>
-      <attribute name="start_date"/>
-    </optional>
-    <zeroOrMore>
-      <ref name="extra-attribute"/>
-    </zeroOrMore>
-  </define>
+
+	<define name="param">
+		<element name="param" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.param"/>
+			<interleave>
+				<zeroOrMore>
+					<ref name="value"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="define"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="script"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="editable"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="raport"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="draw"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="analysis"/>
+				</zeroOrMore>
+				<zeroOrMore>
+					<ref name="doc"/>
+				</zeroOrMore>
+			</interleave>
+		</element>
+	</define>
+	<define name="attlist.param" combine="interleave">
+		<attribute name="name">
+			<text/>
+		</attribute>
+		<optional>
+			<attribute name="short_name">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="unit"/>
+		</optional>
+		<optional>
+			<attribute name="prec">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="draw_name">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="base_ind">
+				<value>auto</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="forbidden"/>
+		</optional>
+		<optional>
+			<attribute name="ip_addr"/>
+		</optional>
+		<!-- ipk-icinga -->
+		<optional>
+			<attribute name="no_data_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="min" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="max" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="flat_time" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="test_param" ns="http://www.praterm.com.pl/SZARP/ipk-icinga"/>
+		</optional>
+		<!-- ipk-extra -->
+		<optional>
+			<attribute name="export" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="divisor" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="number" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="parname" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="lswmsw" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>MSW</value>
+					<value>LSW</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="ip" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="tag" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="id" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="param" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="transform" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>lsw</value>
+					<value>msw</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="prec" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="devid" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="special" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<value>prev</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="val_op2" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>MSD</value>
+					<value>LSD</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="DoubleOrder" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>msdlsd</value>
+					<value>lsdmsd</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="FloatOrder" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>msblsb</value>
+					<value>lsbmsb</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>lsb</value>
+					<value>msb</value>
+					<value>string</value>
+					<value>integer</value>
+					<value>single</value>
+					<value>float</value>
+					<value>bcd</value>
+					<value>short_float</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="word" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>lsw</value>
+					<value>msw</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="topic" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>InTouch</value>
+					<value>Tagname</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<value>db</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="multiplier" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="register" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="item" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="function" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="val_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>byte</value>
+					<value>integer</value>
+					<value>real</value>
+					<value>float</value>
+					<value>long</value>
+					<value>double</value>
+					<value>bit</value>
+					<value>word</value>
+					<value>decimal2</value>
+					<value>decimal3</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="address" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="register_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>holding_register</value>
+					<value>input_register</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="probe-type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>PT_SEC10</value>
+					<value>PT_MIN10</value>
+					<value>PT_HOUR</value>
+					<value>PT_HOUR8</value>
+					<value>PT_DAY</value>
+					<value>PT_WEEK</value>
+					<value>PT_MONTH</value>
+					<value>PT_YEAR</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="val_op" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>MSW</value>
+					<value>msw</value>
+					<value>LSW</value>
+					<value>lsw</value>
+				</choice>
+			</attribute>
+		</optional>
+	</define>
+
   <!--
-    Element 'define' wystêpuj±cy w parametrze oznacza, ¿e dany parametr
-    jest parametrem definiowalnym, wyliczanym na podstawie innych.
-    Atrybuty:
-    	type - wymagany, okre¶la typ formu³y, obecnie dostêpne s±
-    	dwa typy:
-    	"RPN" - standardowa formu³a SZARP'a 2.1 w odwrotnej notacji
-    	polskiej, z liczbami zapisywanymi normalnie, a odwo³ania do
-    	warto¶ci parametrów maj± postaæ pe³nej nazwy parametru w 
-    	nawiasie, przy czym zamiast cz³onu nazwy mo¿e wyst±piæ '*',
-    	oznaczaj±ca skopiowanie cz³onu nazwy z parametru macierzystego,
-    	jest wyliczany przez parcook'a i dostêpny z pamiêci dzielonej,
-    	"DRAWDEFINABLE" - parametr wyliczany przez przegl±daj±cego,
-    	nieobecny w pamiêci dzielonej ani w bazie, formula tak¿e w
-    	postaci ONP, ale z trochê innym zestawem operatorów, w SZARP
-    	2.1 opisany w pliku definable.cfg, parametry tego typu mog±
-    	wystêpowaæ tylko wewn±trz elementu 'drawdefinable'
-    	formula - domy¶lnie "null" - formu³a do wyliczania warto¶ci
-    	parametru.
+	Element 'value' opisuje dostêpne warto¶ci dla parametrów
+	nieliczbowych i odpowiadaj±ce im warto¶ci liczbowe (np "Tak" - 1, "Nie
+	- 0). Pojedyczny element opisuje jedn± warto¶æ.
+	Atrybuty:
+		int - wymagany, warto¶æ liczbowa (w bazie lub pamiêci
+		dzielonej),
+		name - opis warto¶ci widoczny np. w raportach.
+  -->
+
+	<define name="value">
+		<element name="value" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.value"/>
+			<empty/>
+		</element>
+	</define>
+	<define name="attlist.value" combine="interleave">
+		<attribute name="int">
+			<data type="integer"/>
+		</attribute>
+		<attribute name="name">
+			<text/>
+		</attribute>
+	</define>
+
+  <!--
+	Element 'define' wystêpuj±cy w parametrze oznacza, ¿e dany parametr
+	jest parametrem definiowalnym, wyliczanym na podstawie innych.
+	Atrybuty:
+		type - wymagany, okre¶la typ formu³y, obecnie dostêpne s±
+		dwa typy:
+		"RPN" - standardowa formu³a SZARP'a 2.1 w odwrotnej notacji
+		polskiej, z liczbami zapisywanymi normalnie, a odwo³ania do
+		warto¶ci parametrów maj± postaæ pe³nej nazwy parametru w
+		nawiasie, przy czym zamiast cz³onu nazwy mo¿e wyst±piæ '*',
+		oznaczaj±ca skopiowanie cz³onu nazwy z parametru macierzystego,
+		jest wyliczany przez parcook'a i dostêpny z pamiêci dzielonej,
+		"DRAWDEFINABLE" - parametr wyliczany przez przegl±daj±cego,
+		nieobecny w pamiêci dzielonej ani w bazie, formula tak¿e w
+		postaci ONP, ale z trochê innym zestawem operatorów, w SZARP
+		2.1 opisany w pliku definable.cfg, parametry tego typu mog±
+		wystêpowaæ tylko wewn±trz elementu 'drawdefinable'
+		formula - domy¶lnie "null" - formu³a do wyliczania warto¶ci
+		parametru.
 	lua_formula - okre¶la sposób w jaki ma byæ liczona warto¶æ ¶rednia
 		parametru zapisnego w LUA:
 		"va" - oznacza ze warto¶æ ¶rednia jest liczona na podstaiwe
 		warto¶ci ¶rednich parametrów od których formu³a zele¿y
 		(tak zachowywa³y siê tzw. 'stare definiowalne')
-		"av" - oznacza ¿e warto¶c ¶rednia jest liczona jako 
+		"av" - oznacza ¿e warto¶c ¶rednia jest liczona jako
 		u¶rednie warto¶ci formu³y dla wszystkich
 		próbek z zadanego przedzia³u czasu ('nowe definiowalne')
 	new_def - opcjonalny, jesli ustawiony na 'yes' parametr DRAWDEFINABLE
-	    powinien byæ liczony w nowy sposób, brak atrubutu odczytywane
-	    jest jako 'no'
-    Przyk³ad parametru definiowalnego:
-    
-    <param name="Kocio³ 1:Waga:stosunek energia / masa"
-    	short_name="Km" draw_name="Stos. energia/masa" unit="MWh/t" prec="3"
-    	base_ind="40">
-        <define type="RPN" formula="(*:*:stosunek energia /objêto¶æ;) 1000 * (*:*:masa nasypowa
-           w&#x119;gla) / "/>
-    </param>
-    
+		powinien byæ liczony w nowy sposób, brak atrubutu odczytywane
+		jest jako 'no'
+	Przyk³ad parametru definiowalnego:
+
+	<param name="Kocio³ 1:Waga:stosunek energia / masa"
+		short_name="Km" draw_name="Stos. energia/masa" unit="MWh/t" prec="3"
+		base_ind="40">
+		<define type="RPN" formula="(*:*:stosunek energia /objêto¶æ;) 1000 * (*:*:masa nasypowa
+		   w&#x119;gla) / "/>
+	</param>
+
   -->
-  
-  <define name="define">
-    <element name="define" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.define"/>
-        <interleave>
-        <optional>
-          <ref name="script"/>
-        </optional>
-        <optional>
-          <ref name="doc"/>
-        </optional>
-      </interleave>
-    </element>
-  </define>
-  <define name="attlist.define" combine="interleave">
-    <optional>
-      <attribute name="type" a:defaultValue="RPN">
-        <choice>
-          <value>RPN</value>
-          <value>DRAWDEFINABLE</value>
-          <value>LUA</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="formula" a:defaultValue="null "/>
-    </optional>
-    <optional>
-      <attribute name="lua_formula">
-        <choice>
-          <value>VA</value>
-          <value>AV</value>
-          <value>IPC</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="lua_start_date_time"/>
-    </optional>
-    <optional>
-      <attribute name="lua_start_offset"/>
-    </optional>
-    <optional>
-      <attribute name="lua_end_offset"/>
-    </optional>
-    <optional>
-      <attribute name="lua_formula"/>
-    </optional>
-    <optional>
-      <attribute name="new_def" a:defaultValue="no">
-        <choice>
-          <value>no</value>
-          <value>yes</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="start_date"/>
-    </optional>
-  </define>
-  
-  <define name="script"> 
-    <element name="script" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <text/>
-    </element> 
-  </define>
+
+	<define name="define">
+		<element name="define" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.define"/>
+			<interleave>
+				<optional>
+					<ref name="script"/>
+				</optional>
+				<optional>
+					<ref name="doc"/>
+				</optional>
+			</interleave>
+		</element>
+	</define>
+	<define name="attlist.define" combine="interleave">
+		<attribute name="type">
+			<choice>
+				<value>RPN</value>
+				<value>DRAWDEFINABLE</value>
+				<value>LUA</value>
+			</choice>
+		</attribute>
+		<optional>
+			<choice>
+				<attribute name="formula"/>
+				<attribute name="lua_formula">
+					<choice>
+						<value>va</value>
+						<value>av</value>
+					</choice>
+				</attribute>
+			</choice>
+		</optional>
+		<optional>
+			<attribute name="lua_start_date_time"/>
+		</optional>
+		<optional>
+			<attribute name="lua_start_offset"/>
+		</optional>
+		<optional>
+			<attribute name="lua_end_offset"/>
+		</optional>
+		<optional>
+			<attribute name="start_date"/>
+		</optional>
+		<optional>
+			<attribute name="new_def"/>
+		</optional>
+	</define>
+
+	<define name="script">
+		<element name="script" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<text/>
+		</element>
+	</define>
 
   <!--
     Element 'editable' ??? PROFIT
   -->
 
-  <define name="editable"> 
-    <element name="editable" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
-      <ref name="attlist.editable"/>
-      <empty />
-    </element> 
-  </define>
-  <define name="attlist.editable" combine="interleave">
-    <attribute name="min"/>
-    <attribute name="max"/>
-    <attribute name="time"/>
-  </define>
+	<define name="editable">
+		<element name="editable" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+			<ref name="attlist.editable"/>
+			<empty />
+		</element>
+	</define>
+	<define name="attlist.editable" combine="interleave">
+		<attribute name="min"/>
+		<attribute name="max"/>
+		<attribute name="time"/>
+	</define>
 
   <!--
-    Element 'value' opisuje dostêpne warto¶ci dla parametrów
-    nieliczbowych i odpowiadaj±ce im warto¶ci liczbowe (np "Tak" - 1, "Nie
-    - 0). Pojedyczny element opisuje jedn± warto¶æ.
-    Atrybuty:
-    	int - wymagany, warto¶æ liczbowa (w bazie lub pamiêci
-    	dzielonej),
-    	name - opis warto¶ci widoczny np. w raportach.
+	Element 'raport' opisuje wyst±pienie parametru w raporcie. Jeden
+	parametr mo¿e mieæ wiele elementów 'raport', bêdzie wiêc widoczny w
+	wielu raportach.
+	Atrybuty:
+		title - wymagany, tytu³ raportu, jest jednocze¶nie
+		identyfikatorem raportu, wiêc ró¿ne raporty musz± mieæ ró¿ne
+		tytu³y,
+		descr - opis parametru w raporcie, je¿eli nie wystêpuje, to
+		jako opis u¿ywana jest ostatnia czê¶æ nazwy parametru,
+		order - liczba rzeczywista, okre¶la kolejno¶æ parametru w
+		raporcie, im mniejsza tym wy¿ej w raporcie znajdzie siê
+		parametr, parametry bez tego atrybutu s± ustawiane za tymi
+		z priorytetem,
+		filename - nazwa pliku z raportem, je¿eli jej nie ma, to u¿yty
+		bêdzie tytu³, atrybut ten w przysz³o¶ci mo¿e zostaæ usuniêty.
   -->
-  
-  <define name="value">
-    <element name="value" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.value"/>
-      <empty/>
-    </element>
-  </define>
-  <define name="attlist.value" combine="interleave">
-    <attribute name="int"/>
-    <attribute name="name"/>
-  </define>
-  
-  <!--
-    Element 'raport' opisuje wyst±pienie parametru w raporcie. Jeden
-    parametr mo¿e mieæ wiele elementów 'raport', bêdzie wiêc widoczny w
-    wielu raportach.
-    Atrybuty:
-    	title - wymagany, tytu³ raportu, jest jednocze¶nie
-    	identyfikatorem raportu, wiêc ró¿ne raporty musz± mieæ ró¿ne
-    	tytu³y,
-    	descr - opis parametru w raporcie, je¿eli nie wystêpuje, to
-    	jako opis u¿ywana jest ostatnia czê¶æ nazwy parametru,
-    	order - liczba rzeczywista, okre¶la kolejno¶æ parametru w 
-    	raporcie, im mniejsza tym wy¿ej w raporcie znajdzie siê
-    	parametr, parametry bez tego atrybutu s± ustawiane za tymi
-    	z priorytetem,
-    	filename - nazwa pliku z raportem, je¿eli jej nie ma, to u¿yty
-    	bêdzie tytu³, atrybut ten w przysz³o¶ci mo¿e zostaæ usuniêty.
-  -->
-  
-  <define name="raport">
-    <element name="raport" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.raport"/>
-      <empty/>
-    </element>
-  </define>
-  <define name="attlist.raport" combine="interleave">
-    <attribute name="title"/>
-    <optional>
-      <attribute name="description"/>
-    </optional>
-    <optional>
-      <attribute name="order"/>
-    </optional>
-    <optional>
-      <attribute name="filename"/>
-    </optional>
-  </define>
-  
-  <!--
-    Opis wykresu. Podobnie jak z raportami parametr mo¿e wystêpowaæ w wielu
-    wykresach.
-    Atrybuty:
-    	title - wymagany, nazwa okna z wykresami (grupy wykresów),
-    	max - maksymalna warto¶æ parametru (górny zakres osi), liczba
-    	rzeczywista, obecnie wymagana,
-    	min - minimalna warto¶æ parametru (dolny zakres osi), liczba
-    	rzeczywista, obecnie wymagana,
-    	scale - parametr okre¶laj±cy jaka czê¶æ wykresu ma byæ
-    	przeskalowana do zakresu podanego przez nastêpne atrybuty,
-    	je¿eli jest równy 0 lub nieobecny, przeskalowanie nie
-    	wystêpuje, podawany w procentach,
-    	minscale, maxscale - dolny i górny zakres warto¶ci ulegaj±cych
-    	przeskalowaniu (liczby rzeczywiste),
-    	color - kolor wykresu, podany jako sta³a tekstowa lub warto¶æ
-    	RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', je¿eli
-    	jest nieobecny kolor zostanie dobrany automatycznie
-    	special - atrybut specjalny, domy¶lnie 'none', inne to:
-    		piedraw - parametr jest liczony do wykresu ko³owego
-    		hoursum - parametr jest liczony do sumowania
-    		godzinowego
-    		valve - zawory, atrybut dla kompatybilno¶ci wstecz
-    		rel - je¶li w oknie s± dwa wykresy, to w oknie
-    		dodatkowym pojawi siê wyliczenie stosunku warto¶ci
-    		parametrów z wykresów
-    		diff - w oknie dodatkowym pojawia siê ró¿nica warto¶ci
-    		koñcowej i pocz±tkowej dla wykresu.
-    	Dok³adny opis znaczenia atrybutów specjalnych znajduje siê w
-    	pliku resources/dcoumentation/draw.ekran.README.html.
-    	prior - priorytet okna zawieraj±cego wykres - liczba
-    	zmiennoprzecinkowa dodatnia, im mniejsza tym wy¿ej bêdzie okno
-    	na li¶cie w programie przegl±daj±cym
-    	order - jak prior, ale dotyczy kolejno¶ci wykresu w oknie
-  -->
-  
-  <define name="draw">
-    <element name="draw" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.draw"/>
-      <zeroOrMore>
-        <ref name="treenode"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="attlist.draw" combine="interleave">
-    <attribute name="title"/>
-    <optional>
-      <attribute name="max"/>
-    </optional>
-    <optional>
-      <attribute name="min"/>
-    </optional>
-    <optional>
-      <attribute name="scale"/>
-    </optional>
-    <optional>
-      <attribute name="minscale"/>
-    </optional>
-    <optional>
-      <attribute name="maxscale"/>
-    </optional>
-    <optional>
-      <attribute name="color"/>
-    </optional>
-    <optional>
-      <attribute name="prior"/>
-    </optional>
-    <optional>
-      <attribute name="order"/>
-    </optional>
-    <optional>
-      <attribute name="special" a:defaultValue="none">
-        <choice>
-          <value>piedraw</value>
-          <value>hoursum</value>
-          <value>valve</value>
-          <value>rel</value>
-          <value>diff</value>
-          <value>none</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="new_def" a:defaultValue="no">
-        <choice>
-          <value>no</value>
-          <value>yes</value>
-        </choice>
-      </attribute>
-    </optional>
-  </define>
+
+	<define name="raport">
+		<element name="raport" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.raport"/>
+			<empty/>
+		</element>
+	</define>
+	<define name="attlist.raport" combine="interleave">
+		<attribute name="title"/>
+		<optional>
+			<attribute name="description"/>
+		</optional>
+		<optional>
+			<attribute name="order"/>
+		</optional>
+		<optional>
+			<attribute name="filename"/>
+		</optional>
+	</define>
 
   <!--
-    Element 'treenode' jest to podelement elementu draw lub treenode, s³u¿y do umieszczenia 
-    zestawu wykresów w drzewie. 
-    Atrybuty:
-      prior - okre¶la priorytet tego wêz³a w¶ród jego braci, funkcjonuje to identycznie
-      jak element prior w elementach draw
-      draw_prior - okre¶la priorytet zestawu ojca w wê¼le definiowanym przez ten element,
-      ma tylko sens w przypadku elementów których bezpo¶rednim ojcem jest element draw
+	Opis wykresu. Podobnie jak z raportami parametr mo¿e wystêpowaæ w wielu
+	wykresach.
+	Atrybuty:
+		title - wymagany, nazwa okna z wykresami (grupy wykresów),
+		max - maksymalna warto¶æ parametru (górny zakres osi), liczba
+		rzeczywista, obecnie wymagana,
+		min - minimalna warto¶æ parametru (dolny zakres osi), liczba
+		rzeczywista, obecnie wymagana,
+		scale - parametr okre¶laj±cy jaka czê¶æ wykresu ma byæ
+		przeskalowana do zakresu podanego przez nastêpne atrybuty,
+		je¿eli jest równy 0 lub nieobecny, przeskalowanie nie
+		wystêpuje, podawany w procentach,
+		minscale, maxscale - dolny i górny zakres warto¶ci ulegaj±cych
+		przeskalowaniu (liczby rzeczywiste),
+		color - kolor wykresu, podany jako sta³a tekstowa lub warto¶æ
+		RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', je¿eli
+		jest nieobecny kolor zostanie dobrany automatycznie
+		special - atrybut specjalny, domy¶lnie 'none', inne to:
+			piedraw - parametr jest liczony do wykresu ko³owego
+			hoursum - parametr jest liczony do sumowania
+			godzinowego
+			valve - zawory, atrybut dla kompatybilno¶ci wstecz
+			rel - je¶li w oknie s± dwa wykresy, to w oknie
+			dodatkowym pojawi siê wyliczenie stosunku warto¶ci
+			parametrów z wykresów
+			diff - w oknie dodatkowym pojawia siê ró¿nica warto¶ci
+			koñcowej i pocz±tkowej dla wykresu.
+		Dok³adny opis znaczenia atrybutów specjalnych znajduje siê w
+		pliku resources/dcoumentation/draw.ekran.README.html.
+		prior - priorytet okna zawieraj±cego wykres - liczba
+		zmiennoprzecinkowa dodatnia, im mniejsza tym wy¿ej bêdzie okno
+		na li¶cie w programie przegl±daj±cym
+		order - jak prior, ale dotyczy kolejno¶ci wykresu w oknie
   -->
-  <define name="treenode">
-    <element name="treenode" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.treenode"/>
-      <optional>
-        <ref name="treenode"/>
-      </optional>
-    </element>
-  </define>
 
-  <define name="attlist.treenode">
-    <optional>
-      <attribute name="name"/>
-    </optional>
-    <optional>
-      <attribute name="prior"/>
-    </optional>
-    <optional>
-      <attribute name="draw_prior"/>
-    </optional>
-  </define>
-  
+	<define name="draw">
+		<element name="draw" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.draw"/>
+			<zeroOrMore>
+				<ref name="treenode"/>
+			</zeroOrMore>
+		</element>
+	</define>
+	<define name="attlist.draw" combine="interleave">
+		<attribute name="title"/>
+		<attribute name="max">
+			<data type="double"/>
+		</attribute>
+		<optional>
+			<attribute name="min">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="scale">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="minscale">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="maxscale">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="color"/>
+		</optional>
+		<optional>
+			<attribute name="prior">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="order">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="special" a:defaultValue="none">
+				<choice>
+					<value>piedraw</value>
+					<value>hoursum</value>
+					<value>valve</value>
+					<value>rel</value>
+					<value>diff</value>
+					<value>none</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="new_def">
+				<choice>
+					<value>yes</value>
+					<value>no</value>
+				</choice>
+			</attribute>
+		</optional>
+	</define>
+
   <!--
-    Element 'send' opisuje parametr wysy³any do sterownika. Mo¿e zawieraæ
-    elementy i atrybuty z przestrzeni innych przestrzeni nazw.
-    Atrybuty:
-    	param - nazwa parametru, którego warto¶æ ma byæ wysy³ana, musi
-    	istnieæ parametr o takie nazwie, wymagany,
-    	type - rodzaj wysy³anych danych - próbka (domy¶lnie) lub
-    	¶rednia podanego rodzaju,
-    	repeat - ilo¶æ powtórzeñ je¿eli sterownik nie potwierdzi³
-    	przyjêcia parametru.
-    	send_no_data - je¶li atrybut jest obecny, to sender wysy³a do
-    	sterownika NO_DATA, je¶li nie, to w przypadku braku danych nic
-    	nie wysy³a
+	Element 'treenode' jest to podelement elementu draw lub treenode, s³u¿y do umieszczenia
+	zestawu wykresów w drzewie.
+	Atrybuty:
+	  prior - okre¶la priorytet tego wêz³a w¶ród jego braci, funkcjonuje to identycznie
+	  jak element prior w elementach draw
+	  draw_prior - okre¶la priorytet zestawu ojca w wê¼le definiowanym przez ten element,
+	  ma tylko sens w przypadku elementów których bezpo¶rednim ojcem jest element draw
   -->
-  
-  <define name="send">
-    <element name="send" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.send"/>
-    </element>
-  </define>
-  <define name="attlist.send" combine="interleave">
-    <optional>
-      <choice>
-        <attribute name="param"/>
-        <attribute name="value"/>
-      </choice>
-    </optional>
-    <optional>
-      <attribute name="type" a:defaultValue="probe">
-        <choice>
-          <value>probe</value>
-          <value>min</value>
-          <value>min10</value>
-          <value>hour</value>
-          <value>day</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="repeat" a:defaultValue="1"/>
-    </optional>
-    <optional>
-      <attribute name="send_no_data"/>
-    </optional>
-    <zeroOrMore>
-      <ref name="extra-attribute"/>
-    </zeroOrMore>
-  </define>
-  
-  <!-- element defined zawiera definicje parametrów definiowalnych parcooka -->
-  
-  <define name="defined">
-    <element name="defined" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.defined"/>
-      <zeroOrMore>
-        <ref name="param"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="attlist.defined" combine="interleave">
-    <empty/>
-  </define>
-  
-  <!-- element drawdefinable zawiera definicje parametrów definiowalnych 
-  przegl±daj±cego -->
-  
-  <define name="drawdefinable" ns="http://www.praterm.com.pl/SZARP/ipk">
-    <element name="drawdefinable">
-      <ref name="attlist.drawdefinable"/>
-      <zeroOrMore>
-        <ref name="param"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="attlist.drawdefinable">
-    <empty/>
-  </define>
+	<define name="treenode">
+		<element name="treenode" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.treenode"/>
+			<optional>
+				<ref name="treenode"/>
+			</optional>
+		</element>
+	</define>
+
+	<define name="attlist.treenode">
+		<attribute name="name"/>
+		<optional>
+			<attribute name="prior">
+				<data type="double"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="draw_prior">
+				<data type="double"/>
+			</attribute>
+		</optional>
+	</define>
 
   <!-- Konfiguracja programu analiza -->
-  
+
   <!-- Obecnosc elementu 'analysis' w elemencie 'param' oznacza,
-    ze dane zawarte w tym paramaterze podlegaja analizie.
-    Zawiera dwa obowiazkowe atrybuty:
-    boiler_no - numer kot³a
-    param_type - typ parametru
+	ze dane zawarte w tym paramaterze podlegaja analizie.
+	Zawiera dwa obowiazkowe atrybuty:
+	boiler_no - numer kot³a
+	param_type - typ parametru
   	analisys_enable	- zezwolenie od regularora kot³a na analize
 	regulator_work_time - czas pracy regulatora kot³a w pracy automatycznej
 	coal_volume aktualna - objêto¶æ wchodz±cego do kot³a wêgla
@@ -679,188 +1330,270 @@
 	right_grate_speed - prêdko¶æ posuwu prawego rusztu
 	max_air_stream - gorna granica powietrza w analizie
 	min_air_stream - dolna granica powietrza w analizia
-        left_coal_gate_height - wysoko¶æ lewej warstwownicy
-        right_coal_gate_height - wysoko¶æ pracwej warstwownicy
+		left_coal_gate_height - wysoko¶æ lewej warstwownicy
+		right_coal_gate_height - wysoko¶æ pracwej warstwownicy
 	analisys_status - status analizy
 	air_stream_coal_volume_ratio_result  - rezultat analizy - warto¶æ strumienia powietrza
   -->
 
-  <define name="analysis" combine="interleave">
-    <element name="analysis" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.analysis"/>
-      <empty/>
-    </element>
-  </define>
+	<define name="analysis" combine="interleave">
+		<element name="analysis" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.analysis"/>
+			<empty/>
+		</element>
+	</define>
 
-  <define name="attlist.analysis">
-      <attribute name="boiler_no"/>
-      <attribute name="param_type">
-        <choice>
-          <value>analysis_enable</value>
-          <value>regulator_work_time</value>
-          <value>coal_volume</value>
-          <value>energy_coal_volume_ratio</value>
-          <value>air_stream</value>
-          <value>left_grate_speed</value>
-          <value>right_grate_speed</value>
-          <value>max_air_stream</value>
-          <value>min_air_stream</value>
-          <value>left_coal_gate_height</value>
-          <value>right_coal_gate_height</value>
-          <value>analysis_status</value>
-          <value>air_stream_result</value>
-        </choice>
-      </attribute>
-  </define>
+	<define name="attlist.analysis">
+			<attribute name="boiler_no"/>
+			<attribute name="param_type">
+			<choice>
+				<value>analysis_enable</value>
+				<value>regulator_work_time</value>
+				<value>coal_volume</value>
+				<value>energy_coal_volume_ratio</value>
+				<value>air_stream</value>
+				<value>left_grate_speed</value>
+				<value>right_grate_speed</value>
+				<value>max_air_stream</value>
+				<value>min_air_stream</value>
+				<value>left_coal_gate_height</value>
+				<value>right_coal_gate_height</value>
+				<value>analysis_status</value>
+				<value>air_stream_result</value>
+			</choice>
+		</attribute>
+	</define>
 
-  <!-- Element 'boilers' opisuje kotly, ktorych praca podlega analizie,
-    musi zaiwerac co najmniej jeden element boiler.
-    Element 'boiler' opisuje kocio³, zawiera nastepujace obowi±zkowe atrybuty:
-  	boiler_no - number kot³a
-	grate_speed - procentowa gorna granica zmian predkosci rusztu podczas 
-		jednego cyklu analizy 
-	coal_gate_height - procentowa gorna granica zmian wysokosci warstwownicy
-		podczas jednego cyklu analizy 
-	boiler_type - typ kotla
-    Element boiler musi zawierac trzy elementy 'interval'
-  -->
+  <!-- Dokumentacja -->
 
-  <define name="boilers" combine="interleave">
-    <element name="boilers" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <oneOrMore>
-        <element name="boiler" ns="http://www.praterm.com.pl/SZARP/ipk">
-          <attribute name="boiler_no"/>
-          <attribute name="grate_speed"/>
-          <attribute name="coal_gate_height"/>
-          <attribute name="boiler_type">
-            <choice>
-              <value>WR-25</value>
-              <value>WR-10</value>
-              <value>WR-5</value>
-              <value>WR-2,5</value>
-              <value>WR-1,25</value>
-  	    </choice>
-          </attribute>
-          <ref name="interval"/>
-          <ref name="interval"/>
-          <ref name="interval"/>
-        </element>
-      </oneOrMore>
-    </element>
-  </define>
-  
+	<define name="doc">
+		<element name="doc" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+			<ref name="attlist.doc"/>
+			<text/>
+		</element>
+	</define>
+	<define name="attlist.doc" combine="interleave">
+		<optional>
+			<attribute name="hidden">
+				<choice>
+					<value>true</value>
+					<value>false</value>
+				</choice>
+			</attribute>
+		</optional>
+	</define>
+
   <!--
-   Element 'interval' opisuje cykl pracy analizy
-   Zawiera nastêpuj±ce parametry:
-   	grate_speed_lower - dolne ograniczenie predkosci rusztu podczas cyklu
-				(wartosc calkowita, jednostka mm/h)
-	grate_speed_upper - gorne ograniczenie predkosci rusztu podczas cyklu
-				(wartosc calkowita, jednostka mm/h)
-	duration - czas trwania cyklu (w sekundach) 
+	Element 'send' opisuje parametr wysy³any do sterownika. Mo¿e zawieraæ
+	elementy i atrybuty z przestrzeni innych przestrzeni nazw.
+	Atrybuty:
+		param - nazwa parametru, którego warto¶æ ma byæ wysy³ana, musi
+		istnieæ parametr o takie nazwie, wymagany,
+		type - rodzaj wysy³anych danych - próbka (domy¶lnie) lub
+		¶rednia podanego rodzaju,
+		repeat - ilo¶æ powtórzeñ je¿eli sterownik nie potwierdzi³
+		przyjêcia parametru.
+		send_no_data - je¶li atrybut jest obecny, to sender wysy³a do
+		sterownika NO_DATA, je¶li nie, to w przypadku braku danych nic
+		nie wysy³a
   -->
-  <define name="interval" combine="interleave">
-    <element name="interval" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <ref name="attlist.interval"/>
-      <empty/>
-    </element>
-  </define>
 
-  <!-- Element 'seasons' opisuje sezony letnie, moze zawierac dowolna ilosc 
-    elementow 'season' opisujacych sezony dla poszczegolnych lat.
-    Element 'seasons' musi zawierac nastepujace atrybuty:
+	<define name="send">
+		<element name="send" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.send"/>
+		</element>
+	</define>
+	<define name="attlist.send" combine="interleave">
+		<choice>
+			<attribute name="param"/>
+			<attribute name="value"/>
+		</choice>
+		<optional>
+			<attribute name="type">
+				<choice>
+					<value>probe</value>
+					<value>min</value>
+					<value>min10</value>
+					<value>hour</value>
+					<value>day</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="repeat"/>
+		</optional>
+		<optional>
+			<attribute name="send_no_data"/>
+		</optional>
+		<optional>
+			<attribute name="prec">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<!-- ipk-extra -->
+		<optional>
+			<attribute name="number" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="val_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>byte</value>
+					<value>integer</value>
+					<value>real</value>
+					<value>float</value>
+					<value>long</value>
+					<value>double</value>
+					<value>bit</value>
+					<value>word</value>
+					<value>decimal2</value>
+					<value>decimal3</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>lsb</value>
+					<value>msb</value>
+					<value>string</value>
+					<value>integer</value>
+					<value>single</value>
+					<value>float</value>
+					<value>bcd</value>
+					<value>short_float</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="prec" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="combined" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>MSW</value>
+					<value>LSW</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="val_op" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<choice>
+					<value>MSW</value>
+					<value>msw</value>
+					<value>LSW</value>
+					<value>lsw</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="address" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="function" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
+			<attribute name="db" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<value>db</value>
+			</attribute>
+		</optional>
+	</define>
+
+  <!-- element defined zawiera definicje parametrów definiowalnych parcooka -->
+
+	<define name="defined">
+		<element name="defined" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<ref name="attlist.defined"/>
+			<zeroOrMore>
+				<ref name="param"/>
+			</zeroOrMore>
+		</element>
+	</define>
+	<define name="attlist.defined" combine="interleave">
+		<empty/>
+	</define>
+
+  <!-- element drawdefinable zawiera definicje parametrów definiowalnych
+  przegl±daj±cego -->
+
+	<define name="drawdefinable" ns="http://www.praterm.com.pl/SZARP/ipk">
+		<element name="drawdefinable">
+			<ref name="attlist.drawdefinable"/>
+			<zeroOrMore>
+				<ref name="param"/>
+			</zeroOrMore>
+		</element>
+	</define>
+	<define name="attlist.drawdefinable">
+		<empty/>
+	</define>
+
+  <!-- Element 'seasons' opisuje sezony letnie, moze zawierac dowolna ilosc
+	elementow 'season' opisujacych sezony dla poszczegolnych lat.
+	Element 'seasons' musi zawierac nastepujace atrybuty:
   	month_start - miesiac, w ktorym zaczyna sie sezon letni - liczba z przedzialu (1-12)
 	day_start - dzien, w ktorym zaczyna sie sezon letni - liczba z przedialu (1-31)
 	month_end - miesiac, w ktorym konczy sie sezon letni - liczba z przedzialu (1-12)
 	day_end - miesiac , w ktorym konczy sie sezon letni - liczba z przedialu (1-31)
-    Atrybuty elementu seasons definiuja domyslne granice sezonu letniego uzywane, jezeli
-    dla danego roku granice te nie sa okresolne za pomoca elementu 'season'.
+	Atrybuty elementu seasons definiuja domyslne granice sezonu letniego uzywane, jezeli
+	dla danego roku granice te nie sa okresolne za pomoca elementu 'season'.
 
-    Element 'season' zawiera taki same atrybuty jak element 'seasons' oraz dodatkowy atrybut
-    'year' okreslajacy rok, ktorego definicja sezonu dotyczy.
+	Element 'season' zawiera taki same atrybuty jak element 'seasons' oraz dodatkowy atrybut
+	'year' okreslajacy rok, ktorego definicja sezonu dotyczy.
   -->
 
-  <define name="seasons" combine="interleave">
-    <element name="seasons" ns="http://www.praterm.com.pl/SZARP/ipk">
-      <attribute name="month_start"/>
-      <attribute name="day_start"/>
-      <attribute name="month_end"/>
-      <attribute name="day_end"/>
-      <zeroOrMore>
-        <element name="season" ns="http://www.praterm.com.pl/SZARP/ipk">
-          <attribute name="month_start"/>
-          <attribute name="day_start"/>
-          <attribute name="month_end"/>
-	  <attribute name="day_end"/>
-	  <attribute name="year"/>
-        </element>
-      </zeroOrMore>
-    </element>
-  </define>
-
-  <define name="attlist.interval" combine="interleave">
-    <attribute name="grate_speed_lower"/>
-    <attribute name="grate_speed_upper"/>
-    <attribute name="duration"/>
-  </define>
-
-  <!-- Dodatkowe elementy i atrybuty z innych przestrzeni nazw. -->
-  
-  <define name="extra-attribute">
-    <attribute>
-      <anyName>
-        <except>
-	  <nsName/>
-	  <nsName ns=""/>
-	</except>
-      </anyName>
-    </attribute>
-  </define>
+	<define name="seasons" combine="interleave">
+		<element name="seasons" ns="http://www.praterm.com.pl/SZARP/ipk">
+			<attribute name="month_start"/>
+			<attribute name="day_start"/>
+			<attribute name="month_end"/>
+			<attribute name="day_end"/>
+			<zeroOrMore>
+				<element name="season" ns="http://www.praterm.com.pl/SZARP/ipk">
+					<attribute name="month_start"/>
+					<attribute name="day_start"/>
+					<attribute name="month_end"/>
+					<attribute name="day_end"/>
+					<attribute name="year"/>
+				</element>
+			</zeroOrMore>
+		</element>
+	</define>
 
   <!-- Checker -->
 
-  <define name="checker">
-    <element name="rules" ns="http://www.praterm.com.pl/SZARP/ipk-checker">
-      <ref name="attlist.rules"/>
-      <zeroOrMore>
-        <element name="rule">
-          <ref name="attlist.rule"/>
-          <text/>
-        </element>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="attlist.rules" combine="interleave">
-    <empty/>
-  </define>
-  <define name="attlist.rule" combine="interleave">
-    <attribute name="name" ns="http://www.praterm.com.pl/SZARP/ipk-checker"/>
-  </define>
-
-  <!-- Dokumentacja -->
-
-  <define name="doc">
-    <element name="doc" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
-      <ref name="attlist.doc"/>
-      <text/>
-    </element>
-  </define>
-  <define name="attlist.doc" combine="interleave">
-    <optional>
-      <attribute name="hidden">
-        <choice>
-          <value>true</value>
-          <value>false</value>
-        </choice>
-      </attribute>
-    </optional>
-  </define>
+	<define name="checker">
+		<element name="rules" ns="http://www.praterm.com.pl/SZARP/ipk-checker">
+			<ref name="attlist.rules"/>
+			<zeroOrMore>
+			<element name="rule">
+				<ref name="attlist.rule"/>
+				<text/>
+			</element>
+			</zeroOrMore>
+		</element>
+	</define>
+	<define name="attlist.rules" combine="interleave">
+		<empty/>
+	</define>
+	<define name="attlist.rule" combine="interleave">
+		<attribute name="name" ns="http://www.praterm.com.pl/SZARP/ipk-checker"/>
+	</define>
 
   <!-- G³ówny tag dokumentu -->
-  
-  <start>
-    <choice>
-      <ref name="params"/>
-    </choice>
-  </start>
-  
+
+	<start>
+		<choice>
+			<ref name="params"/>
+		</choice>
+	</start>
+
 </grammar>

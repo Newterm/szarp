@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -386,7 +386,7 @@ template<class container_type> PExpression TermConverter<container_type>::operat
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const tableconstructor& tableconstrutor_) {
-	throw ParamConversionException(L"Table construtor are not supported in optimized expressions");
+	throw ParamConversionWarning(L"Table construtor are not supported in optimized expressions");
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const postfixexp& postfixexp_) {
@@ -412,7 +412,7 @@ template<class container_type> const std::vector<expression>& PostfixConverter<c
        lua_opt_debug_stream << "Converting args, number of exp_ident_arg_namerg :) expressions:" << e.size() << std::endl;
 #endif
        if (e.size() != 1)
-	       throw ParamConversionException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
+	       throw ParamConversionWarning(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
        try {
 	       const namearg& namearg_ = boost::get<namearg>(e[0]);
 	       const args& args_ = boost::get<args>(namearg_);
@@ -420,7 +420,7 @@ template<class container_type> const std::vector<expression>& PostfixConverter<c
 		       = boost::get<std::vector<expression> >(args_);
 	       return exps_;
        } catch (boost::bad_get &e) {
-	       throw ParamConversionException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
+	       throw ParamConversionWarning(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
        }
 }
 
@@ -687,7 +687,7 @@ template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKConta
 	std::wstring::const_iterator param_text_end = param_text.end();
 
 	LuaExec::Param* exec_param = param->GetLuaExecParam();
-	exec_param->m_optimized = false;	
+	exec_param->m_optimized = false;
 
 	lua_grammar::chunk param_code;
 
@@ -697,14 +697,17 @@ template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKConta
 			pc.ConvertParam(param_code, exec_param);
 			exec_param->m_optimized = true;
 		} catch (LuaExec::ParamConversionException &ex) {
-			sz_log(2, "Parameter %ls cannot be optimized, reason: %ls", param->GetName().c_str(), ex.what().c_str());
+			sz_log(2, "Parameter %s cannot be optimized, reason: %s", SC::S2U(param->GetName()).c_str(), SC::S2L(ex.what()).c_str());
 #ifdef LUA_OPTIMIZER_DEBUG
 			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(ex.what()) << std::endl;
 #endif
+		} catch (LuaExec::ParamConversionWarning &wr) {
+#ifdef LUA_OPTIMIZER_DEBUG
+			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(wr.what()) << std::endl;
+#endif
 		}
 	} else
-		sz_log(2, "Parameter %ls cannot be optimized, failed to parse its defiition", param->GetName().c_str());
-	
+		sz_log(2, "Parameter %s cannot be optimized, failed to parse its defiition", SC::S2A(param->GetName()).c_str());
 
 	return exec_param->m_optimized;
 }

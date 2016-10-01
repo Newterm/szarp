@@ -106,6 +106,9 @@ dictionary:
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources
 	$(INSTALL) dictionary.xml $(DESTDIR)@prefix@/resources
 
+ipk-params_xsd:
+	@trang @srcdir@/dtd/ipk-params.rng $(DESTDIR)@prefix@/resources/dtd/ipk-params.xsd
+
 if !DEB_BUILD
 
 apache2:
@@ -154,7 +157,7 @@ install-data-local: copyfiles links
 
 endif
 
-install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary
+install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary ipk-params_xsd
 
 uninstall-local: uninstall-apache2
 	rm -rf $(DESTDIR)@prefix@/resources/* $(DESTDIR)/etc/apache2/sites-available/szarp
