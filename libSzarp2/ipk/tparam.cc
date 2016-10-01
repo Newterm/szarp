@@ -205,6 +205,10 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					_timeType = NANOSECOND;
 				else
 					xw.XMLError("XML file error: param time_type has invalid value, expected one of: second, nanosecond");
+			} else
+			if (xw.IsAttr("forbidden")) {
+				_forbidden_val = boost::lexical_cast<short>(attr);
+				_has_forbidden = true;
 			} else {
 				xw.XMLWarningNotKnownAttr();
 			}
@@ -479,6 +483,13 @@ TParam::parseXML(xmlNodePtr node)
 	xmlFree(c);
     }
 
+    c = xmlGetNoNsProp(node, X "forbidden");
+    if (c) {
+		_forbidden_val = boost::lexical_cast<short>(((char*)c));
+		_has_forbidden = true;
+		xmlFree(c);
+	}
+
     c = xmlGetNoNsProp(node, X "base_ind");
     if (c) {
 	if (!strcmp((char*)c, "auto"))
@@ -702,7 +713,12 @@ TParam::generateXMLNode(void)
 	ITOA(_prec);
 	xmlSetProp(r, X "prec", BUF);
     }
-    
+
+	if (_has_forbidden) { 
+		ITOA(_forbidden_val);
+		xmlSetProp(r, X "forbidden", BUF);
+	}
+
     if (_baseInd >= 0) {
 	ITOA(_baseInd);
 	xmlSetProp(r, X "base_ind", BUF);
@@ -948,7 +964,8 @@ TParam::SetDrawName(const std::wstring &name)
 void 
 TParam::Configure(const std::wstring name, const std::wstring shortName, const std::wstring drawName, const std::wstring unit,
 			TValue *values, int prec, int baseInd,
-			int inbase)
+			int inbase,
+			short forbidden_val)
 {
     _name = name;
     _shortName = shortName;
@@ -969,6 +986,9 @@ TParam::Configure(const std::wstring name, const std::wstring shortName, const s
     else {
 	_param_type = TParam::P_DEFINABLE;
     }
+	_has_forbidden = _forbidden_val != SZARP_NO_DATA;
+
+	_forbidden_val = forbidden_val;
 
     _prepared = false;
     _f_const = false;

@@ -364,12 +364,36 @@ std::string sdu2string(const struct SDU& sdu) {
 }
 
 //maps regisers values to parcook short values
+class forbidden_proxy;
 class parcook_modbus_val_op {
+	friend forbidden_proxy;
 protected:
 	driver_logger *m_log;
 public:
+	virtual ~parcook_modbus_val_op() {}
 	parcook_modbus_val_op(driver_logger *log);
 	virtual unsigned short val() = 0;
+};
+
+class forbidden_proxy: public parcook_modbus_val_op {
+	parcook_modbus_val_op* op;
+	unsigned short forbidden;
+public:
+	forbidden_proxy(parcook_modbus_val_op* op, short v): parcook_modbus_val_op(op->m_log), op(op), forbidden(*reinterpret_cast<unsigned short*>(&v)) {} // 
+	virtual ~forbidden_proxy() {
+		delete op;
+	}
+
+	virtual unsigned short val() {
+		unsigned short v = op->val();
+		m_log->log(9, "Checking param for forbidden value: got %i, forbidden is: %i", v, forbidden);
+		if (v != forbidden) {
+			m_log->log(6, "Param got forbidden value!");
+			return v;
+		}
+
+		return SZARP_NO_DATA;
+	}
 };
 
 //maps values from sender to parcook registers
@@ -409,6 +433,8 @@ protected:
 	RSET m_received;
 	RSET m_sent;
 
+	bool m_check_forbidden;
+
 	short* m_read;
 	size_t m_read_count;
 	short* m_send;
@@ -429,6 +455,8 @@ protected:
 	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
 	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
 	int get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
+
+	virtual void pushValOp(parcook_modbus_val_op* op, TParam* param);
 
 	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
 	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
@@ -455,6 +483,8 @@ protected:
 	void from_sender();
 public:
 	modbus_unit(boruta_driver* driver);
+	virtual ~modbus_unit();
+
 	bool register_val_expired(time_t time);
 	virtual int initialize();
 	int configure_unit(TUnit* u, xmlNodePtr node);
@@ -969,7 +999,7 @@ unsigned short decimal2_parcook_modbus_val_op::val() {
 		return *pv >> 16;
 }
 
-decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log),  m_prec(prec), m_lsw(lsw) {};
+decimal3_parcook_modbus_val_op::decimal3_parcook_modbus_val_op(int prec, bool lsw, driver_logger *log) : parcook_modbus_val_op(log), m_prec(prec), m_lsw(lsw) {}
 
 void decimal3_parcook_modbus_val_op::set_regs(modbus_register* regs[3]) {
 	m_reg1 = regs[0];
@@ -1244,6 +1274,7 @@ void modbus_unit::to_parcook() {
 		m_read[m] = (*k)->val();
 		m_log.log(9, "Parcook param no %zu set to %hu", m, m_read[m]);
 	}
+
 }
 
 void modbus_unit::from_sender() {
@@ -1262,13 +1293,23 @@ bool modbus_unit::register_val_expired(time_t time) {
 }
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
+modbus_unit::~modbus_unit() {}
+
+void modbus_unit::pushValOp(parcook_modbus_val_op* op, TParam* param) {
+	if (m_check_forbidden && param->HasForbidden()) {
+		m_parcook_ops.push_back(new forbidden_proxy(op, param->GetForbidden()));
+	} else {
+		m_parcook_ops.push_back(op);
+	}
+}
 
 int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
-	else 
-		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[addr], &m_log));
+	else {
+		pushValOp(new short_parcook_modbus_val_op(m_registers[addr], &m_log), param);
+	}
 
 	if (!send)
 		m_received.insert(std::make_pair(rt, addr));
@@ -1285,7 +1326,7 @@ int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int p
 		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
 		return 1;
 	}
-	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log));
+	pushValOp(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log), param);
 
 	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
 
@@ -1439,8 +1480,8 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 		m_log.log(0, "Unsupported val_op2 attribute value - %s, line %ld", val_op2.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
-	double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
-	m_parcook_ops.push_back(op);
+	auto op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
+	pushValOp(op, param);
 
 	modbus_register* regs[4];
 	for (int i = 0; i < 4; i++) {
@@ -1471,26 +1512,30 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	if (m_registers.find(msw) == m_registers.end())
 		m_registers[msw] = new modbus_register(this, &m_log);
 
-	if (val_type == "float")  {
-		if (!send) {
-			m_parcook_ops.push_back(new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
+	parcook_modbus_val_op* op = nullptr;
+	if (!send) {
+		if (val_type == "float")  {
+			op = new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log);
 			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
+			op = new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log);
+			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
+				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+		}
+
+		if (op != nullptr) {
+			pushValOp(op, param);
+		}
+	} else {
+		if (val_type == "float")  {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
 			m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
 				param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
-		}
-	} else {
-		if (!send) {
-			m_parcook_ops.push_back(new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log));
-			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
 			return 1;
 		}
 	}
-
 
 	m_received.insert(std::make_pair(rt, lsw));
 	m_received.insert(std::make_pair(rt, msw));
@@ -1524,7 +1569,7 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 	if (!send) {
 		decimal2_parcook_modbus_val_op* op = new decimal2_parcook_modbus_val_op(prec, is_lsw, &m_log);
 		op->set_regs(regs);
-		m_parcook_ops.push_back(op);
+		pushValOp(op, param);
 		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu",
 			       	SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 	} else {
@@ -1573,7 +1618,7 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 
 	decimal3_parcook_modbus_val_op* op = new decimal3_parcook_modbus_val_op(prec, is_lsw, &m_log);
 	op->set_regs(regs);
-	m_parcook_ops.push_back(op);
+	pushValOp(op, param);
 	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, reg1: %hu, reg2: %hu, reg3: %hu",
 		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
 		is_lsw ? "lsw" : "msw", addrs[0], addrs[1], addrs[2]);
@@ -1697,6 +1742,11 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		return 1;
 	}
 
+	get_xml_extra_prop(node, "limits", m_check_forbidden, true);
+	if (m_check_forbidden) {
+		m_log.log(7, "Daemon will check forbidden values");
+	}
+
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
 		char *expr;
 		if (i == u->GetParamsCount())
@@ -1719,6 +1769,7 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 			sp = sp->GetNext();
 		else
 			p = p->GetNext();
+
 	}
 	xmlXPathFreeContext(xp_ctx);
 	return 0;
