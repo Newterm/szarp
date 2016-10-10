@@ -43,6 +43,11 @@ PEvent EventBase::CreateTimer(event_callback_fn cb, void *arg) const
 	return timer;
 }
 
+PEvent EventBase::CreateUserEvent(event_callback_fn cb, void *arg) const
+{
+	return CreateEvent(-1, 0, cb, arg);
+}
+
 PBufferevent EventBase::CreateBufferevent(evutil_socket_t fd, int options) const
 {
 	struct bufferevent *ev = 
@@ -88,8 +93,10 @@ PEvconnListener EventBase::CreateListenerBind(evconnlistener_cb cb,
 void EventBase::Dispatch()
 {
 	int res = event_base_dispatch(m_event_base.get());
-	if (res != 0) {
-		throw EventBaseException("event_base_dispatch() failed");
+	if (res == -1) {
+		throw EventBaseException("event_base_dispatch() error");
+	} else if (res == 1) {
+		throw EventBaseException("event_base_dispatch() exit no events");
 	}
 }
 
@@ -118,6 +125,23 @@ void EventBase::SetTimeoutsMs(PBufferevent bev,
 	bufferevent_set_timeouts(bev.get(), &tv_read, &tv_write);
 }
 
+void EventBase::UserEventAddMs(PEvent ev, ms_time_t ms) const
+{
+	struct timeval tv = ms2timeval(ms);
+	int res = event_add(ev.get(), &tv);
+	if (res != 0) {
+		throw EventBaseException("event_add() failed");
+	}
+}
+
+void EventBase::UserEventAdd(PEvent ev) const
+{
+	int res = event_add(ev.get(), &default_userevent_timeout);
+	if (res != 0) {
+		throw EventBaseException("event_add() failed");
+	}
+}
+
 void EventBase::SetEventPriority(PEvent ev, const EventPriority priority) const
 {
 	int pending = event_pending(ev.get(),
@@ -131,6 +155,11 @@ void EventBase::SetEventPriority(PEvent ev, const EventPriority priority) const
 	if (res != 0) {
 		throw EventBaseException("SetEventPriority: setting priority failed");
 	}
+}
+
+void EventBase::TriggerEvent(PEvent ev) const
+{
+	event_active(ev.get(), 0, 1);
 }
 
 int EventBase::PriorityToInt(const EventPriority priority) const
@@ -148,3 +177,90 @@ int EventBase::PriorityToInt(const EventPriority priority) const
 		return std::floor(m_priorities_num / 2);
 	}
 }
+
+#ifdef EVTHREAD_USE_PTHREADS
+
+void EventBase::EventThreadUsePthreads()
+{
+	evthread_use_pthreads();
+}
+
+void EventBase::EventThreadMakeBaseNotifiable() const
+{
+	if (evthread_make_base_notifiable(m_event_base.get()) < 0) {
+		throw EventBaseException("EventThreadMakeNotifiable: making base notifiable failed");
+	}
+}
+
+unsigned long long EventBase::ReserveEventId()
+{
+	return m_event_pool_manager.ReserveId();
+}
+
+void EventBase::ManageEvent(const unsigned long long id, PEvent ev)
+{
+	m_event_pool_manager.InsertEvent(id, ev);
+}
+
+PEvent EventBase::ReleaseEvent(const unsigned long long id)
+{
+	return m_event_pool_manager.DeleteEvent(id);
+}
+
+EventPoolManager::EventPoolManager()
+	:	m_max_id(0)
+{}
+
+EventPoolManager::~EventPoolManager()
+{}
+
+unsigned long long EventPoolManager::InsertEvent(PEvent ev)
+{
+	std::lock_guard<std::mutex> lock(m_event_pool_lock);
+	unsigned long long id = m_freed_ids.empty() ? ++m_max_id : pop_free_id();
+	m_event_pool[id] = ev;
+	return id;
+}
+
+void EventPoolManager::InsertEvent(const unsigned long long id, PEvent ev)
+{
+	std::lock_guard<std::mutex> lock(m_event_pool_lock);
+	auto pool_iterator = m_event_pool.find(id);
+	if (pool_iterator == m_event_pool.end()) {
+		m_event_pool[id] = ev;
+	} else {
+		throw EventBaseException("EventPoolManage::InsertEvent "
+				"event id already used");
+	}
+}
+
+PEvent EventPoolManager::DeleteEvent(const unsigned long long id)
+{
+	std::lock_guard<std::mutex> lock(m_event_pool_lock);
+	auto pool_iterator = m_event_pool.find(id);
+	if (pool_iterator != m_event_pool.end()) {
+		PEvent ev = pool_iterator->second;
+		m_event_pool.erase(pool_iterator);
+		m_freed_ids.push(id);
+		return ev;
+	}
+	return PEvent();
+}
+
+unsigned long long EventPoolManager::ReserveId()
+{
+	std::lock_guard<std::mutex> lock(m_event_pool_lock);
+	unsigned long long id = m_freed_ids.empty() ? ++m_max_id : pop_free_id();
+	return id;
+}
+
+unsigned long long EventPoolManager::pop_free_id()
+{
+	unsigned long long id = m_freed_ids.top();
+	m_freed_ids.pop();
+	return id;
+}
+
+#endif /* EVTHREAD_USE_PTHREADS */
+
+

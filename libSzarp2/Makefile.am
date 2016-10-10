@@ -31,6 +31,9 @@ AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(SZBASE_DIR)					\
 	-DPREFIX=\"@prefix@\"				\
 	-I$(SOURCE_DIR)/protobuf
+if LIBEVENT_PTHREADS
+AM_CPPFLAGS += -DEVTHREAD_USE_PTHREADS
+endif
 
 noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 

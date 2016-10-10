@@ -810,7 +810,7 @@ AC_ARG_WITH([event], AC_HELP_STRING([--without-libevent], [do not use libevent l
 ],)
 
 if test "x$no_libevent" != "xyes"; then
-	AC_CHECK_LIB(event, event_dispatch, [ EVENT_LIBS=-levent], [no_libevent=yes])
+	AC_CHECK_LIB(event, event_dispatch, [ EVENT_LIBS="$EVENT_LIBS -levent" ], [no_libevent=yes])
 
 	if test "x$no_libevent" = "xyes"; then
 	        AC_MSG_WARN([
@@ -819,7 +819,30 @@ if test "x$no_libevent" != "xyes"; then
 	fi
 
 fi
+
+#Check for LIBEVENT-PTHREADS
+no_libevent_pthreads=""
+AC_ARG_WITH([event-pthreads], AC_HELP_STRING([--without-libevent-pthreads], [do not use libevent-pthreads library]),
+[
+	if test "$withval" = "no" ; then
+		no_libevent_pthreads="yes"
+	else
+		no_libevent_pthreads=""
+	fi
+],)
+
+if test "x$no_libevent_pthreads" != "xyes"; then
+	AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [ EVENT_LIBS="$EVENT_LIBS -levent_pthreads" ], [no_libevent_pthreads=yes])
+
+	if test "x$no_libevent_pthreads" = "xyes"; then
+	        AC_MSG_WARN([
+                      libevent-pthreads library is not available, some programs will not be built
+                      ])
+	fi
+
+fi
 AC_SUBST(EVENT_LIBS)
+AM_CONDITIONAL([LIBEVENT_PTHREADS], [test "x$no_libevent_pthreads" != "xyes"])
 
 #Check for glib library
 no_glib="yes";
