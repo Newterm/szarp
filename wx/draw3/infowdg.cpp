@@ -309,10 +309,12 @@ void InfoWidget::UpdateValues() {
 			info_string += _T(" ;") + wxString::Format(_(" dif: %s"), m_draw->GetDrawInfo()->GetValueStr(eval - sval, _T("- -")).c_str());
 	}
 
-	if (!std::isnan(vt.m_nodata_probes_count))
+	if (!std::isnan(vt.m_nodata_probes_count) && vt.m_nodata_probes_count != 0) {
 		info_string += _T(" ; ") + wxString::Format(_("no data: %d"), vt.m_nodata_probes_count);
-	if (!std::isnan(vt.m_data_probes_ratio))
-		info_string += _T(" (") + wxString(_("ratio: ")) + m_draw->GetDrawInfo()->GetValueStr(vt.m_data_probes_ratio, _T("- -")) + _T(")");
+	}
+	if (!std::isnan(vt.m_data_probes_ratio)) {
+		info_string += _T(" ; ") + wxString(_("proper: ")) + wxString::Format(_T("%.2f"), vt.m_data_probes_ratio * 100) + _T("%");
+	}
 
 	avg_text->SetLabel(info_string);
 	avg_text->Refresh();
