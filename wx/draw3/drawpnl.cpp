@@ -783,10 +783,15 @@ void DrawPanel::SetLatestDataFollow(bool follow) {
 }
 
 void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
-#ifdef WXAUI_IN_PANEL
-	bool is_double = 
-#endif
-		dw->ToggleSplitCursor();
+	bool is_double = dw->ToggleSplitCursor();
+	if(is_double) {
+		tb->DoubleCursorToolCheck();
+      menu_bar->FindItem(XRCID("SplitCursor"))->Check(true);
+	}
+	else {
+		tb->DoubleCursorToolUncheck();
+      menu_bar->FindItem(XRCID("SplitCursor"))->Check(false);
+	}
 
 	GetSizer()->Layout();
 
