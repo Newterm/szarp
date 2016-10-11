@@ -1,5 +1,5 @@
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@ class MeanerBase:
 
 	def configure(self, ipk_path):
 		self.ipk = IPK(ipk_path)
-		
+
 		for p in self.ipk.params:
 			self.save_params.append(saveparam.SaveParam(p, self.szbase_path))
 

@@ -21,7 +21,6 @@
 
 import sys
 sys.path.append("/opt/szarp/lib/python")
-
 import meaner
 from libpar import LibparReader
 
@@ -33,8 +32,9 @@ def go():
 	ipk = lpr.get("global", "IPK")
 	uri = lpr.get("parhub", "pub_conn_addr")
 	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
+	interval = int(lpr.get("sz4", "saving_interval"))
 
-	m = meaner.Meaner(path, uri, heartbeat)
+	m = meaner.Meaner(path, uri, heartbeat, interval)
 	m.configure(ipk)
 
 	m.run()

@@ -25,7 +25,7 @@ import meaner4
 class Meaner4App:
 	def __init__(self):
 		self.stdin_path = "/dev/null"
-		self.stdout_path = "/var/log/szarp/meaner4.stdin.log"
+		self.stdout_path = "/dev/null"
 		self.stderr_path = "/var/log/szarp/meaner4.stderr.log"
 		self.pidfile_path = "/var/run/meaner4.pid"
 		self.pidfile_timeout = 5
