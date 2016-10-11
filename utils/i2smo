@@ -259,6 +259,19 @@ def check_params_xmlschema():
 	except Exception as e:
 		printerr(e)
 
+def check_under_defined_elements():
+	"""
+	Testing define elements for: RPN as attribute type of define element
+	"""
+	for defined in elements:
+		if defined.tag == add_ns(namespace, "defined"):
+			for param in defined:
+				for define in param:
+					if define.tag == add_ns(namespace, "define"):
+						for attr, value in define.items():
+							if attr == "type" and value != "RPN":
+								printerr("found \"" + value + "\" as defined formula type, expected \"RPN\" (line " + str(define.sourceline) + ")")
+
 def check_under_device_elements():
 	"""
 	Testing draw elements for: value min/max ratio, valuescace/minscale/maxscale
@@ -343,22 +356,22 @@ def find_parameter_from_params(parameter_name):
 def prepare_param_name(param_name):
 	def conv(x):
 		if x in [ u"0", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9",
-			  u"a", u"b", u"c", u"d", u"e", u"f", u"g", u"h", u"i", u"j",
-			  u"k", u"l", u"m", u"n", u"o", u"p", u"q", u"r", u"s", u"t",
-			  u"u", u"v", u"w", u"x", u"y", u"z",
-			  u"A", u"B", u"C", u"D", u"E", u"F", u"G", u"H", u"I", u"J",
-					 u"K", u"L", u"M", u"N", u"O", u"P", u"Q", u"R", u"S", u"T",
-			  u"U", u"V", u"W", u"X", u"Y", u"Z"]:
+			u"a", u"b", u"c", u"d", u"e", u"f", u"g", u"h", u"i", u"j",
+			u"k", u"l", u"m", u"n", u"o", u"p", u"q", u"r", u"s", u"t",
+			u"u", u"v", u"w", u"x", u"y", u"z",
+			u"A", u"B", u"C", u"D", u"E", u"F", u"G", u"H", u"I", u"J",
+			u"K", u"L", u"M", u"N", u"O", u"P", u"Q", u"R", u"S", u"T",
+			u"U", u"V", u"W", u"X", u"Y", u"Z"]:
 			return x
 
 		if x == u":":
 			return "/"
 
 		pmap = { u"ą" : u"a", u"Ą" : u"A", u"ć" : u"c", u"Ć" : u"C",
-			 u"ę" : u"e", u"Ę" : u"E", u"ł" : u"l", u"Ł" : u"L",
-			 u"ń" : u"n", u"Ń" : u"N", u"ó" : u"o", u"Ó" : u"O",
-			 u"ś" : u"s", u"Ś" : u"S", u"ż" : u"z", u"Ż" : u"Z",
-			 u"ź" : u"z", u"Ź" : u"Z" }
+			u"ę" : u"e", u"Ę" : u"E", u"ł" : u"l", u"Ł" : u"L",
+			u"ń" : u"n", u"Ń" : u"N", u"ó" : u"o", u"Ó" : u"O",
+			u"ś" : u"s", u"Ś" : u"S", u"ż" : u"z", u"Ż" : u"Z",
+			u"ź" : u"z", u"Ź" : u"Z" }
 
 		if x in pmap:
 			return pmap[x]
@@ -366,21 +379,12 @@ def prepare_param_name(param_name):
 		return u"_"
 
 	return "".join([ conv(x) for x in param_name ])
-	# param_name = param_name.replace("/", "_")
-	# param_name = param_name.replace(":", "/")
-	# param_name = param_name.replace("-", "_")
-	# param_name = param_name.replace(",", "_")
-	# param_name = param_name.replace(".", "_")
-	# param_name = param_name.replace(" ", "_")
-	# param_name = param_name.replace("+", "_")
-	# param_name = param_name.replace("[", "_")
-	# param_name = param_name.replace("]", "_")
-	# return param_name
 
 def do_tests():
 	check_params_xmlschema()
 	check_if_file_exist()
 	check_for_daemons()
+	check_under_defined_elements()
 	check_under_device_elements()
 
 def test_isl_file():
