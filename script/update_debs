@@ -1,144 +1,64 @@
-#!/usr/bin/perl -w
-# SZARP: SCADA software 
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#!/usr/bin/python
 
-#$Id: update_debs 4421 2007-09-18 13:02:52Z koder $
+import os
+import sys
+from subprocess import Popen, PIPE, call
 
-# Script for updating all installed SZARP packages.
+def comp(list1, list2):
+	for item in list1:
+		if item in list2:
+			return True
+	return False
 
-use strict;
-use AptPkg::Config '$_config';
-use AptPkg::System '$_system';
-use AptPkg::Cache;
-use IO::File;
-use File::Copy;
+apt_hold_process = Popen(["dpkg", "--get-selections"],stdout=PIPE).communicate()[0].splitlines()
+apt_hold = []
+for word in apt_hold_process:
+	if "hold" in word:
+		word = word.split()
+		apt_hold.append(word[0])
+	if "aptitude" in word:
+		word = word.split()
+		if word[1] == "install" and word[0] == "aptitude":
+			aptitude = 1;
 
 
-sub subst_dpkgcfg {
-	move("/etc/dpkg/dpkg.cfg", "/etc/dpkg/dpkg.cfg.bak");
-	my $fh;
-	$fh = new IO::File ">/etc/dpkg/dpkg.cfg";
-	if (not defined($fh)) {
-		return 0;
-	}
-	my $result = print $fh "force-confdef\n";
-	undef $fh;
-
-	if (not $result) {
-		return 0;
-	}
-	return 1;
-}
-
-sub restore_dpkgcfg {
-	move("/etc/dpkg/dpkg.cfg.bak", "/etc/dpkg/dpkg.cfg");
-}
+if aptitude == 1:
+	aptitude_hold_process = Popen(["aptitude","search","~ahold"],stdout=PIPE).communicate()[0].splitlines()
+	for word in aptitude_hold_process:
+		word = word.split()
+		apt_hold.append(word[1])
 
 
-#Funkcja zwiedza graf zaleznosci miedzy pakietami szarp'a
-#zwracajac dla podanego pakietu liste pakietow od niego 
-#zaleznych. Elementy listy uszeregowane sa tak by zawsze
-#pakiet zalezny znajdowal sie na dalszej pozycji niz
-#pakiet, od ktorego on zalezy.
-#przyjmuje 3 parametry
-# package - referencje do obiektu AptPkg::Cache::Package dla ktorego
-# 	chcemy wykonac operacje
-# processed - referencja do tab. asocjacyjnej zawierajacej jako klucze
-#	nazwy pakietow juz odwiedzonych	
-# in_proggress - referencja do tab. asocjacyjnej zawieracej jako klucze
-# 	pakiety ktore w danej chwili sa "przetwarzane" - zapobiega 
-# 	zapetlenia funkcji gdy graf zalezenosci miedzy pakietami
-#	zawiera cykle
-sub process_package {
-	my ($package, $processed, $in_progress) = @_;
+installed_process = Popen(["dpkg","-l","szarp-*"],stdout=PIPE).communicate()[0].splitlines()
+installed = []
+for line in installed_process:
+	if "szarp" in line:
+		line = line.split()
+		if line[0] == "ii" and "szarp" in line[1]:
+			installed.append(line[1])
+		if line[0] == "hi" and "szarp" in line[1]:
+			exit("jeden z pakietow szarpa jest holdowany")
 
-	my $version = $package->{"CurrentVer"};
-	#pakiet nie jest zainstalowany
-	return () unless defined $version;
-	
-	my $name = $package->{"Name"};
+dependencies = []
+for szarp in installed:
+	dependencies_process = Popen(["apt-cache", "show", szarp],stdout=PIPE).communicate()[0].splitlines()
+	for line in dependencies_process:
+		if "Depends:" in line:
+			line = line.split()
+			for word in line:
+				if not word == "Depends:" and not word == "|":
+					if word != "(>=" and not ")" in word:
+						word = word.replace(",","")
+						dependencies.append(word)
+#print dependencies
+#print apt_hold
+total = set(dependencies) & set(apt_hold)
+if comp(dependencies, apt_hold):
+	print "Z powodu zachowanych paczek nie update'ujemy:"
+	for pkg in total:
+		print pkg
+	exit()
 
-	#ten element juz zostal dodany
-	return () if defined $$processed{$name};
-
-	#sprawdzamy czy nie ma cyklu w grafie
-	return () if defined $$in_progress{$name};
-
-	$$in_progress{$name} = 1;
-
-	my @result;
-	my $dependencies = $package->{"RevDependsList"};
-	foreach my $dependency (@$dependencies) {
-		my $parent = $dependency->{"ParentPkg"};
-
-		next unless ($parent->{"Name"} =~ /szarp-.*/);
-
-		next unless (($dependency->{"DepType"} == AptPkg::Dep::Depends) || \
-			($dependency->{"DepType"} == AptPkg::Dep::PreDepends));
-
-		next unless ($parent->{"CurrentState"} eq "Installed");
-
-		my @dependent = process_package ($parent, $processed, $in_progress);
-
-		unshift @result, @dependent;
-	}
-
-	$$processed{$name} = 1;
-
-	unshift @result,$name;
-
-	$$in_progress{$name} = undef;
-	
-	return @result;
-
-}
-
-system("apt-get -qq update") == 0 or die "apt-get update failed";
-		
-# supress cache building messages
-$_config->{"quiet"} = 2;
-
-# set up the cache
-$_config->init;
-$_system = $_config->system;
-
-my $cache = AptPkg::Cache->new;
-
-my @sequence;
-my %processed;
-
-foreach my $package_name (keys %$cache) {
-	next unless ($package_name =~ /szarp-.*/);
-	my @result = process_package($cache->{$package_name}, \%processed);
-	unshift @sequence, @result;
-}
-
-my $list = join(' ', @sequence);
-
-subst_dpkgcfg() or die "UPDATE ABORTED - unable to modify /etc/dpkg/dpkg.cfg";
-
-my $shall_die = 0;
-my $updates_present = system("apt-get -y -s install $list | grep ^Inst 1>/dev/null");
-if ($updates_present == 0) {
-	system("apt-get -y install $list") == 0 or $shall_die = 1;
-}
-restore_dpkgcfg();
-
-if ($shall_die) {
-	die("apt-get install failed; if apt-get complains 'packages cannot be authenticated', you need to import GPG key of your SZARP repository, for example:\n  wget -O - http://www.szarp.org/debian/key.asc | apt-key add -\n");
-}
-1;
-
+call(["apt-get","update"])
+for szarp in installed:
+	call(["apt-get","install","--only-upgrade",szarp,"-y"])
