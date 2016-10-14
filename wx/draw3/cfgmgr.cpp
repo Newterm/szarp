@@ -363,36 +363,10 @@ DrawSet::Add(DrawInfo* drawInfo)
 	}
 }
 
-bool
-DrawInfo::isBadOrder() const
-{
-	return d->isBadOrder();
-}
-
 void
 DrawSet::SortDraws()
 {
-	//vector for arguments with given order
-	DrawInfoArray ordered;
-	//vector for arguments without given order
-	DrawInfoArray nonordered;
-
-	for(auto it = m_draws->begin(); it != m_draws->end(); ++it)
-	{
-		if((*it)->isBadOrder())
-		{
-			nonordered.push_back(*it);
-		}
-		else
-		{
-			ordered.push_back(*it);
-		}
-	}
-	//we only sort arguments with given order. The rest of them will be added to the end, with order equal to that in file params.xml
-	std::stable_sort(ordered.begin(), ordered.end(), DrawInfo::CompareDraws);
-	m_draws->clear();
-	m_draws->insert(m_draws->end(), ordered.begin(), ordered.end());
-	m_draws->insert(m_draws->end(), nonordered.begin(), nonordered.end());	
+	std::stable_sort(m_draws->begin(), m_draws->end(), DrawInfo::CompareDraws);
 }
 
 int

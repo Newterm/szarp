@@ -154,8 +154,6 @@ class DrawInfo
 	
 	void SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm);
 
-	bool isBadOrder() const;
-
 	virtual ~DrawInfo() { }
     protected:
 	TDraw *d;	/**< Pointer to draw. */

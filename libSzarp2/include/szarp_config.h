@@ -56,8 +56,6 @@
 #include "szbase/szbdefines.h"
 #include <libxml/xmlreader.h>
 
-#define BAD_ORDER -1.0
-
 #define IPK_NAMESPACE_STRING L"http://www.praterm.com.pl/SZARP/ipk"
 
 #define MAX_PARS_IN_FORMULA 160
@@ -1473,13 +1471,6 @@ public:
 	double GetOrder()
 	{
 		return order;
-	}
-	/**
-	 * Return true if param had its order given, false otherwise.
-	 */
-	bool isBadOrder() const
-	{
-		return order == BAD_ORDER;
 	}
 	/**
 	 * Return minimal value for draw.
