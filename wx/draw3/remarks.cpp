@@ -306,8 +306,8 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
 #ifdef __WXGTK__
         
         wxLogWarning(_T("defined __WXGTK__"));
-		//init libpar from folder, default: /opt/szarp/<base-name>
-		libpar_init_from_folder(std::string(m_config_manager->GetSzarpDir().mb_str()));  
+
+        libpar_init();
 
         /* Check for remarks_server option in config file */
         char *server = libpar_getpar("", "remarks_server", 0);
@@ -318,7 +318,6 @@ void RemarksHandler::GetConfigurationFromSzarpCfg() {
 
                 char *config_prefix = libpar_getpar("", "config_prefix", 0);
                 if (!config_prefix) {
-
                         wxLogWarning(_T("remarks_server option is set, but could not find prefix"));
                         free(server);
                         return;
