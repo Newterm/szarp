@@ -35,7 +35,10 @@ for line in installed_process:
 	if "szarp" in line:
 		line = line.split()
 		if line[0] == "ii" and "szarp" in line[1]:
-			installed.append(line[1])
+			if not "custom" in line[2]:
+				installed.append(line[1])
+			else:
+				apt_hold.append(line[1])
 		if line[0] == "hi" and "szarp" in line[1]:
 			exit("jeden z pakietow szarpa jest holdowany")
 
@@ -50,8 +53,7 @@ for szarp in installed:
 					if word != "(>=" and not ")" in word:
 						word = word.replace(",","")
 						dependencies.append(word)
-#print dependencies
-#print apt_hold
+
 total = set(dependencies) & set(apt_hold)
 if comp(dependencies, apt_hold):
 	print "Z powodu zachowanych paczek nie update'ujemy:"
