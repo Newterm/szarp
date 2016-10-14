@@ -15,7 +15,7 @@ if $programname == 'paramd' then /var/log/szarp/paramd.log
 if $programname == 'parcook' then /var/log/szarp/parcook.log
 & DISCARD_ACTION
 
-if $programname == 'prober' then /var/log/szarp/prober.log
+if $programname == 'prober.log' then /var/log/szarp/prober.log
 & DISCARD_ACTION
 
 if $programname == 'psetd' then /var/log/szarp/psetd.log
