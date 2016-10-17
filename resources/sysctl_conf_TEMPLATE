@@ -1,0 +1,8 @@
+# SZARP-specific kernel parameters configuration
+
+# note: to immediately apply changed configuration, run command:
+#       # sysctl -p /etc/sysctl.d/30-szarp-msg.conf
+
+# Increase message queue limits
+# (uncomment when having trouble with a large number of <send> elements)
+#kernel.msgmnb = 65536
