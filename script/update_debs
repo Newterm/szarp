@@ -3,12 +3,6 @@ import os
 import sys
 from subprocess import Popen, PIPE, call
 
-def check_for_common_element(list1, list2):
-	for item in list1:
-		if item in list2:
-			return True
-	return False
-
 aptitude_installed = False;
 
 dpkg_selections_output = Popen(["dpkg", "--get-selections"],stdout=PIPE).communicate()[0].splitlines()
@@ -55,10 +49,10 @@ for szarp in installed:
 						word = word.replace(",","")
 						dependencies.append(word)
 
-total = set(dependencies) & set(held_packages)
-if check_for_common_element(dependencies, held_packages):
+pkg_hold_and_dependent = set(dependencies) & set(held_packages)
+if pkg_hold_and_dependent != set([]):
 	print "Z powodu zachowanych paczek nie update'ujemy:"
-	for pkg in total:
+	for pkg in pkg_hold_and_dependent:
 		print pkg
 	exit()
 call(["apt-get","update"])
