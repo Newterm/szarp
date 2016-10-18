@@ -50,7 +50,7 @@ for szarp in installed:
 						dependencies.append(word)
 
 pkg_hold_and_dependent = set(dependencies) & set(held_packages)
-if pkg_hold_and_dependent != set([]):
+if len(pkg_hold_and_dependent) != 0:
 	print "Z powodu zachowanych paczek nie update'ujemy:"
 	for pkg in pkg_hold_and_dependent:
 		print pkg
