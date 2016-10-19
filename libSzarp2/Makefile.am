@@ -126,10 +126,7 @@ libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tszarpconfig.cc \
 			$(IPK_DIR)/tunit.cc \
 			$(IPK_DIR)/tvalue.cc \
-			$(IPK_DIR)/tboiler.cc \
 			$(IPK_DIR)/tseason.cc \
-			$(IPK_DIR)/tanalysis.cc \
-			$(IPK_DIR)/tainterval.cc \
 			$(IPK_DIR)/ipkcontainer.cc \
 			$(IPK_DIR)/tdictionary.cc \
 			$(IPK_DIR)/ttreenode.cc \
@@ -137,7 +134,6 @@ libSzarp2_la_SOURCES = \
 			$(IPK_DIR)/tdefined.cc \
 			$(IPK_DIR)/xmlwrapper.cc \
 			$(IPK_DIR)/tdrawdefinable.cc \
-			$(IPK_DIR)/tboilers.cc \
 			$(IPK_DIR)/tscript.cc \
 			$(DMN_DIR)/ipchandler.cc \
 			$(SOURCE_DIR)/utils/daemonize.cc \
