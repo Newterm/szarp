@@ -372,7 +372,9 @@ int SendSter(int pass, int log_level)
 				SterInfo[i].status = MSG_CONF;
 			}
 		       	else {
-				sz_log(1, "SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%ld, IPC_NOWAIT), errno=%d (%s)for parameter %d", SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
+				sz_log(1,
+						"SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%lu, IPC_NOWAIT), errno=%d (%s)for parameter %d",
+						SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
 				allsent = 0;
 			}
 		}
