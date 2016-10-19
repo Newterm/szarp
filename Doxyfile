@@ -80,7 +80,6 @@ INPUT                  = include/ \
                          meaner3/ \
                          meaner3/utils \
                          parcook/ \
-                         parcook/analiza/ \
                          sender/ \
                          isl/server/ \
                          isl/python/ \

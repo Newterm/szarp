@@ -71,17 +71,12 @@ class TSendParam;
 class TValue;
 class TRaport;
 class TDraw;
-class TBoiler;
-class TAnalysis;
-class TAnalysisInterval;
-class TAnalysisParam;
 class TSSeason;
 class TDictionary;
 class TTreeNode;
 class TDrawdefinable;
 class TScript;
 class TDefined;
-class TBoilers;
 class XMLWrapper;
 class XMLWrapperException;
 
@@ -276,14 +271,6 @@ public:
 	/** @return next raport item with title same as that of current item */
 	TRaport* GetNextRaportItem(TRaport* cur);
 
-	/** @return first boiler on a boilers' list */
-	TBoiler* GetFirstBoiler();
-
-	/** adds new boiler at the end of boilers list */
-	/*@param boiler boiler to be added
-	 *@return added boiler*/
-	TBoiler* AddBoiler(TBoiler* boiler);
-
 	/** Adds new defined param. */
 	void AddDefined(TParam *p);
 
@@ -392,8 +379,6 @@ protected:
 	std::wstring nativeLanguage;
 
 	std::wstring documentation_base_url;
-
-	TBoiler *boilers;/**< List of boilers for analysis*/
 
 	TSSeason *seasons;/**< Summer seasons configuration*/
 
@@ -840,7 +825,6 @@ public:
 	    _is_new_def(false),
 	    _raports(NULL),
 	    _draws(NULL),
-	    _analysis(NULL),
 	    _next(NULL),
 	    _szbase_name(),
 	    _psc(false),
@@ -1035,9 +1019,6 @@ public:
 	 * NULL for integer parameters */
 	TValue* GetFirstValue()	{ return _values; }
 
-	/** @return pointer to the first element of possible analysis elements list*/
-	TAnalysis* GetFirstAnalysis() {	return _analysis; }
-
 	/** Print to string value converted according to parameter precision
 	 * and values information. String value or float number or special
 	 * string for empty values is printed.
@@ -1153,13 +1134,6 @@ public:
 	 */
 	TDraw* AddDraw(TDraw* draw);
 
-	/**
-	 * Adds analysis item to param. Item is appended to the end of items' list.
-	 * @param analysis analysis param description
-	 * @return pointer to added analysis item
-	 */
-	TAnalysis* AddAnalysis(TAnalysis* analysis);
-
 	/** Prepares data for definable calculation. */
 	void PrepareDefinable() throw(TCheckException);
 
@@ -1271,7 +1245,6 @@ protected:
 
 	TRaport	* _raports;	/**< List of raports for param */
 	TDraw * _draws;		/**< List of draws for param */
-	TAnalysis * _analysis;	/**< List of analysis items for param*/
 
 	TParam* _next;	/**< Next list element */
 
@@ -1347,20 +1320,6 @@ public:
 	 * success.
 	 */
 	static TParam* parseXML(xmlTextReaderPtr reader,TSzarpConfig *tszarp);
-};
-
-/**
- * Info about single node boilers.
- */
-class TBoilers {
-public:
-	/** Parses XML node (current set in reader) and returns pointer to new TBoiler object.
-	 * @param reader XML reader set on "boilers"
-	 * @param tszarp pointer to actual TSzarpConfig
-	 * @return NULL on error, pointer to newly created TBoiler object on
-	 * success.
-	 */
-	static TBoiler* parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp);
 };
 
 /**
@@ -1838,334 +1797,6 @@ protected:
 			  less then 0. Greater number means later in raport.
 			  */
 	TRaport* next;	/**< Next list element */
-};
-
-
-/**
- * Info about analysis element
- */
-class TAnalysis {
-
-public:
-	/**posible values of analysis param types*/
-	enum AnalysisParam {
-		INVALID,
-		ANALYSIS_ENABLE,
-		REGULATOR_WORK_TIME,
-		COAL_VOLUME,
-		ENERGY_COAL_VOLUME_RATIO,
-		LEFT_GRATE_SPEED,
-		RIGHT_GRATE_SPEED,
-		MAX_AIR_STREAM,
-		MIN_AIR_STREAM,
-		LEFT_COAL_GATE_HEIGHT,
-		RIGHT_COAL_GATE_HEIGHT,
-		AIR_STREAM,
-		ANALYSIS_STATUS,
-		AIR_STREAM_RESULT
-	};
-	TAnalysis(int _boiler_no = -1, AnalysisParam _param = INVALID)
-		:
-		boiler_no(_boiler_no),
-		param(_param),
-		next(NULL)
-	{};
-
-	/**Appends analysis object at end of list
-	 * @return appended obejct*/
-	TAnalysis* Append(TAnalysis *analysis);
-
-	/**Converts xml node to TAanalis object
-	 * @param node with analysis element
-	 * @return pointer to TAnalysis object, NULL if error ocurred*/
-	static TAnalysis* parseXML(xmlNodePtr node);
-
-	/**Converts xml node to TAanalis object
-	 * @param reader set on "analysis" element
-	 * @return pointer to TAnalysis object, NULL if error ocurred*/
-	static TAnalysis* parseXML(xmlTextReaderPtr reader);
-
-	/**Creates xml node describing this object
-	 * @return pointer to a node*/
-	xmlNodePtr generateXMLNode(void);
-
-	 /** @return next element on a list, NULL is this is the last*/
-	TAnalysis* GetNext() {
-		return next;
-	}
-
-	/**@return number of a boiler associated with this element*/
-	int GetBoilerNo() {
-		return boiler_no;
-	}
-
-	/**@return type of analysis param*/
-	AnalysisParam GetParam() {
-		return param;
-	}
-
-	/**Return a string desribing a type of param in xml document
-	 * @param type - param type
-	 * @return string with param type name*/
-	static const std::wstring& GetNameForParam(AnalysisParam type);
-
-
-	/**Return a enum value for param type for given params.xml name
-	 * @param name string param name
-	 * @return type of param*/
-	static AnalysisParam GetTypeForParamName(const std::wstring& name);
-	~TAnalysis();
-private:
-	/**Maps AnlisysParm values to a corresponding names in params.xml*/
-	struct ParamName {
-		AnalysisParam name_id;		/**<id of param*/
-		const std::wstring name;		/**<name of a param*/
-	};
-	/**list of mappings, @see param_name*/
-	static const struct ParamName ParamsNames[];
-
-	int boiler_no;		/**<number of boiler*/
-	AnalysisParam param;	/**<param type*/
-	TAnalysis *next;	/**<next element on the list*/
-
-};
-
-/**
- * info about analysis interval
- */
-class TAnalysisInterval {
-	int grate_speed_lower; 	/**<lower bound for grate speed in this interval*/
-	int grate_speed_upper;	/**<upper bound for grate speed in this interval*/
-	int duration;		/**<interval duration*/
-	TAnalysisInterval *next;/**<next element on intervals list*/
-	public:
-	TAnalysisInterval(int _grate_speed_lower,
-			int _grate_speed_upper,
-			int _duration) :
-			grate_speed_lower(_grate_speed_lower),
-			grate_speed_upper(_grate_speed_upper),
-			duration(_duration),
-			next(NULL)
-	{};
-	/*Sets lower bound for grate speed in interval
-	 * @param _grate_speed bound value*/
-	void SetGrateSpeedLower(int grate_speed) {
-		grate_speed_lower = grate_speed;
-	}
-
-	/**@return lower bound for grate speed in interval*/
-	int GetGrateSpeedLower() {
-		return grate_speed_lower;
-	}
-
-	/*Sets upper bound for grate speed in interval
-	 * @param _grate_speed bound value*/
-	void SetGrateSpeedUpper(int grate_speed) {
-		grate_speed_upper = grate_speed;
-	}
-
-	/**@return upper bound for grate speed in interval*/
-	int GetGrateSpeedUpper() {
-		return grate_speed_upper;
-	}
-
-	/*Sets interval duration
-	 * @param grate_speed bound value*/
-	void SetDuration(int _duration) {
-		duration = _duration;
-	}
-	/*@return interaval duration*/
-	int GetDuration() const {
-		return duration;
-	}
-
-	/**Appends interval object at end of intervals list
-	 * @return appended obejct*/
-	TAnalysisInterval* Append(TAnalysisInterval* interval);
-
-	/** @return next element on intervals list, NULL is this is last*/
-	TAnalysisInterval* GetNext() {
-		return next;
-	}
-
-	/**Converts xml node to TAnalysisInterval object
-	 * @param node with interval element
-	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
-	static TAnalysisInterval* parseXML(xmlNodePtr node);
-
-	/**Converts xml node to TAnalysisInterval object
-	 * @param reader set on "interval" element
-	 * @return pointer to TAnalysisInterval object, NULL if error ocurred*/
-	static TAnalysisInterval* parseXML(xmlTextReaderPtr reader);
-
-	/**Creates xml node describing this object
-	 * @return pointer to a node*/
-	xmlNodePtr generateXMLNode();
-
-	~TAnalysisInterval();
-
-};
-
-/**
- * info on boiler for analysis
- */
-class TBoiler {
-public:
-	/**boilers list*/
-	enum BoilerType {
-		INVALID,
-		WR1_25,
-		WR2_5,
-		WR5,
-		WR10,
-		WR25
-	};
-
-	TBoiler(int _boiler_no = -1,
-		float _grate_speed = -1,
-		float _coal_gate_height = -1,
-		BoilerType _boiler_type = INVALID,
-		TSzarpConfig* _parent = NULL,
-		TBoiler* _next = NULL)
-		:
-		boiler_no(_boiler_no),
-	    	grate_speed(_grate_speed),
-	    	coal_gate_height(_coal_gate_height),
-	    	boiler_type(_boiler_type),
-		intervals(NULL),
-	    	parent(_parent),
-	    	next(_next)
-	{
-	};
-
-	/** @return next element on boilers list, NULL is this is last*/
-	TBoiler* GetNext() {
-		return next;
-	}
-
-	/** sets containg TSzarpConfig object
-	 * @param _parent pointer to TSzarpConfig*/
-	void SetParent(TSzarpConfig *_parent) {
-		parent = _parent;
-	}
-
-	/** @return containing TSzarpConfig object*/
-	TSzarpConfig* GetParent() {
-		return parent;
-	}
-
-	/**Retrieves TParam object associated with this boiler
-	 * @param param_type type of param
-	 * @return pointer to a TParam object, NULL if not found*/
-	TParam* GetParam(TAnalysis::AnalysisParam param_type);
-
-	/**@return head of intervals list*/
-	TAnalysisInterval* GetFirstInterval() {
-		return intervals;
-	}
-
-	/**appends interval at the end of intervals
-	 * @return added interval*/
-	TAnalysisInterval* AddInterval(TAnalysisInterval* interval);
-
-	/**Sets boiler number
-	 * param _boiler_no number of boiler*/
-	void SetBoilerNo(int _boiler_no) {
-		boiler_no = _boiler_no;
-	}
-
-	/**@return boiler number*/
-	int GetBoilerNo() {
-		return boiler_no;
-	}
-
-	/**@return maximum coal gate change*/
-	float GetCoalGateHeight() {
-		return coal_gate_height;
-	}
-
-	/**@return type of a boiler*/
-	BoilerType GetBoilerType() {
-		return boiler_type;
-	}
-
-	/**Sets boiler type
-	 * @param type type of boiler*/
-	void SetBoilerType(BoilerType type) {
-		boiler_type = type;
-	}
-
-	/**Sets max coal gate height change
-	 * @param _coal_gate_height maximum coal gate height*/
-	void SetCoalGateHeight(float _coal_gate_height) {
-		coal_gate_height = _coal_gate_height;
-	}
-
-	/**@return max grate speed change*/
-	float GetGrateSpeed() {
-		return grate_speed;
-	}
-
-	/**Sets max grate speed change
-	 * @param _grate_speed maximum grate speed*/
-	void SetGrateSpeed(float _grate_speed) {
-		grate_speed = _grate_speed;
-	}
-
-	/**Appends boiler to the end of boielr's list
-	 * @param boiler element to be added
-	 * @return appended element*/
-	TBoiler* Append(TBoiler* boiler);
-
-	/**Converts xml node to TBoiler object
-	 * @param reader set on "boiler" element
-	 * @return pointer to TABoiler object, NULL if error ocurred*/
-	static TBoiler* parseXML(xmlTextReaderPtr reader);
-
-	/**Converts xml node to TBoiler object
-	 * @param node with boiler element
-	 * @return pointer to TABoiler object, NULL if error ocurred*/
-	static TBoiler* parseXML(xmlNodePtr node);
-
-	/**Creates xml node describing this object
-	 * @return pointer to a node*/
-	xmlNodePtr generateXMLNode();
-
-	/**Return a string describing a type of boiler in xml docuement
-	 * @param type boiler type
-	 * @return string with boiler name*/
-	static const std::wstring& GetNameForBoilerType(BoilerType type);
-
-
-	/**Return a enum value for boiler type for given params.xml name
-	 * @param name string with boiler name
-	 * @return type of boiler*/
-	static BoilerType GetTypeForBoilerName(const std::wstring& name);
-	~TBoiler();
-private:
-	/**Maps BoilerType values to a corresponding names in params.xml*/
-	struct BoilerTypeName {
-		BoilerType 	type_id; 	/**<type of boiler*/
-		const std::wstring name;		/**<name of boiler in params.xml*/
-	};
-
-	/**list of mappings, @see BoilerTypeName*/
-	static const struct BoilerTypeName BoilerTypesNames[];
-
-	int boiler_no;
-			/**<boiler's number*/
-	float grate_speed;
-			/**<maximum grate speed change in a analysis period*/
-	float coal_gate_height;
-			/**<maximum coal gate height change in a analysis period*/
-	BoilerType boiler_type;
-			/**<type of a boiler*/
-	TAnalysisInterval* intervals;
-			/**<list of analysis intervals*/
-	TSzarpConfig *parent;
-			/**<pointer to containing TSzarpConfig*/
-	TBoiler* next;	/**<next list's element*/
-
 };
 
 /**Class describes summer seasons*/
