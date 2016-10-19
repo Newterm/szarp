@@ -143,7 +143,6 @@ Now look at the /etc/szarp directory. There are two files:
     MEANER3=1
     SENDER=1
     PARAMD=1
-    PSETD=0
     XSLTD=0
     SSS=0
 

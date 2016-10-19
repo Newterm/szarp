@@ -159,7 +159,7 @@ TSzarpConfig::TSzarpConfig( bool logparams ) :
 	read_freq(0), send_freq(0),
 	devices(NULL), defined(NULL),
 	drawdefinable(NULL), title(),
-	prefix(), boilers(NULL), seasons(NULL) ,
+	prefix(), seasons(NULL) ,
 	logparams(logparams),
        	device_counter(1),
        	radio_counter(1),
@@ -174,7 +174,6 @@ TSzarpConfig::~TSzarpConfig(void)
 	if( defined )       delete defined      ;
 	if( drawdefinable ) delete drawdefinable;
 	if( seasons )       delete seasons      ;
-	if( boilers )       delete boilers      ;
 }
 
 
@@ -299,14 +298,6 @@ TSzarpConfig::generateXML(void)
 	for (TParam * p = drawdefinable; p; p = p->GetNext())
 	    xmlAddChild(node, p->generateXMLNode());
     }
-    if (boilers) {
-	node = xmlNewChild(doc->children, NULL, X"boilers", NULL);
-	for (TBoiler* boiler = GetFirstBoiler(); boiler; boiler = boiler->GetNext()) {
-	    xmlNodePtr boiler_node = boiler->generateXMLNode();	
-	    if (boiler_node)
-		xmlAddChild(node,boiler_node);
-        }
-    }
     if (seasons) {
 	node = seasons->generateXMLNode();
 	xmlAddChild(doc->children, node);
@@ -316,11 +307,6 @@ TSzarpConfig::generateXML(void)
 #undef ITOA
 #undef BUF
 }
-
-TBoiler* 
-TSzarpConfig::GetFirstBoiler() {
-	return boilers;
-}	
 
 int
 TSzarpConfig::saveXML(const std::wstring &path)
@@ -501,19 +487,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<seasons>' parse problem");
 				}
 			}
-		} else
-		if (xw.IsTag("boilers")) {
-			if (xw.IsBeginTag()) {
-				TBoiler * _b = TBoilers::parseXML(reader, this);
-				if (_b)
-					AddBoiler(_b);
-				else {
-					delete boilers;
-					boilers = NULL;
-					xw.XMLError("'<boilers>' parser problem");
-				}
-			}
-		} else {
+		} 	else {
 			xw.XMLErrorNotKnownTag("params");
 		}
 		if (!xw.NextTag())
@@ -655,17 +629,6 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
 		    assert(p != NULL);
 		    if (p->parseXML(ch2))
 			goto at_end;
-		}
-	}
-	else if (!strcmp((char *)ch->name, "boilers")) {
-	    for (xmlNodePtr ch2 = ch->children; ch2; ch2 = ch2->next) 
-		if (!strcmp((char *)ch2->name,"boiler")) {
-		    TBoiler* boiler = TBoiler::parseXML(ch2);
-			if (!boiler) 
-			    goto at_end;
-			boiler->SetParent(this);
-			AddBoiler(boiler);
-
 		}
 	}
 	else if (!strcmp((char *)ch->name, "seasons")) {
@@ -974,13 +937,6 @@ TSzarpConfig::GetNextRaportItem(TRaport * cur)
 	    if (title == r->GetTitle())
 		return r;
     return NULL;
-}
-
-TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
-	if (!boilers)
-		return boilers = boiler;
-	else
-		return boilers->Append(boiler);
 }
 
 bool TSzarpConfig::checkConfiguration()

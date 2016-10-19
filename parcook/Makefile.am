@@ -3,7 +3,7 @@
 #
 # $Id: Makefile.am 6824 2009-06-05 13:51:11Z pawel $
 
-SUBDIRS = analiza
+SUBDIRS =
 
 if WANT_SNAP7DMN
 SUBDIRS += s7daemon
@@ -77,7 +77,6 @@ bin_PROGRAMS = \
               parcook \
 	      polludmn \
 	      pozytondmn \
-	      @PSETD@ \
 	      ratedmn \
               rsdmn \
 	      sampledmn \
@@ -99,7 +98,7 @@ bin_PROGRAMS += snap7dmn
 endif
 
 
-EXTRA_PROGRAMS = psetd ddedmn unitedmn dlmsdmn
+EXTRA_PROGRAMS = ddedmn unitedmn dlmsdmn
 
 
 basedmn_SOURCES = base_daemon.cc base_daemon.h
@@ -187,9 +186,6 @@ testdmn_SOURCES = testdmn.cc
 zmddmn_SOURCES = zmddmn.cc
 
 parcook_SOURCES = parcook.cc funtable.cc funtable.h
-
-psetd_SOURCES = psetd.cc
-psetd_LDADD = $(LDAP_LIBS) $(SSL_LIBS) $(LDADD)
 
 mbusdmn_SOURCES = mbusdmn.cc
 
