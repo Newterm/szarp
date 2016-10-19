@@ -3,9 +3,6 @@
 if $programname == 'parstart' then /var/log/szarp/parstart.log
 & DISCARD_ACTION
 
-if $programname == 'analiza' then /var/log/szarp/analiza.log
-& DISCARD_ACTION
-
 if $programname == 'meaner3' then /var/log/szarp/meaner3.log
 & DISCARD_ACTION
 
@@ -16,9 +13,6 @@ if $programname == 'parcook' then /var/log/szarp/parcook.log
 & DISCARD_ACTION
 
 if $programname == 'prober' then /var/log/szarp/prober.log
-& DISCARD_ACTION
-
-if $programname == 'psetd' then /var/log/szarp/psetd.log
 & DISCARD_ACTION
 
 if $programname == 'sender' then /var/log/szarp/sender.log

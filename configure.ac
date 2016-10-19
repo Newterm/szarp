@@ -1057,8 +1057,7 @@ AC_SUBST(HELPCOMMAND)
 SUBDIRS="$SUBDIRS utils"
 if test x$with_mingw32 != xyes ; then
 	AGREGATOR=agregator
-	ANALIZA2IPK=analiza2ipk
-        HASHTEST=hashtest
+   HASHTEST=hashtest
 	IPK2SZARP=ipk2szarp
 	IPKREP=ipkrep
 	IPKMAX=ipkmax
@@ -1066,7 +1065,6 @@ if test x$with_mingw32 != xyes ; then
 	SZARP2IPK=szarp2ipk
 fi
 AC_SUBST(AGREGATOR)
-AC_SUBST(ANALIZA2IPK)
 AC_SUBST(HASHTEST)
 AC_SUBST(IPK2SZARP)
 AC_SUBST(IPKREP)
@@ -1093,12 +1091,6 @@ if test "x$no_lber" != "xyes"; then
 	DLMSDMN=dlmsdmn;	
 fi
 AC_SUBST(DLMSDMN)
-
-#PSET needs ldap and ssl
-if test "x$no_ldap" != "xyes" -a "x$no_ssl" != "xyes"; then
-	PSETD=psetd;
-fi
-AC_SUBST(PSETD)
 
 #szarp sync applications
 want_ssc=""
@@ -1201,7 +1193,6 @@ AC_OUTPUT( \
 	python/pysz4/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
-	parcook/analiza/Makefile \
 	parcook/s7daemon/Makefile \
 	pyipk/Makefile \
 	qt4/Makefile \

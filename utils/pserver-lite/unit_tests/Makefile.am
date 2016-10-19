@@ -34,6 +34,6 @@ command_handlers_unit_tests_SOURCES = \
 		unit_tests.cpp \
 		command_handlers_unit_test.cpp \
 		../commands.cc \
-		../szcache.cpp \ 
+		../szcache.cpp \
 		../shm_connection.cc
 

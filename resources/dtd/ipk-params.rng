@@ -723,7 +723,7 @@
 
   <!--
 	Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
-	'define' oraz elementy 'value', 'raport', 'draw', 'analysis'. Mo¿e te¿ zawieraæ
+	'define' oraz elementy 'value', 'raport', 'draw'. Mo¿e te¿ zawieraæ
 	elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
 	Atrybuty:
 		name - wymagany, pe³na tekstowa nazwa parametru, powinna
@@ -765,9 +765,6 @@
 				</zeroOrMore>
 				<zeroOrMore>
 					<ref name="draw"/>
-				</zeroOrMore>
-				<zeroOrMore>
-					<ref name="analysis"/>
 				</zeroOrMore>
 				<zeroOrMore>
 					<ref name="doc"/>
@@ -1339,56 +1336,6 @@
 				<data type="double"/>
 			</attribute>
 		</optional>
-	</define>
-
-  <!-- Konfiguracja programu analiza -->
-
-  <!-- Obecnosc elementu 'analysis' w elemencie 'param' oznacza,
-	ze dane zawarte w tym paramaterze podlegaja analizie.
-	Zawiera dwa obowiazkowe atrybuty:
-	boiler_no - numer kot³a
-	param_type - typ parametru
-  	analisys_enable	- zezwolenie od regularora kot³a na analize
-	regulator_work_time - czas pracy regulatora kot³a w pracy automatycznej
-	coal_volume aktualna - objêto¶æ wchodz±cego do kot³a wêgla
-	energy_coal_volume_ratio - aktualna wartosc stosunku energia / objetosc wegla
-	air_stream - strumieñ powietrza
-	left_grate_speed - prêdko¶æ posuwu lewego rusztu
-	right_grate_speed - prêdko¶æ posuwu prawego rusztu
-	max_air_stream - gorna granica powietrza w analizie
-	min_air_stream - dolna granica powietrza w analizia
-		left_coal_gate_height - wysoko¶æ lewej warstwownicy
-		right_coal_gate_height - wysoko¶æ pracwej warstwownicy
-	analisys_status - status analizy
-	air_stream_coal_volume_ratio_result  - rezultat analizy - warto¶æ strumienia powietrza
-  -->
-
-	<define name="analysis" combine="interleave">
-		<element name="analysis" ns="http://www.praterm.com.pl/SZARP/ipk">
-			<ref name="attlist.analysis"/>
-			<empty/>
-		</element>
-	</define>
-
-	<define name="attlist.analysis">
-			<attribute name="boiler_no"/>
-			<attribute name="param_type">
-			<choice>
-				<value>analysis_enable</value>
-				<value>regulator_work_time</value>
-				<value>coal_volume</value>
-				<value>energy_coal_volume_ratio</value>
-				<value>air_stream</value>
-				<value>left_grate_speed</value>
-				<value>right_grate_speed</value>
-				<value>max_air_stream</value>
-				<value>min_air_stream</value>
-				<value>left_coal_gate_height</value>
-				<value>right_coal_gate_height</value>
-				<value>analysis_status</value>
-				<value>air_stream_result</value>
-			</choice>
-		</attribute>
 	</define>
 
   <!-- Dokumentacja -->
