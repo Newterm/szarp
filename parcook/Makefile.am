@@ -38,7 +38,6 @@ DL = -ldl
 # Programs to create
 
 bin_PROGRAMS = \
-              alstdmn \
 	      aqtdmn \
 	      calcdmn \
 	      calecdmn \
@@ -84,13 +83,9 @@ bin_PROGRAMS = \
 	      setdmn \
 	      iecdmn \
 	      prodmn \
-	      sre2dmn \
 	      tcpdmn \
-	      tensdmn \
 	      testdmn \
-	      @UNITEDMN@ \
 	      wlkdmn \
-              zmddmn \
 	      pythondmn \
 	      defdmn
 
@@ -99,7 +94,7 @@ bin_PROGRAMS += snap7dmn
 endif
 
 
-EXTRA_PROGRAMS = ddedmn unitedmn dlmsdmn
+EXTRA_PROGRAMS = ddedmn dlmsdmn
 
 
 basedmn_SOURCES = base_daemon.cc base_daemon.h
@@ -107,8 +102,6 @@ basedmn_SOURCES = base_daemon.cc base_daemon.h
 dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
-
-alstdmn_SOURCES = alstdmn.cc
 
 calecdmn_SOURCES = calecdmn.cc
 
@@ -153,9 +146,6 @@ pafdmnr_SOURCES = pafdmnr.cc
 
 polludmn_SOURCES = polludmn.cc
 
-sre2dmn_SOURCES = sre2dmn.cc
-sre2dmn_LDADD = $(LDADD) $(DL)
-
 calcdmn_SOURCES = calcdmn.cc
 
 ratedmn_SOURCES = ratedmn.cc
@@ -163,8 +153,6 @@ ratedmn_SOURCES = ratedmn.cc
 lecdmn_SOURCES = lecdmn.cc
 
 lecmdmn_SOURCES = lecmdmn.cc
-
-tensdmn_SOURCES = tensdmn.cc
 
 muksdmn_SOURCES = muksdmn.cc
 
@@ -184,8 +172,6 @@ tcpdmn_SOURCES = tcpdmn.cc
 
 testdmn_SOURCES = testdmn.cc
 
-zmddmn_SOURCES = zmddmn.cc
-
 parcook_SOURCES = parcook.cc funtable.cc funtable.h
 
 mbusdmn_SOURCES = mbusdmn.cc
@@ -198,9 +184,6 @@ dlmsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(LBER_LIBS)
 
 melsdmn_SOURCES = melsdmn.cc mels-prop-plugin.h
 melsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(DL)
-
-unitedmn_SOURCES = unitedmn.cc
-unitedmn_LDADD = $(LDADD) @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
