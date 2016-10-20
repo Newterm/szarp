@@ -38,59 +38,38 @@ DL = -ldl
 # Programs to create
 
 bin_PROGRAMS = \
-              alstdmn \
 	      aqtdmn \
 	      calcdmn \
-	      calecdmn \
 	      dbdmn \
 	      @DDEDMN@ \
-	      @DLMSDMN@ \
-              dpafdmn \
+	      dpafdmn \
 	      dprdmn \
-	      eapnetdmn \
-              endmn \
 	      execdmn \
-              fp2kdmn \
-	      ifcl5dmn \
-              ipcinfo \
+	      ipcinfo \
 	      k601dmn \
 	      kamsdmn \
 	      kwmsdmn \
-              lbdmn \
-	      lecdmn \
-	      lecmdmn \
-              linedmn \
-	      lmldmn \
+	      lbdmn \
 	      logdmn \
 	      mbdmn \
 	      borutadmn \
 	      borutadmn_z \
 	      mbrtudmn \
-	      mbtcpdmn \
 	      mbusdmn \
-	      melsdmn \
-	      muksdmn \
-	      npozytondmn \
 	      nrsdmn \
-              pafdmn \
-              pafdmnr \
-              parcook \
+	      pafdmn \
+	      pafdmnr \
+	      parcook \
 	      polludmn \
-	      pozytondmn \
 	      ratedmn \
-              rsdmn \
+	      rsdmn \
 	      sampledmn \
 	      sbusdmn \
-	      setdmn \
 	      iecdmn \
 	      prodmn \
-	      sre2dmn \
 	      tcpdmn \
-	      tensdmn \
 	      testdmn \
-	      @UNITEDMN@ \
 	      wlkdmn \
-              zmddmn \
 	      pythondmn \
 	      defdmn
 
@@ -99,7 +78,7 @@ bin_PROGRAMS += snap7dmn
 endif
 
 
-EXTRA_PROGRAMS = ddedmn unitedmn dlmsdmn
+EXTRA_PROGRAMS = ddedmn
 
 
 basedmn_SOURCES = base_daemon.cc base_daemon.h
@@ -108,22 +87,11 @@ dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
 
-alstdmn_SOURCES = alstdmn.cc
-
-calecdmn_SOURCES = calecdmn.cc
-
 dbdmn_SOURCES = dbdmn.cc
 
 dprdmn_SOURCES = dprdmn.cc
 
-eapnetdmn_SOURCES = eapnetdmn.cc eapnet-prop-plugin.h
-eapnetdmn_LDADD = $(LDADD) $(DL)
-
-endmn_SOURCES = endmn.cc
-
 execdmn_SOURCES = execdmn.cc
-
-fp2kdmn_SOURCES = fp2kdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
@@ -132,10 +100,6 @@ kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD
 
 kwmsdmn_SOURCES = kwmsdmn.cc
 
-linedmn_SOURCES = linedmn.cc
-
-lmldmn_SOURCES = lmldmn.cc
-
 logdmn_SOURCES = logdmn.cc $(basedmn_SOURCES)
 
 mbrtudmn_SOURCES = mbrtudmn.cc
@@ -143,38 +107,17 @@ mbrtudmn_SOURCES = mbrtudmn.cc
 k601dmn_SOURCES = k601dmn.cc k601-prop-plugin.h
 k601dmn_LDADD = $(LDADD) $(DL)
 
-ifcl5dmn_SOURCES = ifcl5dmn.cc
-
-mbtcpdmn_SOURCES = mbtcpdmn.cc
-
 pafdmn_SOURCES = pafdmn.cc
 
 pafdmnr_SOURCES = pafdmnr.cc
 
 polludmn_SOURCES = polludmn.cc
 
-sre2dmn_SOURCES = sre2dmn.cc
-sre2dmn_LDADD = $(LDADD) $(DL)
-
 calcdmn_SOURCES = calcdmn.cc
 
 ratedmn_SOURCES = ratedmn.cc
 
-lecdmn_SOURCES = lecdmn.cc
-
-lecmdmn_SOURCES = lecmdmn.cc
-
-tensdmn_SOURCES = tensdmn.cc
-
-muksdmn_SOURCES = muksdmn.cc
-
 aqtdmn_SOURCES = aqtdmn.cc
-
-pozytondmn_SOURCES = pozytondmn.cc pozyton-prop-plugin.h
-pozytondmn_LDADD = $(LDADD) $(DL)
-
-npozytondmn_SOURCES = npozytondmn.cc npozyton-prop-plugin.h
-npozytondmn_LDADD = $(LDADD) $(DL)
 
 rsdmn_SOURCES = nrsdmn.cc
 
@@ -184,23 +127,12 @@ tcpdmn_SOURCES = tcpdmn.cc
 
 testdmn_SOURCES = testdmn.cc
 
-zmddmn_SOURCES = zmddmn.cc
-
 parcook_SOURCES = parcook.cc funtable.cc funtable.h
 
 mbusdmn_SOURCES = mbusdmn.cc
 
 wlkdmn_SOURCES = wlkdmn.cc
 wlkdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
-
-dlmsdmn_SOURCES = dlmsdmn.cc
-dlmsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(LBER_LIBS)
-
-melsdmn_SOURCES = melsdmn.cc mels-prop-plugin.h
-melsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(DL)
-
-unitedmn_SOURCES = unitedmn.cc
-unitedmn_LDADD = $(LDADD) @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
@@ -217,9 +149,6 @@ sbusdmn_SOURCES = sbusdmn.cc
 
 ddedmn_SOURCES = ddedmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++
-
-setdmn_SOURCES = setdmn.cc
-setdmn_LDADD = $(LDADD) @EVENT_LIBS@ -lstdc++
 
 iecdmn_SOURCES = iecdmn.cc
 iecdmn_LDADD = $(LDADD)
