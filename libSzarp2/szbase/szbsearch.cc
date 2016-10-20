@@ -329,14 +329,7 @@ bool szb_lua_search_first_last_date(szb_buffer_t* buffer, TParam* param, SZARP_P
 			if (param->GetLuaStartDateTime() > 0 && param->GetLuaStartDateTime() > first_date)
 				first_date = param->GetLuaStartDateTime();
 			break;
-		case PT_MIN10:
-		case PT_HOUR:
-		case PT_HOUR8:
-		case PT_DAY:
-		case PT_WEEK:
-		case PT_MONTH:
-		case PT_YEAR:
-		case PT_CUSTOM:
+		default:
 			if (param->GetLuaStartDateTime() > 0)
 				first_date = param->GetLuaStartDateTime();
 			else
