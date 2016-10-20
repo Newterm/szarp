@@ -106,10 +106,10 @@ ConfigurationFileChangeHandler::handle(std::wstring file, std::wstring prefix) {
 
 DatabaseManager* ConfigurationFileChangeHandler::database_manager(NULL);
 
-void INThandler(int sig)
+void handler(int sig)
 {
 	wxGetApp().OnExit();
-	exit(0);
+	_exit(0);
 }
 
 namespace {
@@ -188,7 +188,8 @@ bool DrawApp::OnInit() {
 
 
 	SetProgName(_T("Draw 3"));
-	//signal(SIGINT, INThandler);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
 
 	if (m_just_print_version) {
 		std::cout << SZARP_VERSION << std::endl;
