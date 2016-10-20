@@ -11,7 +11,7 @@ Files: var/log/szarp
 Package: szarp-daemons
 Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py,remarks_server.py,prober}
 Files: opt/szarp/bin/{calcdmn,dbdmn,endmn,execdmn,fp2kdmn,ifcl5dmn,lecmdmn,linedmn,mbrtudmn,mbtcpdmn,mbdmn}
-Files: opt/szarp/bin/{kamsdmn,eapnetdmn,aqtdmn,alstdmn,dpafdmn,iecdmn,lecdmn,lmldmn,logdmn,mbusdmn,muksdmn,nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn,tcpdmn,testdmn,dlmsdmn,sbusdmn,kwmsdmn,ddedmn,zmddmn,lbdmn,k601dmn,sre2dmn,melsdmn,pozytondmn,npozytondmn,setdmn,borutadmn,pythondmn}
+Files: opt/szarp/bin/{kamsdmn,eapnetdmn,aqtdmn,dpafdmn,iecdmn,lecdmn,lmldmn,logdmn,mbusdmn,muksdmn,nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn,tcpdmn,testdmn,dlmsdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn,k601dmn,melsdmn,pozytondmn,npozytondmn,setdmn,borutadmn,pythondmn}
 Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py,probes_server.tac,meaner4,paramsvalues_pb2.py,parhub.py,test_ipc.py*}
 Files: opt/szarp/lib/libpysz*
 Files: opt/szarp/bin/wlkdmn
@@ -49,11 +49,11 @@ Files: usr/share/autostart/scc.desktop
 Files: usr/share/applications/scc.desktop
 
 Package: szarp-paramd
-Files: etc/pam.d/paramd 
+Files: etc/pam.d/paramd
 Files: opt/szarp/bin/paramd
 Files: opt/szarp/resources/paramd_access.conf
 
-# if you want to add something to this section, please go to 
+# if you want to add something to this section, please go to
 # pyipk/Makefile.am and update it according to instructions
 Package: szarp-pyipk
 Files: opt/szarp/bin/ipkcmd
