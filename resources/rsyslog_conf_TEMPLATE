@@ -35,9 +35,6 @@ if $programname == 'pserver-lite' then /var/log/szarp/pserver-lite.log
 & DISCARD_ACTION
 
 # Line daemons
-if $programname == 'alstdmn' then /var/log/szarp/alstdmn.log
-& DISCARD_ACTION
-
 if $programname == 'aqtdmn' then /var/log/szarp/aqtdmn.log
 & DISCARD_ACTION
 
@@ -47,16 +44,10 @@ if $programname == 'borutadmn' then /var/log/szarp/borutadmn.log
 if $programname == 'calcdmn' then /var/log/szarp/calcdmn.log
 & DISCARD_ACTION
 
-if $programname == 'calecdmn' then /var/log/szarp/calecdmn.log
-& DISCARD_ACTION
-
 if $programname == 'dbdmn' then /var/log/szarp/dbdmn.log
 & DISCARD_ACTION
 
 if $programname == 'ddedmn' then /var/log/szarp/ddedmn.log
-& DISCARD_ACTION
-
-if $programname == 'dlmsdmn' then /var/log/szarp/dlmsdmn.log
 & DISCARD_ACTION
 
 if $programname == 'dpafdmn' then /var/log/szarp/dpafdmn.log
@@ -65,22 +56,10 @@ if $programname == 'dpafdmn' then /var/log/szarp/dpafdmn.log
 if $programname == 'dprdmn' then /var/log/szarp/dprdmn.log
 & DISCARD_ACTION
 
-if $programname == 'eapnetdmn' then /var/log/szarp/eapnetdmn.log
-& DISCARD_ACTION
-
 if $programname == 'endmn' then /var/log/szarp/endmn.log
 & DISCARD_ACTION
 
-if $programname == 'execdmn' then /var/log/szarp/execdmn.log
-& DISCARD_ACTION
-
-if $programname == 'fp2kdmn' then /var/log/szarp/fp2kdmn.log
-& DISCARD_ACTION
-
 if $programname == 'iecdmn' then /var/log/szarp/iecdmn.log
-& DISCARD_ACTION
-
-if $programname == 'ifcl5dmn' then /var/log/szarp/ifcl5dmn.log
 & DISCARD_ACTION
 
 if $programname == 'k601dmn' then /var/log/szarp/k601dmn.log
@@ -95,18 +74,6 @@ if $programname == 'kwmsdmn' then /var/log/szarp/kwmsdmn.log
 if $programname == 'lbdmn' then /var/log/szarp/lbdmn.log
 & DISCARD_ACTION
 
-if $programname == 'lecdmn' then /var/log/szarp/lecdmn.log
-& DISCARD_ACTION
-
-if $programname == 'lecmdmn' then /var/log/szarp/lecmdmn.log
-& DISCARD_ACTION
-
-if $programname == 'linedmn' then /var/log/szarp/linedmn.log
-& DISCARD_ACTION
-
-if $programname == 'lmldmn' then /var/log/szarp/lmldmn.log
-& DISCARD_ACTION
-
 if $programname == 'logdmn' then /var/log/szarp/logdmn.log
 & DISCARD_ACTION
 
@@ -116,19 +83,7 @@ if $programname == 'mbdmn' then /var/log/szarp/mbdmn.log
 if $programname == 'mbrtudmn' then /var/log/szarp/mbrtudmn.log
 & DISCARD_ACTION
 
-if $programname == 'mbtcpdmn' then /var/log/szarp/mbtcpdmn.log
-& DISCARD_ACTION
-
 if $programname == 'mbusdmn' then /var/log/szarp/mbusdmn.log
-& DISCARD_ACTION
-
-if $programname == 'melsdmn' then /var/log/szarp/melsdmn.log
-& DISCARD_ACTION
-
-if $programname == 'muksdmn' then /var/log/szarp/muksdmn.log
-& DISCARD_ACTION
-
-if $programname == 'npozytondmn' then /var/log/szarp/npozytondmn.log
 & DISCARD_ACTION
 
 if $programname == 'nrsdmn' then /var/log/szarp/nrsdmn.log
@@ -143,9 +98,6 @@ if $programname == 'pafdmnr' then /var/log/szarp/pafdmnr.log
 if $programname == 'polludmn' then /var/log/szarp/polludmn.log
 & DISCARD_ACTION
 
-if $programname == 'pozytondmn' then /var/log/szarp/pozytondmn.log
-& DISCARD_ACTION
-
 if $programname == 'prodmn' then /var/log/szarp/prodmn.log
 & DISCARD_ACTION
 
@@ -158,12 +110,6 @@ if $programname == 'sampledmn' then /var/log/szarp/sampledmn.log
 if $programname == 'sbusdmn' then /var/log/szarp/sbusdmn.log
 & DISCARD_ACTION
 
-if $programname == 'setdmn' then /var/log/szarp/setdmn.log
-& DISCARD_ACTION
-
-if $programname == 'sre2dmn' then /var/log/szarp/sre2dmn.log
-& DISCARD_ACTION
-
 if $programname == 'tcpdmn' then /var/log/szarp/tcpdmn.log
 & DISCARD_ACTION
 
@@ -173,13 +119,7 @@ if $programname == 'tensdmn' then /var/log/szarp/tensdmn.log
 if $programname == 'testdmn' then /var/log/szarp/testdmn.log
 & DISCARD_ACTION
 
-if $programname == 'unitedmn' then /var/log/szarp/unitedmn.log
-& DISCARD_ACTION
-
 if $programname == 'wlkdmn' then /var/log/szarp/wlkdmn.log
-& DISCARD_ACTION
-
-if $programname == 'zmddmn' then /var/log/szarp/zmddmn.log
 & DISCARD_ACTION
 
 if $programname == 'pythondmn' then /var/log/szarp/pythondmn.log
