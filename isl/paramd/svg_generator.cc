@@ -121,7 +121,7 @@ bool SVGGenerator::GetGraphTimeParams() {
 	}
 
 	m_custom_length = 0;
-	if (!xmlStrcmp(_period_type, X"month"))
+	if (!xmlStrcmp(_period_type, X"year"))
 		m_probe_type = PT_YEAR;
 	else if (!xmlStrcmp(_period_type, X"month"))
 		m_probe_type = PT_MONTH;
@@ -230,9 +230,14 @@ xmlNodePtr SVGGenerator::GenerateTimeInfo(xmlDocPtr doc) {
 		case PT_SEC10:
 			xmlSetProp(time_node, X"period", X"sec10");
 			break;
+		case PT_SEC:
+			xmlSetProp(time_node, X"period", X"sec");
+			break;
 		case PT_CUSTOM:
 			xmlSetProp(time_node, X"period", X"custom");
 			set_node_prop(time_node, X"period", m_custom_length);
+			break;
+		default:
 			break;
 	}
 

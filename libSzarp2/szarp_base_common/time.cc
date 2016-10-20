@@ -79,6 +79,8 @@ szb_move_time(time_t t, int count, SZARP_PROBE_TYPE probe_type, int custom_lengt
 			tm.tm_year += count;
 			tm.tm_isdst = -1;
 			return mktime(&tm);
+		default:
+			break;
 	}
 	return -1;
 }
@@ -100,6 +102,8 @@ time_t szb_round_time(time_t t, SZARP_PROBE_TYPE probe_type, int custom_length)
 			return (t - (t % custom_length));
 		case PT_MIN10 :
 			return (t - (t % 600));
+		case PT_HALFSEC:
+			return (t - (t % 2));
 		case PT_SEC10:
 			return (t - (t % 10));
 		case PT_MSEC10:
