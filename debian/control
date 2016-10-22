@@ -188,7 +188,6 @@ Package: szarp-pyipk
 Section: x11
 Architecture: all
 Depends: python (>= 2.5), ${python:Depends}, python-lxml , python-qt4 , python-sip , python-paramiko
-XS-Python-Version: ${python:Versions}
 Description: Sets of scripts and libraries to easily manage params.xml file
  This package contains sets of plugins to manage params.xml file, and both
  graphical and command line application to use them.
