@@ -8,54 +8,43 @@ SUBDIRS =
 LEX=@LEX@
 YACC=@YACC@
 
-SOURCE_DIR=@srcdir@
-IPK_DIR=$(SOURCE_DIR)/ipk
-SZARP_BASE_COMMON_DIR=$(SOURCE_DIR)/szarp_base_common
-SZBASE_DIR=$(SOURCE_DIR)/szbase
-SZ4_DIR=$(SOURCE_DIR)/sz4
-DMN_DIR=$(SOURCE_DIR)/linedmn
-PARSERS_DIR=$(SOURCE_DIR)/parsers
-INCLUDE_DIR=$(SOURCE_DIR)/include
-TOOLS_DIR=$(SOURCE_DIR)/tools
-XSLT_DIR=$(SOURCE_DIR)/xslt
-
 LDADD = @LEXLIB@ @CURL_LIBS@ @XSLT_LIBS@ @XML_LIBS@ @LUA_LIBS@ 
 	@ZIP_FLAGS@ \
 	libSzarp2.la ../libSzarp/libSzarp.la 
 
 AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	   @BOOST_CPPFLAGS@ @ZIP_CFLAGS@ \
-	-I$(INCLUDE_DIR)				\
-	-I$(INCLUDE_DIR)/szbase				\
-	-I$(SOURCE_DIR)/../libSzarp/include		\
-	-I$(SZBASE_DIR)					\
+	-I@srcdir@/include				\
+	-I@srcdir@/include/szbase				\
+	-I@srcdir@/../libSzarp/include		\
+	-I@srcdir@/szbase					\
 	-DPREFIX=\"@prefix@\"				\
-	-I$(SOURCE_DIR)/protobuf
+	-I@srcdir@/protobuf
 
 noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
-szbtest_SOURCES = $(SZBASE_DIR)/szbtest.cc
+szbtest_SOURCES = @srcdir@/szbase/szbtest.cc
 
 
-$(SOURCE_DIR)/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/paramsvalues.proto
-	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
+@srcdir@/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.proto
+	$(PROTOC) --cpp_out=@srcdir@/protobuf -I@srcdir@/protobuf @srcdir@/protobuf/paramsvalues.proto
 
-$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc: $(SOURCE_DIR)/protobuf/paramsvalues.proto
-	$(PROTOC) --cpp_out=$(SOURCE_DIR)/protobuf -I$(SOURCE_DIR)/protobuf $(SOURCE_DIR)/protobuf/paramsvalues.proto
+@srcdir@/protobuf/paramsvalues.pb.cc: @srcdir@/protobuf/paramsvalues.proto
+	$(PROTOC) --cpp_out=@srcdir@/protobuf -I@srcdir@/protobuf @srcdir@/protobuf/paramsvalues.proto
 
-$(SOURCE_DIR)/include/protobuf/paramsvalues.pb.h: $(SOURCE_DIR)/protobuf/paramsvalues.pb.h
-	mkdir -p $(SOURCE_DIR)/include/protobuf
+@srcdir@/include/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.pb.h
+	mkdir -p @srcdir@/include/protobuf
 	cp $< $@
 
 
 lua_parser_test_INCLUDES = $(INCLUDES)
 lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
-lua_parser_test_SOURCES = $(SZARP_BASE_COMMON_DIR)/lua_parser_test.cc
+lua_parser_test_SOURCES = @srcdir@/szarp_base_common/lua_parser_test.cc
 
 xmlreader_test_INCLUDES = $(INCLUDES)
 xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
-xmlreader_test_SOURCES = $(IPK_DIR)/xmlreader_test.cc
+xmlreader_test_SOURCES = @srcdir@/ipk/xmlreader_test.cc
 
 
 test: szbtest
@@ -64,19 +53,19 @@ test: szbtest
 if MINGW32_OPT
 INCLUDE_PROTOBUF =
 else
-INCLUDE_PROTOBUF = $(INCLUDE_DIR)/protobuf/paramsvalues.pb.h
+INCLUDE_PROTOBUF = @srcdir@/include/protobuf/paramsvalues.pb.h
 endif
 
 noinst_HEADERS = \
-                      $(INCLUDE_DIR)/dmncfg.h \
-                      $(INCLUDE_DIR)/httpcl.h \
-                      $(INCLUDE_DIR)/ipchandler.h \
-                      $(INCLUDE_DIR)/insort.h \
-                      $(INCLUDE_DIR)/szarp_config.h \
-		      $(INCLUDE_DIR)/tokens.h \
-		      $(INCLUDE_DIR)/convuri.h \
-                      $(INCLUDE_DIR)/ppset.h \
-                      $(INCLUDE_DIR)/xmlutils.h \
+                      @srcdir@/include/dmncfg.h \
+                      @srcdir@/include/httpcl.h \
+                      @srcdir@/include/ipchandler.h \
+                      @srcdir@/include/insort.h \
+                      @srcdir@/include/szarp_config.h \
+		      @srcdir@/include/tokens.h \
+		      @srcdir@/include/convuri.h \
+                      @srcdir@/include/ppset.h \
+                      @srcdir@/include/xmlutils.h \
                       $(INCLUDE_PROTOBUF)
 
 if MINGW32_OPT
@@ -89,16 +78,16 @@ if MINGW32_OPT
 BASECONN =
 else
 BASECONN = \
-			$(DMN_DIR)/daemonutils.cc \
-			$(DMN_DIR)/baseconn.cc \
-			$(DMN_DIR)/bserialport.cc \
-			$(DMN_DIR)/serialport.cc \
-			$(DMN_DIR)/serialadapter.cc \
-			$(DMN_DIR)/tcpconn.cc \
-			$(DMN_DIR)/httpclient.cc \
-			$(DMN_DIR)/atcconn.cc \
-			$(DMN_DIR)/evbase.cc \
-			$(DMN_DIR)/tcpserver.cc
+			@srcdir@/linedmn/daemonutils.cc \
+			@srcdir@/linedmn/baseconn.cc \
+			@srcdir@/linedmn/bserialport.cc \
+			@srcdir@/linedmn/serialport.cc \
+			@srcdir@/linedmn/serialadapter.cc \
+			@srcdir@/linedmn/tcpconn.cc \
+			@srcdir@/linedmn/httpclient.cc \
+			@srcdir@/linedmn/atcconn.cc \
+			@srcdir@/linedmn/evbase.cc \
+			@srcdir@/linedmn/tcpserver.cc
 endif
 
 if MINGW32_OPT
@@ -106,17 +95,18 @@ PROTOBUF =
 PROTOBUF_ALL =
 else
 PROTOBUF = \
-			$(SOURCE_DIR)/protobuf/paramsvalues.pb.cc \
-			$(SOURCE_DIR)/include/protobuf/paramsvalues.pb.h
+			@srcdir@/protobuf/paramsvalues.pb.cc \
+			@srcdir@/include/protobuf/paramsvalues.pb.h
 PROTOBUF_ALL = \
             $(PROTOBUF) \
-			$(SOURCE_DIR)/protobuf/paramsvalues.pb.h
+			@srcdir@/protobuf/paramsvalues.pb.h
 endif
 
 
 
 libSzarp2_la_SOURCES = \
 			$(PROTOBUF) \
+<<<<<<< Updated upstream
 			$(IPK_DIR)/tdevice.cc \
 			$(IPK_DIR)/tdraw.cc \
 			$(IPK_DIR)/tparam.cc \
@@ -146,85 +136,116 @@ libSzarp2_la_SOURCES = \
 			$(SOURCE_DIR)/misc/xmlutils.cc \
 			$(DMN_DIR)/mbus.cc \
 			$(DMN_DIR)/ppset.cc \
+=======
+			@srcdir@/ipk/tdevice.cc \
+			@srcdir@/ipk/tdraw.cc \
+			@srcdir@/ipk/tparam.cc \
+			@srcdir@/ipk/tradio.cc \
+			@srcdir@/ipk/traport.cc \
+			@srcdir@/ipk/tsendparam.cc \
+			@srcdir@/ipk/tszarpconfig.cc \
+			@srcdir@/ipk/tunit.cc \
+			@srcdir@/ipk/tvalue.cc \
+			@srcdir@/ipk/tseason.cc \
+			@srcdir@/ipk/ipkcontainer.cc \
+			@srcdir@/ipk/tdictionary.cc \
+			@srcdir@/ipk/ttreenode.cc \
+			@srcdir@/ipk/dmncfg.cc \
+			@srcdir@/ipk/tdefined.cc \
+			@srcdir@/ipk/xmlwrapper.cc \
+			@srcdir@/ipk/tdrawdefinable.cc \
+			@srcdir@/ipk/tscript.cc \
+			@srcdir@/linedmn/ipchandler.cc \
+			@srcdir@/utils/daemonize.cc \
+			@srcdir@/misc/convuri.cc \
+			@srcdir@/misc/crontime.h \
+			@srcdir@/misc/crontime.cc \
+			@srcdir@/misc/http.cc \
+			@srcdir@/misc/insort.cc \
+			@srcdir@/misc/tokens.cc \
+			@srcdir@/misc/xmlutils.cc \
+			@srcdir@/linedmn/mbus.cc \
+			@srcdir@/linedmn/ppset.cc \
+>>>>>>> Stashed changes
 			$(BASECONN) \
-			$(SOURCE_DIR)/misc/xscale.cc \
+			@srcdir@/misc/xscale.cc \
 			\
-			$(SOURCE_DIR)/szbextr/extractor.cc \
-			$(SOURCE_DIR)/szbextr/extr.h \
+			@srcdir@/szbextr/extractor.cc \
+			@srcdir@/szbextr/extr.h \
 			\
 			$(INCLUDE_PARSERS) \
 			$(noinst_HEADERS) \
 			\
-			$(SZBASE_DIR)/szbbase.cc $(SZBASE_DIR)/szbbase.h \
-			$(SZBASE_DIR)/szbbuf.cc $(SZBASE_DIR)/szbbuf.h \
-			$(SZBASE_DIR)/szbdate.cc $(SZBASE_DIR)/szbdate.h \
-			$(SZBASE_DIR)/szbfile.cc $(SZBASE_DIR)/szbfile.h \
-			$(SZBASE_DIR)/szbname.cc $(SZBASE_DIR)/szbname.h \
-			$(SZBASE_DIR)/definabledatablock.cc $(SZBASE_DIR)/definabledatablock.h \
-			$(SZBASE_DIR)/szb_definable_calculate.cc $(SZBASE_DIR)/szb_definable_calculate.h \
-			$(SZBASE_DIR)/realdatablock.cc $(SZBASE_DIR)/realdatablock.h \
-			$(SZBASE_DIR)/combineddatablock.cc $(SZBASE_DIR)/combineddatablock.h \
-			$(SZBASE_DIR)/cacheabledatablock.cc $(SZBASE_DIR)/cacheabledatablock.h \
-			$(SZBASE_DIR)/luadatablock.cc $(SZBASE_DIR)/luadatablock.h \
-			$(SZBASE_DIR)/szbhash.cc $(SZBASE_DIR)/szbhash.h \
-			$(SZBASE_DIR)/szbdatablock.cc $(SZBASE_DIR)/szbdatablock.h \
-			$(SZBASE_DIR)/szbfilewatcher.cc $(INCLUDE_DIR)/szbase/szbfilewatcher.h \
-			$(SZBASE_DIR)/szbcancelhandle.cc $(INCLUDE_DIR)/szbase/szbcancelhandle.h \
-			$(SZBASE_DIR)/loptdatablock.cc $(SZBASE_DIR)/loptdatablock.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_param_optimizer.cc $(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer.h \
-			$(INCLUDE_DIR)/szarp_base_common/lua_param_optimizer_templ.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_strings_extract.cc	$(INCLUDE_DIR)/szarp_base_common/lua_strings_extract.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_utils.cc $(INCLUDE_DIR)/szarp_base_common/lua_utils.h \
-			$(SZARP_BASE_COMMON_DIR)/time.cc $(INCLUDE_DIR)/szarp_base_common/time.h \
-			$(SZARP_BASE_COMMON_DIR)/definable_calculate.cc $(INCLUDE_DIR)/szarp_base_common/definable_calculate.h \
-			$(INCLUDE_DIR)/szarp_base_common/lua_syntax_fusion_adapt.h \
-			$(SZBASE_DIR)/proberconnection.cc $(SZBASE_DIR)/proberconnection.h \
-			$(SZBASE_DIR)/luacalculate.cc $(SZBASE_DIR)/luacalculate.h \
-			$(SZBASE_DIR)/loptcalculate.cc $(SZBASE_DIR)/loptcalculate.h \
-			$(SZBASE_DIR)/probeblock.cc \
-			$(SZBASE_DIR)/szbsearch.h $(SZBASE_DIR)/szbsearch.cc \
-			$(SZBASE_DIR)/szbblock.cc \
-			$(SZARP_BASE_COMMON_DIR)/szbparammonitor.cc $(INCLUDE_DIR)/szarp_base_common/szbparammonitor.h \
-			$(INCLUDE_DIR)/szarp_base_common/szbparamobserver.h \
+			@srcdir@/szbase/szbbase.cc @srcdir@/szbase/szbbase.h \
+			@srcdir@/szbase/szbbuf.cc @srcdir@/szbase/szbbuf.h \
+			@srcdir@/szbase/szbdate.cc @srcdir@/szbase/szbdate.h \
+			@srcdir@/szbase/szbfile.cc @srcdir@/szbase/szbfile.h \
+			@srcdir@/szbase/szbname.cc @srcdir@/szbase/szbname.h \
+			@srcdir@/szbase/definabledatablock.cc @srcdir@/szbase/definabledatablock.h \
+			@srcdir@/szbase/szb_definable_calculate.cc @srcdir@/szbase/szb_definable_calculate.h \
+			@srcdir@/szbase/realdatablock.cc @srcdir@/szbase/realdatablock.h \
+			@srcdir@/szbase/combineddatablock.cc @srcdir@/szbase/combineddatablock.h \
+			@srcdir@/szbase/cacheabledatablock.cc @srcdir@/szbase/cacheabledatablock.h \
+			@srcdir@/szbase/luadatablock.cc @srcdir@/szbase/luadatablock.h \
+			@srcdir@/szbase/szbhash.cc @srcdir@/szbase/szbhash.h \
+			@srcdir@/szbase/szbdatablock.cc @srcdir@/szbase/szbdatablock.h \
+			@srcdir@/szbase/szbfilewatcher.cc @srcdir@/include/szbase/szbfilewatcher.h \
+			@srcdir@/szbase/szbcancelhandle.cc @srcdir@/include/szbase/szbcancelhandle.h \
+			@srcdir@/szbase/loptdatablock.cc @srcdir@/szbase/loptdatablock.h \
+			@srcdir@/szarp_base_common/lua_param_optimizer.cc @srcdir@/include/szarp_base_common/lua_param_optimizer.h \
+			@srcdir@/include/szarp_base_common/lua_param_optimizer_templ.h \
+			@srcdir@/szarp_base_common/lua_strings_extract.cc	@srcdir@/include/szarp_base_common/lua_strings_extract.h \
+			@srcdir@/szarp_base_common/lua_utils.cc @srcdir@/include/szarp_base_common/lua_utils.h \
+			@srcdir@/szarp_base_common/time.cc @srcdir@/include/szarp_base_common/time.h \
+			@srcdir@/szarp_base_common/definable_calculate.cc @srcdir@/include/szarp_base_common/definable_calculate.h \
+			@srcdir@/include/szarp_base_common/lua_syntax_fusion_adapt.h \
+			@srcdir@/szbase/proberconnection.cc @srcdir@/szbase/proberconnection.h \
+			@srcdir@/szbase/luacalculate.cc @srcdir@/szbase/luacalculate.h \
+			@srcdir@/szbase/loptcalculate.cc @srcdir@/szbase/loptcalculate.h \
+			@srcdir@/szbase/probeblock.cc \
+			@srcdir@/szbase/szbsearch.h @srcdir@/szbase/szbsearch.cc \
+			@srcdir@/szbase/szbblock.cc \
+			@srcdir@/szarp_base_common/szbparammonitor.cc @srcdir@/include/szarp_base_common/szbparammonitor.h \
+			@srcdir@/include/szarp_base_common/szbparamobserver.h \
 			\
-			$(INCLUDE_DIR)/sz4/block.h \
-			$(INCLUDE_DIR)/sz4/load_file_locked.h \
-			$(INCLUDE_DIR)/sz4/buffer.h \
-			$(INCLUDE_DIR)/sz4/buffer_templ.h \
-			$(INCLUDE_DIR)/sz4/real_param_entry.h \
-			$(INCLUDE_DIR)/sz4/real_param_entry_templ.h \
-			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry.h \
-			$(INCLUDE_DIR)/sz4/lua_optimized_param_entry_templ.h \
-			$(INCLUDE_DIR)/sz4/lua_interpreter.h \
-			$(INCLUDE_DIR)/sz4/lua_param_entry.h \
-			$(INCLUDE_DIR)/sz4/rpn_param_entry.h \
-			$(INCLUDE_DIR)/sz4/combined_param_entry.h \
-			$(INCLUDE_DIR)/sz4/base.h \
-			$(INCLUDE_DIR)/sz4/defs.h \
-			$(INCLUDE_DIR)/sz4/util.h \
-			$(INCLUDE_DIR)/sz4/block_cache..h \
-			$(INCLUDE_DIR)/sz4/lua_first_last_time..h \
-			$(INCLUDE_DIR)/sz4/decode_file.h \
-			$(INCLUDE_DIR)/sz4/encode_file.h \
-			$(SZ4_DIR)/load_file_locked.cpp \
-			$(SZ4_DIR)/path.cpp \
-			$(SZ4_DIR)/buffer.cpp \
-			$(SZ4_DIR)/base.cpp \
-			$(SZ4_DIR)/block.cpp \
-			$(SZ4_DIR)/defs.cpp \
-			$(SZ4_DIR)/lua_interpreter.cpp \
-			$(SZ4_DIR)/sz4_time.cpp \
-			$(SZ4_DIR)/util.cpp \
-			$(SZ4_DIR)/block_cache.cpp \
-			$(SZ4_DIR)/filelock.cpp \
-			$(SZ4_DIR)/decode_file.cpp \
-			$(SZ4_DIR)/encode_file.cpp \
-			$(SZ4_DIR)/real_param_entry.cpp \
-			$(SZ4_DIR)/live_cache.cpp
+			@srcdir@/include/sz4/block.h \
+			@srcdir@/include/sz4/load_file_locked.h \
+			@srcdir@/include/sz4/buffer.h \
+			@srcdir@/include/sz4/buffer_templ.h \
+			@srcdir@/include/sz4/real_param_entry.h \
+			@srcdir@/include/sz4/real_param_entry_templ.h \
+			@srcdir@/include/sz4/lua_optimized_param_entry.h \
+			@srcdir@/include/sz4/lua_optimized_param_entry_templ.h \
+			@srcdir@/include/sz4/lua_interpreter.h \
+			@srcdir@/include/sz4/lua_param_entry.h \
+			@srcdir@/include/sz4/rpn_param_entry.h \
+			@srcdir@/include/sz4/combined_param_entry.h \
+			@srcdir@/include/sz4/base.h \
+			@srcdir@/include/sz4/defs.h \
+			@srcdir@/include/sz4/util.h \
+			@srcdir@/include/sz4/block_cache..h \
+			@srcdir@/include/sz4/lua_first_last_time..h \
+			@srcdir@/include/sz4/decode_file.h \
+			@srcdir@/include/sz4/encode_file.h \
+			@srcdir@/sz4/load_file_locked.cpp \
+			@srcdir@/sz4/path.cpp \
+			@srcdir@/sz4/buffer.cpp \
+			@srcdir@/sz4/base.cpp \
+			@srcdir@/sz4/block.cpp \
+			@srcdir@/sz4/defs.cpp \
+			@srcdir@/sz4/lua_interpreter.cpp \
+			@srcdir@/sz4/sz4_time.cpp \
+			@srcdir@/sz4/util.cpp \
+			@srcdir@/sz4/block_cache.cpp \
+			@srcdir@/sz4/filelock.cpp \
+			@srcdir@/sz4/decode_file.cpp \
+			@srcdir@/sz4/encode_file.cpp \
+			@srcdir@/sz4/real_param_entry.cpp \
+			@srcdir@/sz4/live_cache.cpp
 
 if MINGW32_OPT
 else
-libSzarp2_la_SOURCES += $(DMN_DIR)/zmqhandler.cc
+libSzarp2_la_SOURCES += @srcdir@/linedmn/zmqhandler.cc
 endif
 
 
@@ -232,8 +253,8 @@ libSzarp2_la_LIBADD = libSzarpLuaParser.la
 
 libSzarpLuaParser_la_CXXFLAGS = $(AM_CXXFLAGS) -g0
 libSzarpLuaParser_la_SOURCES = \
-			$(SZARP_BASE_COMMON_DIR)/lua_parser_extra.cc $(SZARP_BASE_COMMON_DIR)/lua_parser_extra.h \
-			$(SZARP_BASE_COMMON_DIR)/lua_parser.cc $(INCLUDE_DIR)/szarp_base_common/lua_syntax.h
+			@srcdir@/szarp_base_common/lua_parser_extra.cc @srcdir@/szarp_base_common/lua_parser_extra.h \
+			@srcdir@/szarp_base_common/lua_parser.cc @srcdir@/include/szarp_base_common/lua_syntax.h
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
@@ -242,37 +263,37 @@ MAINTAINERCLEANFILES = Makefile.in \
                        $(PROTOBUF_ALL)
 
 bin_SCRIPTS= \
-             tools/ipk_config \
-             $(TOOLS_DIR)/ipk_add_template \
-             $(TOOLS_DIR)/ipk_base_max \
-             $(TOOLS_DIR)/ipk_check_dtd \
-             $(TOOLS_DIR)/ipk_create_template \
-             $(TOOLS_DIR)/ipk_get_base \
-             $(TOOLS_DIR)/ipk_move_draws \
-             $(TOOLS_DIR)/ipk_normal_draws \
-             $(TOOLS_DIR)/ipk_remove_filenames \
-             $(TOOLS_DIR)/ipk_set_base 
+             @srcdir@/tools/ipk_config \
+             @srcdir@/tools/ipk_add_template \
+             @srcdir@/tools/ipk_base_max \
+             @srcdir@/tools/ipk_check_dtd \
+             @srcdir@/tools/ipk_create_template \
+             @srcdir@/tools/ipk_get_base \
+             @srcdir@/tools/ipk_move_draws \
+             @srcdir@/tools/ipk_normal_draws \
+             @srcdir@/tools/ipk_remove_filenames \
+             @srcdir@/tools/ipk_set_base 
 
 libSzarp2_a_XSLT = \
-                   $(XSLT_DIR)/first_base.xsl \
-                   $(XSLT_DIR)/get_base.xsl \
-                   $(XSLT_DIR)/list_tobase.xsl \
-                   $(XSLT_DIR)/merge.xsl \
-                   $(XSLT_DIR)/move_draw.xsl \
-                   $(XSLT_DIR)/normalize_draw.xsl \
-                   $(XSLT_DIR)/remove_base.xsl \
-                   $(XSLT_DIR)/remove_empty.xsl \
-                   $(XSLT_DIR)/remove_filenames.xsl \
-                   $(XSLT_DIR)/select_with_name.xsl \
-                   $(XSLT_DIR)/set_base.xsl \
-                   $(XSLT_DIR)/sort_base.xsl \
-		   $(XSLT_DIR)/extr_csv.xsl \
-		   $(XSLT_DIR)/extr_oo.xsl
+                   @srcdir@/xslt/first_base.xsl \
+                   @srcdir@/xslt/get_base.xsl \
+                   @srcdir@/xslt/list_tobase.xsl \
+                   @srcdir@/xslt/merge.xsl \
+                   @srcdir@/xslt/move_draw.xsl \
+                   @srcdir@/xslt/normalize_draw.xsl \
+                   @srcdir@/xslt/remove_base.xsl \
+                   @srcdir@/xslt/remove_empty.xsl \
+                   @srcdir@/xslt/remove_filenames.xsl \
+                   @srcdir@/xslt/select_with_name.xsl \
+                   @srcdir@/xslt/set_base.xsl \
+                   @srcdir@/xslt/sort_base.xsl \
+		   @srcdir@/xslt/extr_csv.xsl \
+		   @srcdir@/xslt/extr_oo.xsl
 
 EXTRA_DIST = \
                       $(libSzarp2_a_XSLT) \
-                      $(SOURCE_DIR)/Doxyfile \
-		      $(TOOLS_DIR)/ipk_config.in \
+                      @srcdir@/Doxyfile \
+		      @srcdir@/include/ipk_config.in \
                       $(bin_SCRIPTS)
 
 install-data-local: $(libSzarp2_a_XSLT)
@@ -282,5 +303,5 @@ install-data-local: $(libSzarp2_a_XSLT)
 # Explicit rules for parsers.                      
 
 doxy:
-	doxygen $(SOURCE_DIR)/Doxyfile
+	doxygen @srcdir@/Doxyfile
 

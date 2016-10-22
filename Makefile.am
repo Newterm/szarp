@@ -6,6 +6,7 @@
 
 SUBDIRS = @SUBDIRS@
 
+ACLOCAL_AMFLAGS = -I m4
 MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in \
                        depcomp install-sh missing mkinstalldirs ylwrap \
                        config.guess config.sub stamp-h.in py-compile 

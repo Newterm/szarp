@@ -17,8 +17,6 @@ AM_CPPFLAGS = -I../include \
 	   @XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@ \
 	   -DPREFIX=\"@prefix@\"
 
-UTILSDIR=utils
-
 LIBSZARP=../libSzarp/libSzarp.la
 LIBSZARP2=../libSzarp2/libSzarp2.la
 
@@ -60,7 +58,7 @@ meaner3_SOURCES = \
 		classes.h
 
 peakator_SOURCES = \
-		$(UTILSDIR)/peakator.cc \
+		utils/peakator.cc \
 		tsaveparam.cc tsaveparam.h \
 		tstatus.cc tstatus.h
 
@@ -74,31 +72,31 @@ prober_SOURCES = \
 		prober.cc 
 
 szbreader_SOURCES = \
-		$(UTILSDIR)/szbreader.cc
+		utils/szbreader.cc
 
 checker_SOURCES = \
-		$(UTILSDIR)/checker.cc
+		utils/checker.cc
 
 szbwriter_SOURCES = \
-		$(UTILSDIR)/szbwriter.cc $(UTILSDIR)/szbwriter_cache.cc $(UTILSDIR)/szbwriter_cache.h $(UTILSDIR)/tmmapparam.cc $(UTILSDIR)/tmmapparam.h \
+		utils/szbwriter.cc utils/szbwriter_cache.cc utils/szbwriter_cache.h utils/tmmapparam.cc utils/tmmapparam.h \
 		tsaveparam.h tsaveparam.cc tstatus.h tstatus.cc
 
-szbedit_SOURCES = $(UTILSDIR)/szbedit.cc
+szbedit_SOURCES = utils/szbedit.cc
 szbedit_LDADD = $(LDADD) @NEWT_LIBS@
 
-szbindex_SOURCES = $(UTILSDIR)/szbindex.cc
+szbindex_SOURCES = utils/szbindex.cc
 
-szbnull_SOURCES = $(UTILSDIR)/szbnull.cc
+szbnull_SOURCES = utils/szbnull.cc
 
-szbndremover_SOURCES = $(UTILSDIR)/szbndremover.cc \
+szbndremover_SOURCES = utils/szbndremover.cc \
 		tsaveparam.cc tsaveparam.h \
 		tstatus.cc tstatus.h
 
-szbmod_SOURCES = $(UTILSDIR)/szbmod.cc \
+szbmod_SOURCES = utils/szbmod.cc \
 		tsaveparam.cc tsaveparam.h \
 		tstatus.cc tstatus.h
 
-extrszb_SOURCES= $(UTILSDIR)/extrszb.cc
+extrszb_SOURCES= utils/extrszb.cc
 extrszb_LDADD = $(LIBSZARP) $(LIBSZARP2) \
 		@PTHREAD_CFLAGS@ @XML_LIBS@ @XSLT_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ \
 		@BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ \
