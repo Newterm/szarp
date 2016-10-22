@@ -5,14 +5,12 @@
 
 SUBDIRS = 
 
-SOURCE_DIR=@srcdir@
-
 LDADD=@WX_LIBS@ ../../libSzarp2/libSzarp2.la @XML_LIBS@ \
 	../../libSzarp/libSzarp.la @CURL_LIBS@ @LDADD@ @LUA_LIBS@
 AM_CPPFLAGS = \
-	-I $(SOURCE_DIR)/../../include \
-	-I $(SOURCE_DIR)/../../libSzarp2/include \
-	-I $(SOURCE_DIR)/../../libSzarp/include \
+	-I @srcdir@/../../include \
+	-I @srcdir@/../../libSzarp2/include \
+	-I @srcdir@/../../libSzarp/include \
 	@XML_CFLAGS@ @WX_CFLAGS@ @CURL_CFLAGS@ @BOOST_CPPFLAGS@ \
 	-DPREFIX=\"@prefix@\" \
 	@GDK_CFLAGS@ @GTK_CFLAGS@ @LUA_CFLAGS@
@@ -30,41 +28,41 @@ WIN_APP_NAME=Szarp
 BUILT_SOURCES=version.h
 
 libwxcommon_la_SOURCES = \
-		$(SOURCE_DIR)/version.h \
-		$(SOURCE_DIR)/cconv.cc $(SOURCE_DIR)/cconv.h \
-		$(SOURCE_DIR)/datechooser.cpp $(SOURCE_DIR)/datechooser.h \
-		$(SOURCE_DIR)/dcolors.cc $(SOURCE_DIR)/dcolors.h \
-		$(SOURCE_DIR)/fetchparams.cc $(SOURCE_DIR)/fetchparams.h \
-		$(SOURCE_DIR)/fonts.cpp $(SOURCE_DIR)/fonts.h \
-		$(SOURCE_DIR)/geometry.cpp $(SOURCE_DIR)/geometry.h \
-		$(SOURCE_DIR)/htmlabout.cpp $(SOURCE_DIR)/htmlabout.h \
-		$(SOURCE_DIR)/htmlview.cpp $(SOURCE_DIR)/htmlview.h \
-		$(SOURCE_DIR)/parlist.cpp $(SOURCE_DIR)/parlist.h \
-		$(SOURCE_DIR)/parselect.cpp $(SOURCE_DIR)/parselect.h \
-		$(SOURCE_DIR)/serverdlg.cpp $(SOURCE_DIR)/serverdlg.h \
-		$(SOURCE_DIR)/aboutdlg.cpp $(SOURCE_DIR)/aboutdlg.h \
-		$(SOURCE_DIR)/imagepanel.cpp $(SOURCE_DIR)/imagepanel.h \
-		$(SOURCE_DIR)/szapp.cpp $(SOURCE_DIR)/szapp.h \
-		$(SOURCE_DIR)/szhlpctrl.cpp $(SOURCE_DIR)/szhlpctrl.h \
-		$(SOURCE_DIR)/szmutex.cpp $(SOURCE_DIR)/szmutex.h \
-		$(SOURCE_DIR)/ipc.cc $(SOURCE_DIR)/ipc.h \
-		$(SOURCE_DIR)/cfgnames.cpp $(SOURCE_DIR)/cfgnames.h \
-		$(SOURCE_DIR)/balloontaskbaritem.cpp $(SOURCE_DIR)/balloontaskbaritem.h \
-		$(SOURCE_DIR)/authdiag.cpp $(SOURCE_DIR)/authdiag.h \
-		$(SOURCE_DIR)/pscgui.cpp $(SOURCE_DIR)/pscgui.h \
-		$(SOURCE_DIR)/biowxsock.h $(SOURCE_DIR)/biowxsock.cpp \
-		$(SOURCE_DIR)/cfgdlg.h $(SOURCE_DIR)/cfgdlg.cpp \
-		$(SOURCE_DIR)/szframe.h $(SOURCE_DIR)/szframe.cpp \
-		$(SOURCE_DIR)/sztaskbaritem.h $(SOURCE_DIR)/sztaskbaritem.cpp \
-		$(SOURCE_DIR)/singleinstance.h $(SOURCE_DIR)/singleinstance.cc \
-		$(SOURCE_DIR)/md5.h $(SOURCE_DIR)/md5.cpp \
-		$(SOURCE_DIR)/getprobersaddresses.h $(SOURCE_DIR)/getprobersaddresses.cpp \
-		$(SOURCE_DIR)/GUI/resource.cpp \
-		$(SOURCE_DIR)/helpctrlex/helpctrlex.cpp $(SOURCE_DIR)/helpctrlex/helpctrlex.h \
-		$(SOURCE_DIR)/helpctrlex/helpdlgex.cpp $(SOURCE_DIR)/helpctrlex/helpdlgex.h \
-		$(SOURCE_DIR)/helpctrlex/helpfrmex.cpp $(SOURCE_DIR)/helpctrlex/helpfrmex.h \
-		$(SOURCE_DIR)/helpctrlex/helpwinex.cpp $(SOURCE_DIR)/helpctrlex/helpwinex.h \
-		$(SOURCE_DIR)/wxlogging.cpp $(SOURCE_DIR)/wxlogging.h
+		@srcdir@/version.h \
+		@srcdir@/cconv.cc @srcdir@/cconv.h \
+		@srcdir@/datechooser.cpp @srcdir@/datechooser.h \
+		@srcdir@/dcolors.cc @srcdir@/dcolors.h \
+		@srcdir@/fetchparams.cc @srcdir@/fetchparams.h \
+		@srcdir@/fonts.cpp @srcdir@/fonts.h \
+		@srcdir@/geometry.cpp @srcdir@/geometry.h \
+		@srcdir@/htmlabout.cpp @srcdir@/htmlabout.h \
+		@srcdir@/htmlview.cpp @srcdir@/htmlview.h \
+		@srcdir@/parlist.cpp @srcdir@/parlist.h \
+		@srcdir@/parselect.cpp @srcdir@/parselect.h \
+		@srcdir@/serverdlg.cpp @srcdir@/serverdlg.h \
+		@srcdir@/aboutdlg.cpp @srcdir@/aboutdlg.h \
+		@srcdir@/imagepanel.cpp @srcdir@/imagepanel.h \
+		@srcdir@/szapp.cpp @srcdir@/szapp.h \
+		@srcdir@/szhlpctrl.cpp @srcdir@/szhlpctrl.h \
+		@srcdir@/szmutex.cpp @srcdir@/szmutex.h \
+		@srcdir@/ipc.cc @srcdir@/ipc.h \
+		@srcdir@/cfgnames.cpp @srcdir@/cfgnames.h \
+		@srcdir@/balloontaskbaritem.cpp @srcdir@/balloontaskbaritem.h \
+		@srcdir@/authdiag.cpp @srcdir@/authdiag.h \
+		@srcdir@/pscgui.cpp @srcdir@/pscgui.h \
+		@srcdir@/biowxsock.h @srcdir@/biowxsock.cpp \
+		@srcdir@/cfgdlg.h @srcdir@/cfgdlg.cpp \
+		@srcdir@/szframe.h @srcdir@/szframe.cpp \
+		@srcdir@/sztaskbaritem.h @srcdir@/sztaskbaritem.cpp \
+		@srcdir@/singleinstance.h @srcdir@/singleinstance.cc \
+		@srcdir@/md5.h @srcdir@/md5.cpp \
+		@srcdir@/getprobersaddresses.h @srcdir@/getprobersaddresses.cpp \
+		@srcdir@/GUI/resource.cpp \
+		@srcdir@/helpctrlex/helpctrlex.cpp @srcdir@/helpctrlex/helpctrlex.h \
+		@srcdir@/helpctrlex/helpdlgex.cpp @srcdir@/helpctrlex/helpdlgex.h \
+		@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
+		@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
+		@srcdir@/wxlogging.cpp @srcdir@/wxlogging.h
 
 
 

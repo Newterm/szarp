@@ -1,4 +1,4 @@
-dnl 
+dnl
 dnl Pawe³ Pa³ucha <pawel@praterm.com.pl>
 dnl
 dnl $Id$
@@ -14,7 +14,7 @@ AC_CANONICAL_TARGET
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([-Wno-portability])
+AM_INIT_AUTOMAKE([-Wno-portability subdir-objects])
 AC_CONFIG_HEADERS(config.h)
 
 # Set default prefix
@@ -52,11 +52,11 @@ ALL_LINGUAS="pl"
 # Compilers
 
 # default CFLAGS and CXXFLAGS to empty
-: ${CFLAGS=""} 
-: ${CXXFLAGS=""} 
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
 
 # use AM_FLAGS for default CXXFLAGS
-: ${AM_CXXFLAGS="-O2 -g -Wall"} 
+: ${AM_CXXFLAGS="-O2 -g -Wall"}
 AC_SUBST([AM_CXXFLAGS])
 
 
@@ -348,7 +348,7 @@ fi
 no_protobuf="yes"
 if test x$with_mingw32 = xno; then
 	PKG_CHECK_MODULES(PROTOBUF, protobuf, no_protobuf="no", [AC_MSG_RESULT([
-			libprotobuf-dev library not found on your system,	
+			libprotobuf-dev library not found on your system,
 			it is required to build Szarp 4 components
 		])
 	])
@@ -357,7 +357,7 @@ fi
 no_zmq="yes"
 if test x$with_mingw32 = xno; then
 	PKG_CHECK_MODULES(ZMQ, libzmq, no_zmq="no", [AC_MSG_RESULT([
-			libzmq-dev library not found on your system,	
+			libzmq-dev library not found on your system,
 			it is required to build Szarp 4 components
 		])
 	])
@@ -909,8 +909,8 @@ AC_ARG_ENABLE([deb-build],
 AM_CONDITIONAL(DEB_BUILD, test x$deb_build = xyes)
 
 # xmlTextReader conditional building
-AC_ARG_WITH([xmldom], 
-	AC_HELP_STRING([--with-xmldom], 
+AC_ARG_WITH([xmldom],
+	AC_HELP_STRING([--with-xmldom],
 		[Use legacy XML DOM instead of xmlTextReader]),
 		yes_xmldom=yes, )
 
@@ -1088,7 +1088,7 @@ fi
 AC_SUBST(DDEDMN)
 
 if test "x$no_lber" != "xyes"; then
-	DLMSDMN=dlmsdmn;	
+	DLMSDMN=dlmsdmn;
 fi
 AC_SUBST(DLMSDMN)
 
@@ -1138,7 +1138,7 @@ AC_ARG_WITH([lua-param-optimiser], AC_HELP_STRING([--without-lua-param-optimiser
 	fi
 ])
 
-if test x$lua_optimise = xyes; then 
+if test x$lua_optimise = xyes; then
 	AC_DEFINE(LUA_PARAM_OPTIMISE, 1, [Define if lua param optimiser should be built in])
 fi
 
