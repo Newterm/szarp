@@ -391,7 +391,7 @@ class modbus_unit;
 class modbus_register {
 	modbus_unit *m_modbus_unit;
 	unsigned short m_val;
-	sz4::nanosecond_time_t m_mod_time;
+	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
 	driver_logger* m_log;
 public:
 	modbus_register(modbus_unit *daemon, driver_logger* log);
@@ -789,6 +789,15 @@ public:
 	void get_val(zmqhandler* handler, size_t index);
 };
 
+class double_sender_modbus_val_op : public sender_modbus_val_op {
+	modbus_register* m_regs[4];
+public:
+	double_sender_modbus_val_op(double no_data, int prec, driver_logger *log);
+	void get_val(zmqhandler* handler, size_t index);
+	void set_regs(modbus_register* regs[4]);
+};
+
+
 class decimal2_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg_integer;
 	modbus_register *m_reg_fraction;
@@ -905,12 +914,12 @@ void double_parcook_modbus_val_op::set_val(zmqhandler* handler, size_t index) {
 		bool valid;
 		v[i] = m_regs[i]->get_val(valid, t[i]);
 		if (!valid) {
-			m_log->log(10, "Double value invalid, no_data");
+			m_log->log(8, "Double value invalid, no_data");
 			return;
 		}
 	}
 
-	m_log->log(10, "Double parcoook op data: %f", *(double*)v);
+	m_log->log(8, "Double parcoook op data: %f, index: %zu", *(double*)v, index);
 	handler->set_value(index, *std::min_element(t, t + 4), *(double*)v);
 }
 
@@ -974,7 +983,7 @@ short_sender_modbus_val_op::short_sender_modbus_val_op(float no_data, modbus_reg
 
 void short_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	if (value.IsInitialized() && !value.has_int_value()) {
+	if (value.IsInitialized() && value.has_int_value()) {
 		short v = value.int_value();
 		sz4::nanosecond_time_t t(value.time());
 		if (value.has_nanotime())
@@ -990,7 +999,7 @@ float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_reg
 
 void float_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	if (value.IsInitialized() && !value.has_float_value()) {
+	if (value.IsInitialized() && value.has_float_value()) {
 		float v = value.float_value();
 		sz4::nanosecond_time_t t(value.time());
 		if (value.has_nanotime())
@@ -1001,6 +1010,34 @@ void float_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 		memcpy(iv, &v, sizeof(float));
 		m_reg_msw->set_val(iv[0], t);
 		m_reg_lsw->set_val(iv[1], t);
+	}
+}
+
+double_sender_modbus_val_op::double_sender_modbus_val_op(double no_data, int prec, driver_logger *log) :
+	sender_modbus_val_op(no_data, log)
+{}
+
+void double_sender_modbus_val_op::set_regs(modbus_register* regs[4]) {
+	m_regs[0] = regs[0];
+	m_regs[1] = regs[1];
+	m_regs[2] = regs[2];
+	m_regs[3] = regs[3];
+}
+
+void double_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
+	szarp::ParamValue& value = handler->get_value(index);
+	if (value.IsInitialized() && value.has_double_value()) {
+		double v = value.double_value();
+		m_log->log(2, "double_sender_modbus_val_op index:%zu, value:%f", index, v);
+		sz4::nanosecond_time_t t(value.time());
+		if (value.has_nanotime())
+			t.nanosecond = value.nanotime();
+		else
+			t.nanosecond = 0;
+		unsigned short iv[4]; 
+		memcpy(iv, &v, sizeof(double));
+		for (unsigned i = 0; i < 4; i++)
+			m_regs[i]->set_val(iv[i], t);
 	}
 }
 
@@ -1026,7 +1063,7 @@ void decimal2_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 modbus_register::modbus_register(modbus_unit* unit, driver_logger* log) : m_modbus_unit(unit), m_val(sz4::no_data<short>()), m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value), m_log(log) {}
 
 unsigned short modbus_register::get_val(bool &valid, sz4::nanosecond_time_t& mod_time) {
-	if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
+	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
 		valid = m_modbus_unit->register_val_expired(m_mod_time);
 		mod_time = m_mod_time;
 	} else 
@@ -1391,19 +1428,30 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 			break;
 	}
 
-	double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(prec, &m_log);
-	m_parcook_ops.push_back(op);
+	RSET& regs = send ? m_sent : m_received;
 
-	modbus_register* regs[4];
+	modbus_register* modbus_regs[4];
 	for (int i = 0; i < 4; i++) {
 		RMAP::iterator j = m_registers.find(addrs[i]);
 		if (j == m_registers.end()) {
-			m_registers[addrs[i]] = regs[i] = new modbus_register(this, &m_log);
-			m_received.insert( std::make_pair(rt, addrs[i]));
+			m_registers[addrs[i]] = modbus_regs[i] = new modbus_register(this, &m_log);
+			regs.insert( std::make_pair(rt, addrs[i]));
 		} else
-			regs[i] = j->second;
+			modbus_regs[i] = j->second;
 	}
-	op->set_regs(regs);
+
+	if (!send) {
+		double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(prec, &m_log);
+		m_parcook_ops.push_back(op);
+
+		op->set_regs(modbus_regs);
+	} else {
+		double_sender_modbus_val_op * op = new double_sender_modbus_val_op(m_nodata_value, prec, &m_log);
+		m_sender_ops.push_back(op);
+
+		op->set_regs(modbus_regs);
+	}
+
 
 	return 0;
 }
@@ -1718,7 +1766,7 @@ void modbus_unit::finished_cycle() {
 void modbus_unit::starting_new_cycle() {
 	m_log.log(5, "Timer click, doing ipc data exchange");
 	struct timespec time;
-	clock_gettime(CLOCK_MONOTONIC, &time);
+	clock_gettime(CLOCK_REALTIME, &time);
 	m_current_time.second = time.tv_sec;
 	m_current_time.nanosecond = time.tv_nsec;
 	from_sender();
