@@ -31,7 +31,7 @@ void IksConnection::schedule_keepalive() {
 			return IksCmdStatus::cmd_done;
 		});
 
-		self->keepalive_timeout_timer.expires_from_now( boost::posix_time::seconds( 10 ) );
+		self->keepalive_timeout_timer.expires_from_now( boost::posix_time::seconds( 20 ) );
 		self->keepalive_timeout_timer.async_wait([self] ( const bs::error_code& ec ) {
 				if ( ec == bae::operation_aborted )
 						return;
