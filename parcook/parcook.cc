@@ -1843,7 +1843,7 @@ int main(int argc, char *argv[])
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
 	uint64_t hwm = 10; //max 100 sec worth of buffered msgs
-	socket.setsockopt(ZMQ_HWM, &hwm, sizeof(hwm));
+	socket.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
 
 	sz_log(7, "ZMQ connect to '%s'", parhub_address.c_str());
 	try {
