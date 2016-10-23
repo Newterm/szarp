@@ -75,9 +75,11 @@ zmqhandler::zmqhandler(
 		m_sub_sock(context, ZMQ_SUB),
 		m_pub_sock(context, ZMQ_PUB) {
 
-	for (TUnit* u = device->GetFirstRadio()->GetFirstUnit(); u; u = u->GetNext()) {
-		if (TParam* p = u->GetFirstParam())
-			m_pubs_idx = p->GetIpcInd();
+	TUnit* first_unit = device->GetFirstRadio()->GetFirstUnit();
+	for (TUnit* u = first_unit; u; u = u->GetNext()) {
+		if (u == first_unit)
+			if (TParam* p = u->GetFirstParam())
+				m_pubs_idx = p->GetIpcInd();
 
 		size_t send_param_count = 0;
 		for (TSendParam *s = u->GetFirstSendParam(); s; s = u->GetNextSendParam(s), send_param_count++) {
