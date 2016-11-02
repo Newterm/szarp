@@ -54,8 +54,16 @@ public:
 			send_params<bp::ptree,bp::ptree::value_type>(
 						json.get_child("params") ,
 						std::bind(&GetParamsRcv::get_name_ptree,this,std::placeholders::_1) );
-		} else 
+		} else if( json.count("report") ) {
+			auto ps = vars.get_sets().get_report(json.get<std::string>("report"));
+			if( ps )
+				send_params<Report,std::string>( *ps ,
+						std::bind(&GetParamsRcv::get_name_str,this,std::placeholders::_1) );
+			else
+				fail( ErrorCodes::unknown_set );
+		} else {
 			fail( ErrorCodes::ill_formed );
+		}
 	}
 
 	template<class Container,class Key> void send_params(

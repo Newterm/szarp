@@ -13,12 +13,15 @@
 #include "cmd_value.h"
 #include "cmd_notify.h"
 #include "cmd_list_sets.h"
+#include "cmd_list_reports.h"
 #include "cmd_list_params.h"
 #include "cmd_get_params.h"
 #include "cmd_get_key_params.h"
 #include "cmd_set_update.h"
 #include "cmd_set_subscribe.h"
+#include "cmd_report_subscribe.h"
 #include "cmd_get_config.h"
+#include "cmd_get_report.h"
 #include "cmd_get_history.h"
 #include "cmd_get_latest.h"
 #include "cmd_get_latest_set.h"
@@ -70,12 +73,15 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "s"                 , SetRcv              );
 	MAP_CMD_TAG( "set"               , SetRcv              );
 	MAP_CMD_TAG( "list_sets"         , ListSetsRcv         );
+	MAP_CMD_TAG( "list_reports"      , ListReportsRcv      );
 	MAP_CMD_TAG( "list_params"       , ListParamsRcv       );
 	MAP_CMD_TAG( "get_params"        , GetParamsRcv        );
 	MAP_CMD_TAG( "get_key_params"    , GetParamsForKeyRcv  );
 	MAP_CMD_TAG( "get_set"           , GetSetRcv           );
+	MAP_CMD_TAG( "get_report"        , GetReportRcv        );
 	MAP_CMD_TAG( "set_update"        , SetUpdateRcv        );
 	MAP_CMD_TAG( "set_subscribe"     , SetSubscribeRcv     );
+	MAP_CMD_TAG( "report_subscribe"  , ReportSubscribeRcv  );
 	MAP_CMD_TAG( "get_options"       , GetConfigRcv        );
 	MAP_CMD_TAG( "get_history"       , GetHistoryRcv       );
 	MAP_CMD_TAG( "get_latest"        , GetLatestRcv        );
@@ -86,7 +92,7 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
 	MAP_CMD_TAG( "add_param"         , ParamAddRcv         );
-	MAP_CMD_TAG( "remove_param"	, ParamRemoveRcv      );
+	MAP_CMD_TAG( "remove_param"      , ParamRemoveRcv      );
 	MAP_CMD_TAG( "custom_subscribe"   , CustomSubscribeRcv   );
 	return NULL;
 }
@@ -133,7 +139,7 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 	/** Prevent from sending values double if they values changed on subscribe */
 	boost::signals2::shared_connection_block block(conn_param_value);
 
-	sub_set = vars.get_updater().subscribe_params( *s , pt );
+	sub_set = vars.get_updater().subscribe_params( *(s) , pt );
 
 	for( auto itr=current_set->begin() ; itr!=current_set->end() ; ++itr )
 	{
