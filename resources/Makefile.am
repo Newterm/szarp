@@ -24,6 +24,7 @@ RESOURCES = \
 		@srcdir@/SZARP_CFG_TEMPLATE \
 		@srcdir@/ssc.desktop \
 		@srcdir@/scc.desktop \
+		@srcdir@/sysctl_conf_TEMPLATE \
 		@srcdir@/filler2.desktop \
 		@srcdir@/koper.desktop
 

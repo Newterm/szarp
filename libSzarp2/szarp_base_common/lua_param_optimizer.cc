@@ -81,35 +81,35 @@ void StatementList::Execute() {
 std::wstring get_string_expression(const expression &e) {
 	const or_exp& or_exp_ = e;
 	if (or_exp_.size() != 1)
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const and_exp& and_exp_ = or_exp_[0];
 	if (and_exp_.size() != 1)
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const cmp_exp& cmp_exp_ = and_exp_[0];
 	if (cmp_exp_.cmps.size())
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const concat_exp& concat_exp_ = cmp_exp_.concat;
 	if (concat_exp_.size() != 1)
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const add_exp& add_exp_ = concat_exp_[0];
 	if (add_exp_.adds.size())
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const mul_exp& mul_exp_ = add_exp_.mul;
 	if (mul_exp_.muls.size())
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const unop_exp& unop_exp_ = mul_exp_.unop;
 	if (unop_exp_.get<0>().size())
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	const pow_exp& pow_exp_ = unop_exp_.get<1>();
 	if (pow_exp_.size() != 1)
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 
 	try {
 		const std::wstring& name = boost::get<std::wstring>(pow_exp_[0]);
@@ -118,7 +118,7 @@ std::wstring get_string_expression(const expression &e) {
 #ifdef LUA_OPTIMIZER_DEBUG
 		lua_opt_debug_stream << "Failed to convert expression to string: " << e.what() << std::endl;
 #endif
-		throw ParamConversionException(L"Expression is not string");
+		throw ParamConversionError(L"Expression is not string");
 	}
 }
 

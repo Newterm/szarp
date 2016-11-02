@@ -363,10 +363,36 @@ DrawSet::Add(DrawInfo* drawInfo)
 	}
 }
 
+bool
+DrawInfo::isBadOrder() const
+{
+	return d->isBadOrder();
+}
+
 void
 DrawSet::SortDraws()
 {
-	std::stable_sort(m_draws->begin(), m_draws->end(), DrawInfo::CompareDraws);
+	//vector for arguments with given order
+	DrawInfoArray ordered;
+	//vector for arguments without given order
+	DrawInfoArray nonordered;
+
+	for(auto it = m_draws->begin(); it != m_draws->end(); ++it)
+	{
+		if((*it)->isBadOrder())
+		{
+			nonordered.push_back(*it);
+		}
+		else
+		{
+			ordered.push_back(*it);
+		}
+	}
+	//we only sort arguments with given order. The rest of them will be added to the end, with order equal to that in file params.xml
+	std::stable_sort(ordered.begin(), ordered.end(), DrawInfo::CompareDraws);
+	m_draws->clear();
+	m_draws->insert(m_draws->end(), ordered.begin(), ordered.end());
+	m_draws->insert(m_draws->end(), nonordered.begin(), nonordered.end());	
 }
 
 int
@@ -516,7 +542,7 @@ const double DrawSet::unassigned_prior_value = std::numeric_limits<double>::max(
 
 const double DrawSet::defined_draws_prior_start = -2;
 
-ConfigManager::ConfigManager(wxString szarp_data_dir, IPKContainer *ipks) : m_szarp_data_dir(szarp_data_dir), m_ipks(ipks), splashscreen(NULL)
+ConfigManager::ConfigManager(wxString szarp_data_dir, IPKContainer *ipks, const wxString &prefix) : m_szarp_data_dir(szarp_data_dir), m_ipks(ipks), splashscreen(NULL), m_base_prefix(prefix)
 {
 	m_defined_sets = NULL;
 
@@ -552,6 +578,7 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, b
 	if (config_path == wxEmptyString)
 		ipk = m_ipks->LoadConfig(prefix.c_str(),std::wstring(),logparams);
 
+
 	DrawsSets* ret;
 	if (ipk == NULL)
 		ret = NULL;
@@ -571,6 +598,14 @@ DrawInfo *
 ConfigManager::GetDraw(const wxString prefix, const wxString set, int index)
 {
 	return config_hash[prefix]->GetDrawsSets()[set]->GetDraw(index);
+}
+
+
+wxString
+ConfigManager::GetSzarpDir() const
+{ 
+	wxString folder_path = m_szarp_data_dir + m_base_prefix;
+	return folder_path + '/';
 }
 
 #if 0

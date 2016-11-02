@@ -1224,9 +1224,11 @@
 	</define>
 	<define name="attlist.draw" combine="interleave">
 		<attribute name="title"/>
-		<attribute name="max">
-			<data type="double"/>
-		</attribute>
+		<optional>
+			<attribute name="max">
+				<data type="double"/>
+			</attribute>
+		</optional>
 		<optional>
 			<attribute name="min">
 				<data type="double"/>

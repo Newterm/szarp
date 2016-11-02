@@ -87,4 +87,13 @@ $include "__INSTALL_DIR__/resources/szarp_in.cfg"
 #opcjonalne hasło do klucza prywatnego
 #passphrase=
 
+## Sekcja SZ4
+:sz4
+
+## Konfiguracja meaner4
+# częstotliwość zapisywania danych kontrolnych meanera
+#heartbeat_interval=10
+# interwał czasowy (w sekundach) zapisywania danych
+#saving_interval=60
+
 # vim:ft=libpar:

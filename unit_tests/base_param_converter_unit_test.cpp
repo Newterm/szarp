@@ -50,7 +50,7 @@ void BaseParamConverterTestCase::test1() {
 	LuaExec::ParamConverterTempl<IPKContainerMock> conv(&mock);
 	try {
 		conv.ConvertParam(param_code, &param);
-	} catch (LuaExec::ParamConversionException& e) {
+	} catch (LuaExec::ParamConversionError& e) {
 		std::cerr << (const char*) SC::S2U(e.what()).c_str() << std::endl;
 		CPPUNIT_ASSERT(false);
 	}
@@ -102,7 +102,7 @@ void BaseParamConverterTestCase::test2() {
 	LuaExec::ParamConverterTempl<IPKContainerMock> conv(&mock);
 	try {
 		conv.ConvertParam(param_code, &param);
-	} catch (LuaExec::ParamConversionException& e) {
+	} catch (LuaExec::ParamConversionError& e) {
 		std::cerr << (const char*) SC::S2U(e.what()).c_str() << std::endl;
 		CPPUNIT_ASSERT(false);
 	}
