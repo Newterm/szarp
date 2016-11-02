@@ -19,7 +19,7 @@
 
 class Set {
 	friend bool operator==( const Set& a , const Set& b );
-
+protected:
 	/**
 	 * This struct has first member and its type to use key_iterator class
 	 */
@@ -56,16 +56,16 @@ public:
 	Set();
 	virtual ~Set();
 
-	void from_xml ( const boost::property_tree::ptree& set_ptree );
-	void from_json( const boost::property_tree::ptree& set_ptree );
+	virtual void from_xml ( const boost::property_tree::ptree& set_ptree );
+	virtual void from_json( const boost::property_tree::ptree& set_ptree );
 
-	void to_xml ( std::ostream& stream , bool pretty = false ) const;
-	void to_json( std::ostream& stream , bool pretty = false ) const;
+	virtual void to_xml ( std::ostream& stream , bool pretty = false ) const;
+	virtual void to_json( std::ostream& stream , bool pretty = false ) const;
 
-	boost::property_tree::ptree get_json_ptree() const;
-	boost::property_tree::ptree get_xml_ptree() const;
-	std::string to_xml ( bool pretty = false ) const;
-	std::string to_json( bool pretty = false ) const;
+	virtual boost::property_tree::ptree get_json_ptree() const;
+	virtual boost::property_tree::ptree get_xml_ptree() const;
+	virtual std::string to_xml ( bool pretty = false ) const;
+	virtual std::string to_json( bool pretty = false ) const;
 
 	bool has_order() const
 	{	using std::isnan; return !isnan(order); }
@@ -93,16 +93,18 @@ public:
 	bool has_param( const std::string& name ) const
 	{	return boost::multi_index::get<param_name>(params).count( name ); }
 
-private:
+protected:
 	void update_hash();
 	void upgrade_option( boost::property_tree::ptree& ptree , const std::string& prev , const std::string& curr );
 	void convert_float ( boost::property_tree::ptree& ptree , const std::string& name );
 	void convert_colour( boost::property_tree::ptree& ptree , const std::string& name );
 	std::string convert_colour( const std::string& in );
 
-	void convert_color_names_to_hex();
-	void assign_color( ParamId& p , const std::string& color );
-	void generate_colors_like_draw3();
+	virtual void convert_color_names_to_hex();
+	virtual void assign_color( ParamId& p , const std::string& color );
+	virtual void generate_colors_like_draw3();
+
+	std::string getElementName() const { return "set"; }
 
 	std::string name;
 	std::size_t hash;
@@ -118,6 +120,16 @@ bool operator!=( const Set& a , const Set& b );
 
 typedef boost::signals2::signal<void (const std::string&,std::shared_ptr<const Set>)> sig_set;
 typedef sig_set::slot_type sig_set_slot;
+
+
+class Report: public Set {
+protected:
+	void convert_color_names_to_hex() override {}
+	void assign_color( ParamId& p , const std::string& color ) override {}
+	void generate_colors_like_draw3() override {}
+
+	std::string getElementName() const { return "report"; }
+};
 
 #endif /* __DATA_SET_H__ */
 
