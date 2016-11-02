@@ -146,7 +146,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 
 	if (max == UNDEFVAL) {
 		min = 0.0;
-		max = -1.0;
+		max = 100.0;
 	}
 	if (sc > 0)
 		if (smax < smin)
