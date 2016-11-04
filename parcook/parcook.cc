@@ -1901,7 +1901,11 @@ int main(int argc, char *argv[])
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
 	uint64_t hwm = 10; //max 100 sec worth of buffered msgs
+#ifdef ZMQ_SNDHWM
 	socket.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+#else
+	socket.setsockopt(ZMQ_HWM, &hwm, sizeof(hwm));
+#endif
 
 	sz_log(7, "ZMQ connect to '%s'", parhub_address.c_str());
 	try {
