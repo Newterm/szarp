@@ -25,17 +25,19 @@ Param::~Param()
 void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
 {
 	/**
-	 * name, unit and short_name are obligatory
+	 * name and short_name are obligatory
 	 */
 	try {
 		name = ptree.get<std::string>("@name");
 
 		param_desc.put( "@name" , name );
-		param_desc.put( "@unit" , ptree.get<std::string>( "@unit" ) );
 		param_desc.put( "@short_name" , ptree.get<std::string>( "@short_name" ) );
 	} catch( bp::ptree_error& e ) {
 		throw xml_parse_error( str( boost::format("Cannot read param \"%s\": %s") % name % e.what() ) );
 	}
+
+	auto unit = ptree.get_optional<std::string>( "@unit" );
+	param_desc.put( "@unit", unit ? *unit : "-" );
 
 	auto prec = ptree.get_optional<std::string>( "@prec" );
 	param_desc.put( "@prec" , prec ? *prec : "0" );
