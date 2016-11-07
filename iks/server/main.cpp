@@ -153,13 +153,13 @@ int main( int argc , char** argv )
 								? vm["base_cache_size_high_water_mark"].as<size_t>()
 								: SzbaseWrapper::BASE_CACHE_HIGH_WATER_MARK_DEFAULT;
 
-			int base_live_cache_retention = vm.count("base_live_cache_retention")
-								? vm["base_live_cache_retention"].as<unsigned>()
+			size_t base_live_cache_retention = vm.count("base_live_cache_retention")
+								? vm["base_live_cache_retention"].as<size_t>()
 								: SzbaseWrapper::BASE_LIVE_CACHE_RETENTION;
 
 			sz_log(2, "Using %zu as base cache size low water mark", base_cache_size_low_water_mark);
 			sz_log(2, "Using %zu as base cache size high water mark", base_cache_size_high_water_mark);
-			sz_log(2, "Using %d as base live cache retention", base_live_cache_retention);
+			sz_log(2, "Using %zu as base live cache retention", base_live_cache_retention);
 			SzbaseWrapper::init( vm["prefix"].as<std::string>()
 							   , locs_cfg
 							   , base_live_cache_retention

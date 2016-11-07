@@ -98,11 +98,7 @@
 #include <sys/time.h>
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
-
 #include <iostream>
-#include <deque>
-#include <set>
 
 #include <libxml/parser.h>
 
@@ -1194,24 +1190,28 @@ do_accept:
 }
 
 int boruta_daemon::configure_ipc() {
-	char* sub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
-	char* pub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
+	char* sub_conn_address = libpar_getpar("parhub", "sub_conn_addr", 1);
+	char* pub_conn_address = libpar_getpar("parhub", "pub_conn_addr", 1);
 
 	try {
-		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), m_zmq_ctx, sub_address, pub_address);
+		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), m_zmq_ctx, pub_conn_address, sub_conn_address);
 		dolog(10, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
 		dolog(0, "ZMQ initialization failed, %s", e.what());
 		return 1;
 	}
 
-	free(sub_address);
-	free(pub_address);
+	free(sub_conn_address);
+	free(pub_conn_address);
 
 	int sock = m_zmq->subsocket();
 	if (sock >= 0) {
-		event_set(&m_subsock_event, sock, EV_READ | EV_PERSIST, subscribe_callback, this);
 		event_base_set(m_event_base, &m_subsock_event);
+
+		event_set(&m_subsock_event, sock, EV_READ | EV_PERSIST, subscribe_callback, this);
+		event_add(&m_subsock_event, NULL);
+
+		subscribe_callback(sock, EV_READ, this);
 	}
 
 	return 0;
@@ -1296,6 +1296,8 @@ int boruta_daemon::configure_cycle_freq() {
 		return 1;
 	m_cycle.tv_sec = duration / 1000;
 	m_cycle.tv_usec = (duration % 1000) * 1000;
+
+	return 0;
 }
 
 boruta_daemon::boruta_daemon() : m_tcp_client_mgr(this), m_tcp_server_mgr(this), m_serial_client_mgr(this), m_serial_server_mgr(this), m_zmq_ctx(1) {}

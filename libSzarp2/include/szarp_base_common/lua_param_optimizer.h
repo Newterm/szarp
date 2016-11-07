@@ -321,18 +321,18 @@ public:
 
 template<class T> class FunctionConverter;
 
-class ParamConversionException {
+class ParamConversionError {
 	std::wstring m_error;
 public:
-	ParamConversionException(std::wstring error) : m_error(error) {}
+	ParamConversionError(std::wstring error) : m_error(error) {}
 	const std::wstring& what() const  { return m_error; }
 };
 
-class ParamConversionWarning {
-	std::wstring m_warning;
+class ParamOptimizerException {
+	std::wstring m_exception;
 public:
-	ParamConversionWarning(std::wstring warning) : m_warning(warning) {}
-	const std::wstring& what() const { return m_warning; }
+	ParamOptimizerException(std::wstring exc) : m_exception(exc) {}
+	const std::wstring& what() const { return m_exception; }
 };
 
 template<class container_type> class ParamConverterTempl {

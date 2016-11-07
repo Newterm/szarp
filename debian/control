@@ -15,7 +15,7 @@ Package: szarp-base
 Section: misc
 Architecture: any
 Conflicts: szarp-scripts (<=2.2.4333)
-Depends: ${shlibs:Depends}, ${misc:Depends}, apt(>=0.6.0), gnupg, openssh-client, openssh-server, rsync, curl, rsyslog
+Depends: ${shlibs:Depends}, ${misc:Depends}, apt(>=0.6.0), gnupg, openssh-client, openssh-server, rsync, curl
 Description: SZARP basic components
  SZARP - Linux SCADA software - system for data acquisition, 
  archiving and raporting - package containing basic components.

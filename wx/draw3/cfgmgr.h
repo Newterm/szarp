@@ -154,6 +154,8 @@ class DrawInfo
 	
 	void SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm);
 
+	bool isBadOrder() const;
+
 	virtual ~DrawInfo() { }
     protected:
 	TDraw *d;	/**< Pointer to draw. */
@@ -435,7 +437,7 @@ class ConfigManager
 {
     public:
 	/** Default constructor, does nothing. */
-	ConfigManager(wxString szarp_data_dir, IPKContainer *ipk_container);
+	ConfigManager(wxString szarp_data_dir, IPKContainer *ipk_container, const wxString &prefix = wxEmptyString);
 	
 	/** Loads configuration for given base name 
 	 * @param prefix prefix of configration to load
@@ -483,7 +485,7 @@ class ConfigManager
 	ConfigNameHash& GetConfigTitles();
 
 	/** @retrun path to main SZARP directory*/
-	wxString GetSzarpDir();
+	wxString GetSzarpDir() const;
 
 	/** Add object to a list of configrations' observers*/
 	void RegisterConfigObserver(ConfigObserver *obsrver);
@@ -586,6 +588,9 @@ protected:
 	DrawPsc *psc;
 
 	bool m_logparams;
+
+	//prefix of base given(either default one or given with argument -base)
+	wxString m_base_prefix;
 };
 
 #endif

@@ -230,8 +230,23 @@ typedef struct phLineInfo tLineInfo;
 
 void calculate_average(short *probes, int param_no, int probe_type)
 {
-	sz_log(7, "Entering calculate average, probe type: %d", probe_type);
-	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
+	tParamInfo *pi = ParsInfo[param_no];
+
+	if (pi->param->IsMeterParam()) { // we don't care for lsw/msw/single as they are accounted for in update section
+		sz_log(7, "Updating meter probe, param %d, probe type: %d, value: %d, count: %d, sum: %lld", param_no, probe_type, probes[param_no], Cnts[param_no][probe_type], Sums[param_no][0]);
+		if (Cnts[param_no][probe_type]) { // if Sums hold valid data
+			probes[param_no] = Sums[param_no][0]; // update new probe with it
+			if (Cnts[param_no][probe_type] == 1) {
+				Cnts[param_no][probe_type] = 0; 
+			}
+		} else {
+			probes[param_no] = SZARP_NO_DATA; // otherwise explicitly no_data (won't mess up parhub as it is called at the end of processing)
+		}
+
+		return; // we don't want to average
+	}
+
+	if (pi->type == tParamInfo::SINGLE) {
 		if (Cnts[param_no][probe_type])
 			probes[param_no] = Sums[param_no][probe_type] / (int) Cnts[param_no][probe_type];
 		else
@@ -239,7 +254,6 @@ void calculate_average(short *probes, int param_no, int probe_type)
 		return;
 	}
 
-	tParamInfo *pi = ParsInfo[param_no];
 	if (pi->type != tParamInfo::MSW)
 		//we will update both sums when updating msw
 		return;
@@ -264,8 +278,53 @@ void calculate_average(short *probes, int param_no, int probe_type)
 	sz_log(7, "Leaving calculate average, msw set to: %hhu, lsw set to: %hhu", probes[msw], probes[lsw]) ;
 }
 
+void update_valid_meter(const int i, const int v) {
+	sz_log(7, "Updating value for meter %d, new value: %d", i, v);
+	Sums[i][0] = v; // Update valid data
+	Cnts[i][0] = 2; // and valid data flags
+	Cnts[i][1] = 2;
+	Cnts[i][2] = 2;
+}
+
+
 template<class OVT> void update_value(int param_no, int probe_type, short* ivt, OVT ovt, int abuf)
 {
+	auto pi = ParsInfo[param_no];
+
+	if (pi->param->IsMeterParam()) {
+		sz_log(7, "Entering update value for meter param %d, probe type: %d, abuf: %d, ivt: %d, ovt: %hhu, sum: %lld ", param_no, probe_type, abuf, ivt[param_no], ovt[param_no][abuf], Sums[param_no][0]);
+		if (pi->type == tParamInfo::SINGLE) {
+			if (ivt[param_no] != SZARP_NO_DATA) {
+				if (probe_type == 0) { // we only update on 10secs (always most recent data)
+					sz_log(7, "Probe was valid data");
+					update_valid_meter(param_no, (int) ivt[param_no]);
+				} // if no data don't update (nodata handling later on - until the last data block don't pass nodata)
+			} else {
+				if (abuf == 0 && Cnts[param_no][probe_type] == 2) {
+					Cnts[param_no][probe_type] = 1; // first data block and no new data - bring down valid data flag after writing
+				}
+			}
+		}
+
+		else if (pi->type != tParamInfo::LSW) { // msw or combined
+			int lsw = ParsInfo[param_no]->lsw;
+			// todo: add doubles! (it is not necessary though as daemon has to validate data)
+			if (ivt[lsw] != SZARP_NO_DATA || ivt[param_no] != SZARP_NO_DATA) {
+				if (probe_type == 0) { // we have matching 10 secs (probe type 0 and data)
+					update_valid_meter(lsw, (int) ivt[lsw]); // update both from the same probe (super important)
+					update_valid_meter(param_no, (int) ivt[param_no]);
+				} 
+			} else {
+				if (abuf == 0 && Cnts[param_no][probe_type] == 2) { // lsw and msw are updated together
+					Cnts[param_no][probe_type] = 1;
+					Cnts[lsw][probe_type] = 1;
+				} // we need to take down both data flags (lsw's is not calculate elsewhere)
+			}
+		}
+
+		return;
+	}
+
 	if (ParsInfo[param_no]->type == tParamInfo::SINGLE) {
 		if (ovt[param_no][abuf] != SZARP_NO_DATA) {
 			Sums[param_no][probe_type] -= (int) ovt[param_no][abuf];
@@ -1591,7 +1650,6 @@ void MainLoop(TSzarpConfig *ipk, PH& ipc_param_values, std::vector<LuaParamInfo*
 	/* NOW update probes history */
 	for (ii = 0; ii < VTlen; ii++)
 		update_value(ii, 0, Probe, Probes, abuf);
-
 	sz_log(10, "publishing new values");
 	publish_values(Probe, zmq_socket);
 
@@ -1843,7 +1901,11 @@ int main(int argc, char *argv[])
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
 	uint64_t hwm = 10; //max 100 sec worth of buffered msgs
+#ifdef ZMQ_SNDHWM
+	socket.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+#else
 	socket.setsockopt(ZMQ_HWM, &hwm, sizeof(hwm));
+#endif
 
 	sz_log(7, "ZMQ connect to '%s'", parhub_address.c_str());
 	try {

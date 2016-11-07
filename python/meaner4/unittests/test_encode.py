@@ -36,5 +36,10 @@ class EncodeDecodeTest(unittest.TestCase):
 		self.assertEqual(chr(0x2b), encoded[2])
 		self.assertEqual(chr(0x90), encoded[3])
 
-		decoded, _ = timedelta.decode(StringIO.StringIO(encoded))
-		self.assertEqual(33958800, decoded)
+		year_in_ns = 365 * 24 * 3600 * 10 ** 9
+		for v in range(0, 10 * year_in_ns, year_in_ns / 50):
+			print v
+			encoded = timedelta.encode(v)
+			decoded, _ = timedelta.decode(StringIO.StringIO(encoded))
+
+			self.assertEqual(v, decoded)

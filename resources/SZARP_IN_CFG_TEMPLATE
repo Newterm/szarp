@@ -78,6 +78,7 @@ $end
 
 :sz4
 heartbeat_frequency=10
+saving_interval=60
 
 :datapaf
 

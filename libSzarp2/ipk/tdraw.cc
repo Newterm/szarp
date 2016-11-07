@@ -85,7 +85,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 {
 	const double UNDEFVAL= -1234.5;
 
-	double p = -1.0, o = -1.0, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
+	double p = -1.0, o = BAD_ORDER, min = 0.0, max = UNDEFVAL, smin = UNDEFVAL, smax = UNDEFVAL;
 	int sc = 0;
 	SPECIAL_TYPES sp = NONE;
 	std::wstring strw_c, strw_w;
@@ -146,7 +146,7 @@ TDraw* TDraw::parseXML(xmlTextReaderPtr reader)
 
 	if (max == UNDEFVAL) {
 		min = 0.0;
-		max = -1.0;
+		max = 100.0;
 	}
 	if (sc > 0)
 		if (smax < smin)
@@ -234,7 +234,7 @@ TDraw* TDraw::parseXML(xmlNodePtr node)
 		CONVERT(SC::U2S(ch), o);
 		xmlFree(ch);
 	} else
-		o = -1.0;
+		o = BAD_ORDER;
 
 	ch = xmlGetNoNsProp(node, (xmlChar*)"max");
 	if (ch) {

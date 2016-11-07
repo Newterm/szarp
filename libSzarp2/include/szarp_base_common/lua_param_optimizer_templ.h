@@ -52,7 +52,7 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 				expression = boost::make_shared<NilExpression>();
 			ret->AddStatement(boost::make_shared<AssignmentStatement>(variable, expression));
 		} catch (boost::bad_get&) {
-			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
+			throw ParamConversionError(L"Only assignment to variables allowed in optimized expressions");
 		}
 	}
 	return ret->m_statements.size() == 1 ? ret->m_statements[0] : ret;
@@ -113,11 +113,11 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const for_in_loop &a) {
-	throw ParamConversionException(L"For in loops not supported by converter");
+	throw ParamConversionError(L"For in loops not supported by converter");
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const postfixexp &a) {
-	throw ParamConversionException(L"Postfix expressions as statments not supported by converter");
+	throw ParamConversionError(L"Postfix expressions as statments not supported by converter");
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const for_from_to_loop &for_) {
@@ -137,7 +137,7 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const function_declaration &a) {
-	throw ParamConversionException(L"Function declarations not supported by converter");
+	throw ParamConversionError(L"Function declarations not supported by converter");
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const local_assignment &a) {
@@ -159,14 +159,14 @@ template<class container_type> PStatement StatementConverter<container_type>::op
 				expression = boost::make_shared<NilExpression>();
 			ret->AddStatement(boost::make_shared<AssignmentStatement>(variable, expression));
 		} catch (boost::bad_get&) {
-			throw ParamConversionException(L"Only assignment to variables allowed in optimized expressions");
+			throw ParamConversionError(L"Only assignment to variables allowed in optimized expressions");
 		}
 	}
 	return ret->m_statements.size() == 1 ? ret->m_statements[0] : ret;
 }
 
 template<class container_type> PStatement StatementConverter<container_type>::operator() (const local_function_declaration &f) {
-	throw ParamConversionException(L"Function declarations not supported by converter");
+	throw ParamConversionError(L"Function declarations not supported by converter");
 }
 
 template<class container_type> PExpression ExpressionConverter<container_type>::ConvertTerm(const term& term_) {
@@ -215,7 +215,7 @@ template<class container_type> PExpression ExpressionConverter<container_type>::
 				p = boost::make_shared<UnExpression<std::logical_not<Val> > >(p);
 				break;
 			case LEN:
-				throw ParamConversionException(L"Opeartor '#' not supported in optimized params");
+				throw ParamConversionError(L"Opeartor '#' not supported in optimized params");
 				break;
 		}
 	return p;
@@ -273,7 +273,7 @@ template<class container_type> PExpression ExpressionConverter<container_type>::
 
 template<class container_type> PExpression ExpressionConverter<container_type>::ConvertConcat(const concat_exp &concat) {
 	if (concat.size() > 1)
-		throw ParamConversionException(L"Concatenation parameter cannot be used is optimized parameters");
+		throw ParamConversionError(L"Concatenation parameter cannot be used is optimized parameters");
 	return ConvertAdd(concat[0]);
 }
 
@@ -374,19 +374,19 @@ template<class container_type> PExpression TermConverter<container_type>::operat
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const std::wstring& string) {
-	throw ParamConversionException(L"String cannot appear as termns in optimized params");
+	throw ParamConversionError(L"String cannot appear as termns in optimized params");
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const threedots& threedots_) {
-	throw ParamConversionException(L"Threedots opeartors cannot appear in optimized params");
+	throw ParamConversionError(L"Threedots opeartors cannot appear in optimized params");
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const funcbody& funcbody_) {
-	throw ParamConversionException(L"Function bodies cannot appear in optimized expressions");
+	throw ParamConversionError(L"Function bodies cannot appear in optimized expressions");
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const tableconstructor& tableconstrutor_) {
-	throw ParamConversionWarning(L"Table construtor are not supported in optimized expressions");
+	throw ParamOptimizerException(L"Table construtor are not supported in optimized expressions");
 }
 
 template<class container_type> PExpression TermConverter<container_type>::operator()(const postfixexp& postfixexp_) {
@@ -412,7 +412,7 @@ template<class container_type> const std::vector<expression>& PostfixConverter<c
        lua_opt_debug_stream << "Converting args, number of exp_ident_arg_namerg :) expressions:" << e.size() << std::endl;
 #endif
        if (e.size() != 1)
-	       throw ParamConversionWarning(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
+	       throw ParamOptimizerException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
        try {
 	       const namearg& namearg_ = boost::get<namearg>(e[0]);
 	       const args& args_ = boost::get<args>(namearg_);
@@ -420,7 +420,7 @@ template<class container_type> const std::vector<expression>& PostfixConverter<c
 		       = boost::get<std::vector<expression> >(args_);
 	       return exps_;
        } catch (boost::bad_get &e) {
-	       throw ParamConversionWarning(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
+	       throw ParamOptimizerException(L"Only postfix expression in form functioname(exp, exp, ...) are allowed");
        }
 }
 
@@ -434,7 +434,7 @@ template<class container_type> PExpression PostfixConverter<container_type>::ope
 		const std::vector<expression>& args = GetArgs(exp.get<1>());
 		return m_param_converter->ConvertFunction(identifier_, args);
 	} catch (boost::bad_get &e) {
-		throw ParamConversionException(L"Postfix expression (functioncall) must start with identifier in optimized params");
+		throw ParamConversionError(L"Postfix expression (functioncall) must start with identifier in optimized params");
 	}
 }
 
@@ -443,20 +443,20 @@ template<class container_type> PExpression InSeasonConverter<container_type>::Co
 	lua_opt_debug_stream << "Converting isnan(..) expression" << std::endl;
 #endif
 	if (expressions.size() < 2)
-		throw ParamConversionException(L"in season function requires two arguments");
+		throw ParamConversionError(L"in season function requires two arguments");
 	std::wstring prefix;
 	try {
 		prefix = get_string_expression(expressions[0]);
 #ifdef LUA_OPTIMIZER_DEBUG
 		lua_opt_debug_stream << "in_season parameter: " << SC::S2A(prefix) << std::endl;
 #endif
-	} catch (ParamConversionException &e) {
-		throw ParamConversionException(L"First argument to in_season function should be literal configuration prefix");
+	} catch (ParamConversionError &e) {
+		throw ParamConversionError(L"First argument to in_season function should be literal configuration prefix");
 	}
 
 	TSzarpConfig* sc = m_ipk_container->GetConfig(prefix);
 	if (sc == NULL)
-		throw ParamConversionException(std::wstring(L"Prefix ") + prefix + L" given in in_season not found");
+		throw ParamConversionError(std::wstring(L"Prefix ") + prefix + L" given in in_season not found");
 	return boost::make_shared<InSeasonExpression>(sc, FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[1]));
 }
 
@@ -465,7 +465,7 @@ template<class container_type> PExpression SzbMoveTimeConverter<container_type>:
        lua_opt_debug_stream << "Converting szb_move_time expression" << std::endl;
 #endif
        if (expressions.size() < 3)
-	       throw ParamConversionException(L"szb_move_time requires three arguments");
+	       throw ParamConversionError(L"szb_move_time requires three arguments");
 
        return boost::make_shared<SzbMoveTimeExpression>
 	       (FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[0]),
@@ -478,7 +478,7 @@ template<class container_type> PExpression SzbRoundTimeConverter<container_type>
        lua_opt_debug_stream << "Converting szb_round_time expression" << std::endl;
 #endif
        if (expressions.size() < 2)
-	       throw ParamConversionException(L"szb_round_time requires two arguments");
+	       throw ParamConversionError(L"szb_round_time requires two arguments");
 
        return boost::make_shared<SzbRoundTimeExpression>
 	       (FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[0]),
@@ -490,7 +490,7 @@ template<class container_type> PExpression IsNanConverter<container_type>::Conve
        lua_opt_debug_stream << "Converting isnan expression"  << std::endl;
 #endif
        if (expressions.size() < 1)
-	       throw ParamConversionException(L"isnan takes one argument");
+	       throw ParamConversionError(L"isnan takes one argument");
 
        return boost::make_shared<IsNanExpression>
 	       (FunctionConverter<container_type>::m_param_converter->ConvertExpression(expressions[0]));
@@ -507,8 +507,8 @@ template<class container_type> PExpression NanConverter<container_type>::Convert
 template<class container_type> std::wstring ParamValueConverter<container_type>::GetParamName(const expression& e) {
 	try {
 		return get_string_expression(e);
-	} catch (const ParamConversionException& e) {
-		throw ParamConversionException(L"First parameter of p function should be literal string");
+	} catch (const ParamConversionError& e) {
+		throw ParamConversionError(L"First parameter of p function should be literal string");
 	}
 
 }
@@ -518,7 +518,7 @@ template<class container_type> PExpression ParamValueConverter<container_type>::
 	lua_opt_debug_stream << "Converting p(..) expression" << std::endl;
 #endif
 	if (expressions.size() < 3)
-		throw ParamConversionException(L"p function requires three arguemnts");
+		throw ParamConversionError(L"p function requires three arguemnts");
 	std::wstring param_name = GetParamName(expressions[0]);
 #ifdef LUA_OPTIMIZER_DEBUG
 	lua_opt_debug_stream << "Parameter name: " << SC::S2A(param_name) << std::endl;
@@ -574,13 +574,13 @@ template<class container_type> VarRef ParamConverterTempl<container_type>::FindV
 		if (j != i->end())
 			return j->second;
 	}
-	throw ParamConversionException(std::wstring(L"Variable ") + identifier + L" is unbound");
+	throw ParamConversionError(std::wstring(L"Variable ") + identifier + L" is unbound");
 }
 
 template<class container_type> ParRefRef ParamConverterTempl<container_type>::GetParamRef(const std::wstring param_name) {
 	TParam* param = m_ipk_container->GetParam(param_name);
 	if (param == NULL)
-		throw ParamConversionException(std::wstring(L"Param ") + param_name + L" not found");
+		throw ParamConversionError(std::wstring(L"Param ") + param_name + L" not found");
 
 	size_t i;
 	for (i = 0; i < m_param->m_par_refs.size(); i++) {
@@ -607,7 +607,7 @@ template<class container_type> PStatement ParamConverterTempl<container_type>::C
 template<class container_type> PExpression ParamConverterTempl<container_type>::ConvertFunction(const identifier& identifier_, const std::vector<expression>& args) {
 	typename std::map<std::wstring, boost::shared_ptr<FunctionConverter<container_type> > >::iterator i = m_function_converters.find(identifier_);
 	if (i == m_function_converters.end())
-		throw ParamConversionException(std::wstring(L"Function ") + identifier_ + L" not supported in optimized params");
+		throw ParamConversionError(std::wstring(L"Function ") + identifier_ + L" not supported in optimized params");
 	return i->second->Convert(args);
 }
 
@@ -696,14 +696,14 @@ template<class IPKContainerType> bool optimize_lua_param(TParam* param, IPKConta
 		try {
 			pc.ConvertParam(param_code, exec_param);
 			exec_param->m_optimized = true;
-		} catch (LuaExec::ParamConversionException &ex) {
+		} catch (LuaExec::ParamConversionError &ex) {
 			sz_log(2, "Parameter %s cannot be optimized, reason: %s", SC::S2U(param->GetName()).c_str(), SC::S2L(ex.what()).c_str());
 #ifdef LUA_OPTIMIZER_DEBUG
 			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(ex.what()) << std::endl;
 #endif
-		} catch (LuaExec::ParamConversionWarning &wr) {
+		} catch (LuaExec::ParamOptimizerException &ex) {
 #ifdef LUA_OPTIMIZER_DEBUG
-			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(wr.what()) << std::endl;
+			lua_opt_debug_stream << "Parameter " << SC::S2A(param->GetName()) << " cannot be optimized, reason: " << SC::S2A(ex.what()) << std::endl;
 #endif
 		}
 	} else

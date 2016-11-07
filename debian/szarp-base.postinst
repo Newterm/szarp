@@ -35,6 +35,28 @@ case "$1" in
         echo "WARNING: no rsyslogd found, SZARP-specific configuration will not be installed."
     fi
 
+    # install template file for kernel parameters configuration through sysctl
+    if command -v "sysctl" >/dev/null 2>&1; then
+        echo "Installing sysctl (kernel parameters) configuration for SZARP..."
+
+        SYSCTL_TEM="/opt/szarp/resources/sysctl_conf_TEMPLATE"
+        SYSCTL_CFG="/etc/sysctl.d/30-szarp-msg.conf"
+
+        if [ -f "$SYSCTL_CFG" ]; then
+            echo "Configuration for sysctl already installed. Leaving it."
+        else
+            if [ -f "$SYSCTL_TEM" ] && [ -d "$(dirname "$SYSCTL_CFG")" ]; then
+                cat "$SYSCTL_TEM" > "$SYSCTL_CFG"
+                echo "Configuration for sysctl successfully installed."
+            else
+                echo "ERROR: failed to install sysctl configuration for SZARP. Abort."
+                exit 1
+            fi
+        fi
+    else
+        echo "WARNING: no sysctl found, SZARP-specific configuration will not be installed."
+    fi
+
     /opt/szarp/bin/install_vim || true
     service rsyslog restart    || true
 

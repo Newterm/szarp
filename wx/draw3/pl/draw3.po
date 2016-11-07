@@ -1068,13 +1068,13 @@ msgid " dif: %s"
 msgstr " różnica: %s"
 
 #: infowdg.cpp:313
-#, fuzzy, c-format
+#, c-format
 msgid "no data: %d"
-msgstr "brak danych"
+msgstr "brakujących próbek: %d"
 
 #: infowdg.cpp:315
-msgid "ratio: "
-msgstr "ratio: "
+msgid "proper: "
+msgstr "poprawnych danych: "
 
 #: paramslist.cpp:243 paramslist.cpp:298
 msgid "Choose parameter first"

@@ -106,10 +106,10 @@ ConfigurationFileChangeHandler::handle(std::wstring file, std::wstring prefix) {
 
 DatabaseManager* ConfigurationFileChangeHandler::database_manager(NULL);
 
-void INThandler(int sig)
+void handler(int sig)
 {
 	wxGetApp().OnExit();
-	exit(0);
+	_exit(0);
 }
 
 namespace {
@@ -188,7 +188,8 @@ bool DrawApp::OnInit() {
 
 
 	SetProgName(_T("Draw 3"));
-	//signal(SIGINT, INThandler);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
 
 	if (m_just_print_version) {
 		std::cout << SZARP_VERSION << std::endl;
@@ -200,7 +201,17 @@ bool DrawApp::OnInit() {
 	m_remarks_handler = NULL;
 
 #ifdef __WXGTK__
-	libpar_init();
+	if (m_base == wxEmptyString)
+	{
+		libpar_init();
+	}
+	else
+	{
+		//base argument was given, so no need of loading the default configuration
+		wxString base_path = GetSzarpDir();
+		std::string config_path = std::string(wxString(base_path + m_base + '/').mb_str());
+		libpar_init_from_folder(config_path);
+	}
 
 	char *base = NULL;
 	if (m_base == wxEmptyString) {
@@ -301,7 +312,7 @@ bool DrawApp::OnInit() {
 	IPKContainer::Init(GetSzarpDataDir().c_str(), 
 			GetSzarpDir().c_str(), 
 			_lang.c_str());
-	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject());
+	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject(), m_base);
 
 	m_cfg_mgr->SetSplashScreen(splash);
 
