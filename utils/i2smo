@@ -45,12 +45,14 @@ quiet = False
 def printerr(msg, prefix="ERROR: "):
 	global error_count
 	error_count = error_count + 1
+	msg = unicode_to_ascii(msg)
 	puts(colored.red(prefix + "(" + str(error_count) + ") " + str(msg)), stream=STDERR)
 
 note_count = 0
 def printnote(msg, prefix="NOTE: "):
 	global note_count
 	note_count = note_count + 1
+	msg = unicode_to_ascii(msg)
 	puts(colored.yellow(prefix + "(" + str(note_count) + ") " + str(msg)))
 
 note_list = []
@@ -77,7 +79,6 @@ def unicode_to_ascii(string):
 		return string
 
 def get_szarp_uncommited():
-	# without realpath client.info() strips the symlink
 	client = pysvn.Client()
 	is_svn_repo = True
 	try:
@@ -97,31 +98,35 @@ def get_szarp_uncommited():
 def get_szarp_path():
 	if args.input_file is None:
 		szarp_default = os.path.realpath("/etc/szarp/default")
-		return szarp_default
+		params_default = os.path.join(szarp_default, "config", "params.xml")
+		return szarp_default, params_default
 	else:
-		if os.path.exists(args.input_file):
-			config = os.path.dirname(args.input_file)
-			return os.path.dirname(config)
+		if os.path.exists(args.input_file) and "/opt/szarp/" in os.path.abspath(args.input_file):
+			params = os.path.abspath(args.input_file)
+			config = os.path.dirname(params)
+			szarp = os.path.dirname(config)
+		elif os.path.exists(args.input_file):
+			params = os.path.abspath(args.input_file)
+			szarp = os.path.dirname(params)
 		else:
 			printerr(args.input_file + " does not exist")
 			sys.exit(1)
+		return szarp, params
 
 def check_svn():
 	szarp_svn, szarp_uncommited = get_szarp_uncommited()
-	realpath = os.path.realpath("/etc/szarp/default")
 	if szarp_svn:
 		if szarp_uncommited:
-			add_note("uncommited changes found in " + realpath + ": /opt/szarp/bin/conf-put.sh")
+			add_note("uncommited changes found in " + szarp_path + ": /opt/szarp/bin/conf-put.sh")
 	else:
 		if not quiet:
-			add_note(realpath + " is not added to svn, maybe it should?")
+			add_note(szarp_path + " is not added to svn, maybe it should?")
 
 def get_params_scheme():
 	"""
 	Getting params.xml to push it scheme to other functions
 	"""
 	options = etree.XMLParser(remove_blank_text=True, remove_comments=True)
-	params_path = os.path.join(szarp_path, "config", "params.xml")
 	params_scheme = etree.parse(params_path, options)
 	return params_scheme
 
@@ -422,10 +427,10 @@ if stderr:
 
 if not quiet:
 	add_note("if configuration has changed: /etc/init.d/parstart restart")
-check_svn()
-szarp_path = get_szarp_path()
+szarp_path, params_path = get_szarp_path()
 params = get_params_scheme()
 elements = parse_config_file()
+check_svn()
 do_tests()
 if args.additional_test:
 	check_no_base_ind()
