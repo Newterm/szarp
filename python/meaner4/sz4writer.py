@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
+__license__ = \
 """
   SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
@@ -18,6 +21,19 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
+"""
+
+__doc__ = \
+"""
+SZARP database writer.
+
+Example of use:
+		./sz4writer.py /opt/szarp/<prefix> /opt/szarp/<prefix>/<file.szw>
+
+Default time format:
+		"%Y-%m-%d %H:%M"
+
+For more directives check out the python "datetime" documentation.
 """
 
 import sys
@@ -52,10 +68,17 @@ class Sz4Writer(MeanerBase):
 		for line in f:
 			spl = shlex.split(line)
 			pname = spl[0]
+			pname = pname.lstrip()
 			time_string = spl[1] + "-" + spl[2] + "-" + spl[3] + " " + spl[4] + ":" + spl[5]
 			value_string = spl[6]
 
-			pindex = self.name2index[unicode(pname, 'utf-8')]
+			try:
+				pindex = self.name2index[unicode(pname, 'utf-8')]
+			except:
+				print("Given parameter name: \"" + pname + "\" is not in the params.xml", file=sys.stderr)
+				print("Can't save to szbase, aborting !", file=sys.stderr)
+				exit(1)
+
 			if pindex is None:
 				continue
 			sparam = self.save_params[pindex]
@@ -85,23 +108,20 @@ class Sz4Writer(MeanerBase):
 			value = self.prepare_value(value_string, sparam.param)
 			sparam.process_value(value, int(time_sec), time_nanosec)
 
-parser = argparse.ArgumentParser(description='TIME_FORMAT command line argument is an optional time format which doesn\'t work with .szw input file format.\n\nSZARP database writer.\n\nExample of use:\n		./sz4writer.py /opt/szarp/base /opt/szarp/base/file.szw\n\nExample of time format:\n		"%Y-%m-%d %H:%M:%S"\n	Where:\n		%Y - year\n		%m - month\n		%d - day\n		%H - hour\n		%M - minute\n		%S - second\n	For more directives check out the python "datetime" documentation', formatter_class=RawTextHelpFormatter)
-parser.add_argument('[path to base]', help = 'path to base')
-parser.add_argument('[input file]', help = 'path to file which is going to be written as .sz4')
-parser.add_argument('[time format]', nargs='?')
-if len(sys.argv)==1:
-	parser.print_help()
-	sys.exit(1)
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
+parser.add_argument('path_to_base', help = 'path to base')
+parser.add_argument('input_file', help = 'path to file which is going to be written as .sz4')
+parser.add_argument('time_format', nargs='?', help = 'optional')
 args = parser.parse_args()
 
 if __name__ == "__main__":
-	writer = Sz4Writer(sys.argv[1] + '/szbase')
-	writer.configure(sys.argv[1] + '/config/params.xml')
+	writer = Sz4Writer(args.path_to_base + '/szbase')
+	writer.configure(args.path_to_base + '/config/params.xml')
 
 
-	if ".szw" in sys.argv[2]:
-		writer.process_szw_file(sys.argv[2], "%Y-%m-%d %H:%M" if len(sys.argv) == 3 else sys.argv[3])
-	elif ".sz4" in sys.argv[2]:
-		writer.process_file(sys.argv[2], "%Y-%m-%d %H:%M:%S" if len(sys.argv) == 3 else sys.argv[3])
+	if ".szw" in args.input_file:
+		writer.process_szw_file(args.input_file, "%Y-%m-%d %H:%M" if args.time_format == None else args.time_format)
+	elif ".sz4" in args.input_file:
+		writer.process_file(args.input_file, "%Y-%m-%d %H:%M:%S" if args.time_format == None else args.time_format) 
 	else:
-		print "Wrong input file format ! Aborting" 
+		print("Wrong input file format! Aborting !", file=sys.stderr)
