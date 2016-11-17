@@ -197,3 +197,5 @@ msgstr "Plik"
 msgid "Custom"
 msgstr "W³asne"
 
+msgid "Reset"
+msgstr "Wyczysc"
