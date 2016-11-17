@@ -30,6 +30,7 @@
 #include <wx/wx.h>
 #endif
 
+#include <wx/regex.h>
 #include <wx/treectrl.h>
 #include <wx/valtext.h>
 #include <wx/tokenzr.h>
@@ -40,10 +41,12 @@
 #include "parselect.h"
 #include "fonts.h"
 
-#define szID_PARSELECTADD	wxID_HIGHEST
-#define szID_PARSELECTCLOSE	wxID_HIGHEST+1
-#define szID_HELPSELECT		wxID_HIGHEST+2
-#define szID_TREESEL		wxID_HIGHEST+3
+#define szID_PARSELECTADD			wxID_HIGHEST
+#define szID_PARSELECTCLOSE			wxID_HIGHEST+1
+#define szID_HELPSELECT				wxID_HIGHEST+2
+#define szID_TREESEL				wxID_HIGHEST+3
+#define ID_ExtractorSearch			wxID_HIGHEST+4
+#define ID_ExtractorSearchReset			wxID_HIGHEST+5
 
 DEFINE_EVENT_TYPE(wxEVT_SZ_PARADD)
 
@@ -137,6 +140,7 @@ szParSelect::szParSelect(TSzarpConfig * _ipk,
 	    new wxCheckBox(this, szID_TREESEL, CheckBoxName, wxDefaultPosition);
 	wxString last_pos = wxConfig::Get()->Read(_T("TreeSel"), _T("true"));
 	last_param = _T("NULL");
+
 	if (last_pos.IsSameAs(_T("false"))) {
 		check_box->SetValue(false);
 		this->LoadParams();
@@ -144,7 +148,15 @@ szParSelect::szParSelect(TSzarpConfig * _ipk,
 		check_box->SetValue(true);
 		this->LoadParamsLikeInDraw();
 	}
+	input_text = new wxTextCtrl(this, ID_ExtractorSearch,  _T(""), wxDefaultPosition,
+			wxSize(300, 10));
+	reset_button = new wxButton(this, ID_ExtractorSearchReset, _("Reset"));
+	search_sizer = new wxBoxSizer(wxHORIZONTAL);
+	search_sizer->Add(input_text, 0, wxALL | wxGROW, 5);
+	search_sizer->Add(reset_button, 0, wxALL | wxGROW, 5);
+
 	par_sizer->Add(par_trct, 1, wxGROW | wxALL, 8);
+	top_sizer->Add(search_sizer, 0, wxALIGN_CENTER, 0);
 	top_sizer->Add(par_sizer, 1, wxGROW | wxALL, 8);
 
 	if (showShort) {
@@ -325,10 +337,10 @@ void szParSelect::LoadParams()
 				}
 			}
 			// if not found - add new one
-			if (!found)
+			if (!found){
 				node_id = par_trct->AppendItem(node_id, token);
+			}
 		}
-
 		token = tkz.GetNextToken();
 
 		// add data on leaf
@@ -363,8 +375,9 @@ void szParSelect::SortTree(wxTreeItemId id)
 	par_trct->SortChildren(id);
 	for (i = par_trct->GetFirstChild(id, cookie); i > 0;
 	     i = par_trct->GetNextChild(id, cookie)) {
-		if (par_trct->ItemHasChildren(i))
+		if (par_trct->ItemHasChildren(i)){
 			SortTree(i);
+		}
 	}
 }
 
@@ -463,12 +476,14 @@ void szParSelect::OnAddClicked(wxCommandEvent & ev)
 		}
 		szParTreeElem *pte =
 		    (szParTreeElem *) par_trct->GetItemData(id);
-		if (pte)
+		if (pte){
 			params.Add(pte->getParam());
+		}
 	}
 
-	if (params.GetCount() == 0)
+	if (params.GetCount() == 0){
 		return;
+	}
 
 	par_trct->UnselectAll();
 	newevent.SetId(GetId());
@@ -488,13 +503,173 @@ void szParSelect::OnCloseClicked(wxCommandEvent & ev)
 	Show(false);
 }
 
+void szParSelect::OnReset(wxCommandEvent & ev)
+{
+	input_text->Clear();
+}
+
+void szParSelect::OnSearch(wxCommandEvent & ev)
+{
+	if (check_box->GetValue() == TRUE) {
+		SearchLikeInDraw();
+	} else {
+		Search();
+	}
+}
+
+void szParSelect::Search()
+{
+
+	wxString match = input_text->GetValue();
+	wxRegEx re(match, wxRE_ICASE);
+	if(re.IsValid()){
+
+		assert(ipk != NULL);
+		par_trct->DeleteAllItems();
+		// ipk => treectrl
+
+		wxTreeItemId root_id = par_trct->AddRoot(wxString(ipk->GetTitle()));
+		wxTreeItemId looked;
+		for (TParam * param_it = ipk->GetFirstParam(); param_it; param_it = ipk->GetNextParam(param_it)) {
+			const wxString& name = wxString(param_it->GetName());
+			if (re.Matches(name)){
+				if (m_filter && m_filter(param_it)) {
+					continue;
+				}
+
+			wxStringTokenizer tkz(wxString(param_it->GetTranslatedName()),
+				_T(":"));
+
+			wxTreeItemId node_id = root_id;
+
+#if wxCHECK_VERSION(2,5,0)
+			wxTreeItemIdValue cookie;
+#else
+			long cookie;
+#endif
+			wxTreeItemId tmp;
+			wxString token;
+
+			while (tkz.CountTokens() > 1) {
+				token = tkz.GetNextToken();
+				// look for node
+				bool found = false;
+				for (wxTreeItemId i_id =
+				     par_trct->GetFirstChild(node_id, cookie);
+				     (i_id > 0);
+				     i_id = par_trct->GetNextChild(node_id, cookie)) {
+					if (par_trct->GetItemText(i_id).IsSameAs(token)) {
+						node_id = i_id;
+						found = true;
+						break;
+					}
+				}
+				// if not found - add new one
+				if (!found){
+					node_id = par_trct->AppendItem(node_id, token);
+				}
+			}
+			token = tkz.GetNextToken();
+
+			// add data on leaf
+			tmp = par_trct->AppendItem(node_id, token, -1, -1,
+					new szParTreeElem(param_it));
+			if (last_param.IsSameAs(wxString(param_it->GetName()))) {
+				looked = tmp;
+			}
+			}
+
+		}
+
+		SortTree(root_id);
+		if (!last_param.IsSameAs(_T("NULL"))) {
+			ExpandToLastParam(looked);
+		} else {
+			par_trct->Expand(root_id);
+			par_trct->UnselectAll();
+		}
+	}
+}
+
+void szParSelect::SearchLikeInDraw()
+{
+	wxString match = input_text->GetValue();
+	wxRegEx re(match, wxRE_ICASE);
+	if(re.IsValid()){
+		assert(ipk != NULL);
+		par_trct->DeleteAllItems();
+		wxTreeItemId root_id = par_trct->AddRoot(wxString(ipk->GetTitle()));
+		wxTreeItemId looked;
+		bool found_last = false;
+
+		std::map < std::wstring, wxTreeItemId > draws;
+		std::map < std::wstring, wxTreeItemId >::iterator draws_iter;
+
+		for (TParam * p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+			for (TDraw * d = p->GetDraws(); d; d = d->GetNext()) {
+				const wxString& parameterTranslatedWindowName = wxString(d->GetTranslatedWindow());
+				const wxString& parameterName = wxString(p->GetName());
+				const wxString& parameterTranslatedName = wxString(p->GetTranslatedName());
+				const wxString& parameterTranslatedDrawName = wxString(p->GetTranslatedDrawName());
+				if(re.Matches(parameterTranslatedWindowName) || re.Matches(parameterName) || re.Matches(parameterTranslatedName)
+					   	|| re.Matches(parameterTranslatedDrawName)){
+					if (m_filter && m_filter(p)){
+						continue;
+					}
+
+					wxTreeItemId draw_id;
+					draws_iter = draws.find(d->GetTranslatedWindow());
+
+					if (draws_iter == draws.end()) {
+						draw_id =
+							par_trct->AppendItem(root_id,
+									 wxString(d->
+										GetTranslatedWindow
+										 ()));
+						draws[d->GetTranslatedWindow()] = draw_id;
+					} else {
+						draw_id = draws_iter->second;
+					}
+
+					wxString name = p->GetTranslatedDrawName();
+					if (name.IsEmpty()) {
+						name =
+						    wxString(p->GetTranslatedName()).
+						    AfterLast(':');
+					}
+
+					wxTreeItemId tmp = par_trct->AppendItem(draw_id, name,
+										-1, -1,
+										new
+										szParTreeElem
+										(p));
+
+					if (last_param.IsSameAs(wxString(p->GetName()))) {
+						looked = tmp;
+						found_last = true;
+					}
+				}
+			}
+		}
+
+		if (!last_param.IsSameAs(_T("NULL")) && found_last) {
+			ExpandToLastParam(looked);
+
+		} else {
+			par_trct->Expand(root_id);
+			par_trct->UnselectAll();
+		}
+	}
+}
 IMPLEMENT_DYNAMIC_CLASS(szParSelect, wxDialog)
 BEGIN_EVENT_TABLE(szParSelect, wxDialog)
 	EVT_TREE_SEL_CHANGED(ID_TRC_PARS, szParSelect::OnParSelect)
 	EVT_TREE_SEL_CHANGING(ID_TRC_PARS, szParSelect::OnParChanging)
-    	EVT_BUTTON(szID_PARSELECTADD, szParSelect::OnAddClicked)
-    	EVT_BUTTON(szID_PARSELECTCLOSE, szParSelect::OnCloseClicked)
-    	EVT_BUTTON(szID_HELPSELECT, szParSelect::OnHelpClicked)
-    	EVT_CHECKBOX(szID_TREESEL, szParSelect::OnCheckClicked)
+	EVT_BUTTON(szID_PARSELECTADD, szParSelect::OnAddClicked)
+	EVT_BUTTON(szID_PARSELECTCLOSE, szParSelect::OnCloseClicked)
+	EVT_BUTTON(szID_HELPSELECT, szParSelect::OnHelpClicked)
+	EVT_CHECKBOX(szID_TREESEL, szParSelect::OnCheckClicked)
+	EVT_BUTTON(ID_ExtractorSearchReset, szParSelect::OnReset)
+	EVT_TEXT(ID_ExtractorSearch, szParSelect::OnSearch)
 END_EVENT_TABLE()
 
