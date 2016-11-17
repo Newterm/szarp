@@ -159,6 +159,10 @@ class szParSelect:public wxDialog {
 	void OnCloseClicked(wxCommandEvent & ev);
 	void OnHelpClicked(wxCommandEvent & ev);
 	void OnCheckClicked(wxCommandEvent & ev);
+	void OnReset(wxCommandEvent & ev);
+	void OnSearch(wxCommandEvent & ev);
+	void Search();
+	void SearchLikeInDraw();
 	/**
 	 *  Function set the context text which is the name of the section in book,
 	 *  and set the HelpController from main program.
@@ -174,6 +178,10 @@ class szParSelect:public wxDialog {
 	wxStaticBoxSizer *par_sizer;
 	wxString last_param;
 	bool single;
+	wxTextCtrl *input_text;
+	wxButton *reset_button;
+	wxBoxSizer *search_sizer;
+
  protected:
 
       	/** load IPK to tree */
