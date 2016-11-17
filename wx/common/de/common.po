@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WX-Common\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-28 16:16+0200\n"
+"POT-Creation-Date: 2016-09-14 15:41+0200\n"
 "PO-Revision-Date: 2008-07-09 16:26+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,45 +15,45 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: datechooser.cpp:93 XRC_gettext_file.h:16
+#: datechooser.cpp:97 GUI/psc_date_edit.xrc:53
 msgid "Hour:"
 msgstr "Stunde:"
 
-#: datechooser.cpp:102 XRC_gettext_file.h:17
+#: datechooser.cpp:106 GUI/psc_date_edit.xrc:70
 msgid "Minute:"
 msgstr "Minute:"
 
-#: datechooser.cpp:113
+#: datechooser.cpp:117
 msgid "Second:"
 msgstr ""
 
-#: datechooser.cpp:130 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
+#: datechooser.cpp:134 htmlabout.cpp:74 aboutdlg.cpp:103 authdiag.cpp:72
 #: cfgdlg.cpp:118 helpctrlex/helpwinex.cpp:1447 helpctrlex/helpwinex.cpp:1449
 msgid "OK"
 msgstr "OK"
 
-#: datechooser.cpp:131 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
+#: datechooser.cpp:135 serverdlg.cpp:90 authdiag.cpp:75 cfgdlg.cpp:119
 #: helpctrlex/helpwinex.cpp:1446 helpctrlex/helpwinex.cpp:1450
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: datechooser.cpp:167
+#: datechooser.cpp:171
 msgid "Invalid (too large/small) date"
 msgstr "Falsches (zu wenig oder zu viel) Datum."
 
-#: datechooser.cpp:167
+#: datechooser.cpp:171
 msgid "Error!"
 msgstr "Fehler!"
 
-#: datechooser.cpp:178
+#: datechooser.cpp:182
 msgid "Please choose the date from between: "
 msgstr "Sie müssen das Datum aus dem Bereich wählen."
 
-#: datechooser.cpp:180
+#: datechooser.cpp:184
 msgid "and"
 msgstr "und"
 
-#: datechooser.cpp:182
+#: datechooser.cpp:186
 msgid "Incorrect date range"
 msgstr "Falsches Datum"
 
@@ -77,7 +77,7 @@ msgstr ""
 "Sie haben neu zu starten Programm,\n"
 " damit font-Einstellungen anwendet werden."
 
-#: fonts.cpp:202 parselect.cpp:189 XRC_gettext_file.h:25
+#: fonts.cpp:202 parselect.cpp:200 GUI/psc.xrc:17
 msgid "Close"
 msgstr "Schließ"
 
@@ -168,7 +168,7 @@ msgstr "Fehler bei der Kompilation des IPK Schemas."
 msgid "XML document doesn't validate against IPK schema!"
 msgstr "Dokument XML ist nicht einig mit dem IPK Schema!"
 
-#: parlist.cpp:217
+#: parlist.cpp:214
 #, c-format
 msgid ""
 "Error saving document %s\n"
@@ -177,36 +177,40 @@ msgstr ""
 "Fehler beim Speichern von Datei %s\n"
 "Fehler %d: %s"
 
-#: parlist.cpp:475
+#: parlist.cpp:472
 #, c-format
 msgid "Could not load RelaxNG schema from file %s"
 msgstr "Fehler beim Laden des IPK Schemas aus Datei %s"
 
-#: parlist.cpp:665
+#: parlist.cpp:662
 msgid "Print preview"
 msgstr "Druckvoschau"
 
-#: parselect.cpp:127
+#: parselect.cpp:130
 msgid "Parameter"
 msgstr "Parametr"
 
-#: parselect.cpp:135
+#: parselect.cpp:138
 msgid "Show like in draw program"
 msgstr "Zeig wie im Draw Programm"
 
-#: parselect.cpp:153
+#: parselect.cpp:152
+msgid "Reset"
+msgstr ""
+
+#: parselect.cpp:164
 msgid "Shortcut"
 msgstr "Direkt"
 
-#: parselect.cpp:170 pscgui.cpp:128 pscgui.cpp:140
+#: parselect.cpp:181 pscgui.cpp:128 pscgui.cpp:140
 msgid "Description"
 msgstr "Beschreibung"
 
-#: parselect.cpp:186 XRC_gettext_file.h:2
+#: parselect.cpp:197 GUI/pack_edit_menu.xrc:9
 msgid "Add"
 msgstr "Add"
 
-#: parselect.cpp:217 helpctrlex/helpdlgex.cpp:81 helpctrlex/helpfrmex.cpp:81
+#: parselect.cpp:228 helpctrlex/helpdlgex.cpp:81 helpctrlex/helpfrmex.cpp:81
 #: helpctrlex/helpfrmex.cpp:107
 msgid "Help"
 msgstr "Hilfe"
@@ -349,15 +353,15 @@ msgstr ""
 msgid "."
 msgstr ""
 
-#: szapp.cpp:288
+#: szapp.cpp:296
 msgid " (Ideas)"
 msgstr ""
 
-#: szapp.cpp:289 szapp.cpp:290
+#: szapp.cpp:297 szapp.cpp:298
 msgid " (French translations)"
 msgstr ""
 
-#: szapp.cpp:291
+#: szapp.cpp:299
 msgid " (logo)"
 msgstr ""
 
@@ -385,31 +389,31 @@ msgstr "Benutzername:"
 msgid "Password:"
 msgstr "Passwort"
 
-#: pscgui.cpp:76 XRC_gettext_file.h:9
+#: pscgui.cpp:76 GUI/psc_date_edit.xrc:39
 msgid "Monday"
 msgstr "Montag"
 
-#: pscgui.cpp:78 XRC_gettext_file.h:10
+#: pscgui.cpp:78 GUI/psc_date_edit.xrc:40
 msgid "Tuesday"
 msgstr "Dienstag"
 
-#: pscgui.cpp:80 XRC_gettext_file.h:11
+#: pscgui.cpp:80 GUI/psc_date_edit.xrc:41
 msgid "Wednesday"
 msgstr "Mitwoch"
 
-#: pscgui.cpp:82 XRC_gettext_file.h:12
+#: pscgui.cpp:82 GUI/psc_date_edit.xrc:42
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: pscgui.cpp:84 XRC_gettext_file.h:13
+#: pscgui.cpp:84 GUI/psc_date_edit.xrc:43
 msgid "Friday"
 msgstr "Freitag"
 
-#: pscgui.cpp:86 XRC_gettext_file.h:14
+#: pscgui.cpp:86 GUI/psc_date_edit.xrc:44
 msgid "Saturday"
 msgstr "Samstag"
 
-#: pscgui.cpp:88 XRC_gettext_file.h:15
+#: pscgui.cpp:88 GUI/psc_date_edit.xrc:45
 msgid "Sunday"
 msgstr "Sontag"
 
@@ -558,6 +562,14 @@ msgstr "Wählen Sie Konfiguration zu laden:"
 
 #: cfgdlg.cpp:96
 msgid "Search:"
+msgstr ""
+
+#: cfgdlg.cpp:200
+msgid " ("
+msgstr ""
+
+#: cfgdlg.cpp:200
+msgid ")"
 msgstr ""
 
 #: singleinstance.cc:70
@@ -819,97 +831,97 @@ msgid ""
 "Help books (*.zip)|*.zip|HTML Help Project (*.hhp)|*.hhp|All files (*.*)|*"
 msgstr ""
 
-#: XRC_gettext_file.h:1
+#: GUI/pack_edit_menu.xrc:7
 msgid "Context"
 msgstr "Kontext"
 
-#: XRC_gettext_file.h:3
+#: GUI/pack_edit_menu.xrc:12
 msgid "Remove"
 msgstr "Fern ent"
 
-#: XRC_gettext_file.h:4
+#: GUI/pack_edit_menu.xrc:15
 msgid "Edit"
 msgstr "Bearbeite"
 
-#: XRC_gettext_file.h:5
+#: GUI/pack_edit.xrc:8
 msgid "PackEdit"
 msgstr "Editor-Pakete"
 
-#: XRC_gettext_file.h:6
+#: GUI/psc_date_edit.xrc:7
 msgid "Edit pack"
 msgstr "Bearbeite Pakete"
 
-#: XRC_gettext_file.h:7
+#: GUI/psc_date_edit.xrc:15
 msgid "Time:"
 msgstr "Zeit:"
 
-#: XRC_gettext_file.h:8
+#: GUI/psc_date_edit.xrc:29
 msgid "Day:"
 msgstr "Tag:"
 
-#: XRC_gettext_file.h:18 XRC_gettext_file.h:19
+#: GUI/psc_date_edit.xrc:92 GUI/psc_date_edit.xrc:102
 msgid "Value:"
 msgstr "Wert:"
 
-#: XRC_gettext_file.h:20
+#: GUI/psc_date_edit.xrc:121
 msgid "Minimum value:"
 msgstr "Minimaler Wert:"
 
-#: XRC_gettext_file.h:21
+#: GUI/psc_date_edit.xrc:139
 msgid "Maximum value:"
 msgstr "Maximaler Wert:"
 
-#: XRC_gettext_file.h:22
+#: GUI/psc.xrc:8
 msgid "Regulator"
 msgstr ""
 
-#: XRC_gettext_file.h:23
+#: GUI/psc.xrc:11
 msgid "Connection"
 msgstr "Verbindung"
 
-#: XRC_gettext_file.h:24
+#: GUI/psc.xrc:13
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: XRC_gettext_file.h:26
+#: GUI/psc.xrc:21
 msgid "Operations"
 msgstr "Aktione"
 
-#: XRC_gettext_file.h:27
+#: GUI/psc.xrc:23
 #, fuzzy
 msgid "Fetch(refresh) report"
 msgstr "Lies Werte ab"
 
-#: XRC_gettext_file.h:28
+#: GUI/psc.xrc:27
 #, fuzzy
 msgid "Fetch(refresh) packs and constants"
 msgstr "Lies Werte ab"
 
-#: XRC_gettext_file.h:29
+#: GUI/psc.xrc:31
 msgid "Set Constants"
 msgstr "Set Constants"
 
-#: XRC_gettext_file.h:30
+#: GUI/psc.xrc:34
 msgid "Set Packs Type"
 msgstr "Wähle Typ von Paket"
 
-#: XRC_gettext_file.h:31
+#: GUI/psc.xrc:37
 msgid "Set Packs"
 msgstr "Stell Pakete auf."
 
-#: XRC_gettext_file.h:32
+#: GUI/psc.xrc:41
 msgid "Reset packs and contants"
 msgstr ""
 
-#: XRC_gettext_file.h:33
+#: GUI/psc.xrc:58
 msgid "Report"
 msgstr ""
 
-#: XRC_gettext_file.h:34
+#: GUI/psc.xrc:112
 msgid "Constans"
 msgstr "Konstanten"
 
-#: XRC_gettext_file.h:35
+#: GUI/psc.xrc:121
 msgid "Packs"
 msgstr "Pakete"
 
