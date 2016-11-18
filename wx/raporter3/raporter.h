@@ -54,6 +54,7 @@
 
 /** Number of different bitmaps drawn on main button. */
 #define NUM_OF_BMPS	7
+#define MAX_REPORTS_NUMBER 1024
 
 /** User report entry */
 class szRapEntry {
@@ -283,8 +284,8 @@ enum {
 
   ID_TIMER,
 
-  ID_M_TEMPLATE_IPK,
-  ID_L_ITEMSELECT
+  ID_L_ITEMSELECT,
+  ID_M_TEMPLATE_IPK
 };
 
 /** data type */

@@ -837,7 +837,7 @@ void szRaporter::OnListItemSelect(wxListEvent &event)
 
 IMPLEMENT_CLASS(szRaporter, wxFrame)
 BEGIN_EVENT_TABLE(szRaporter, wxFrame)
-	EVT_MENU_RANGE(ID_M_TEMPLATE_IPK, ID_M_TEMPLATE_IPK+64, 
+	EVT_MENU_RANGE(ID_M_TEMPLATE_IPK, ID_M_TEMPLATE_IPK+MAX_REPORTS_NUMBER, 
 			szRaporter::OnRapIPK)
 	EVT_MENU(ID_M_RAPORT_START, szRaporter::OnStartStop)
 	EVT_MENU(ID_M_RAPORT_EXIT, szRaporter::OnExit)
