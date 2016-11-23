@@ -15,8 +15,8 @@ class Config {
 
 public:
 
-	void from_file( const std::string& path ) throw(xml_parse_error);
-	void from_xml( const boost::property_tree::ptree& cfg_ptree ) throw(xml_parse_error);
+	void from_file( const std::string& path );
+	void from_xml( const boost::property_tree::ptree& cfg_ptree );
 	void from_pairs( const CfgPairs& pairs );
 
 	CfgMap::const_iterator begin() const { return cfg.cbegin(); }

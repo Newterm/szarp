@@ -47,7 +47,7 @@ class Sets {
 public:
 	using iterator = key_iterator<SetsMap>;
 
-	void from_params_file( const std::string& path ) throw(xml_parse_error);
+	void from_params_file( const std::string& path );
 
 	iterator begin() const { return iterator(sets.cbegin()); }
 	iterator end  () const { return iterator(sets.cend  ()); }
@@ -63,8 +63,8 @@ public:
 	{	return emit_set_updated.connect( slot ); }
 
 protected:
-	void from_system_sets_xml( const boost::property_tree::ptree& sets_ptree ) throw(xml_parse_error);
-	void from_params_xml( boost::property_tree::ptree& sets_ptree ) throw(xml_parse_error);
+	void from_system_sets_xml( const boost::property_tree::ptree& sets_ptree );
+	void from_params_xml( boost::property_tree::ptree& sets_ptree );
 
 
 private:

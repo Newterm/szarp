@@ -66,7 +66,7 @@ void Sets::update_set( const Set& s , const std::string& old_name )
 	}
 }
 
-void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
+void Sets::from_params_file( const std::string& path )
 {
 	bp::ptree sets_doc;
 	bp::read_xml(path, sets_doc, bp::xml_parser::trim_whitespace|bp::xml_parser::no_comments );
@@ -74,7 +74,7 @@ void Sets::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( sets_doc );
 }
 
-void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_parse_error)
+void Sets::from_params_xml( boost::property_tree::ptree& ptree  )
 {
 	std::unordered_map<std::string,std::pair<double,bp::ptree>> sets_map;
 	double max_order = 0;

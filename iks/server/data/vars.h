@@ -20,7 +20,7 @@ public:
 	Vars( );
 	virtual ~Vars();
 
-	void from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error);
+	void from_szarp( const std::string& szarp_base );
 
 	void set_szarp_prober_server( const std::string& address , unsigned port );
 

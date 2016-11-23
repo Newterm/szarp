@@ -22,7 +22,7 @@ Param::~Param()
 {
 }
 
-void Param::from_params_xml( const bp::ptree& ptree ) throw(xml_parse_error)
+void Param::from_params_xml( const bp::ptree& ptree )
 {
 	/**
 	 * name, unit and short_name are obligatory

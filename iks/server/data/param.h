@@ -20,7 +20,7 @@ public:
 	Param( const std::string& parent );
 	virtual ~Param();
 
-	void from_params_xml( const boost::property_tree::ptree& var_ptree ) throw(xml_parse_error);
+	void from_params_xml( const boost::property_tree::ptree& var_ptree );
 
 	void to_xml ( std::ostream& stream , bool pretty = false ) const;
 	void to_json( std::ostream& stream , bool pretty = false ) const;

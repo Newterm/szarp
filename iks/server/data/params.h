@@ -34,7 +34,7 @@ public:
 
 	Params();
 
-	void from_params_file( const std::string& path ) throw(xml_parse_error);
+	void from_params_file( const std::string& path );
 
 	iterator begin() const { return iterator(params.cbegin()); }
 	iterator end  () const { return iterator(params.cend  ()); }
@@ -59,8 +59,8 @@ public:
 	{	return emit_request_value.connect( slot ); }
 
 protected:
-	void from_vars_xml( const boost::property_tree::ptree& vars_doc ) throw(xml_parse_error);
-	void from_params_xml( boost::property_tree::ptree& params_doc ) throw(xml_parse_error);
+	void from_vars_xml( const boost::property_tree::ptree& vars_doc );
+	void from_params_xml( boost::property_tree::ptree& params_doc );
 
 private:
 	ParamsMap params;

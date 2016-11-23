@@ -19,7 +19,7 @@ Vars::~Vars()
 	if( szb_wrapper ) delete szb_wrapper;
 }
 
-void Vars::from_szarp( const std::string& szarp_base ) throw(file_not_found_error,xml_parse_error)
+void Vars::from_szarp( const std::string& szarp_base )
 {
 	if( initialized ) return;
 

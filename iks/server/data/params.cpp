@@ -22,7 +22,7 @@ std::shared_ptr<const Param> Params::get_param( const std::string& name ) const
 	return itr == params.end() ? std::shared_ptr<const Param>() : itr->second;
 }
 
-void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
+void Params::from_params_file( const std::string& path )
 {
 	bp::ptree params_doc;
 	bp::read_xml(path, params_doc, bp::xml_parser::trim_whitespace|bp::xml_parser::no_comments );
@@ -30,7 +30,7 @@ void Params::from_params_file( const std::string& path ) throw(xml_parse_error)
 	from_params_xml( params_doc );
 }
 
-void Params::from_params_xml( bp::ptree& doc ) throw(xml_parse_error)
+void Params::from_params_xml( bp::ptree& doc )
 {
 	fold_xmlattr( doc );
 
