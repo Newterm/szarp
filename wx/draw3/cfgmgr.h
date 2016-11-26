@@ -45,9 +45,10 @@
 #include <limits>
 
 #include <wx/hashmap.h>
+
 #include "szarp_config.h"
 #include "cfgnames.h"
-
+#include "exception.h"
 
 class DrawParam {
 protected:
@@ -591,6 +592,12 @@ protected:
 
 	//prefix of base given(either default one or given with argument -base)
 	wxString m_base_prefix;
+};
+
+class DrawImportException: public SzException {
+	SZ_INHERIT_CONSTR(DrawImportException, SzException)
+public:
+	DrawImportException(const wxString& wxStr): SzException(std::string( wxStr.mb_str() )) {}
 };
 
 #endif

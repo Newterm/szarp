@@ -58,6 +58,7 @@
 #include "dcolors.h"
 #include "errfrm.h"
 #include "szarp_base_common/lua_strings_extract.h"
+#include "xmlutils.h"
 
 
 wxString DrawParam::GetBasePrefix() {
@@ -1224,10 +1225,16 @@ void ConfigManager::LoadDefinedDrawsSets() {
 	sd.AppendDir(_T(".szarp"));
 	wxFileName p(sd.GetPath(), _T("defined.xml"));
 
-	if (p.FileExists())
-		m_defined_sets->LoadSets(p.GetFullPath());
+	if (p.FileExists()) {
+		try {
+			m_defined_sets->LoadSets(p.GetFullPath());
+			config_hash[m_defined_sets->GetPrefix()] = m_defined_sets;
+		} catch (SzException& e) {
+			wxString msg = wxString::Format(_("Failed to import defined draw sets from configuration file %s\n"), sd.GetFullPath().c_str()) + wxString::FromUTF8(e.what());
+			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
+		}
 
-	config_hash[m_defined_sets->GetPrefix()] = m_defined_sets;
+	}
 
 }
 
@@ -1505,45 +1512,57 @@ void ExportImportSet::ImportSet() {
 	wxString path = dlg.GetPath();
 	std::vector<DefinedDrawSet*> draw_sets;
 	std::vector<DefinedParam*> defined_params;
-	if (m_def_sets->LoadSets(path, draw_sets, defined_params) == false || draw_sets.size() == 0)
-		goto fail;
-	for (size_t i = 0; i < draw_sets.size(); i++) {
-		std::vector<wxString> removed;
-		DefinedDrawSet* ds = draw_sets[i];
-		ErrorFrame::NotifyError(wxString::Format(_("Importing set: %s"), ds->GetName().c_str()));
-		SetsNrHash& prefixes = ds->GetPrefixes();
+	try {
+		m_def_sets->LoadSets(path, draw_sets, defined_params);
 
-		for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++) {
-			DrawsSetsHash& config_hash = m_cfg_mgr->GetConfigurations();
-			if (config_hash.find(i->first) != config_hash.end())
-				continue;
+		m_cfg_mgr->SubstituteOrAddDefinedParams(defined_params);
+		for (size_t i = 0; i < draw_sets.size(); i++) {
+			std::vector<wxString> removed;
+			DefinedDrawSet* ds = draw_sets[i];
+			SetsNrHash& prefixes = ds->GetPrefixes();
 
-			ErrorFrame::NotifyError(wxString::Format(_("Need to load configuration for prefix: %s"), i->first.c_str()));
-			if (m_cfg_mgr->GetConfigByPrefix(i->first) == NULL) {
-				ErrorFrame::NotifyError(wxString::Format(_("Failed to load configuration: %s"), i->first.c_str()));
-				goto fail;
+			for (SetsNrHash::iterator i = prefixes.begin(); i != prefixes.end(); i++) {
+				DrawsSetsHash& config_hash = m_cfg_mgr->GetConfigurations();
+				if (config_hash.find(i->first) != config_hash.end())
+					continue;
+
+				if (m_cfg_mgr->GetConfigByPrefix(i->first) == NULL) {
+					throw DrawImportException(wxString::Format(_("Failed to load configuration: %s"), i->first.c_str()));
+				}
+
+				ErrorFrame::NotifyError(wxString::Format(_("Configuration for prefix: %s loaded"), i->first.c_str()));
+			}
+
+			ds->SyncWithAllPrefixes();
+		}
+
+		for (size_t i = 0; i < draw_sets.size(); i++) {
+			if (FindSetName(draw_sets[i]) == false) {
+				throw DrawImportException(wxString::Format(_("Failed to load set: %s"), draw_sets[i]->GetName().c_str()));
 			}
 		}
 
-		ds->SyncWithAllPrefixes();
-	}
-	for (size_t i = 0; i < draw_sets.size(); i++) {
-		if (FindSetName(draw_sets[i]) == false)
-			goto clean_up;
-	}
+		wxString importedSets = wxT("");
+		for (size_t i = 0; i < draw_sets.size(); i++) {
+			m_def_sets->AddSet(draw_sets[i]);
+			importedSets+=draw_sets[i]->GetName();
+			if (i != draw_sets.size() -1) importedSets+=wxT(", ");
+		}
 
-	m_cfg_mgr->SubstituteOrAddDefinedParams(defined_params);
-	for (size_t i = 0; i < draw_sets.size(); i++)
-		m_def_sets->AddSet(draw_sets[i]);
-	wxMessageBox(wxString::Format(_("Operation completed successfully, set %s imported"), draw_sets[0]->GetName().c_str(), path.c_str()), _("Operation successful."), wxOK | wxICON_INFORMATION, wxGetApp().GetTopWindow());
-	return;
-fail:
-	wxMessageBox(wxString::Format(_("Failed to import set from file: %s"), path.c_str()), _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
-clean_up:
-	for (size_t i = 0; i < draw_sets.size(); i++)
-		delete draw_sets[i];
-	for (size_t i = 0; i < defined_params.size(); i++)
-		delete defined_params[i];
+		wxMessageBox(wxString::Format(_("Operation completed successfully imported %d set(s): "), draw_sets.size())+importedSets, _("Operation successful."), wxOK | wxICON_INFORMATION, wxGetApp().GetTopWindow());
+
+	} catch (std::exception& e) {
+
+		wxString msg = wxString::Format(_("Failed to import set from file: %s\n"), path.c_str())+wxString(e.what(), wxConvLibc);
+		wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
+
+		for (size_t i = 0; i < draw_sets.size(); i++) {// TODO: make draw_sets use smart pointers
+			if (draw_sets[i]) delete draw_sets[i];
+		}
+		for (size_t i = 0; i < defined_params.size(); i++) { // TODO: make defined_params use smart pointers
+			if (defined_params[i]) delete defined_params[i];
+		}
+	}
 
 }
 

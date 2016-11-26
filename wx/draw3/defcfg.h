@@ -33,11 +33,14 @@
 #include <wx/wx.h>
 #endif
 #include <wx/dynarray.h>
+#include <wx/regex.h>
 
 #include <xmlrpc-epi/xmlrpc.h>
 
 #include <vector>
 #include <set>
+
+#include "exception.h"
 
 class DefinedParam : public DrawParam {
 	wxString m_formula;
@@ -61,6 +64,9 @@ public:
 	DefinedParam(bool network_param = false) : m_start_time(-1), m_network_param(network_param) {
 	}
 	;
+
+	static const wxRegEx ParamMatchRegex;
+
 
 	DefinedParam(wxString base_prefix, wxString name, wxString unit, wxString formula, int prec,
 			TParam::FormulaType type, time_t start_time, bool network_param = false);
@@ -123,7 +129,7 @@ public:
 	/** Return configuration prefix*/
 	virtual wxString GetPrefix();
 
-	bool LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params);
+	void LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params);
 
 	void LoadSets(wxString path);
 
@@ -495,4 +501,21 @@ protected:
 
 };
 
+class IllFormedException: public SzException {
+	SZ_INHERIT_CONSTR(IllFormedException, SzException)
+public:
+	IllFormedException(const wxString& wxStr): SzException(std::string( wxStr.mb_str() )) {}
+};
+
+class IllFormedParamException: public IllFormedException {
+	SZ_INHERIT_CONSTR(IllFormedParamException, IllFormedException)
+public:
+	IllFormedParamException(const wxString& wxStr): IllFormedException(wxStr) {}
+};
+
+class IllFormedSetException: public IllFormedException {
+	SZ_INHERIT_CONSTR(IllFormedSetException, IllFormedException)
+public:
+	IllFormedSetException(const wxString& wxStr): IllFormedException(wxStr) {}
+};
 #endif				// _DEFWIN_H

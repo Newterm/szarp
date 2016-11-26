@@ -32,6 +32,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <memory>
 
 #include <wx/filedlg.h>
 #include <wx/colordlg.h>
@@ -40,6 +41,7 @@
 
 #include <libxml/tree.h>
 #include <libxml/relaxng.h>
+#include "xmlutils.h"
 
 #include <wx/config.h>
 
@@ -64,6 +66,8 @@
 const wxChar* const DefinedDrawsSets::DEF_PREFIX  = _T("userD");
 
 const wxChar* const DefinedDrawsSets::DEF_NAME = _("User defined");
+
+const wxRegEx DefinedParam::ParamMatchRegex(wxT("^[^:]*:[^:]*:[^:]*$"));
 
 DefinedDrawInfo::DefinedDrawInfo(DrawInfo *di, DefinedDrawsSets* ds)
 :  DrawInfo(di->GetDraw(), di->GetParam())
@@ -594,7 +598,6 @@ wxString DefinedDrawInfo::GetValueStr(const double &val, const wxString& no_data
 
 
 void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
-
 	xmlChar* _source = xmlGetProp(node, X "source");
 	m_base_prefix = SC::U2S(_source);
 	xmlFree(_source);
@@ -608,6 +611,9 @@ void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 	xmlChar* _name = xmlGetProp(node, X "name");
 	m_param_name = SC::U2S(_name);
 	xmlFree(_name);
+	if (!DefinedParam::ParamMatchRegex.Matches(m_param_name)) {
+		throw IllFormedParamException(wxString(_("Param ")+m_param_name+_(" is ill-formed.")));
+	}
 
 	xmlChar* _hoursum = xmlGetProp(node, X "hoursum");
 	if (_hoursum) {
@@ -711,6 +717,9 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 	xmlChar* _param_name = xmlGetProp(d, BAD_CAST "name");
 	m_param_name = SC::U2S(_param_name);
 	xmlFree(_param_name);
+	if (!DefinedParam::ParamMatchRegex.Matches(m_param_name)) {
+		throw IllFormedParamException(wxString(_("Param ")+m_param_name+_(" is ill-formed.")));
+	}
 
 	xmlChar *prec = xmlGetProp(d, BAD_CAST "prec");
 	m_prec = wcstol(SC::U2S(prec).c_str(), NULL, 10);
@@ -1123,9 +1132,9 @@ void DefinedDrawSet::ParseXML(xmlNodePtr node)
 		if ((xmlStrcmp(p->name, X "param")))
 			continue;
 		
-		DefinedDrawInfo* ddi = new DefinedDrawInfo(m_ds);
-		ddi->ParseXML(p);
-		Add(ddi);
+		std::unique_ptr<DefinedDrawInfo> ddi(new DefinedDrawInfo(m_ds));
+		ddi->ParseXML(p); // throws IllFormedDrawParamException
+		Add(ddi.release());
 	}
 
 }
@@ -1517,28 +1526,26 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 	}
 }
 
-bool DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
+void DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
+	std::unique_ptr<szXmlDoc> root = szXmlDoc::getDoc(SC::S2A(path).c_str());
 
-	xmlDocPtr root = xmlParseFile(SC::S2A(path).c_str());
-	if (root == NULL)
-		return false;
-
-	xmlNodePtr cur = root->xmlChildrenNode;
+	xmlNodePtr cur = (**root).xmlChildrenNode;
 	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
 		if (!xmlStrcmp(cur->name, X "window")) {
-			DefinedDrawSet* ds = new DefinedDrawSet(this, false);
-			ds->ParseXML(cur);
+			std::unique_ptr<DefinedDrawSet> ds(new DefinedDrawSet(this, false));
+			ds->ParseXML(cur); // throws IllFormedDrawParamException and IllFormedDrawSetException
 			ds->SetPrior(m_prior--);
-			draw_sets.push_back(ds);
+			draw_sets.push_back(ds.release());
 		} else if (!xmlStrcmp(cur->name, X "param")) {
-			DefinedParam* dp = new DefinedParam();	
-			dp->ParseXML(cur);
-			defined_params.push_back(dp);
+			std::unique_ptr<DefinedParam> dp(new DefinedParam());	
+			dp->ParseXML(cur); // throws IllFormedDrawParamException
+			defined_params.push_back(dp.release());
 		}
 	}
 
-	xmlFreeDoc(root);
-	return true;
+	if (draw_sets.size() == 0) {
+		throw IllFormedSetException(wxString(_("Set is empty"))); // Is it really an error?
+	}
 }
 
 bool DefinedDrawsSets::SaveSets(wxString path, const std::vector<DefinedDrawSet*>& ds, const std::vector<DefinedParam*>& dp) {
