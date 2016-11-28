@@ -185,7 +185,7 @@ SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZA
 //        case TYPE_START :
 //                break;
 	case TYPE_END :
-		res = base->GetData(tp, e, pt);
+		res = base->GetData(tp, s, pt);
 		break;
 	}
 
