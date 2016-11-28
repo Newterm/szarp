@@ -1198,6 +1198,7 @@ AC_OUTPUT( \
 	python/parhub/Makefile \
 	python/utils/Makefile \
 	python/pytimer/Makefile \
+	python/pysz4/Makefile \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/analiza/Makefile \

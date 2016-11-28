@@ -178,30 +178,6 @@ double SzbaseWrapper::get_avg(
 	return sz4::scale_value(sum.avg(), tparam);
 }
 
-namespace {
-
-class no_data_search_condition : public sz4::search_condition {
-public:
-	bool operator()(const short& v) const {
-		return v != std::numeric_limits<short>::min();
-	}
-
-	bool operator()(const int& v) const {
-		return v != std::numeric_limits<int>::min();
-
-	}
-
-	bool operator()(const float& v) const {
-		return !isnanf(v);
-	}
-
-	bool operator()(const double& v) const {
-		return !std::isnan(v);
-	}
-};
-
-}
-
 namespace
 {
 
@@ -223,8 +199,8 @@ template<class T> std::string search_data_helper( sz4::base* base,
 
 	try{
 		T result = ( dir == SearchDir::LEFT ) ?
-				   base->search_data_left ( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) :
-				   base->search_data_right( param , _from , _to , pt.get_szarp_pt() , no_data_search_condition() ) ;
+				   base->search_data_left ( param , _from , _to , pt.get_szarp_pt() , sz4::no_data_search_condition() ) :
+				   base->search_data_right( param , _from , _to , pt.get_szarp_pt() , sz4::no_data_search_condition() ) ;
 
 		return boost::lexical_cast<std::string>(result);
 	} catch( sz4::exception& e ) {

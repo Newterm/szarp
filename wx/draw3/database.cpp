@@ -496,30 +496,6 @@ SzbExtractor* Sz4Base::CreateExtractor() {
 	return new SzbExtractor(ipk, base);
 }
 
-class no_data_search_condition : public sz4::search_condition {
-public:
-	bool operator()(const short& v) const {
-		return v != std::numeric_limits<short>::min();
-	}
-
-	bool operator()(const int& v) const {
-		return v != std::numeric_limits<int>::min();
-
-	}
-
-	bool operator()(const float& v) const {
-#ifndef MINGW32
-		return !isnanf(v);
-#else
-		return !std::isnan(v);
-#endif
-	}
-
-	bool operator()(const double& v) const {
-		return !std::isnan(v);
-	}
-};
-
 
 void Sz4Base::SearchData(DatabaseQuery* query) {
 
@@ -547,7 +523,7 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 			start,
 			end,
 			PeriodToProbeType(sd.period_type),
-			no_data_search_condition()
+			sz4::no_data_search_condition()
 		);
 	} else {
 		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
@@ -559,7 +535,7 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 			start,
 			end,
 			PeriodToProbeType(sd.period_type),
-			no_data_search_condition());
+			sz4::no_data_search_condition());
 	}
 	sz4_nanonsecond_to_pair(response, sd.response_second, sd.response_nanosecond);
 	sd.ok = true;
