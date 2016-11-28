@@ -2274,13 +2274,6 @@ class IPKContainer {
 
 	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
 
-	IPKContainer(const std::wstring& szarp_data_dir,
-			const std::wstring& szarp_system_dir,
-			const std::wstring& lang);
-			
-
-	~IPKContainer();
-
 	/**Adds configuration to the the container
 	 * @param prefix configuration prefix
 	 * @param file path to the file with the configuration
@@ -2300,6 +2293,13 @@ class IPKContainer {
 
 	void RemoveExtraParamImpl(const std::wstring& prefix, TParam *p);
 public:
+	IPKContainer(const std::wstring& szarp_data_dir,
+			const std::wstring& szarp_system_dir,
+			const std::wstring& lang);
+			
+
+	~IPKContainer();
+
 	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
 
 	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);

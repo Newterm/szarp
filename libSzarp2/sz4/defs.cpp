@@ -53,4 +53,24 @@ template<> double no_data<double>() {
 	return nan("");
 }
 
+bool no_data_search_condition::operator()(const short& v) const {
+	return v != std::numeric_limits<short>::min();
+}
+
+bool no_data_search_condition::operator()(const int& v) const {
+	return v != std::numeric_limits<int>::min();
+}
+
+bool no_data_search_condition::operator()(const float& v) const {
+#ifndef MINGW32
+	return !isnanf(v);
+#else
+	return !std::isnan(v);
+	#endif
+}
+
+bool no_data_search_condition::operator()(const double& v) const {
+	return !std::isnan(v);
+}
+
 }

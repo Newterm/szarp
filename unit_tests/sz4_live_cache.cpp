@@ -206,29 +206,6 @@ public:
 
 };
 
-class no_data_search_condition : public sz4::search_condition {
-public:
-	bool operator()(const short& v) const {
-		return v != std::numeric_limits<short>::min();
-	}
-
-	bool operator()(const int& v) const {
-		return v != std::numeric_limits<int>::min();
-
-	}
-
-	bool operator()(const float& v) const {
-#ifndef MINGW32
-		return !isnanf(v);
-#else
-		return !std::isnan(v);
-#endif
-	}
-
-	bool operator()(const double& v) const {
-		return !std::isnan(v);
-	}
-};
 }
 
 void Sz4LiveCache::blockTest() {
@@ -261,8 +238,8 @@ void Sz4LiveCache::blockTest() {
 
 	live_block.process_live_value(2000, 10);
 
-	CPPUNIT_ASSERT_EQUAL(sec_t(1499), entry.search_data_left_impl(2000, 1000, PT_SEC10, no_data_search_condition()));
-	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(1500, 3000, PT_SEC10, no_data_search_condition()));
+	CPPUNIT_ASSERT_EQUAL(sec_t(1499), entry.search_data_left_impl(2000, 1000, PT_SEC10, sz4::no_data_search_condition()));
+	CPPUNIT_ASSERT_EQUAL(sz4::time_trait<sec_t>::invalid_value, entry.search_data_right_impl(1500, 3000, PT_SEC10, sz4::no_data_search_condition()));
 
 	live_block.process_live_value(3000, 10);
 
@@ -284,7 +261,7 @@ void Sz4LiveCache::blockTest() {
 
 	CPPUNIT_ASSERT(!sum.fixed());
 
-	auto search_cond = no_data_search_condition();
+	auto search_cond = sz4::no_data_search_condition();
 
 	CPPUNIT_ASSERT_EQUAL(sec_t(2500), entry.search_data_left_impl(2500, 1000, PT_SEC10, search_cond));
 	CPPUNIT_ASSERT_EQUAL(sec_t(2999), entry.search_data_left_impl(3500, 1000, PT_SEC10, search_cond));
