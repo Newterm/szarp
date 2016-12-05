@@ -295,6 +295,14 @@ public:
 	virtual ~search_condition() {};
 };
 
+class no_data_search_condition : public search_condition {
+public:
+	bool operator()(const short& v) const override;
+	bool operator()(const int& v) const override;
+	bool operator()(const float& v) const override;
+	bool operator()(const double& v) const override;
+};
+
 }
 
 #endif

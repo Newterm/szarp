@@ -641,6 +641,11 @@
 			</attribute>
 		</optional>
 		<optional>
+			<attribute name="tcp-allowed" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
 			<attribute name="id" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
 		</optional>
 		<optional>

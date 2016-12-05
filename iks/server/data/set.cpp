@@ -264,7 +264,7 @@ std::string Set::to_json( bool pretty ) const
 boost::property_tree::ptree Set::get_xml_ptree() const
 {
 	bp::ptree pt;
-	auto& pset = pt.put_child( "set" , get_json_ptree() );
+	auto& pset = pt.put_child( getElementName() , get_json_ptree() );
 
 	for( auto& c : pset.get_child("params") )
 		pset.add_child("param",c.second);

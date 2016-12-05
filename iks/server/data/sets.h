@@ -30,6 +30,7 @@ class Sets {
 	struct set_id {};
 	struct set_name {};
 
+public:
 	typedef boost::multi_index::multi_index_container<
 		SetEntry,
 		boost::multi_index::indexed_by<
@@ -44,7 +45,6 @@ class Sets {
 		>
 	> SetsMap;
 
-public:
 	using iterator = key_iterator<SetsMap>;
 
 	void from_params_file( const std::string& path ) throw(xml_parse_error);
@@ -56,6 +56,9 @@ public:
 	{	return boost::multi_index::get<set_name>(sets).count( name ); }
 
 	std::shared_ptr<const Set>   get_set( const std::string& name ) const;
+	std::shared_ptr<const Report> get_report( const std::string& name ) const;
+
+	const SetsMap& list_reports() const { return reports; }
 
 	void update_set( const Set& s , const std::string& old_name = "" );
 
@@ -69,6 +72,7 @@ protected:
 
 private:
 	SetsMap   sets;
+	SetsMap   reports;
 
 	mutable sig_set emit_set_updated;
 
