@@ -33,7 +33,6 @@
 #include "htmlview.h"
 #include "parlist.h"
 #include "szhlpctrl.h"
- 
 
 class EkstraktorWidget;
 
@@ -80,9 +79,16 @@ class EkstraktorMainWindow : wxFrame
 	// BEGIN/END DATA BUTTONS 
 	wxButton* setStartDateBtn;
 	wxButton* setStopDateBtn;
-	
+
 	// MINIMIZE/UNMINIMIZE
 	wxCheckBox *minimize;
+
+	wxCheckBox *HourValue;
+	wxPanel* panel;
+	wxStaticBoxSizer *value_type_box_sizer;
+	wxRadioButton *dayPeriodBtn;
+	wxRadioButton *averageBtn;
+	wxRadioButton *counterBtn;
 
 	// LIST OF CHOSEN PARAMETERS
 	wxListBox *parametersList;
@@ -101,7 +107,7 @@ class EkstraktorMainWindow : wxFrame
 
 	int selectedPeriod;	/**< selected time period*/
 	SzbExtractor::ParamType selectedValueType; /**< selected value type */
-	
+
 	void onPeriodChange(wxCommandEvent &event);
 	void onSeparatorChange(wxCommandEvent &event);
 
@@ -128,6 +134,7 @@ class EkstraktorMainWindow : wxFrame
 		void onShowContextHelp(wxCommandEvent& event);
 		void onAbout(wxCommandEvent &event);
 		void onMinimize(wxCommandEvent &event);
+		void onHourChecked(wxCommandEvent &event);
 		void onTimeStep(wxCommandEvent &event);
 		void onStartDate(wxCommandEvent &event);
 		void onStopDate(wxCommandEvent &event);
@@ -143,16 +150,16 @@ class EkstraktorMainWindow : wxFrame
 		void SetStopDateUndefined();
 		void SetFirstDatabaseDateUndefined();
 		void SetLastDatabaseDateUndefined();
-	
+
 		bool UpdateProgressBar(int percentage);
 		void  ResumeProgressBar();
-		
-		void SetStatusText(const wxString &string) { 
-			wxFrame::SetStatusText(string); 
+
+		void SetStatusText(const wxString &string) {
+			wxFrame::SetStatusText(string);
 		}
 
-		void SetTitle(const wxString &string) { 
-			wxFrame::SetTitle(wxString(EKSTRAKTOR_TITLEBAR) + _T(" ") + string); 
+		void SetTitle(const wxString &string) {
+			wxFrame::SetTitle(wxString(EKSTRAKTOR_TITLEBAR) + _T(" ") + string);
 		}
 		/** Checks if parameter list is empty and disables some menu items. */
 		void TestEmpty();
