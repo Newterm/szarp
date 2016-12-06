@@ -32,8 +32,6 @@ for line in installed_packages_output:
 		if word[0] == "ii" and "szarp" in word[1]:
 			if not "custom" in word[2]:
 				installed.append(word[1])
-			else:
-				held_packages.append(word[1])
 		elif word[0] == "hi" and "szarp" in word[1]:
 			exit("jeden z pakietow szarpa jest holdowany")
 
