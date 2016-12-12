@@ -1130,45 +1130,45 @@ TParam::ToIPCValue(SZBASE_TYPE value)
 }
 
 void
-TParam::PrintValue(wchar_t *buffer, size_t buffer_size, SZBASE_TYPE value, const std::wstring& no_data_str)
+TParam::PrintValue(wchar_t *buffer, size_t buffer_size, SZBASE_TYPE value, const std::wstring& no_data_str, int prec)
 {
-    TValue *v;
-    if (IS_SZB_NODATA(value)) {
-	SWPRINTF(buffer, buffer_size, L"%s", no_data_str.c_str());
-	return;
-    }
-    else if ((v = GetFirstValue()) != NULL) {
-	v = v->SearchValue((int)value);
-	const wchar_t *c = NULL;
-	if (v != NULL)
-	    c = v->GetString().c_str();
-	if (c != NULL) {
-	    SWPRINTF(buffer, buffer_size, L"%s", c);
-	    return;
+	TValue *v;
+	if (IS_SZB_NODATA(value)) {
+		SWPRINTF(buffer, buffer_size, L"%s", no_data_str.c_str());
+		return;
 	}
-    }
-    int prec = GetPrec();
-    SWPRINTF(buffer, buffer_size, L"%0.*f", prec, value);
+	else if ((v = GetFirstValue()) != NULL) {
+		v = v->SearchValue((int)value);
+		const wchar_t *c = NULL;
+		if (v != NULL)
+			 c = v->GetString().c_str();
+		if (c != NULL) {
+			 SWPRINTF(buffer, buffer_size, L"%s", c);
+			 return;
+		}
+	}
+	prec = std::max(prec, GetPrec());
+	SWPRINTF(buffer, buffer_size, L"%0.*f", prec, value);
 }
 
 std::wstring
-TParam::PrintValue(SZBASE_TYPE value, const std::wstring& no_data_str)
+TParam::PrintValue(SZBASE_TYPE value, const std::wstring& no_data_str, int prec)
 {
-    TValue *v;
-    if (IS_SZB_NODATA(value))
-	return no_data_str;
-    else if ((v = GetFirstValue()) != NULL) {
-	v = v->SearchValue((int)value);
-	if (v != NULL) {
-            const std::wstring& c = v->GetString();
-	    if (!c.empty())
-		    return c;
+	TValue *v;
+	if (IS_SZB_NODATA(value))
+		return no_data_str;
+	else if ((v = GetFirstValue()) != NULL) {
+		v = v->SearchValue((int)value);
+		if (v != NULL) {
+			const std::wstring& c = v->GetString();
+				 if (!c.empty())
+					 return c;
+		}
 	}
-    }
-    int prec = GetPrec();
-    std::wstringstream ss;
-    ss << std::fixed << std::setprecision(prec) << value;
-    return ss.str();
+	prec = std::max(prec, GetPrec());
+	std::wstringstream ss;
+	ss << std::fixed << std::setprecision(prec) << value;
+	return ss.str();
 }
 
 int TParam::IsReadable() {

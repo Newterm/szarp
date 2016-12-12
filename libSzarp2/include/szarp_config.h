@@ -1052,10 +1052,10 @@ public:
 	 * SZB_NODATA
 	 */
 	void PrintValue(wchar_t *buffer, size_t buffer_size, SZBASE_TYPE value,
-			const std::wstring& no_data_str);
+			const std::wstring& no_data_str, int prec = 0);
 
 	/** The same as previous function but returns std::wstring*/
-	std::wstring PrintValue(SZBASE_TYPE value, const std::wstring& no_data_str);
+	std::wstring PrintValue(SZBASE_TYPE value, const std::wstring& no_data_str, int prec = 0);
 
 	/** The same as PrintValue, but value is assumed to be a raw IPC
 	 * value.

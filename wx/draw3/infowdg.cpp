@@ -48,7 +48,8 @@ BEGIN_EVENT_TABLE(InfoWidget, wxPanel)
 END_EVENT_TABLE()
 
 InfoWidget::InfoWidget(wxWindow *parent, wxWindowID id) :
-	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
+	wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
+	m_significant_digits(3)
 {
 	SetHelpText(_T("draw3-base-win"));
 #ifdef MINGW32
@@ -146,7 +147,7 @@ void InfoWidget::SetDrawInfo(Draw *draw) {
 		return;
 	SetUnit(info->GetUnit());
 	SetColor(info->GetDrawColor());
-	SetPrec(info->GetPrec());
+	SetPrec(info->GetPrec(), abs(info->GetMax() - info->GetMin()));
 	SetPeriod(draw->GetPeriod());
 }
 
@@ -247,8 +248,10 @@ void InfoWidget::SetColor(const wxColour& col) {
 #endif
 }
 
-void InfoWidget::SetPrec(int prec) {
-	m_prec = prec;
+void InfoWidget::SetPrec(int prec, int range) {
+	int counted_prec = m_significant_digits - floor(log10(range));
+
+	m_prec = std::max(prec, counted_prec);
 }
 
 void InfoWidget::SetPeriod(PeriodType period) {
@@ -321,7 +324,7 @@ void InfoWidget::UpdateValues() {
 }
 
 void InfoWidget::SetValue(double val) {
-	wxString s = m_draw->GetDrawInfo()->GetValueStr(val, _T("- -"));
+	wxString s = m_draw->GetDrawInfo()->GetValueStr(val, _T("- -"), m_prec);
 	s += _T(" ") + m_unit;
 	current_value->SetLabel(s);
 }
