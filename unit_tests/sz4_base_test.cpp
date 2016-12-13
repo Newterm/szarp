@@ -30,12 +30,14 @@ public:
 
 	void smokeTest1();
 	void cacheTest1();
+	void getLastTest();
 	void setUp();
 	void tearDown();
 
 	CPPUNIT_TEST_SUITE( Sz4BaseTestCase );
 	CPPUNIT_TEST( smokeTest1 );
 	CPPUNIT_TEST( cacheTest1 );
+	CPPUNIT_TEST( getLastTest );
 	CPPUNIT_TEST_SUITE_END();
 };
 
@@ -89,7 +91,7 @@ void Sz4BaseTestCase::setUp() {
 		ofs.close();
 
 		for (wchar_t s = L'a'; s <= L'd'; s++) {
-			for (int i = 1000; i < 2000; i += 100) {
+			for (int i = 1000; i < 2100; i += 100) {
 				std::wstringstream ss;
 				ss << s;
 
@@ -105,12 +107,23 @@ void Sz4BaseTestCase::setUp() {
 #else
 				std::ofstream ofs((param_path / file_name.str()).external_file_string().c_str(), std::ios_base::binary);
 #endif
+
 				short value = 10;
 				ofs.write((const char*) &value, sizeof(value));
 
 				unsigned char delta = 50;
 				ofs.write((const char*) &delta, sizeof(delta));
+
+				if (i == 2000)
+				{
+					value = 1;
+					ofs.write((const char*) &value, sizeof(value));
+
+					delta = 1;
+					ofs.write((const char*) &delta, sizeof(delta));
+				}
 			}
+
 		}
 	}
 
@@ -169,7 +182,73 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	size_t size_in_bytes, blocks_count;
 	base.cache()->cache_size(size_in_bytes,blocks_count);
-	CPPUNIT_ASSERT_EQUAL(size_t(11), blocks_count);
+	CPPUNIT_ASSERT_EQUAL(size_t(12), blocks_count);
 
 }
 
+void Sz4BaseTestCase::getLastTest() {
+	IPKContainer* ipk = IPKContainer::GetObject();
+
+	TParam* pr = ipk->GetParam(std::wstring(L"a:a:a:a"));
+	CPPUNIT_ASSERT(pr != NULL);
+
+	TParam* pl = ipk->GetParam(std::wstring(L"a:z:z:z"));
+	CPPUNIT_ASSERT(pl != NULL);
+
+	sz4::base base(m_base_dir_name, ipk);
+
+
+	sz4::second_time_t tr;
+	base.get_last_time(pr, tr);
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2051), tr);
+
+	//get_weighted_sum for any range starting at last time should yield no-data
+	sz4::weighted_sum<short, sz4::second_time_t> sum_0r;
+	base.get_weighted_sum(pr, tr, sz4::time_just_after(tr), PT_SEC, sum_0r);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum_0r.weight());
+
+	//get_weighted_sum for time just before last time should return sth
+	sz4::weighted_sum<short, sz4::second_time_t> sum_1r;
+	base.get_weighted_sum(pr, sz4::time_just_before(tr), tr, PT_SEC, sum_1r);
+	CPPUNIT_ASSERT_EQUAL(short(1), sum_1r.avg());
+
+	sz4::nanosecond_time_t trn;
+	base.get_last_time(pr, trn);
+	CPPUNIT_ASSERT_EQUAL(sz4::nanosecond_time_t(2051, 0), trn);
+
+	//get_weighted_sum for any range starting at last time should yield no-data
+	sz4::weighted_sum<short, sz4::nanosecond_time_t> sum_0rn;
+	base.get_weighted_sum(pr, trn, sz4::time_just_after(trn), PT_SEC, sum_0rn);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::nanosecond_time_t>::type(0), sum_0rn.weight());
+
+	//get_weighted_sum for time just before last time should return sth
+	sz4::weighted_sum<short, sz4::nanosecond_time_t> sum_1rn;
+	base.get_weighted_sum(pr, sz4::time_just_before(trn), trn, PT_SEC, sum_1rn);
+	CPPUNIT_ASSERT_EQUAL(short(1), sum_1rn.avg());
+
+
+	//the same as before but for LUA param
+	sz4::second_time_t tl;
+	base.get_last_time(pl, tl);
+	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2051), tl);
+
+	sz4::weighted_sum<double, sz4::second_time_t> sum_0l;
+	base.get_weighted_sum(pl, tl, sz4::time_just_after(tl), PT_SEC, sum_0l);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum_0l.weight());
+
+	sz4::weighted_sum<double, sz4::second_time_t> sum_1l;
+	base.get_weighted_sum(pl, sz4::time_just_before(tl), tl, PT_SEC, sum_1l);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, sum_1l.avg(), 0.05);
+
+	sz4::nanosecond_time_t tln;
+	base.get_last_time(pl, tln);
+	CPPUNIT_ASSERT_EQUAL(sz4::nanosecond_time_t(2051, 0), tln);
+
+	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum_0ln;
+	base.get_weighted_sum(pl, tln, sz4::time_just_after(tln), PT_SEC, sum_0ln);
+	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::nanosecond_time_t>::type(0), sum_0ln.weight());
+
+	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum_1ln;
+	base.get_weighted_sum(pl, sz4::time_just_before(tln), tln, PT_SEC, sum_1ln);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, sum_1ln.avg(), 0.05);
+}

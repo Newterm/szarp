@@ -92,6 +92,28 @@ nanosecond_time_t::operator second_time_t() const {
 		time_trait<second_time_t>::invalid_value;
 }
 
+second_time_t time_just_before(const second_time_t& t) {
+	return t - 1;
+}
+
+nanosecond_time_t time_just_before(const nanosecond_time_t& t) {
+	if (t.nanosecond)
+		return nanosecond_time_t(t.second, t.nanosecond - 1);
+	else
+		return nanosecond_time_t(t.second - 1, 999999999);
+}
+
+second_time_t time_just_after(const second_time_t& t) {
+	return t + 1;
+}
+
+nanosecond_time_t time_just_after(const nanosecond_time_t& t) {
+	if (t.nanosecond + 1 == 1000000000)
+		return nanosecond_time_t(t.second + 1, 0);
+	else
+		return nanosecond_time_t(t.second, t.nanosecond + 1);
+}
+
 std::ostream& operator<<(std::ostream& s, const nanosecond_time_t &t) {
 	return s << "(" << t.second << "," << t.nanosecond << ")";
 }

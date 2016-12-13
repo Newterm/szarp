@@ -77,7 +77,7 @@ std::pair<bool, time_type> live_block<value_type, time_type>::search_data_left(c
 
 	auto i = sz4::search_data_left_t(m_block.begin(), m_block.end(), start, end, condition);
 	if (i != m_block.end())
-		return std::make_pair(true, std::min(time_just_before<time_type>::get(i->time), start));
+		return std::make_pair(true, std::min(time_just_before(i->time), start));
 	else 
 		return std::make_pair(false, m_start_time);
 }

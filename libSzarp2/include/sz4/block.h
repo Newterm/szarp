@@ -224,7 +224,7 @@ public:
 
 	time_type search_result_left(const time_type& start, typename value_time_vector::const_iterator i) {
 		if (i != m_data.end())
-			return std::min(time_just_before<time_type>::get(i->time), start);
+			return std::min(time_just_before(i->time), start);
 		else 
 			return time_trait<time_type>::invalid_value;
 	}

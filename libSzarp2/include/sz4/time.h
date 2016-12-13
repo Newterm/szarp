@@ -148,39 +148,11 @@ public:
 	static const second_time_t last_valid_time;
 };
 
-template<class T> class time_just_before {
-public:
-	static T get(const T& t) {
-		return t - 1;
-	}
-};
+second_time_t time_just_before(const second_time_t& t);
+nanosecond_time_t time_just_before(const nanosecond_time_t& t);
 
-template<> class time_just_before<nanosecond_time_t> {
-public:
-	static nanosecond_time_t get(const nanosecond_time_t& t) {
-		if (t.nanosecond)
-			return nanosecond_time_t(t.second, t.nanosecond - 1);
-		else
-			return nanosecond_time_t(t.second - 1, 999999999);
-	}
-};
-
-template<class T> class time_just_after {
-public:
-	static T get(const T& t) {
-		return t + 1;
-	}
-};
-
-template<> class time_just_after<nanosecond_time_t> {
-public:
-	static nanosecond_time_t get(const nanosecond_time_t& t) {
-		if (t.nanosecond + 1 == 1000000000)
-			return nanosecond_time_t(t.second + 1, 0);
-		else
-			return nanosecond_time_t(t.second, t.nanosecond + 1);
-	}
-};
+second_time_t time_just_after(const second_time_t& t);
+nanosecond_time_t time_just_after(const nanosecond_time_t& t);
 
 nanosecond_time_t 
 szb_move_time(const nanosecond_time_t& t, int count, SZARP_PROBE_TYPE probe_type, 
