@@ -1,7 +1,9 @@
 #!/bin/bash
 
 LDFLAGS='-lgcov --coverage' CXXFLAGS='-ggdb -O0 -fprofile-arcs -ftest-coverage' ./configure
-make
+if [ "$?" == 0 ]; then
+	make
+fi
 
 cd unit_tests; ./unit_tests
 
