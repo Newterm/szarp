@@ -456,6 +456,7 @@ protocols::protocols() {
 	m_serial_client_factories["fp210"] = create_fp210_serial_client;
 	m_serial_client_factories["lumel"] = create_lumel_serial_client;
 	m_tcp_client_factories["wmtp"] = create_wmtp_tcp_client;
+	m_serial_client_factories["fc"] = create_fc_serial_client;
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {
