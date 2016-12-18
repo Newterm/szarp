@@ -29,8 +29,7 @@ public:
 	 *
 	 * Throws szbase_get_value_error if param not present in base.
 	 */
-	time_t get_latest( const std::string& param , ProbeType type ) const
-		throw( szbase_init_error, szbase_get_value_error );
+	time_t get_latest( const std::string& param , ProbeType type ) const;
 
 	/**
 	 * Synchronize with data base 
@@ -42,10 +41,8 @@ public:
 	 *
 	 * Before calling no_sync version you have to call sync by hand.
 	 */
-	double get_avg( const std::string& param , time_t time , ProbeType type ) const
-		throw( szbase_init_error, szbase_get_value_error );
-	double get_avg_no_sync( const std::string& param , time_t time , ProbeType type ) const
-		throw( szbase_init_error, szbase_get_value_error );
+	double get_avg( const std::string& param , time_t time , ProbeType type ) const;
+	double get_avg_no_sync( const std::string& param , time_t time , ProbeType type ) const;
 
 
 	/**
@@ -53,10 +50,8 @@ public:
 	 *
 	 * Before calling no_sync version you have to call sync by hand.
 	 */
-	double get_avg( const std::string& param , time_t start , time_t end ) const
-		throw( szbase_init_error, szbase_get_value_error );
-	double get_avg_no_sync( const std::string& param , time_t start , time_t end ) const
-		throw( szbase_init_error, szbase_get_value_error );
+	double get_avg( const std::string& param , time_t start , time_t end ) const;
+	double get_avg_no_sync( const std::string& param , time_t start , time_t end ) const;
 
 private:
 	std::wstring convert_string( const std::string& param ) const;

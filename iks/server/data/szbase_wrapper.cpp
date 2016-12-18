@@ -46,7 +46,6 @@ void SzbaseWrapper::set_prober_address( const std::string& address , unsigned po
 time_t SzbaseWrapper::get_latest(
 			const std::string& param ,
 			ProbeType type ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -86,7 +85,6 @@ double SzbaseWrapper::get_avg(
 			const std::string& param ,
 			time_t time ,
 			ProbeType type ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	sync();
 	return get_avg_no_sync( param , time , type );
@@ -96,7 +94,6 @@ double SzbaseWrapper::get_avg_no_sync(
 			const std::string& param ,
 			time_t time ,
 			ProbeType type ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -118,7 +115,6 @@ double SzbaseWrapper:: get_avg(
 			const std::string& param ,
 			time_t start ,
 			time_t end ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	sync();
 	return get_avg_no_sync( param , start , end );
@@ -128,7 +124,6 @@ double SzbaseWrapper:: get_avg_no_sync(
 			const std::string& param ,
 			time_t start ,
 			time_t end ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
