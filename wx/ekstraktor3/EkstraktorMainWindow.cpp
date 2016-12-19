@@ -261,8 +261,9 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	parlist->RegisterIPK(mainWidget->GetIpk());
 	
 	wxIcon icon(wxICON(extr64));
-	if (icon.Ok())
+	if (icon.Ok()){
 		SetIcon(icon);
+	}
 	TestEmpty();
 	dynamic_cast<wxRadioButton*>(FindWindowById(ID_Min10Period))->SetValue(true);
 	Show( TRUE );
