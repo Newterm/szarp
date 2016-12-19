@@ -2011,8 +2011,8 @@ void RemarksStorage::GetRemarks(const wxString& prefix,
 	wxMutexLocker lock(m_queue_mutex);
 
 	m_queries.push_back(new FetchRemarksQuery(this,
-				prefix.c_str(),
-				set.c_str(),
+				prefix.wc_str(),
+				set.wc_str(),
 				start_date.GetTicks(),
 				end_date.GetTicks(),
 				receiver));
@@ -2023,7 +2023,7 @@ void RemarksStorage::GetAllRemarks(const wxString& prefix, wxEvtHandler *handler
 	wxMutexLocker lock(m_queue_mutex);
 
 	m_queries.push_back(new FetchAllRemarksQuery(this,
-				prefix.c_str(),
+				prefix.wc_str(),
 				handler));
 
 	m_semaphore.Post();
@@ -2419,13 +2419,13 @@ void RemarkViewDialog::OnAddButton(wxCommandEvent &event) {
 	m_remark_connection = m_remarks_handler->GetConnection();
 
 	Remark r;
-	r.SetPrefix(m_prefix.c_str());
+	r.SetPrefix(m_prefix.wc_str());
 	r.SetTime(m_time.GetTicks());
 	if (XRCCTRL(*this, "CURRENT_WINDOW_RADIO", wxRadioButton)->GetValue())
-		r.SetSet(m_set_name.c_str());
+		r.SetSet(m_set_name.wc_str());
 
-	r.SetTitle(GetRemarkTitle().c_str());
-	r.SetContent(GetRemarkContent().c_str());
+	r.SetTitle(GetRemarkTitle().wc_str());
+	r.SetContent(GetRemarkContent().wc_str());
 
 	m_remark_connection->PostRemark(r, this);
 

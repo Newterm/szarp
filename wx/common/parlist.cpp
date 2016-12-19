@@ -42,6 +42,12 @@
 #include "szapp.h"
 #include "conversion.h"
 
+namespace SC
+{
+	std::wstring W2S(const wxString& c){
+		return (std::wstring(c.ToStdWstring()));
+	}
+}
 
 szParList::szParList()
 {
@@ -140,7 +146,7 @@ int szParList::LoadFile(wxString path, bool showErrors)
 		path = dlg.GetPath();
 	}
 
-	xmlDocPtr doc = xmlParseFile(SC::S2A(path.c_str()).c_str());
+	xmlDocPtr doc = xmlParseFile(SC::S2A(SC::W2S(wxString::FromUTF8(path.mb_str()))).c_str());
 	if (doc == NULL) {
 		if (!showErrors)
 			return 0;
@@ -197,7 +203,7 @@ bool szParList::SaveFile(wxString path, bool showErrors)
 		else  {
 			wxFileDialog dlg(NULL, _("Choose a file"), _T(""), _T(""),
 					_("SZARP parameters list (*.xpl)|*.xpl|All files (*.*)|*.*"),
-					wxSAVE | wxCHANGE_DIR);
+					wxFD_SAVE | wxFD_CHANGE_DIR);
 			szSetDefFont(&dlg);
 			if (dlg.ShowModal() != wxID_OK)
 				return FALSE;
@@ -208,7 +214,7 @@ bool szParList::SaveFile(wxString path, bool showErrors)
 		}
 	}
 
-	int ret = xmlSaveFormatFileEnc(SC::S2A(path.c_str()).c_str(), xml, "UTF-8", 1);
+	int ret = xmlSaveFormatFileEnc(SC::S2A(SC::W2S(wxString::FromUTF8(path.mb_str()))).c_str(), xml, "UTF-8", 1);
 	if (ret == -1) {
 		if (showErrors) {
 			wxLogError(wxString::Format(_("Error saving document %s\nError %d: %s"), 
@@ -464,7 +470,7 @@ void szParList::LoadSchema()
 		dir += _T("\\resources\\dtd\\params-list.rng");
 #endif
 
-        ctxt = xmlRelaxNGNewParserCtxt(SC::S2A(dir.c_str()).c_str());
+        ctxt = xmlRelaxNGNewParserCtxt(SC::S2A(SC::W2S(wxString::FromUTF8(dir.mb_str()))).c_str());
 
         list_rng = xmlRelaxNGParse(ctxt);
 	xmlRelaxNGFreeParserCtxt(ctxt);
@@ -673,7 +679,7 @@ wxString szParList::GetExtraProp(size_t index, const wxString &ns,
 	if (n == NULL) {
 		return wxEmptyString;
 	}
-	xmlChar *p = xmlGetNsProp(n, SC::S2U(attrib.c_str()).c_str(), SC::S2U(ns.c_str()).c_str());
+	xmlChar *p = xmlGetNsProp(n, SC::S2U(SC::W2S(wxString::FromUTF8(attrib.mb_str()))).c_str(), SC::S2U(SC::W2S(wxString::FromUTF8(ns.mb_str()))).c_str());
 	if ( p == NULL) {
 		return wxEmptyString;
 	}
@@ -690,11 +696,11 @@ void szParList::SetExtraProp(size_t index, const wxString& ns,
 	if (n == NULL) {
 		return;
 	}
-	xmlNsPtr np = xmlSearchNsByHref(xml, n, SC::S2U(ns.c_str()).c_str());
+	xmlNsPtr np = xmlSearchNsByHref(xml, n, SC::S2U(SC::W2S(wxString::FromUTF8(ns.mb_str()))).c_str());
 	if (np == NULL) {
 		return;
 	}
-	xmlSetNsProp(n, np, SC::S2U(attrib.c_str()).c_str(), SC::S2U(value.c_str()).c_str());
+	xmlSetNsProp(n, np, SC::S2U(SC::W2S(wxString::FromUTF8(attrib.mb_str()))).c_str(), SC::S2U(SC::W2S(wxString::FromUTF8(value.mb_str()))).c_str());
 }
 
 wxString szParList::GetExtraRootProp(const wxString &ns, const wxString &attrib) 
@@ -704,7 +710,7 @@ wxString szParList::GetExtraRootProp(const wxString &ns, const wxString &attrib)
 	if (n == NULL) {
 		return wxEmptyString;
 	}
-	xmlChar *p = xmlGetNsProp(n, SC::S2U(attrib.c_str()).c_str(), SC::S2U(ns.c_str()).c_str());
+	xmlChar *p = xmlGetNsProp(n, SC::S2U(SC::W2S(wxString::FromUTF8(attrib.mb_str()))).c_str(), SC::S2U(SC::W2S(wxString::FromUTF8(ns.mb_str()))).c_str());
 	if (p == NULL) {
 		return wxEmptyString;
 	}
@@ -721,18 +727,18 @@ void szParList::SetExtraRootProp(const wxString &ns, const wxString &attrib,
 	if ( n == NULL ) {
 		return;
 	}
-	xmlNsPtr np = xmlSearchNsByHref(xml, n, SC::S2U(ns.c_str()).c_str());
+	xmlNsPtr np = xmlSearchNsByHref(xml, n, SC::S2U(SC::W2S(wxString::FromUTF8(ns.mb_str()))).c_str());
 	if (np == NULL) {
 		return;
 	}
-	xmlSetNsProp(n, np, SC::S2U(attrib.c_str()).c_str(), SC::S2U(value.c_str()).c_str());
+	xmlSetNsProp(n, np, SC::S2U(SC::W2S(wxString::FromUTF8(attrib.mb_str()))).c_str(), SC::S2U(SC::W2S(wxString::FromUTF8(value.mb_str()))).c_str());
 }
 
 void szParList::AddNs(const wxString &prefix, const wxString &href) 
 {
 	assert (xml);
 	xmlNewNs(xmlDocGetRootElement(xml), 
-			SC::S2U(href.c_str()).c_str(), 
-			SC::S2U(prefix.c_str()).c_str());
+			SC::S2U(SC::W2S(wxString::FromUTF8(href.mb_str()))).c_str(), 
+			SC::S2U(SC::W2S(wxString::FromUTF8(prefix.mb_str()))).c_str());
 }
 

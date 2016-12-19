@@ -9,5 +9,9 @@ std::basic_string<unsigned char> S2U(const wxString& c) {
 std::string S2A(const wxString& c) {
 	return S2A(std::wstring(c.c_str()));
 }
-
+/*  
+std::wstring W2S(const wxString& c) {
+	return (std::wstring(c.ToStdWstring()));
+}
+*/
 }

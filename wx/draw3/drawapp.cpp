@@ -332,9 +332,9 @@ bool DrawApp::OnInit() {
 		_lang = DEFAULT_LANGUAGE;
 
 	splash->PushStatusText(_("Initializing IPKContainer..."));
-	IPKContainer::Init(GetSzarpDataDir().c_str(),
-			GetSzarpDir().c_str(),
-			_lang.c_str());
+	IPKContainer::Init(GetSzarpDataDir().wc_str(), 
+			GetSzarpDir().wc_str(), 
+			_lang.wc_str());
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject(), m_base);
 
 	m_cfg_mgr->SetSplashScreen(splash);
@@ -355,18 +355,18 @@ bool DrawApp::OnInit() {
 	Draw3Base *draw_base = NULL;
 	switch (m_base_type) {
 		case SZ4_BASE:
-			draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().c_str(),
+			draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().wc_str(),
 				IPKContainer::GetObject());
 			wxLogError(_T("Using sz4 base engine"));
 			break;
 		case IKS_BASE:
-			draw_base = new Sz4ApiBase(m_dbmgr, m_iks_server.c_str(), m_iks_port.c_str(),
+			draw_base = new Sz4ApiBase(m_dbmgr, m_iks_server.wc_str(), m_iks_port.wc_str(),
 				IPKContainer::GetObject());
-			wxLogError(_T("Connecting to iks at %s:%s"), m_iks_server.c_str(), m_iks_port.c_str());
+			wxLogError(_T("Connecting to iks at %s:%s"), m_iks_server.wc_str(), m_iks_port.wc_str());
 			break;
 		case SZBASE_BASE:
 		default:
-			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().c_str(),
+			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().wc_str(),
 				&ConfigurationFileChangeHandler::handle,
 				wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
 			wxLogError(_T("Using sz3 base engine"));

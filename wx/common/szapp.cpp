@@ -37,7 +37,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /*__cplusplus */
-	extern void gtk_rc_add_default_file(const gchar *filename);
+	extern void gtk_rc_add_default_file(const char *filename);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -203,7 +203,7 @@ void szAppImpl::InitializeLocale(wxArrayString &catalogs, wxLocale &locale) {
 				exit(1);
 			}
 			wxString Ls = L"Locale " + lang + L" not available.\nDefault system locale loaded.";
-			wxMessageBox(_(s), _("Information."), wxICON_INFORMATION);
+			wxMessageBox(_("s"), _("Information."), wxICON_INFORMATION);
 		}
 		else {
 			wxLogWarning(_("No locale for this system`s language."));

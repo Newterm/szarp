@@ -80,7 +80,7 @@ class DTime {
 
 	/**Formats date
 	 * @return string represeting formatted date*/
-	wxString Format(const wxChar* format = wxDefaultDateTimeFormat) const;
+	wxString Format(const char* format = wxDefaultDateTimeFormat) const;
 
 	operator const wxDateTime&();
 };

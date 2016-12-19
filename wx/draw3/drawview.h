@@ -42,12 +42,15 @@
 #include <wx/dcmemory.h>
 #endif
 
+#ifdef __WXGTK__
+#include <gdk/gdk.h>
+#endif
 /**I hope this all non cross-platform stuff will be removed when 
  * next version of wxWidgets is relased so I won't bother to document it.*/
 class SDC {
-#ifdef __WXGTK__
+/*    #ifdef __WXGTK__
 	GdkGC *m_gc;
-	GdkBitmap *m_gdkbmp;
+	GdkDrawable *m_gdkbmp;
 #else
 	HDC m_gc;
 	HBITMAP m_mswbmp;
@@ -55,14 +58,14 @@ class SDC {
 	wxPen m_pen;
 	bool m_selected;
 	void Select();
-#endif
+#endif*/
 	public:
 	SDC();
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	void SetObjects(GdkGC *gc, GdkBitmap* bmp);
 #else
 	void SetObjects(HDC gc, HBITMAP bmp);
-#endif
+#endif*/
 	void SetLineWidth(int width);
 	void SetWhiteForeground();
 	void SetBlackForeground();
@@ -72,9 +75,9 @@ class SDC {
 	void DrawRectangle(int x, int y, int w, int h);
 	void DrawRectangle(const wxRect &r);
 	void Clear();
-#ifdef __WXMSW__
+/*  #ifdef __WXMSW__
 	void Deselect();
-#endif
+#endif*/
 
 };
 
@@ -310,12 +313,12 @@ protected:
 
 	/**platform specific extracted from wxMask*/
 	GdkBitmap *m_gdkbmp;
-#else
+//#else
 	/**platform specific drawing context used for drawing onto wxMask*/
-	HDC m_gc;
+//	HDC m_gc;
 
 	/**platform specific extracted from wxMask*/
-	HBITMAP m_mswbmp;
+//	HBITMAP m_mswbmp;
 #endif
 
 	/**Draws point represeting probe at give index if observer @see Draw.

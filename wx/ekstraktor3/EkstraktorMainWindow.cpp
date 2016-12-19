@@ -260,9 +260,10 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	parlist = new szParList();
 	parlist->RegisterIPK(mainWidget->GetIpk());
 	
-	wxIcon icon(wxICON(extr64));
-	if (icon.Ok())
-		SetIcon(icon);
+	wxIcon icon(extr64_xpm);
+	if (icon.IsOk()){
+		this->SetIcon(icon);
+	}
 	TestEmpty();
 	dynamic_cast<wxRadioButton*>(FindWindowById(ID_Min10Period))->SetValue(true);
 	Show( TRUE );
@@ -473,7 +474,7 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 			wxString(directory),
 			_T(""),
 
-			_("Comma Separated Values (*.csv)|*.csv|OpenOffice format (*.ods)|*.ods|XML format (*.xml)|*.xml|All files (*.*)|*.*"), wxSAVE | wxOVERWRITE_PROMPT);
+			_("Comma Separated Values (*.csv)|*.csv|OpenOffice format (*.ods)|*.ods|XML format (*.xml)|*.xml|All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	file->SetFilterIndex(3);
 
 	if (file->ShowModal() == wxID_OK) {

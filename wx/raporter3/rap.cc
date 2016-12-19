@@ -101,7 +101,7 @@ bool rapApp::OnInit()
 	catalogs.Add(_T("wx"));
 	this->InitializeLocale(catalogs, locale);
 
-	wxIcon icon(wxICON(rap16));
+	wxIcon icon(rap16_xpm);
 	if (icon.IsOk()) {
 		szFrame::setDefaultIcon(icon);
 	}

@@ -309,7 +309,7 @@ DrawInfo::GetValueStr(const double &val, const wxString& no_data_str, const int 
 		return no_data_str;
 	}
 
-	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str(), prec);
+	return p->GetIPKParam()->PrintValue(val, no_data_str.wc_str(), prec);
 }
 
 AverageValueCalculationMethod DrawInfo::GetAverageValueCalculationMethod() const {
@@ -582,7 +582,7 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
-		ipk = m_ipks->LoadConfig(prefix.c_str(),std::wstring());
+		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
 
 
 	DrawsSets* ret;
@@ -1160,7 +1160,7 @@ void ConfigManager::SetDatabaseManager(DatabaseManager *db_mgr) {
 
 bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
-	std::wstring wprefix = prefix.c_str();
+	std::wstring wprefix = prefix.wc_str();
 	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
@@ -1193,7 +1193,7 @@ void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 void ConfigManager::ConfigurationReadyForLoad(wxString prefix) {
 	NotifyStartConfigurationReload(prefix);
 
-	TSzarpConfig *cfg = m_ipks->LoadConfig(prefix.c_str(), std::wstring());
+	TSzarpConfig *cfg = m_ipks->LoadConfig(prefix.wc_str(), std::wstring());
 	AddConfig(cfg);
 	FinishConfigurationLoad(prefix);
 
@@ -1409,7 +1409,7 @@ void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map
 	wxString formula = dp->GetFormula();
 #ifdef LUA_PARAM_OPTIMISE
 	std::vector<std::wstring> strings;
-	extract_strings_from_formula(formula.c_str(), strings);
+	extract_strings_from_formula(formula.wc_str(), strings);
 	for (size_t i = 0; i < strings.size(); i++) if (DefinedParam* d = FindDefinedParam(strings[i])) {
 			ConvertParam(d, our_name, converted);
 			formula.Replace(_T("\"") + d->GetBasePrefix() + _T(":") + d->GetParamName() + _T("\""),
@@ -1422,7 +1422,7 @@ void ExportImportSet::ConvertParam(DefinedParam *dp, wxString our_name, std::map
 void ExportImportSet::ExportSet(DefinedDrawSet *set, wxString our_name) {
 	wxFileDialog dlg(wxGetApp().GetTopWindow(), _("Choose a file"), _T(""), _T(""),
 		_("SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"),
-		wxSAVE | wxCHANGE_DIR);
+		wxFD_SAVE | wxFD_CHANGE_DIR);
 	szSetDefFont(&dlg);
 	if (dlg.ShowModal() != wxID_OK)
 		return;

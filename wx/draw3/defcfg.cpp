@@ -183,7 +183,7 @@ void DefinedParam::CreateParam() {
 
 	m_param = new TParam(NULL, NULL, L"", TParam::LUA_VA, TParam::P_LUA);
 
-	m_param->SetName(m_param_name.c_str());
+	m_param->SetName(m_param_name.wc_str());
 	m_param->SetPrec(m_prec);
 	m_param->SetTimeType(TParam::NANOSECOND);
 	m_param->SetFormulaType(m_type);
@@ -363,7 +363,7 @@ void DefinedDrawInfo::SetDraw(TDraw *_d) {
 void DefinedDrawInfo::SetParam(DrawParam *_p) {
 	p = _p;
 	SetParamName(_p->GetParamName());
-	if (TParam::IsHourSumUnit(_p->GetUnit().c_str())) {
+	if (TParam::IsHourSumUnit(_p->GetUnit().wc_str())) {
 		m_special_changed = true;
 		m_sp = TDraw::HOURSUM;
 	}

@@ -139,9 +139,9 @@ bool TestApp::OnInit() {
 	if (_lang == AUTO_LANGUAGE)
 		_lang = DEFAULT_LANGUAGE;
 
-	IPKContainer::Init(GetSzarpDataDir().c_str(), 
-			GetSzarpDir().c_str(), 
-			_lang.c_str());
+	IPKContainer::Init(GetSzarpDataDir().wc_str(), 
+			GetSzarpDir().wc_str(), 
+			_lang.wc_str());
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir().c_str(), IPKContainer::GetObject());
 
 	m_db_queue = new DatabaseQueryQueue();
@@ -151,7 +151,7 @@ bool TestApp::OnInit() {
 
 	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, new SzbaseBase(
 						m_dbmgr,
-						GetSzarpDataDir().c_str(),
+						GetSzarpDataDir().wc_str(),
 						NULL,
 						wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L)));
 		

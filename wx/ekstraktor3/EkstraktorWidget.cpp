@@ -33,20 +33,29 @@
 #include "cconv.h"
 
 #include "../../resources/wx/icons/extr64.xpm"
+#include "../common/parlist.cpp"
 
 void* progress_update(int progress, void* prog) {
 	((wxProgressDialog*) prog)->Update(progress);
 	return NULL;
 }
-
+ 
+using namespace SC;
+/*  
+{
+	std::wstring W2S(const wxString& c) {
+		return (std::wstring(c.ToStdWstring()));
+	}
+}
+*/
 EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry, std::pair<wxString, wxString> prober_address, bool sz4) : sz4(sz4)
 {
 	int x, y, width, height;
 
-	IPKContainer::Init(wxGetApp().GetSzarpDataDir().c_str(),
-			   wxGetApp().GetSzarpDir().c_str(),
-			   wxConfig::Get()->Read(_T("LANGUAGE"),
-						 _T("pl")).c_str());
+	IPKContainer::Init(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())),
+				SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDir().mb_str())),
+			   SC::W2S(wxString::FromUTF8(wxConfig::Get()->Read(_T("LANGUAGE"),
+						 _T("pl")).mb_str())));
 
 	wxProgressDialog *prog =
 	    new wxProgressDialog(_("SZARP Extractor v. 3.0."),
@@ -105,7 +114,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 
 	IPKContainer* ipkc = IPKContainer::GetObject();
 	if (!sz4) {
-		Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
+		Szbase::Init(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())), NULL);
 
 		Szbase* szbase = Szbase::GetObject();
 		extr = new SzbExtractor(ipkc, szbase);
@@ -116,15 +125,15 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 		if (prober_address != std::pair<wxString, wxString>()) {
 			szbase->SetProberAddress(
 				ipk_prefix.c_str(),
-				prober_address.first.c_str(),
-				prober_address.second.c_str());
+				SC::W2S(wxString::FromUTF8(prober_address.first.mb_str())),
+				SC::W2S(wxString::FromUTF8(prober_address.second.mb_str())));
 			prober_configured = true;	
 		} else {
 			prober_configured = false;	
 		}
 	} else {
-		Szbase::Init(wxGetApp().GetSzarpDataDir().c_str(), NULL);
-		extr = new SzbExtractor(ipkc, new sz4::base(wxGetApp().GetSzarpDataDir().c_str(),
+		Szbase::Init(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())), NULL);
+		extr = new SzbExtractor(ipkc, new sz4::base(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())),
 							ipkc));
 		prober_configured = false;
 	}

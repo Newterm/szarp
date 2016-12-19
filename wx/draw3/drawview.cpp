@@ -59,17 +59,18 @@ const wxColour BackgroundView::back2_col = wxColour(0, 0, 0);
 const wxColour GraphDrawer::alt_color = wxColour(255, 255, 255);
 
 void View::ClearDC(wxMemoryDC *dc,wxBitmap *bitmap, int w, int h) {
-	dc->SelectObject(*bitmap);
+/* 	dc->SelectObject(*bitmap);
 	dc->SetBackground(*wxBLACK_BRUSH);
 	dc->Clear();
 	dc->SetTextForeground(wxNullColour);
 	dc->SetPen(*wxTRANSPARENT_PEN);
 	dc->SetBrush(*wxTRANSPARENT_BRUSH);
+*/
 }
 
 long int View::GetX(int i) const
 {
-	int w, h;
+/* 	int w, h;
 	GetSize(&w, &h);
 
 	size_t size = m_draw->GetValuesTable().size();
@@ -79,10 +80,11 @@ long int View::GetX(int i) const
 	double ret = i * res + m_leftmargin + res / 2;
 
 	return (int)ret;
+*/
 }
 
 long int View::GetY(double value) const {
-   	int w, h;
+ /*   	int w, h;
 	GetSize(&w, &h);
 
 	h -= m_bottommargin + m_topmargin;
@@ -98,50 +100,51 @@ long int View::GetY(double value) const {
 		ret = h + m_topmargin;
 		
 	return ret;
+*/
 }
 
 
 void View::GetPointPosition(wxDC* dc, int i, int *x, int *y) const {
-	*x = GetX(i);
-
-	double value = m_draw->GetValuesTable().at(i).val;
-	*y = GetY(value);
+//	*x = GetX(i);
+//
+//	double value = m_draw->GetValuesTable().at(i).val;
+//	*y = GetY(value);
 }
 
 BackgroundView::BackgroundView(WxGraphs *graphs, ConfigManager *cfg) : 
 		m_graphs(graphs), m_dc(NULL), m_bmp(NULL), m_cfg_mgr(cfg)
 {
-	m_remark_flag_bitmap = wxBitmap(remark_flag_xpm);
+//	m_remark_flag_bitmap = wxBitmap(remark_flag_xpm);
 }
 
 void BackgroundView::Attach(Draw *draw) {
-	m_draw = draw;
-
-	int w, h;
-	m_graphs->GetClientSize(&w, &h);
-	SetSize(w, h);
+//	m_draw = draw;
+//
+//	int w, h;
+//	m_graphs->GetClientSize(&w, &h);
+//	SetSize(w, h);
 }
 
 void BackgroundView::PeriodChanged(Draw *draw, PeriodType period) {
-	DoDraw(m_dc);
+//	DoDraw(m_dc);
 }
 
 void BackgroundView::DrawInfoChanged(Draw *draw) {
-	DoDraw(m_dc);
+//	DoDraw(m_dc);
 }
 
 void BackgroundView::ScreenMoved(Draw *draw, const wxDateTime &start_date) {
-	DoDraw(m_dc);
-	m_graphs->Refresh();
+//	DoDraw(m_dc);
+//	m_graphs->Refresh();
 }
 
 void BackgroundView::NewRemarks(Draw *draw) {
-	DoDraw(m_dc);
-	m_graphs->Refresh();
+//	DoDraw(m_dc);
+//	m_graphs->Refresh();
 };
 
 void BackgroundView::SetSize(int w, int h) {
-	delete m_dc;
+/* 	delete m_dc;
 	delete m_bmp;
 	m_dc = new wxMemoryDC();
 	m_dc->SetFont(m_graphs->GetFont());
@@ -151,22 +154,24 @@ void BackgroundView::SetSize(int w, int h) {
 	ClearDC(m_dc, m_bmp, w, h);
 
 	DoDraw(m_dc);
+*/
 }
 
 void BackgroundView::Detach(Draw *draw) {
-	delete m_dc;
+/* 	delete m_dc;
 	delete m_bmp;
 	
 	m_dc = NULL;
 	m_bmp = NULL;
 
 	m_draw = NULL;
+*/
 }
 
 BackgroundDrawer::BackgroundDrawer() {}
 
 void BackgroundView::DrawSeasonLimitInfo(wxDC *dc, int i, int month, int day, bool summer) {
-
+/* 
 	const int stripe_width = 2; 
 
 	long int x1 = GetX(i);
@@ -255,29 +260,30 @@ void BackgroundView::DrawSeasonLimitInfo(wxDC *dc, int i, int month, int day, bo
 
 	dc->SetPen(open);
 	dc->SetBrush(obrush);
-	
+*/	
 }
 
 void BackgroundView::DrawSeasonLimits(wxDC *dc) {
-	DrawsSets *cfg = m_cfg_mgr->GetConfigByPrefix(m_draw->GetDrawInfo()->GetBasePrefix());
+/* 	DrawsSets *cfg = m_cfg_mgr->GetConfigByPrefix(m_draw->GetDrawInfo()->GetBasePrefix());
 
 	std::vector<SeasonLimit> limits = get_season_limits_indexes(cfg, m_draw);
 	for (std::vector<SeasonLimit>::iterator i = limits.begin(); i != limits.end(); i++)
 		DrawSeasonLimitInfo(dc, i->index, i->month, i->day, i->summer);
-
+*/
 }
 
 void BackgroundView::DrawRemarksFlags(wxDC *dc) {
-	const ValuesTable& vt = m_draw->GetValuesTable();
+/* 	const ValuesTable& vt = m_draw->GetValuesTable();
 	for (size_t i = 0; i < m_draw->GetValuesTable().size(); i++)
 		if (vt.at(i).m_remark) { 
 			int x = GetX(i);
 			dc->DrawBitmap(m_remark_flag_bitmap, x - m_remark_flag_bitmap.GetWidth() / 2, m_topmargin - 7, true);
 		}
+*/
 }
 
 void BackgroundView::DoDraw(wxDC *dc) {
-
+/*
 	dc->Clear();
 
 	DrawBackground(dc);
@@ -293,14 +299,15 @@ void BackgroundView::DoDraw(wxDC *dc) {
     	DrawYAxisVals(dc, 4);
 
 	DrawRemarksFlags(dc);
+*/
 }
 
 wxFont BackgroundView::GetFont() const {
-	return m_graphs->GetFont();
+//	return m_graphs->GetFont();
 }
 
 void BackgroundDrawer::DrawYAxisVals(wxDC *dc, int tick_len, int line_width) {
-	double min = m_draw->GetDrawInfo()->GetMin();
+/* 	double min = m_draw->GetDrawInfo()->GetMin();
 	double max = m_draw->GetDrawInfo()->GetMax();
 	double dif = max - min;
 
@@ -365,13 +372,13 @@ void BackgroundDrawer::DrawYAxisVals(wxDC *dc, int tick_len, int line_width) {
 	}
 
 	dc->SetPen(wxNullPen);
-
+*/
 }
 
 void BackgroundDrawer::DrawBackground(wxDC *dc) {
-	assert(dc);
+/* 	assert(dc);
 
-	if (!dc->Ok())
+	if (!dc->IsOk())
 		return;
 
 	int w, h;
@@ -407,19 +414,20 @@ void BackgroundDrawer::DrawBackground(wxDC *dc) {
 	
 	dc->SetPen(wxNullPen);
 	dc->SetBrush(wxNullBrush);
-
+*/
 }
 
 void BackgroundDrawer::DrawUnit(wxDC *dc, int x, int y) {
-	int textw, texth;
+/* 	int textw, texth;
 	wxString unit = m_draw->GetDrawInfo()->GetUnit();
 	dc->GetTextExtent(unit, &textw, &texth);
 	dc->DrawText(unit, m_leftmargin - x - textw, y);
+*/
 }
 	
 
 void BackgroundDrawer::DrawYAxis(wxDC *dc, int arrow_height, int arrow_width, int line_width) {
-	int w, h;
+/*	int w, h;
 	GetSize(&w, &h);
 
 	dc->SetPen(wxPen(GetTimeAxisCol(), line_width, wxSOLID));
@@ -427,37 +435,39 @@ void BackgroundDrawer::DrawYAxis(wxDC *dc, int arrow_height, int arrow_width, in
 	dc->DrawLine(m_leftmargin, 0, m_leftmargin, h);
 	dc->DrawLine(m_leftmargin - arrow_width, arrow_height, m_leftmargin, 0);
 	dc->DrawLine(m_leftmargin, 0, m_leftmargin + arrow_width, arrow_height);
+*/
 }
+
 
 /* Draw time axis (horizontal). */
 void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height, int tick_height, int line_width) {
 	/* Get size. */
-	int w, h;
-	GetSize(&w, &h);
+//	int w, h;
+//	GetSize(&w, &h);
 
 	/* Set solid white pen. */
-	dc->SetPen(wxPen(GetTimeAxisCol(), line_width, wxSOLID));
-	dc->SetBrush(*wxTRANSPARENT_BRUSH);
+//	dc->SetPen(wxPen(GetTimeAxisCol(), line_width, wxSOLID));
+//	dc->SetBrush(*wxTRANSPARENT_BRUSH);
 	/* Draw line with arrow. */
-	dc->DrawLine(0, h - m_bottommargin, w - m_rightmargin, h - m_bottommargin);
-	dc->DrawLine(w - m_rightmargin - arrow_width, h - m_bottommargin - arrow_height,
-		w - m_rightmargin, h - m_bottommargin);
-	dc->DrawLine(w - m_rightmargin - arrow_width, h - m_bottommargin + arrow_height,
-		w - m_rightmargin, h - m_bottommargin);
+//	dc->DrawLine(0, h - m_bottommargin, w - m_rightmargin, h - m_bottommargin);
+//	dc->DrawLine(w - m_rightmargin - arrow_width, h - m_bottommargin - arrow_height,
+//		w - m_rightmargin, h - m_bottommargin);
+///	dc->DrawLine(w - m_rightmargin - arrow_width, h - m_bottommargin + arrow_height,
+//		w - m_rightmargin, h - m_bottommargin);
     
 	/* Draw ticks on axis. */
-	int i = PeriodMarkShift[m_draw->GetPeriod()];
-	int size = m_draw->GetValuesTable().size();
+//	int i = PeriodMarkShift[m_draw->GetPeriod()];
+//	int size = m_draw->GetValuesTable().size();
     
-	wxDateTime prev_date;
+/* 	wxDateTime prev_date;
 	while (i < size) {
 		int x = GetX(i);
 		dc->DrawLine(x, h - m_bottommargin + tick_height / 2, x, h - m_bottommargin - tick_height / 2);
 
 		wxDateTime date = m_draw->GetTimeOfIndex(i);
-	
+*/	
 		/* Print date */
-		wxString datestring = get_date_string(m_draw->GetPeriod(), prev_date, date);
+/* 		wxString datestring = get_date_string(m_draw->GetPeriod(), prev_date, date);
 
 		int textw, texth;
 
@@ -469,32 +479,32 @@ void BackgroundDrawer::DrawTimeAxis(wxDC *dc, int arrow_width, int arrow_height,
 
 		prev_date = date;
 	}
-    
-	dc->SetPen(wxNullPen);
+ */   
+//	dc->SetPen(wxNullPen);
 }
 
 wxDC* BackgroundView::GetDC() {
-	return m_dc;
+//	return m_dc;
 }
 
 const wxColour& BackgroundView::GetTimeAxisCol() {
-	return timeaxis_col;
+//	return timeaxis_col;
 }
 
 const wxColour& BackgroundView::GetBackCol1() {
-	return back1_col;
+//	return back1_col;
 }
 
 const wxColour& BackgroundView::GetBackCol2() {
-	return back2_col;
+//	return back2_col;
 }
 
 void BackgroundView::GetSize(int *w, int *h) const {
-	m_dc->GetSize(w, h);
+//	m_dc->GetSize(w, h);
 }
 
 int BackgroundView::GetRemarkClickedIndex(int x, int y) {
-	if (y > m_topmargin - 7 + m_remark_flag_bitmap.GetHeight() || y < m_topmargin - 7)
+/* 	if (y > m_topmargin - 7 + m_remark_flag_bitmap.GetHeight() || y < m_topmargin - 7)
 		return -1;
 
 	int sri = -1;
@@ -517,57 +527,59 @@ int BackgroundView::GetRemarkClickedIndex(int x, int y) {
 		}
 
 	return sri;
+*/
 }
 
 BackgroundView::~BackgroundView() {
-	delete m_dc;
-	delete m_bmp;
+//	delete m_dc;
+//	delete m_bmp;
 }
 
-GraphView::GraphView(WxGraphs* widget) : GraphDrawer(2), m_graphs(widget), m_dc(NULL), m_bmp(NULL), m_gc(NULL),
+GraphView::GraphView(WxGraphs* widget) : GraphDrawer(2), m_graphs(widget), m_dc(NULL), m_bmp(NULL)
+/*     	m_gc(NULL),
 #ifdef __WXGTK__
 	m_gdkbmp(NULL)
 #else
 	m_mswbmp(NULL)
-#endif
+#endif*/
 {}
 
 void GraphView::Attach(Draw *draw) {
-	m_draw = draw;
-
-	int w, h;
-	m_graphs->GetClientSize(&w, &h);
-
-	SetSize(w, h);
+//	m_draw = draw;
+//
+//	int w, h;
+//	m_graphs->GetClientSize(&w, &h);
+//
+//	SetSize(w, h);
 }
 
 wxDC *GraphView::GetDC() {
-#ifdef __WXMSW__
+/*  #ifdef __WXMSW__
 	m_sdc.Deselect();
-#endif
-	return m_dc;
+#endif*/
+//	return m_dc;
 }
 
 void GraphView::SetSize(int w, int h) {
 
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	if (m_gc) 
 		gdk_gc_unref(m_gc);
 #else
 	m_sdc.Deselect();
 	if (m_gc)
 		DeleteDC(m_gc);
-#endif
-	delete m_dc;
-	delete m_bmp;
-
-	m_bmp = new wxBitmap(w, h);
-	m_dc = new wxMemoryDC();
-
-	wxMask *mask = new wxMask();
-	mask->Create(wxBitmap(w, h, 1), *wxBLACK);
-	m_bmp->SetMask(mask);
-#ifdef __WXGTK__
+#endif*/
+//	delete m_dc;
+//	delete m_bmp;
+//
+//	m_bmp = new wxBitmap(w, h);
+//	m_dc = new wxMemoryDC();
+//
+//	wxMask *mask = new wxMask();
+//	mask->Create(wxBitmap(w, h, 1), *wxBLACK);
+//	m_bmp->SetMask(mask);
+/*  #ifdef __WXGTK__
 	m_gdkbmp = m_bmp->GetMask()->GetBitmap();
 	m_gc = gdk_gc_new(m_gdkbmp);
 	m_sdc.SetObjects(m_gc, m_gdkbmp);
@@ -575,50 +587,50 @@ void GraphView::SetSize(int w, int h) {
 	m_mswbmp = (HBITMAP) m_bmp->GetMask()->GetMaskBitmap();
 	m_gc = CreateCompatibleDC(NULL);
 	m_sdc.SetObjects(m_gc, m_mswbmp);
-#endif
+#endif*/
 
-	m_dc->SetFont(m_graphs->GetFont());
-	ClearDC(m_dc, m_bmp, w, h);
+//	m_dc->SetFont(m_graphs->GetFont());
+//	ClearDC(m_dc, m_bmp, w, h);
 
 }
 
 void GraphView::Detach(Draw *draw) {
-	if (m_gc) 
-#ifdef __WXGTK__
+	//if (m_gc) 
+/*  #ifdef __WXGTK__
 		gdk_gc_unref(m_gc);
 #else
 		DeleteDC(m_gc);
-#endif
-	m_gc = NULL;
+#endif*/
+//	m_gc = NULL;
 
-	delete m_dc;
-	m_dc = NULL;
-
-	delete m_bmp;
-	m_bmp = NULL;
-
-	m_draw = NULL;
+//	delete m_dc;
+//	m_dc = NULL;
+//
+//	delete m_bmp;
+//	m_bmp = NULL;
+//
+//	m_draw = NULL;
 }
 
 void GraphView::DrawInfoChanged(Draw *draw) {
-	DrawAll();
+//	DrawAll();
 }
 
 void GraphView::PeriodChanged(Draw *draw, PeriodType period) {
-	DrawAll();
+//	DrawAll();
 }
 
 void GraphView::ScreenMoved(Draw *draw, const wxDateTime& time) {
-	DrawAll();
-	m_graphs->Refresh();
+//	DrawAll();
+//	m_graphs->Refresh();
 }
 
 void GraphView::Refresh() {
-	DrawAll();
+//	DrawAll();
 }
 
 void GraphView::CurrentProbeChanged(Draw *draw, int pi, int ni, int d) {
-
+/* 
 	wxRegion reg;
 
 	DrawCursor(pi, true, &reg);
@@ -647,11 +659,11 @@ void GraphView::CurrentProbeChanged(Draw *draw, int pi, int ni, int d) {
 	DrawCursor(ni, false, &reg);
 
 	m_graphs->UpdateArea(reg);
-
+*/
 }
 
 void GraphView::NewData(Draw *draw, int i) {
-
+/* 
 	wxRegion reg;
 
 	DrawPoint(i, &reg);
@@ -660,11 +672,11 @@ void GraphView::NewData(Draw *draw, int i) {
 		DrawCursor(i, false, &reg);
 
 	m_graphs->UpdateArea(reg);
-
+*/
 }
 
 bool GraphView::AlternateColor(int idx) {
-	if (m_draw->GetSelected() == false)
+/* 	if (m_draw->GetSelected() == false)
 		return false;
 
 	if (m_draw->GetDoubleCursor() == false)
@@ -679,19 +691,19 @@ bool GraphView::AlternateColor(int idx) {
 	wxLogInfo(_T("Alternate color for index: %d, stats start: %d, stats end:%d, result %d"), ss, vt.m_stats.Start(), vt.m_stats.End(), result ? 1 : 0);
 
 	return result;
-
+*/
 }
 
 void GraphView::EnableChanged(Draw *draw) {
-	m_graphs->Refresh();
+//	m_graphs->Refresh();
 }
 
 void GraphView::FilterChanged(Draw *draw) {
-	DrawAll();
+//	DrawAll();
 }
 
 void GraphView::DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region) {
-	dc->DrawPoint(x, y);
+/* 	dc->DrawPoint(x, y);
 	m_sdc.DrawPoint(x, y);
 
 	if (m_draw->GetPeriod() != PERIOD_T_DAY && m_draw->GetPeriod() != PERIOD_T_30MINUTE) {
@@ -704,12 +716,13 @@ void GraphView::DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region) {
 		if (region) 
 			region->Union(x - 2, y - 2, 5, 5); 
 	}
+*/
 }
 
 
 
 void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor) {
-
+/*  
 	bool repaint_cursor = false;
 	int current_index = 0;
 
@@ -720,7 +733,7 @@ void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor
 		return;
 
 	wxDC* dc = m_dc;
-	if (!dc->Ok())
+	if (!dc->IsOk())
 		return;
 
 	int x, y;
@@ -835,11 +848,11 @@ void GraphView::DrawPoint(int index, wxRegion *region, bool maybe_repaint_cursor
 
 	dc->SetPen(wxNullPen);
 	dc->SetBrush(wxNullBrush);
-
+*/
 }
 
 void GraphView::DrawCursor(int index, bool clear, wxRegion *region) {
-
+/*
 	if (index < 0)
 		return;
 
@@ -892,11 +905,11 @@ void GraphView::DrawCursor(int index, bool clear, wxRegion *region) {
 
 	dc->SetPen(wxNullPen);
 	dc->SetBrush(wxNullBrush);
-
+*/
 }
 
 void GraphView::DrawAll() {
-	m_dc->SetBrush(*wxTRANSPARENT_BRUSH);
+/*  	m_dc->SetBrush(*wxTRANSPARENT_BRUSH);
 	m_dc->Clear();
 	m_sdc.Clear();
 
@@ -905,6 +918,7 @@ void GraphView::DrawAll() {
 	DrawAllPoints(m_dc, &m_sdc, line_width);
 
 	DrawCursor(m_draw->GetCurrentIndex(), false);
+*/
 }
 
 
@@ -913,8 +927,8 @@ GraphDrawer::GraphDrawer(int circle_radius) :
 
 
 void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
-
-	if (!dc->Ok())
+/*  
+	if (!dc->IsOk())
 		return;
 
 	if (m_draw->GetDrawInfo() == NULL)
@@ -1011,11 +1025,11 @@ void GraphDrawer::DrawAllPoints(wxDC *dc, SDC *sdc, int point_width) {
 	dc->SetPen(wxNullPen);
 	if (sdc)
 		sdc->SetLineWidth(1);
-
+*/
 }
 
 int GraphView::GetIndex(int x) const {
-	int w, h;
+/*  	int w, h;
 	GetSize(&w, &h);
     
 	x -= m_leftmargin;
@@ -1024,24 +1038,25 @@ int GraphView::GetIndex(int x) const {
 	int index = x * m_draw->GetValuesTable().size() / w;
 
 	return index;
-
+*/
 }
 
 void GraphView::GetDistance(int x, int y, double &d, wxDateTime &time) const {
-	d = INFINITY;
+/*	d = INFINITY;
 	time = wxInvalidDateTime;
+*/
 	/* this defines search radius for 'direct hit' */
-
+/* 
 	int w,h;
 	m_dc->GetSize(&w, &h);
-	
+*/	
 	/* forget about top and bottom margins */
-	h -= m_bottommargin + m_topmargin;
+//	h -= m_bottommargin + m_topmargin;
 	/* get X coordinate */
-	int index = GetIndex(x);
+//	int index = GetIndex(x);
 
-	const Draw::VT& vt = m_draw->GetValuesTable();
-    
+//	const Draw::VT& vt = m_draw->GetValuesTable();
+/*     
 	int i, j;
 	for (i = j = index; i >= 0 || j < (int)vt.size(); --i, ++j) {
 		double d1 = INFINITY;
@@ -1075,38 +1090,37 @@ void GraphView::GetDistance(int x, int y, double &d, wxDateTime &time) const {
 		break;
 
 	}
-
+*/
 }
 
 void GraphView::GetSize(int *w, int *h) const {
-	m_dc->GetSize(w, h);
+//	m_dc->GetSize(w, h);
 }
 
 GraphView::~GraphView() {
 
-	if (m_gc) 
+/*  	if (m_gc) 
 #ifdef __WXGTK__
 		gdk_gc_unref(m_gc);
 #else
 		DeleteDC(m_gc);
-#endif
-
-	delete m_dc;
-	delete m_bmp;
+#endif*/
+//	delete m_dc;
+//	delete m_bmp;
 }
 
 SDC::SDC() {
-	m_gc = NULL;
-#ifdef __WXGTK__
-	m_gdkbmp = NULL;
-#else
-	m_mswbmp = NULL;
-	m_selected = false;
-#endif
+	//m_gc = NULL;
+//#ifdef __WXGTK__
+//	m_gdkbmp = NULL;
+//#else
+//	m_mswbmp = NULL;
+//	m_selected = false;
+//#endif
 }
 
 
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 void SDC::SetObjects(GdkGC *gc, GdkBitmap *bmp) {
 	m_gc = gc;
 	m_gdkbmp = bmp;
@@ -1124,12 +1138,12 @@ void SDC::SetObjects(HDC gc, HBITMAP bmp) {
 
 	Select();
 }
-#endif
+#endif*/
 
 void SDC::SetWhiteForeground() {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	GdkColor gcolor;
-       	gcolor.red = gcolor.green = gcolor.blue = 65000;
+      	gcolor.red = gcolor.green = gcolor.blue = 65000;
 	gcolor.pixel = 1;
 	gdk_gc_set_foreground(m_gc, &gcolor);
 #else
@@ -1137,14 +1151,14 @@ void SDC::SetWhiteForeground() {
 	wxPen npen = wxPen(*wxWHITE, width, wxSOLID);	
 	(HPEN) SelectObject(m_gc, (HPEN)npen.GetResourceHandle());
 	m_pen = npen;
-#endif
+#endif*/
 }
 
 
 void SDC::SetBlackForeground() {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	GdkColor gcolor;
-       	gcolor.red = gcolor.green = gcolor.blue = 0;
+      	gcolor.red = gcolor.green = gcolor.blue = 0;
 	gcolor.pixel = 0;
 	gdk_gc_set_foreground(m_gc, &gcolor);
 #else
@@ -1152,55 +1166,55 @@ void SDC::SetBlackForeground() {
 	wxPen npen = wxPen(*wxBLACK, width, wxSOLID);	
 	(HPEN) SelectObject(m_gc, (HPEN)npen.GetResourceHandle());
 	m_pen = npen;
-#endif
+#endif*/
 }
 
 void SDC::DrawPoint(int x, int y) {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	gdk_draw_point(m_gdkbmp, m_gc, x, y);
 #else
 	Select();
 	LOGPEN lp;
 	GetObject((HPEN)m_pen.GetResourceHandle(), sizeof(lp), &lp);
 	SetPixel(m_gc, x, y, lp.lopnColor);
-#endif
+#endif*/
 }
 
 void SDC::DrawCircle(int x, int y, int r) {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	gdk_draw_arc(m_gdkbmp, m_gc, FALSE, x - r, y - r, 2 * r, 2 * r, 0, 360 * 64);
 #else
 	Select();
 	Ellipse(m_gc, x - r, y - r, x + r, y + r);
-#endif
+#endif*/
 }
 
 void SDC::DrawLine(int x1, int y1, int x2, int y2) {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	gdk_draw_line(m_gdkbmp, m_gc, x1, y1, x2, y2);
 #else
 	Select();
 	MoveToEx(m_gc, x1, y1, NULL); 
 	LineTo(m_gc, x2, y2);
-#endif
+#endif*/
 }
 
 void SDC::DrawRectangle(int x, int y, int w, int h) {
-#ifdef __WXGTK__
+/*  #ifdef __WXGTK__
 	gdk_draw_rectangle(m_gdkbmp, m_gc, FALSE, x, y, w - 1, h - 1);
 #else
 	Select();
 	Rectangle(m_gc, x, y, x + w, y + h);
-#endif
+#endif*/
 }
 
 void SDC::DrawRectangle(const wxRect& rect) {
-	DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+//	DrawRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
 }
 
 void SDC::Clear() {
-	SetBlackForeground();
-#ifdef __WXGTK__
+//	SetBlackForeground();
+/*  #ifdef __WXGTK__
 	int w, h;
 	gdk_drawable_get_size(m_gdkbmp, &w, &h);
 	gdk_draw_rectangle(m_gdkbmp, m_gc, TRUE, 0, 0, w, h);
@@ -1220,11 +1234,11 @@ void SDC::Clear() {
 	FillRect(m_gc, &rect, brush);
 
 	DeleteObject(brush);
-#endif
+#endif*/
 }
 
 void SDC::SetLineWidth(int width) {
-#ifdef __WXMSW__
+/*  #ifdef __WXMSW__
 	wxColour c = m_pen.GetColour();
 	wxPen npen = wxPen(c, width == 1 ? 0 : width, wxSOLID);	
 	(HPEN) SelectObject(m_gc, (HPEN)npen.GetResourceHandle());
@@ -1234,10 +1248,10 @@ void SDC::SetLineWidth(int width) {
 	gdk_gc_get_values(m_gc, &vals);
 	vals.line_width = width == 1 ? 0 : width;
 	gdk_gc_set_values(m_gc, &vals, GDK_GC_LINE_WIDTH);
-#endif
+#endif*/
 }
 
-#ifdef __WXMSW__
+/*  #ifdef __WXMSW__
 void SDC::Select() {
 	if (m_selected)
 		return;
@@ -1253,4 +1267,4 @@ void SDC::Deselect() {
 	m_mswbmp = (HBITMAP) SelectObject(m_gc, m_defbmp);
 	m_selected = false;
 }
-#endif
+#endif*/

@@ -35,6 +35,7 @@
 #include "wx/stattext.h"
 #include "wx/html/htmlwin.h"
 #include "wx/html/htmprint.h"
+#include "wx/hash.h"
 
 #if wxCHECK_VERSION(2,5,2)
 // For want of a better name (to distinguish recent wxHTML changes)

@@ -363,11 +363,11 @@ void XYZCanvas::DrawPole(double val, int prec) {
 	FaceViewer();
 	glTranslatef(-2.5, 0.0, 0.0);
 	wxString str = wxString::Format(_T("%.*f"), prec, val);
-	FTBBox bbox = m_font->BBox(str.c_str());
+	FTBBox bbox = m_font->BBox(str.wc_str());
 	float w = bbox.Upper().Xf() - bbox.Lower().Xf();
 	glScalef(5 / w, 5 / w, 1);
 	glNormal3f(0, 0, 1);
-	m_font->Render(str.c_str());
+	m_font->Render(str.wc_str());
 	glPopMatrix();
 }
 
@@ -379,11 +379,11 @@ void XYZCanvas::DrawAxis(int axis_no) {
 	glTranslatef(0, 0, 1.1 * slices_no + 5);
 	FaceViewer();
 	glTranslatef(-2.5, 0.0, 0.0);
-	FTBBox bbox = m_font->BBox(short_name.c_str());
+	FTBBox bbox = m_font->BBox(short_name.wc_str());
 	float w = bbox.Upper().Xf() - bbox.Lower().Xf();
 	glScalef(5 / w, 5 / w, 1);
 	glNormal3f(0, 0, 1);
-	m_font->Render(short_name.c_str());
+	m_font->Render(short_name.wc_str());
 	glPopMatrix();
 
 	glPushMatrix();
@@ -581,9 +581,9 @@ void XYZCanvas::DrawPointInfo() {
 		gc[1] = float(c.Green()) / 255; 
 		gc[2] = float(c.Blue()) / 255; 
 		glColor4fv(gc);
-		FTBBox bbox = m_font->BBox(str.c_str());
+		FTBBox bbox = m_font->BBox(str.wc_str());
 		glTranslatef(0, -1.1 * (bbox.Upper().Yf() - bbox.Lower().Yf()), 0);
-		m_font->Render(str.c_str());
+		m_font->Render(str.wc_str());
 	}
 }
 

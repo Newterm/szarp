@@ -342,7 +342,7 @@ int DTime::GetDistance(const DTime &t) const {
 	return ret;
 }
 
-wxString DTime::Format(const wxChar* format) const {
+wxString DTime::Format(const char* format) const {
 	return m_time.Format(format);
 }
 

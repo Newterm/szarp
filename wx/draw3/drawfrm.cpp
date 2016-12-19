@@ -932,53 +932,12 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
-
 	wxArrayString choices;
-
-#ifdef MINGW32
-
+	
 	wxString style = _T("GCDC");
 	choices.push_back(_("Antialiased"));
 	choices[0] = choices[0] + _T(" (") + _("currently selected") + _T(")");
 	wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
-
-#else
-
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
-	choices.push_back(_("Classic"));
-	choices.push_back(_("'3D'"));
-	choices.push_back(_("Antialiased"));
-
-	int selected;
-
-	if (style == _T("'3D'"))
-		selected = 1;
-	else if (style == _T("GCDC"))
-		selected = 2;
-	else
-		selected = 0;
-
-	choices[selected] = choices[selected] + _T(" (") + _("currently selected") + _T(")");
-
-	int ret = wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
-	if (ret == -1)
-		return;
-
-	if (ret == 2) {
-		if (style != _T("GCDC"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("GCDC");
-	} else if (ret == 1) {
-		if (style != _T("3D"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("3D");
-	} else {
-		if (style != _T("Classic"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("Classic");
-	}
-
-#endif
 
 	wxConfig::Get()->Write(_T("GRAPHS_VIEW"), style);
 	wxConfig::Get()->Flush();
@@ -1175,7 +1134,7 @@ void DrawFrame::OnExportDataToFile(wxCommandEvent& e) {
 			_("Choose file to extract data to"),
 			wxString(directory),
 			_T(""),
-			_("Comma Separated Values (*.csv)"), wxSAVE | wxOVERWRITE_PROMPT);
+			_("Comma Separated Values (*.csv)"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	file.SetFilterIndex(3);
 
 	if (file.ShowModal() != wxID_OK)
@@ -1189,11 +1148,11 @@ void DrawFrame::OnExportDataToFile(wxCommandEvent& e) {
 
 	DrawInfoList dil = draw_panel->GetDrawInfoList();
 	for (size_t i = 0; i < dil.size(); i++) {
-		query->extraction_parameters.params->push_back(dil.at(i)->GetParamName().c_str());
-		query->extraction_parameters.prefixes->push_back(dil.at(i)->GetBasePrefix().c_str());
+		query->extraction_parameters.params->push_back(dil.at(i)->GetParamName().wc_str());
+		query->extraction_parameters.prefixes->push_back(dil.at(i)->GetBasePrefix().wc_str());
 	}
 
-	std::wstring filename = (file.GetDirectory() + L"/" + file.GetFilename()).c_str();
+	std::wstring filename = (file.GetDirectory() + L"/" + file.GetFilename()).wc_str();
 	if (filename.size() < 4 || filename.find(L'.') == std::wstring::npos)
 		filename += L".csv";
 

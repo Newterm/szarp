@@ -70,9 +70,9 @@ public:
 			m_inc->SelectPreviousDraw();
 		else if (event.GetKeyCode() == WXK_DOWN)
 			m_inc->SelectNextDraw();
-		else if (event.GetKeyCode() == WXK_NEXT)
+		else if (event.GetKeyCode() == WXK_PAGEDOWN)
 			m_inc->GoPageDown();
-		else if (event.GetKeyCode() == WXK_PRIOR)
+		else if (event.GetKeyCode() == WXK_PAGEUP)
 			m_inc->GoPageUp();
 		else
 			event.Skip();

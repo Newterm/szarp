@@ -54,7 +54,7 @@ wxChar* SCCConnection::OnRequest(const wxString& WXUNUSED(topic),
 }
 
 wxChar* SCCConnection::SendReloadMenuMsg() {
-	return Request(scc_ipc_messages::reload_menu_msg);
+	return (wchar_t *) Request(scc_ipc_messages::reload_menu_msg);
 }
 
 SCCConnection* SCCClient::Connect(const wxString &service) {
