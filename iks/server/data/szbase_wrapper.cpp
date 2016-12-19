@@ -124,7 +124,6 @@ void SzbaseWrapper::purge_cache()
 time_t SzbaseWrapper::get_latest(
 			const std::string& param ,
 			ProbeType type ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -153,7 +152,6 @@ double SzbaseWrapper::get_avg(
 			const std::string& param ,
 			time_t time ,
 			ProbeType type ) const
-	throw( szbase_init_error, szbase_get_value_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -218,7 +216,6 @@ std::string SzbaseWrapper::search_data( const std::string& param ,
 										SearchDir dir ,
 										ProbeType pt
 										) const
-	throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -319,7 +316,6 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 									 ValueType value_type ,
 									 TimeType time_type ,
 									 ProbeType pt ) const
-		throw( szbase_init_error, szbase_param_not_found_error, szbase_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -355,7 +351,6 @@ std::string SzbaseWrapper::get_data( const std::string& param ,
 }
 
 SzbaseObserverToken SzbaseWrapper::register_observer( const std::string& param , std::function<void( void )> callback )
-	throw( szbase_init_error , szbase_param_not_found_error , szbase_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -418,7 +413,6 @@ std::string SzbaseWrapper::add_param( const std::string& param
 									, const std::string& type
 									, int prec
 									, unsigned start_time)
-	throw( szbase_invalid_name , szbase_formula_invalid_syntax, szbase_init_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");
@@ -466,7 +460,6 @@ std::string SzbaseWrapper::add_param( const std::string& param
 }
 
 void SzbaseWrapper::remove_param(const std::string& base, const std::string& param)
-	throw( szbase_param_not_found_error , szbase_init_error )
 {
 	if( !SzbaseWrapper::is_initialized() )
 		throw szbase_init_error("Szbase not initialized");

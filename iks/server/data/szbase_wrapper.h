@@ -47,14 +47,12 @@ public:
 	 *
 	 * Throws szbase_get_value_error if param not present in base.
 	 */
-	time_t get_latest( const std::string& param , ProbeType type ) const
-		throw( szbase_init_error, szbase_get_value_error );
+	time_t get_latest( const std::string& param , ProbeType type ) const;
 
 	/**
 	 * Gets average from exact given time with specified probe
 	 */
-	double get_avg( const std::string& param , time_t time , ProbeType type ) const
-		throw( szbase_init_error, szbase_get_value_error );
+	double get_avg( const std::string& param , time_t time , ProbeType type ) const;
 
 	std::string search_data( const std::string& param ,
 						     const std::string& from ,
@@ -62,8 +60,7 @@ public:
 							 TimeType time_type ,
 							 SearchDir dir ,
 							 ProbeType pt
-							 ) const
-		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
+							 ) const;
 
 	std::string get_data( const std::string& param ,
 						  const std::string& from ,
@@ -71,11 +68,9 @@ public:
 						  ValueType value_type ,
 						  TimeType time_type ,
 						  ProbeType pt
-						  ) const
-		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
+						  ) const;
 
-	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> )
-		throw( szbase_init_error, szbase_param_not_found_error, szbase_error );
+	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> );
 
 	std::string add_param( const std::string& param
 						 , const std::string& base
@@ -83,11 +78,9 @@ public:
 						 , const std::string& token
 						 , const std::string& type
 						 , int prec
-						 , unsigned start_time)
-		throw( szbase_invalid_name , szbase_formula_invalid_syntax, szbase_init_error );
+						 , unsigned start_time);
 
-	void remove_param(const std::string& base , const std::string& param)
-		throw( szbase_param_not_found_error, szbase_init_error );
+	void remove_param(const std::string& base , const std::string& param);
 
 	const std::string& get_base_name() const;
 private:
