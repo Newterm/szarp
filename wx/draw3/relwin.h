@@ -39,7 +39,14 @@
 #include <map>
 
 /**Display summary values of currently displayed draws*/
-class RelWindow : public wxFrame, public DrawObserver {
+class RelWindow : public wxDialog, public DrawObserver {
+
+	/**Default border width*/
+	static const int default_border_width;
+	/**Default dialog width*/
+	static const int default_dialog_width;
+	/**Default dialog height*/
+	static const int default_dialog_height;
 
 	/**This structure holds values of displayed draws*/
 	struct ObservedDraw {

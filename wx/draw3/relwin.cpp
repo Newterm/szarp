@@ -43,18 +43,23 @@
 #include "drawpnl.h"
 #include "relwin.h"
 
-BEGIN_EVENT_TABLE(RelWindow, wxFrame)
+BEGIN_EVENT_TABLE(RelWindow, wxDialog)
     EVT_IDLE(RelWindow::OnIdle)
     EVT_BUTTON(wxID_HELP, RelWindow::OnHelpButton)
     EVT_CLOSE(RelWindow::OnClose)
 END_EVENT_TABLE()
 
-RelWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw), 
+const int RelWindow::default_border_width = 5;
+const int RelWindow::default_dialog_width = 200;
+const int RelWindow::default_dialog_height = 100;
+
+RelWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 	rel(false)
 {}
 
 RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
-	wxFrame(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(200, 100)),
+	wxDialog(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(default_dialog_width, default_dialog_height),
+			wxDEFAULT_DIALOG_STYLE),
 	m_update(false),
 	m_active(false),
 	m_panel(panel),
@@ -65,15 +70,16 @@ RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
 	wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
 	wxStaticText *text = new wxStaticText(this, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	wxStaticLine *line = new wxStaticLine(this);
+	wxStaticLine *line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition,
+			wxSize(default_dialog_width, default_border_width), wxLI_HORIZONTAL, wxStaticLineNameStr);
 	m_label = new wxStaticText(this, wxID_ANY, _T(""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 
-	sizer->Add(text, 0, wxALIGN_CENTER | wxALL, 5);
-	sizer->Add(line, 0, wxEXPAND, 5);
-	sizer->Add(m_label, 0, wxALIGN_CENTER | wxALL, 5);
+	sizer->Add(text, 0, wxALIGN_CENTER | wxALL, default_border_width);
+	sizer->Add(line, 0, wxEXPAND, default_border_width);
+	sizer->Add(m_label, 0, wxALIGN_CENTER | wxALL, default_border_width);
 	sizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 	sizer->Add(new wxButton(this, wxID_HELP), 0, wxALIGN_CENTER);
-	
+
 	SetSizer(sizer);
 
 	m_draws_controller = NULL;
@@ -95,17 +101,18 @@ void RelWindow::OnIdle(wxIdleEvent &event) {
 		return;
 	}
 	
-	wxString unit1;
-	wxString unit2;
+	wxString dividend_unit;
+	wxString divisor_unit;
 
-	double first_value = nan("");
-	double second_value = nan("");
+	double dividend_value = nan("");
+	double divisor_value = nan("");
 
-	int prec = 0;
+	int dividend_prec = 0;
+	int divisor_prec = 0;
 
-	bool got_first = false;
+	bool got_dividend = false;
 
-       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i) {
+	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i) {
 		ObservedDraw *od = i->second;
 		if (od->rel == false)
 			continue;
@@ -114,27 +121,27 @@ void RelWindow::OnIdle(wxIdleEvent &event) {
 		if (vt.m_count == 0)
 			break;
 
-		if (got_first) {
-			unit2 = od->draw->GetDrawInfo()->GetUnit();
-			second_value = vt.m_sum;
+		if (got_dividend) {
+			divisor_value = vt.m_sum;
+			divisor_unit = od->draw->GetDrawInfo()->GetUnit();
+			divisor_prec = od->draw->GetDrawInfo()->GetPrec();
 			break;
 		}
 
-		first_value = vt.m_sum;
-		unit1 = od->draw->GetDrawInfo()->GetUnit();
-		prec = od->draw->GetDrawInfo()->GetPrec();
+		dividend_value = vt.m_sum;
+		dividend_unit = od->draw->GetDrawInfo()->GetUnit();
+		dividend_prec = od->draw->GetDrawInfo()->GetPrec();
 
-		got_first = true;
-
+		got_dividend = true;
 	}
 
-	if (!std::isnan(first_value)
-			&& !std::isnan(second_value)
-			&& second_value != 0)  {
+	if (!std::isnan(dividend_value)
+			&& !std::isnan(divisor_value)
+			&& divisor_value != 0)  {
 		std::wstringstream wss;
-		wss.precision(2);
-		wss << (first_value / second_value);
-		m_label->SetLabel(wxString::Format(_T("%s %s/%s"), wss.str().c_str(), unit1.c_str(), unit2.c_str()));
+		wss.precision(std::max(dividend_prec,divisor_prec));
+		wss << std::fixed << (dividend_value / divisor_value);
+		m_label->SetLabel(wxString::Format(_T("%s %s/%s"), wss.str().c_str(), dividend_unit.c_str(), divisor_unit.c_str()));
 	} else
 		m_label->SetLabel(_T(""));
 
@@ -160,7 +167,7 @@ void RelWindow::Activate() {
 
 	m_draws_controller->AttachObserver(this);
 
-       	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); ++i)
+	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); ++i)
 		SetDraw(m_draws_controller->GetDraw(i));
 
 	m_update = true;
@@ -173,7 +180,7 @@ void RelWindow::Deactivate() {
 
 	m_active = false;
 
-       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
+	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
 		ResetDraw(i->second->draw);
 	m_draws.clear();
 
@@ -260,7 +267,7 @@ void RelWindow::OnClose(wxCloseEvent &event) {
 }
 
 RelWindow::~RelWindow() { 
-       	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
+	for (std::map<size_t, ObservedDraw*>::iterator i = m_draws.begin(); i != m_draws.end(); ++i)
 		delete i->second;
 }
 
@@ -273,7 +280,7 @@ bool RelWindow::Show(bool show) {
 	else
 		Deactivate();
 
-	bool ret = wxFrame::Show(show);
+	bool ret = wxDialog::Show(show);
 
 	return ret;
 }
