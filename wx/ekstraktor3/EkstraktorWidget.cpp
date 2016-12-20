@@ -40,14 +40,6 @@ void* progress_update(int progress, void* prog) {
 	return NULL;
 }
  
-using namespace SC;
-/*  
-{
-	std::wstring W2S(const wxString& c) {
-		return (std::wstring(c.ToStdWstring()));
-	}
-}
-*/
 EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry, std::pair<wxString, wxString> prober_address, bool sz4) : sz4(sz4)
 {
 	int x, y, width, height;
