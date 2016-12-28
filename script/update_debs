@@ -3,6 +3,8 @@ import os
 import sys
 from subprocess import Popen, PIPE, call
 
+call(["sed","-i","'s/.*custom/#&/'","/etc/apt/sources.list"])
+
 aptitude_installed = False;
 
 dpkg_selections_output = Popen(["dpkg", "--get-selections"],stdout=PIPE).communicate()[0].splitlines()
