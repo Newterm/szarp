@@ -147,7 +147,12 @@ def read_socket():
 		for param_value in params_values.param_values:
 			index = param_value.param_no
 			if index in gb.sz4_params.indexes.keys():
-				gb.sz4_params.params[gb.sz4_params.indexes[index]].value = param_value.int_value;
+				prec = 1^gb.sz4_params.params[gb.sz4_params.indexes[index]].prec
+				try:
+					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = int(param_value.int_value) + int(param_value.double_value*prec) + int(param_value.float_value*prec)
+                                except:
+					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = 0
+					
 			else:
 				pass
 	except zmq.ZMQError as e:
