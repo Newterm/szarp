@@ -41,9 +41,19 @@
 #include "raporter.h"
 #include "ekrncor.h"
 #include "liblog.h"
+#include "libpar.h"
 
 using namespace std;
 
+TDevice::TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daemon, const std::wstring& _path, int _speed, int _stop, int _protocol, const std::wstring& _options, bool _parcookDevice):
+	number(_number), parentSzarpConfig(parent), daemon(_daemon),
+	path(_path), speed(_speed), stop(_stop), protocol(_protocol),
+	special(0), special_value(0), options(_options), radios(NULL),
+	next(NULL), parcookDevice(_parcookDevice), deviceTimeval()
+{
+	deviceTimeval.tv_sec  = 10;// default should be sz4 heartbeat
+	deviceTimeval.tv_usec = 0;
+}
 #define FREE(x)	if (x != NULL) free(x)
 
 int TDevice::parseXML(xmlNodePtr node)
@@ -68,6 +78,27 @@ int TDevice::parseXML(xmlNodePtr node)
 	if (c) {
 		speed = atoi((char*) c);
 		xmlFree(c);
+	}
+	c = xmlGetNoNsProp(node, X"usec_period");
+	if (c) {
+		deviceTimeval.tv_usec = boost::lexical_cast<long int>(c);
+		xmlFree(c);
+		c = xmlGetNoNsProp(node, X"sec_period");
+		if (c) {
+			deviceTimeval.tv_sec = boost::lexical_cast<long int>(c);
+			xmlFree(c);
+		} else if (deviceTimeval.tv_usec != 0) {
+			deviceTimeval.tv_sec = 0;
+		} else {
+			deviceTimeval.tv_sec = 10; 
+			// something might be wrong with device configuration
+		}
+	} else {
+		c = xmlGetNoNsProp(node, X"sec_period");
+		if (c) {
+			deviceTimeval.tv_sec = boost::lexical_cast<long int>(c);
+			xmlFree(c);
+		}
 	}
 	c = xmlGetNoNsProp(node, X"path");
 	if (!c)
@@ -147,6 +178,12 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		} else
 		if (xw.IsAttr("path")) {
 			path = SC::U2S(attr);
+		} else
+		if (xw.IsAttr("sec_period")) {
+			deviceTimeval.tv_sec = boost::lexical_cast<long int>(attr);
+		} else
+		if (xw.IsAttr("usec_period")) {
+			deviceTimeval.tv_usec = boost::lexical_cast<long int>(attr);
 		} else
 		if (xw.IsAttr("speed")) {
 			speed = boost::lexical_cast<int>(attr);
@@ -260,6 +297,12 @@ xmlNodePtr TDevice::generateXMLNode(void)
 		xmlSetProp(r, X"daemon", SC::S2U(daemon).c_str());
 	if (!path.empty())
 		xmlSetProp(r, X"path", SC::S2U(path).c_str());
+	if (deviceTimeval.tv_sec != 10) {
+		xmlSetProp(r, X"sec_period", SC::A2U(boost::lexical_cast<std::string>(deviceTimeval.tv_sec)).c_str());
+	}
+	if (deviceTimeval.tv_usec != 0) {
+		xmlSetProp(r, X"usec_period", SC::A2U(boost::lexical_cast<std::string>(deviceTimeval.tv_usec)).c_str());
+	}
 	if (speed > 0) {
 		ITOA(speed);
 		xmlSetProp(r, X"speed", BUF);
