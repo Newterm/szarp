@@ -132,6 +132,21 @@
 			</attribute>
 		</optional>
 		<optional>
+			<attribute name="parcook_device">
+				<text/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="sec_period">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="usec_period">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
 			<attribute name="stop">
 				<choice>
 					<value>1</value>
