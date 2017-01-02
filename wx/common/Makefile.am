@@ -3,7 +3,7 @@
 #
 # $Id: Makefile.am 6842 2009-06-19 09:58:13Z reksio $
 
-SUBDIRS = 
+SUBDIRS =
 
 LDADD=@WX_LIBS@ ../../libSzarp2/libSzarp2.la @XML_LIBS@ \
 	../../libSzarp/libSzarp.la @CURL_LIBS@ @LDADD@ @LUA_LIBS@
@@ -28,43 +28,41 @@ WIN_APP_NAME=Szarp
 BUILT_SOURCES=version.h
 
 libwxcommon_la_SOURCES = \
-		@srcdir@/version.h \
-		@srcdir@/cconv.cc @srcdir@/cconv.h \
-		@srcdir@/datechooser.cpp @srcdir@/datechooser.h \
-		@srcdir@/dcolors.cc @srcdir@/dcolors.h \
-		@srcdir@/fetchparams.cc @srcdir@/fetchparams.h \
-		@srcdir@/fonts.cpp @srcdir@/fonts.h \
-		@srcdir@/geometry.cpp @srcdir@/geometry.h \
-		@srcdir@/htmlabout.cpp @srcdir@/htmlabout.h \
-		@srcdir@/htmlview.cpp @srcdir@/htmlview.h \
-		@srcdir@/parlist.cpp @srcdir@/parlist.h \
-		@srcdir@/parselect.cpp @srcdir@/parselect.h \
-		@srcdir@/serverdlg.cpp @srcdir@/serverdlg.h \
-		@srcdir@/aboutdlg.cpp @srcdir@/aboutdlg.h \
-		@srcdir@/imagepanel.cpp @srcdir@/imagepanel.h \
-		@srcdir@/szapp.cpp @srcdir@/szapp.h \
-		@srcdir@/szhlpctrl.cpp @srcdir@/szhlpctrl.h \
-		@srcdir@/szmutex.cpp @srcdir@/szmutex.h \
-		@srcdir@/ipc.cc @srcdir@/ipc.h \
-		@srcdir@/cfgnames.cpp @srcdir@/cfgnames.h \
-		@srcdir@/balloontaskbaritem.cpp @srcdir@/balloontaskbaritem.h \
-		@srcdir@/authdiag.cpp @srcdir@/authdiag.h \
-		@srcdir@/pscgui.cpp @srcdir@/pscgui.h \
-		@srcdir@/biowxsock.h @srcdir@/biowxsock.cpp \
-		@srcdir@/cfgdlg.h @srcdir@/cfgdlg.cpp \
-		@srcdir@/szframe.h @srcdir@/szframe.cpp \
-		@srcdir@/sztaskbaritem.h @srcdir@/sztaskbaritem.cpp \
-		@srcdir@/singleinstance.h @srcdir@/singleinstance.cc \
-		@srcdir@/md5.h @srcdir@/md5.cpp \
-		@srcdir@/getprobersaddresses.h @srcdir@/getprobersaddresses.cpp \
-		@srcdir@/GUI/resource.cpp \
-		@srcdir@/helpctrlex/helpctrlex.cpp @srcdir@/helpctrlex/helpctrlex.h \
-		@srcdir@/helpctrlex/helpdlgex.cpp @srcdir@/helpctrlex/helpdlgex.h \
-		@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
-		@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
-		@srcdir@/wxlogging.cpp @srcdir@/wxlogging.h
-
-
+	@srcdir@/version.h \
+	@srcdir@/cconv.cc @srcdir@/cconv.h \
+	@srcdir@/datechooser.cpp @srcdir@/datechooser.h \
+	@srcdir@/dcolors.cc @srcdir@/dcolors.h \
+	@srcdir@/fetchparams.cc @srcdir@/fetchparams.h \
+	@srcdir@/fonts.cpp @srcdir@/fonts.h \
+	@srcdir@/geometry.cpp @srcdir@/geometry.h \
+	@srcdir@/htmlabout.cpp @srcdir@/htmlabout.h \
+	@srcdir@/htmlview.cpp @srcdir@/htmlview.h \
+	@srcdir@/parlist.cpp @srcdir@/parlist.h \
+	@srcdir@/parselect.cpp @srcdir@/parselect.h \
+	@srcdir@/serverdlg.cpp @srcdir@/serverdlg.h \
+	@srcdir@/aboutdlg.cpp @srcdir@/aboutdlg.h \
+	@srcdir@/imagepanel.cpp @srcdir@/imagepanel.h \
+	@srcdir@/szapp.cpp @srcdir@/szapp.h \
+	@srcdir@/szhlpctrl.cpp @srcdir@/szhlpctrl.h \
+	@srcdir@/szmutex.cpp @srcdir@/szmutex.h \
+	@srcdir@/ipc.cc @srcdir@/ipc.h \
+	@srcdir@/cfgnames.cpp @srcdir@/cfgnames.h \
+	@srcdir@/balloontaskbaritem.cpp @srcdir@/balloontaskbaritem.h \
+	@srcdir@/authdiag.cpp @srcdir@/authdiag.h \
+	@srcdir@/pscgui.cpp @srcdir@/pscgui.h \
+	@srcdir@/biowxsock.h @srcdir@/biowxsock.cpp \
+	@srcdir@/cfgdlg.h @srcdir@/cfgdlg.cpp \
+	@srcdir@/szframe.h @srcdir@/szframe.cpp \
+	@srcdir@/sztaskbaritem.h @srcdir@/sztaskbaritem.cpp \
+	@srcdir@/singleinstance.h @srcdir@/singleinstance.cc \
+	@srcdir@/md5.h @srcdir@/md5.cpp \
+	@srcdir@/getprobersaddresses.h @srcdir@/getprobersaddresses.cpp \
+	@srcdir@/GUI/resource.cpp \
+	@srcdir@/helpctrlex/helpctrlex.cpp @srcdir@/helpctrlex/helpctrlex.h \
+	@srcdir@/helpctrlex/helpdlgex.cpp @srcdir@/helpctrlex/helpdlgex.h \
+	@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
+	@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
+	@srcdir@/wxlogging.cpp @srcdir@/wxlogging.h
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in
@@ -94,11 +92,11 @@ install-data-local: fr/common.mo pl/common.mo pl/wx.mo fr/wx.mo de/wx.mo de/comm
 	$(INSTALL) de/common.mo \
 		$(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
 	$(INSTALL) pl/wx.mo \
-                $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
+		$(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
 	$(INSTALL) fr/wx.mo \
-                $(DESTDIR)@prefix@/resources/locales/fr_FR/LC_MESSAGES
+		$(DESTDIR)@prefix@/resources/locales/fr_FR/LC_MESSAGES
 	$(INSTALL) de/wx.mo \
-                $(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
+		$(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
 
 update-po:
 	@WXRC@ -g @srcdir@/$(GUIDIR)*.$(GUIFILES) > @srcdir@/$(TMP_GETTEXT).h
@@ -120,22 +118,22 @@ winsetup: ${WIN_APP_NAME}Setup.exe
 
 ${WIN_APP_NAME}Setup.exe: $(common_LOCALES) $(wx_LOCALES)
 	@srcdir@/../../script/nsis/winsetup.sh -c \
-		-d resources \
-		-f szarp.cfg @srcdir@/../../resources/SZARP_CFG_TEMPLATE \
-		-f szarp_in.cfg @srcdir@/../../resources/SZARP_IN_CFG_TEMPLATE \
-		-d resources/dtd \
-		@srcdir@/../../resources/dtd/params-list.rng \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		pl/wx.mo \
-		pl/common.mo \
-		-d resources/locales/fr_FR/LC_MESSAGES \
-		fr/wx.mo \
-		fr/common.mo \
-		-d resources/locales/de_DE/LC_MESSAGES \
-		de/wx.mo \
-		de/common.mo \
-		-d resources/wx/icons \
-		@srcdir@/../../resources/wx/icons/*.xpm \
-		-d resources/wx/images \
-		@srcdir@/../../resources/wx/images/*.png
-		
+	-d resources \
+	-f szarp.cfg @srcdir@/../../resources/SZARP_CFG_TEMPLATE \
+	-f szarp_in.cfg @srcdir@/../../resources/SZARP_IN_CFG_TEMPLATE \
+	-d resources/dtd \
+	@srcdir@/../../resources/dtd/params-list.rng \
+	-d resources/locales/pl_PL/LC_MESSAGES \
+	pl/wx.mo \
+	pl/common.mo \
+	-d resources/locales/fr_FR/LC_MESSAGES \
+	fr/wx.mo \
+	fr/common.mo \
+	-d resources/locales/de_DE/LC_MESSAGES \
+	de/wx.mo \
+	de/common.mo \
+	-d resources/wx/icons \
+	@srcdir@/../../resources/wx/icons/*.xpm \
+	-d resources/wx/images \
+	@srcdir@/../../resources/wx/images/*.png
+
