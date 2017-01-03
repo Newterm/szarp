@@ -530,6 +530,7 @@ public:
          * shared memory */
 	bool isParcookDevice() const { return parcookDevice; }
 
+	void configureDeviceTimeval(long int);
 	struct timeval getDeviceTimeval() const { return deviceTimeval; }
 protected:
 	/**

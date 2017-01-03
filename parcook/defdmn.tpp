@@ -1,6 +1,9 @@
 #include <zmq.hpp>
 #include "szbase/szbbase.h"
 #include "funtable.h"
+#include "szarp_config.h"
+#include "szarp_base_common/lua_strings_extract.h"
+
 float ChooseFun(float funid, float *parlst);
 void putParamsFromString(const std::wstring& script_string, std::wregex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
 
@@ -30,13 +33,12 @@ public:
 	virtual ~DefParamBase() {}
 
 	virtual void setVal(double) = 0;
-	bool shouldBeUpdated() const { return should_update; }
 	virtual void setZmqVal(zmqhandler&) const = 0;
-	virtual void setParcookVal(short*) const = 0;
+	virtual void sendValueToParcook(short*) const = 0;
 
-	virtual void executeAndUpdate(zmqhandler&, short*) = 0;
+	virtual void executeAndUpdate(zmqhandler&) = 0;
 
-	void param_data_changed(TParam *p) override { should_update = true; }
+	void param_data_changed(TParam *p) override { /* needed for sz4 to update */ }
 
 	virtual void prepareParamsFromScript() = 0;
 
@@ -62,7 +64,6 @@ public:
 protected:
 	TParam *param;
 	const size_t index;
-	mutable bool should_update = true;
 	std::vector<std::wstring> preparedParams;
 };
 
@@ -71,12 +72,10 @@ class BaseParamImpl: public DefParamBase {
 public:
 	BaseParamImpl(TParam* param, size_t index): DefParamBase(param, index), val(0), t() {}
 	void setZmqVal(zmqhandler& zmq) const override {
-		makeTimeNow();
-		zmq.set_value(index, t, val);
-		// this->should_update = false;
+		zmq.set_value(index, sz4::getTimeNow<time_type>(), val);
 	}
 
-	void setParcookVal(short* read) const override {
+	void sendValueToParcook(short* read) const override {
 		data_type val_to_parcook = val;
 
 		for (int i = this->param->GetPrec(); i > 0; i--) {
@@ -95,33 +94,33 @@ private:
 	data_type val;
 	mutable time_type t;
 
-	void makeTimeNow() const { t = sz4::getTimeNow<time_type>(); } // template time
 };
 
 template <class v, class t>
 class LuaParam: public BaseParamImpl<v,t> {
-	lua_State* lua;
 public:
-	LuaParam(TParam* param, size_t index, lua_State* lua): BaseParamImpl<v,t>(param, index), lua(lua) {
+	LuaParam(TParam* param, size_t index): BaseParamImpl<v,t>(param, index) {
 		compileScript();
 	}
 
 	void compileScript() {
 		std::ostringstream paramfunction;
 
-		paramfunction					<< 
-		"return function()"			<< std::endl <<
-		"	local i = param_value"		<< std::endl <<
-		"	local p = szbase"			<< std::endl <<
-		"	local state = {}"			<< std::endl <<
-		"	local v = nil"				<< std::endl <<
-		this->param->GetLuaScript()		<< std::endl <<
-		"	return v"					<< std::endl <<
-		"end"							<< std::endl;
+		paramfunction << 
+         "return function(t, pt)"          << std::endl <<
+         "  local i = param_value"    << std::endl <<
+         "  local p = szbase"         << std::endl <<
+         "  local state = {}"         << std::endl <<
+         "  local v = nil"            << std::endl <<
+         this->param->GetLuaScript()  << std::endl <<
+         "  return v"                 << std::endl <<
+         "end"
+		<< std::endl;
 
 		std::string str = paramfunction.str();
 		const char* content = str.c_str();
 
+		lua_State* lua = Defdmn::getObject().get_lua_interpreter().lua();
 		// Load string as LUA function named as the parameter
 		int ret = luaL_loadbuffer(lua, content, strlen(content), (const char*)SC::S2U(this->param->GetName()).c_str());
 		if (ret != 0) {
@@ -138,59 +137,27 @@ public:
 	}
 
 	void prepareParamsFromScript() override {
-		std::wstring lua_string(SC::U2S(this->param->GetLuaScript()));
-		std::vector<std::wstring> ret_params;
-		constexpr int name_match_prefix = 3;
-		constexpr int name_match_sufix = 4;
-
-		std::wregex ipc_par_regex(L"[ip]\\(\\\"([^:\\(\\)]*:){2}[^:\\(\\)]*\\\"");
-		putParamsFromString(lua_string, ipc_par_regex, name_match_prefix, name_match_sufix, ret_params);
-		std::wstring prefix = SC::A2S(std::string(libpar_getpar("", "prefix", 1))) + L":";
-		prefix = prefix.substr(1, prefix.length());
-		const auto addPrefix = [&prefix](std::wstring& name) {
-			name.insert(0, prefix);
-		};
-		std::for_each(ret_params.begin(), ret_params.end(), addPrefix);
-
-		ipc_par_regex.assign(L"[ip]\\(\\\"([^:\\(\\)]*:){3}[^:\\(\\)]*\\\"");
-		putParamsFromString(lua_string, ipc_par_regex, name_match_prefix, name_match_sufix, ret_params);
-
-		this->preparedParams = ret_params;
+		extract_strings_from_formula(SC::U2S(this->param->GetLuaScript()), ref(this->preparedParams));
 	}
 
 
-	void executeAndUpdate(zmqhandler& zmq, short* read) override {
-		if (!this->shouldBeUpdated()) { 
-			this->setZmqVal(zmq);
-			this->setParcookVal(read);
-
-			return; 
-		}
-
+	void executeAndUpdate(zmqhandler& zmq) override {
 		assert(this->param->GetLuaParamReference() != LUA_NOREF);
-		double result;
 
-		// push param's lua function and call it
+		lua_State* lua = Defdmn::getObject().get_lua_interpreter().lua();
 		lua_rawgeti(lua, LUA_REGISTRYINDEX, this->param->GetLuaParamReference());
-		//lua_pushnumber(lua, time(NULL));
-		//lua_pushnumber(lua, SZARP_PROBE_TYPE::PT_SEC10);
-		int ret = lua_pcall(lua, 0, 1, 0);
-		if (ret != 0) {
-			throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + lua_tostring(lua, -1));
-		}
 
-		if (lua_isnil(lua, -1))
-			result = nan("");
-		else 
-			result = lua_tonumber(lua, -1);
+		lua_pushnumber(lua, (double) sz4::getTimeNow<sz4::nanosecond_time_t>());
+		lua_pushnumber(lua, SZARP_PROBE_TYPE::PT_SEC10);
+		lua_pushnumber(lua, 1);
 
-		// pop the function
-		lua_pop(lua, 1);
+		int ret = lua_pcall(lua, 3, 1, 0);
+		if (ret != 0) throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + lua_tostring(lua, -1));
 
-		// this->should_update=false;
+		double result = lua_isnil(lua, -1)? sz4::no_data<v>() : lua_tonumber(lua, -1);
+
 		this->setVal(result);
 		this->setZmqVal(zmq);
-		this->setParcookVal(read);
 	}
 
 };
@@ -201,7 +168,12 @@ template <class v, class t>
 class RPNParam: public BaseParamImpl<v,t> {
 public:
 	std::wstring tab;
-	RPNParam(TParam* param, size_t index, std::wstring tab): BaseParamImpl<v,t>(param, index), tab(tab) {}
+	RPNParam(TParam* param, size_t index, std::wstring formula): BaseParamImpl<v,t>(param, index), tab() {
+		std::wstring::size_type idx = formula.rfind(L'#');
+		if (idx != std::wstring::npos)
+			tab = formula.substr(0, idx);
+		else tab = formula;
+	}
 
 	void prepareParamsFromScript() override {
 		std::wstring rpn_string(this->param->GetFormula());
@@ -223,15 +195,8 @@ public:
 		this->preparedParams = ret_params;
 	}
 
-	void executeAndUpdate(zmqhandler& zmq, short* read) override
+	void executeAndUpdate(zmqhandler& zmq) override
 	{
-		if (!this->shouldBeUpdated()) { 
-			this->setZmqVal(zmq);
-			this->setParcookVal(read);
-
-			return; 
-		}
-
 		const wchar_t *chptr;
 		constexpr int SS = 30;
 		double stack[SS+1];
@@ -257,8 +222,10 @@ public:
 			if (iswdigit(*chptr)) {
 				tmp = wcstof(chptr, NULL);
 				chptr = wcschr(chptr, L' ');
-				float par_val = Defdmn::IPCParamValue(this->preparedParams[p_no++]);
-				nodata[sp] = 0; // check if val is not nan
+				double par_val = Defdmn::IPCParamValue(this->preparedParams[p_no++]);
+				if (par_val == sz4::no_data<double>()) nodata[sp] = 1; // check if val is not nan
+				else nodata[sp] = 0;
+
 				stack[sp++] = par_val;	
 			} else {
 				switch (*chptr) {
@@ -440,18 +407,16 @@ public:
 			}
 		} while (*(++chptr) != 0);
 			
-		// this->should_update=false;
 		this->setZmqVal(zmq);
-		this->setParcookVal(read);
 	}
 };
 
 class LuaParamBuilder
 {
 public:
-	template<class data_type, class time_type> static DefParamBase* op(TParam* par, size_t index, lua_State* lua)
+	template<class data_type, class time_type> static DefParamBase* op(TParam* par, size_t index)
 	{
-		return new LuaParam<data_type, time_type>(par, index, lua);
+		return new LuaParam<data_type, time_type>(par, index);
 	}
 };
 

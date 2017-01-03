@@ -51,7 +51,7 @@ TDevice::TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daem
 	special(0), special_value(0), options(_options), radios(NULL),
 	next(NULL), parcookDevice(_parcookDevice), deviceTimeval()
 {
-	deviceTimeval.tv_sec  = 10;// default should be sz4 heartbeat
+	deviceTimeval.tv_sec  = 0;// default should be sz4 heartbeat
 	deviceTimeval.tv_usec = 0;
 }
 #define FREE(x)	if (x != NULL) free(x)
@@ -79,26 +79,15 @@ int TDevice::parseXML(xmlNodePtr node)
 		speed = atoi((char*) c);
 		xmlFree(c);
 	}
+	c = xmlGetNoNsProp(node, X"sec_period");
+	if (c) {
+		deviceTimeval.tv_sec = boost::lexical_cast<long int>(c);
+		xmlFree(c);
+	}
 	c = xmlGetNoNsProp(node, X"usec_period");
 	if (c) {
 		deviceTimeval.tv_usec = boost::lexical_cast<long int>(c);
 		xmlFree(c);
-		c = xmlGetNoNsProp(node, X"sec_period");
-		if (c) {
-			deviceTimeval.tv_sec = boost::lexical_cast<long int>(c);
-			xmlFree(c);
-		} else if (deviceTimeval.tv_usec != 0) {
-			deviceTimeval.tv_sec = 0;
-		} else {
-			deviceTimeval.tv_sec = 10; 
-			// something might be wrong with device configuration
-		}
-	} else {
-		c = xmlGetNoNsProp(node, X"sec_period");
-		if (c) {
-			deviceTimeval.tv_sec = boost::lexical_cast<long int>(c);
-			xmlFree(c);
-		}
 	}
 	c = xmlGetNoNsProp(node, X"path");
 	if (!c)
@@ -297,7 +286,7 @@ xmlNodePtr TDevice::generateXMLNode(void)
 		xmlSetProp(r, X"daemon", SC::S2U(daemon).c_str());
 	if (!path.empty())
 		xmlSetProp(r, X"path", SC::S2U(path).c_str());
-	if (deviceTimeval.tv_sec != 10) {
+	if (deviceTimeval.tv_sec != 0) {
 		xmlSetProp(r, X"sec_period", SC::A2U(boost::lexical_cast<std::string>(deviceTimeval.tv_sec)).c_str());
 	}
 	if (deviceTimeval.tv_usec != 0) {
@@ -383,6 +372,14 @@ int TDevice::GetRadiosCount()
 	for (TRadio* r = GetFirstRadio(); r; r = GetNextRadio(r))
 		i++;
 	return i;
+}
+
+void TDevice::configureDeviceTimeval(long int rollback)
+{
+	if (deviceTimeval.tv_sec == 0 && deviceTimeval.tv_usec == 0) {
+		deviceTimeval.tv_sec = rollback;
+		sz_log(0, "Device timer configuration incorrect. Defaulting to (%lli s).", deviceTimeval.tv_sec);
+	}
 }
 
 TDevice::~TDevice()

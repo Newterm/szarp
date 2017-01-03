@@ -48,9 +48,9 @@
 #include "defdmn.h"
 
 void configureHubs(sz4::live_cache_config*);
-int ipc_value(lua_State *lua);
+void registerLuaFunctions();
 int sz4base_value(lua_State *lua);
-int pushTimeNow(lua_State* lua);
+int ipc_value(lua_State *lua);
 
 int main(int argc, char ** argv)
 {
@@ -60,11 +60,15 @@ int main(int argc, char ** argv)
 	dmn.go();
 }
 
+Defdmn::Defdmn(): m_ipc(nullptr), m_cfg(nullptr), m_zmq(nullptr), m_base(nullptr), m_event_base(nullptr), param_info() {}
+
 void Defdmn::MainLoop() {
 	executeScripts();
 	
-	m_zmq->publish();
-	if (m_cfg->GetDevice()->isParcookDevice()) m_ipc->GoParcook();
+	if (!m_cfg->GetSingle()) {
+		m_zmq->publish();
+		if (connectToParcook) m_ipc->GoParcook();
+	}
 }
 
 void Defdmn::go() {
@@ -73,9 +77,10 @@ void Defdmn::go() {
 }
 
 void Defdmn::executeScripts() {
-	for (const auto& i: param_info) {
+	for (auto& i: param_info) {
 		try {
-			i->executeAndUpdate(*m_zmq, m_read);
+			i->executeAndUpdate(*m_zmq);
+			if (connectToParcook) i->sendValueToParcook(m_ipc->m_read);
 		} catch (SzException &e) {
 			sz_log(0, "%s", e.what());
 			throw;
@@ -87,7 +92,7 @@ double Defdmn::getParamData(TParam* p, sz4::nanosecond_time_t t, SZARP_PROBE_TYP
 	double result;
 	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum;
 
-	m_base->get_weighted_sum(p, sz4::time_just_before<sz4::nanosecond_time_t>::get(t), t, pt, sum); // poprawna dana
+	m_base->get_weighted_sum(p, sz4::time_just_before<sz4::nanosecond_time_t>::get(t), t, pt, sum);
 
 	result = sz4::scale_value(sum.avg(), p);
 	return result;
@@ -125,83 +130,75 @@ void Defdmn::configure(int* argc, char** argv) {
 	m_ipc.reset(new IPCHandler(m_cfg.get()));
 
 	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init())
-			throw SzException("Could not initialize IPC");
-		sz_log(2, "IPC initialized successfully");
+		if (m_ipc->Init()) {
+			sz_log(0, "Could not initialize IPC");
+		} else {
+			connectToParcook = true;
+			sz_log(2, "IPC initialized successfully");
+		}
 	} else {
 		sz_log(2, "Single mode, ipc not intialized!!!");
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
-
-	m_read = m_ipc->m_read;
+	dev->configureDeviceTimeval(boost::lexical_cast<long int>(libpar_getpar("sz4", "heartbeat_frequency", 1)));
 	m_cycle = dev->getDeviceTimeval();
-	m_conf_str = m_cfg->GetPrintableDeviceXMLString();
 
-	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
-			unit; unit = unit->GetNext()) {
+	sz4::live_cache_config* live_config = new sz4::live_cache_config();
+	live_config->retention = 1000;
+	
+	configureHubs(live_config);
 
-		m_read_count += unit->GetParamsCount();
+	char* sub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
+	char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 
+	Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
+	m_zmq.reset(new zmqhandler(m_cfg->GetIPK(), dev, *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
+	sz_log(2, "ZMQ initialized successfully");
+
+	registerLuaFunctions();
+
+	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext()) {
 		for (TParam * p = unit->GetFirstParam(); p; p = unit->GetNextParam(p)) {
-			try {
+			if (p->GetLuaScript()) {
+				param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd())));
+			} else {
 				std::wstring formula = p->GetParcookFormula(true);
-				if (p->GetLuaScript()) {
-						DefParamBase *pi = sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd(), m_lua);
-						pi->prepareParamsFromScript();
-						param_info.push_back(pi);
-				} else if (!formula.empty()) {
-					std::wstring::size_type idx = formula.rfind(L'#');
-					if (idx != std::wstring::npos)
-						formula = formula.substr(0, idx);
-					DefParamBase* pi = sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd(), formula);
-					pi->prepareParamsFromScript();
-					param_info.push_back(pi);
+				if (!formula.empty()) {
+					param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd(), formula)));
+				} else {
+					throw SzException("Param "+SC::S2A(p->GetGlobalName())+" was ill-formed");
 				}
-			} catch (SzException& e) {
-				// if any param is ill-formed, stop the daemon
-				sz_log(0, "%s", e.what());
-				throw;
 			}
-		}
+			param_info.back()->prepareParamsFromScript();
+		} // if any param is ill-formed, stop the daemon
 	}
 
-	{ // Manage zmq and sz4 base
-		char* sub_address = libpar_getpar("parhub", "pub_conn_addr", 1); // used for cache
-		char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1); // we publish on parhub's subscribe address
-
-		sz4::live_cache_config* live_config = new sz4::live_cache_config();
-		live_config->retention = 1000;
-		
-		//live_config->urls.push_back(std::make_pair(sub_address, IPKContainer::GetObject()->GetConfig(SC::A2S(libpar_getpar("", "prefix", 1)))));
-
-		configureHubs(live_config);
-
-		Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
-
-		zmq::context_t* zmq_ctx = new zmq::context_t(1);
-		m_zmq.reset(new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), *zmq_ctx, sub_address, pub_address));
-		sz_log(2, "ZMQ initialized successfully");
-	} // throws 
-
-	std::for_each(param_info.begin(), param_info.end(), [this](DefParamBase*& p){ p->subscribe_on_params(m_base.get()); });
+	for (auto& p: param_info) p->subscribe_on_params(m_base.get());
 }
 
+double Defdmn::IPCParamValue(const std::wstring& name) {
+	TParam* param = IPKContainer::GetObject()->GetParam(name);
+	if (!param) return std::numeric_limits<double>::min();
 
-Defdmn::Defdmn(): m_ipc(nullptr), m_cfg(nullptr), m_zmq(nullptr), m_base(nullptr), m_conf_str("/opt/szarp"), m_read(nullptr), m_read_count(0), m_event_base(nullptr), m_lua(lua_open()), param_info(), m_params() {
-	// Prepare lua
-	luaL_openlibs(m_lua);
-	lua::set_probe_types_globals(m_lua);
+	sz4::nanosecond_time_t data_time;
+	Defdmn::getObject().m_base->get_last_time(param, data_time);
 
-	lua_register(m_lua, "param_value", ipc_value);
-	lua_register(m_lua, "szbase", sz4base_value);
-	lua_register(m_lua, "szb_move_time", sz4::lua_sz4_move_time);
-	lua_register(m_lua, "szb_round_time", sz4::lua_sz4_round_time);
-	lua_register(m_lua, "time_now", pushTimeNow);
-	lua_register(m_lua, "isnan", sz4::lua_sz4_isnan);
-	lua_register(m_lua, "nan", sz4::lua_sz4_nan);
+	return Defdmn::getObject().getParamData(param, data_time);
 }
 
+double Defdmn::Sz4BaseValue(const std::wstring& name, sz4::nanosecond_time_t t, SZARP_PROBE_TYPE pt) {
+	TParam* param = IPKContainer::GetObject()->GetParam(name);
+	if (!param) return std::numeric_limits<double>::min();
+
+	return Defdmn::getObject().getParamData(param, t, pt);
+}
+
+void registerLuaFunctions() {
+	lua_State* lua = Defdmn::getObject().get_lua_interpreter().lua();
+	lua_register(lua, "param_value", ipc_value);
+	lua_register(lua, "szbase", sz4base_value);
+}
 
 float ChooseFun(float funid, float *parlst)
 {
@@ -221,15 +218,16 @@ void putParamsFromString(const std::wstring& script_string, std::wregex& ipc_par
 	}
 }
 
-int pushTimeNow(lua_State* lua) {
-	lua_pushnumber(lua, (double) sz4::getTimeNow<sz4::nanosecond_time_t>());
-	return 1;
+std::wstring makeParamNameGlobal(const char* pname) {
+	std::wstring name(SC::U2S( (const unsigned char*) pname));
+	if (std::count(name.begin(), name.end(), L':') == 2) name.insert(0, SC::A2S(libpar_getpar("", "prefix", 0)) + (wchar_t)':');
+	return name;
 }
 
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
 
-	double result = Defdmn::IPCParamValue(SC::U2S((const unsigned char*)str));
+	double result = Defdmn::IPCParamValue(makeParamNameGlobal(str));
 
 	lua_pushnumber(lua, result);
 
@@ -237,14 +235,14 @@ int ipc_value(lua_State *lua) {
 }
 
 int sz4base_value(lua_State *lua) {
-	const unsigned char* param_name = (unsigned char*) luaL_checkstring(lua, 1);
+	const char* param_name = luaL_checkstring(lua, 1);
 	if (param_name == NULL) 
 		luaL_error(lua, "Invalid param name");
 
-	auto time = sz4::make_nanosecond_time(lua_tonumber(lua, 2), 0);
-	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
+	auto time = sz4::make_nanosecond_time((double) lua_tonumber(lua, 2), 0);
+	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int) lua_tonumber(lua, 3)));
 
-	double result = Defdmn::Sz4BaseValue(SC::U2S(param_name), time, probe_type);
+	double result = Defdmn::Sz4BaseValue(makeParamNameGlobal(param_name), time, probe_type);
 
 	lua_pushnumber(lua, result);
 	return 1;
@@ -271,6 +269,5 @@ void configureHubs(sz4::live_cache_config* live_config) {
 	}
 	std::free(_servers);
 }
-
 
 #endif
