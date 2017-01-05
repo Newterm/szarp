@@ -300,9 +300,9 @@ bool DrawInfo::IsValid() const {
 }
 
 wxString
-DrawInfo::GetValueStr(const double &val, const wxString& no_data_str) {
+DrawInfo::GetValueStr(const double &val, const wxString& no_data_str, const int prec) {
 	assert (p != NULL);
-	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str());
+	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str(), prec);
 }
 
 AverageValueCalculationMethod DrawInfo::GetAverageValueCalculationMethod() const {

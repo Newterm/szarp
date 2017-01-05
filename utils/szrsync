@@ -41,6 +41,7 @@ USE_SSH=
 BWLIMIT=0
 SSH_PORT=
 SYNC_ACTIVITY="--exclude=szbase/Activity"
+EXC=
 
 # use SZRSYNC_SERVER variable or substitute 'praterm' if missing
 SERVER=${SZRSYNC_SERVER:-praterm}
@@ -64,13 +65,14 @@ function usage {
 	echo "Tool for fetching SZARP bases from remote server."
 	echo "Usage: "
 	echo -e "\t$ME [-p <PORT>] [-a <ADDRESS>] [-n] <BASE> ..."
-	echo -e "\t$ME [-p <PORT>] [-u <USER>] [-H <HOST>] [-n] [-s] <BASE> ..."
+	echo -e "\t$ME [-p <PORT>] [-u <USER>] [-H <HOST>] [-n] [-s] [-e <REGEX> [-e <REGEX>...]] <BASE> ..."
 	echo -e "\t$ME -h"
 	echo
 	echo -e "\t-a <ADDRESS> address for rsync to connect (user@server)"
 	echo -e "\t-u <USER> user for rsync to connect to server, ignored if -a given"
 	echo -e "\t-H <HOST> server to connect to instead of default one ($DEFAULT_SERVER)"
 	echo -e "\t-p <PORT> port used for SSH connection"
+	echo -e "\t-e \'<REGEX>\' exclude expression"
 	echo -e "\t-b speed limit transfer speed to speed kbps"
 	echo -e "\t-n do not delete files"
 	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
@@ -81,7 +83,7 @@ function usage {
 
 
 # parse options
-OPTS=`getopt -q -o a:u:H:b:p:hnsA -n $ME -- "$@"`
+OPTS=`getopt -q -o a:u:H:b:p:e:hnsA -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -128,6 +130,10 @@ while true; do
 		SYNC_ACTIVITY="--include=szbase/Activity/***"
 		shift
 		;;
+	-e)
+		EXC="$EXC --exclude $2"
+		shift 2
+		;;
 	--)
 	    shift
 	    break
@@ -159,7 +165,6 @@ fi
 
 CODE=0
 
-EXC=
 INC=
 
 # if we are called by meaner3 process, decrease verbocity
@@ -213,7 +218,6 @@ function get_remote_stamp {
 	
 function get_include () {
 	INC=
-	EXC=
 	[ -d "$1" ] || return 0
 	[ -d "$1/szbase" ] || return 0
 	[ -d "$1/szbase/Status/Meaner3/program_uruchomiony" ] || return 0
@@ -241,7 +245,7 @@ function get_include () {
 		DATESTR=`date +%Y%m -d "$DATE"`
 	done
 
-	EXC="--exclude=*.szb --exclude=szbase_stamp"
+	EXC="$EXC --exclude=*.szb --exclude=szbase_stamp"
 	INC="$OUT"
 
 	return 0;

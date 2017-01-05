@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * draw3
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -88,7 +88,7 @@ class InfoWidget : public wxPanel, public DrawObserver {
 		/**Sets @see m_unit value*/
 		void SetUnit(const wxString& unit);
 		/**Sets precision of currently drawn param*/
-		void SetPrec(int prec);
+		void SetPrec(int prec, int range);
 		/**Updates whole widget*/
 		void SetPeriod(PeriodType period);
 		/**Updates @see date_text widget*/
@@ -122,7 +122,7 @@ class InfoWidget : public wxPanel, public DrawObserver {
 		/**Current probe time*/
 		wxDateTime m_current_time;
 		/**Currently observed draw*/
-		Draw *m_draw;	
+		Draw *m_draw;
 		/**Period of observerd @see Draw*/
 		PeriodType m_period;
 		/**Panel holding widgets showing value*/
@@ -157,6 +157,8 @@ class InfoWidget : public wxPanel, public DrawObserver {
 		wxString m_unit;
 		/**True if is double cursor mode*/
 		bool m_double_cursor;
+		/**Variable to set proper precision due to rounding problems */
+		const int m_significant_digits;
 
 		DECLARE_EVENT_TABLE()
 };

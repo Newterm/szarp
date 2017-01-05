@@ -473,8 +473,16 @@ void EkstraktorMainWindow::onWriteResults(wxCommandEvent &event)
 	if (file->ShowModal() == wxID_OK) {
 		filename.clear();
 		directory.clear();
-		filename = std::wstring(file->GetFilename().wchar_str());
-		directory = std::wstring(file->GetDirectory().wchar_str());
+		wxFileName filepath(file->GetPath());
+		filename = filepath.GetFullName();
+		directory = filepath.GetPath();
+		if (filename.empty() || directory.empty()) {
+			wxMessageBox(_("Cannot make operation"),
+					_("Couldn't open file "),
+					wxOK | wxICON_ERROR, this);
+			delete file;
+			return;
+		}
 		format = file->GetFilterIndex();
 		delete file;
 	} else {

@@ -31,6 +31,7 @@ unit_tests_SOURCES = \
 		sz4_wsum.cpp \
 		sz4_live_cache.cpp \
 		sz4_decode_test.cpp \
+		sz4_factory_test.cpp \
 		zmq_handler_test.cpp \
 		simple_mocks.h 
 
