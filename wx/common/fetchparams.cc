@@ -31,6 +31,7 @@
 #include <wx/wx.h>
 #endif
 
+#include <wx/wx.h>
 #include <wx/url.h>
 #include <wx/thread.h>
 #include <wx/datetime.h>
@@ -45,6 +46,12 @@
 #include "fetchparams.h"
 
 #ifndef NO_CURL
+
+namespace SC {
+	std::wstring W2S(const wxString& c) {
+		return (std::wstring(c.ToStdWstring()));
+	}
+}
 
 szParamFetcher::szParamFetcher()
 	: wxThread()
@@ -99,7 +106,7 @@ bool szParamFetcher::SetSource_u(const wxString &url)
 
 bool szParamFetcher::SetReportName(const wxString &report) 
 {
-	xmlChar *escURI = xmlURIEscapeStr(SC::S2U(report.c_str()).c_str(), NULL);
+	xmlChar *escURI = xmlURIEscapeStr(SC::S2U(SC::W2S(wxString::FromUTF8(report.mb_str()))).c_str(), NULL);
 	assert (escURI);
 	wxCriticalSectionLocker cs(m_csec);
 	wxString url = m_baseurl + _T("xreports?title=") + SC::U2S(escURI).c_str();
@@ -115,7 +122,7 @@ bool szParamFetcher::RegisterControlRaport(const wxString &cname, szParList& par
 	size_t ret;
 
 	xmlDocPtr doc = params.GetXML();
-	char *buf = m_http->PostXML((char *)SC::S2U(url.c_str()).c_str(), doc, userpwd, &ret);
+	char *buf = m_http->PostXML((char *)SC::S2U(SC::W2S(wxString::FromUTF8(url.c_str()))).c_str(), doc, userpwd, &ret);
 	bool ok = buf != NULL;
 	free(buf);
 	SetSource_u(m_baseurl + cname);
@@ -187,7 +194,7 @@ wxString szParamFetcher::Register(const szParList &params)
 
 	xmlDocPtr doc = params.GetXML();
 
-	char *buf = m_http->PostXML((char *)SC::S2U(url.c_str()).c_str(), doc, NULL, &ret);
+	char *buf = m_http->PostXML((char *)SC::S2U(SC::W2S(wxString::FromUTF8(url.c_str()))).c_str(), doc, NULL, &ret);
 	if (buf == NULL) {
 		return wxEmptyString;
 	}
@@ -234,7 +241,7 @@ bool szParamFetcher::Fetch()
 		return false;
 	}
 	
-	xmlDocPtr xml = m_http->GetXML((char *)SC::S2U(m_url.c_str()).c_str(), NULL, NULL);
+	xmlDocPtr xml = m_http->GetXML((char *)SC::S2U(SC::W2S(wxString::FromUTF8(m_url.c_str()))).c_str(), NULL, NULL);
 	if (xml == NULL) {
 		if (m_custom && m_http->GetError() == 0) /**register raport again (only if ti isn't a network failuer*/
 			SetSource(m_cust_list);
