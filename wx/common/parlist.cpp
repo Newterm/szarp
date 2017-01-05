@@ -42,13 +42,6 @@
 #include "szapp.h"
 #include "conversion.h"
 
-namespace SC
-{
-	std::wstring W2S(const wxString& c){
-		return (std::wstring(c.ToStdWstring()));
-	}
-}
-
 szParList::szParList()
 {
 	xml = NULL;

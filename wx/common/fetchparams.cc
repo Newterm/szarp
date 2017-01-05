@@ -44,17 +44,7 @@
 
 #include "conversion.h"
 #include "fetchparams.h"
-#include "parlist.cpp"
 #ifndef NO_CURL
-
-using namespace SC;
-/*
-{
-	std::wstring W2S(const wxString& c) {
-		return (std::wstring(c.ToStdWstring()));
-	}
-}
-*/
 
 szParamFetcher::szParamFetcher()
 	: wxThread()
