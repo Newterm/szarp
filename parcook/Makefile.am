@@ -24,7 +24,7 @@ AM_CPPFLAGS = @XML_CFLAGS@ @LUA_CFLAGS@ \
 	   $(PROTOBUF_CFLAGS)				\
 	   $(BOOST_CPPFLAGS)				\
 	   $(XMLRPC_EPI_CFLAGS)				\
-	  `python-config --cflags`			\
+	   `python-config --cflags | sed -e 's/-Wstrict-prototypes//g'` \
 	   -DPREFIX=\"@prefix@\"
 
 LIBSZARP2 = ../libSzarp2/libSzarp2.la
