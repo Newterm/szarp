@@ -40,7 +40,6 @@ DL = -ldl
 bin_PROGRAMS = \
 	      aqtdmn \
 	      calcdmn \
-	      calecdmn \
 	      dbdmn \
 	      @DDEDMN@ \
 	      @DLMSDMN@ \
@@ -102,8 +101,6 @@ basedmn_SOURCES = base_daemon.cc base_daemon.h
 dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
-
-calecdmn_SOURCES = calecdmn.cc
 
 dbdmn_SOURCES = dbdmn.cc
 
