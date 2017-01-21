@@ -66,7 +66,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <math.h>
@@ -84,6 +83,7 @@
 #include "xmlutils.h"
 #include "szbase/szbbase.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #include <string>
 #include <vector>
@@ -157,7 +157,7 @@ DbDaemon::DbDaemon(DaemonConfig* cfg)
 	m_single = cfg->GetSingle();
 	m_params_count = cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetParamsCount();
-	assert(m_params_count >= 0);
+	ASSERT(m_params_count >= 0);
 	m_expire = DEFAULT_EXPIRE;
 	m_last = 0;
 	m_target_ipk = NULL;
@@ -300,20 +300,20 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 	int ret;
 	
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "db",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
@@ -336,10 +336,10 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 		char *expr;
 		const int ret = asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i);
 		(void)ret;
-		assert (expr != NULL);
+		ASSERT(expr != NULL);
 
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(node);
+		ASSERT(node);
 		free(expr);
 
 		struct ParamDesc * pd = ConfigureParam(p, node, szbase);
@@ -445,11 +445,11 @@ void init_signals()
 	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = terminate_handler;
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 }
 
@@ -464,13 +464,13 @@ int main(int argc, char *argv[])
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("dbdmn");
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	
 	if (cfg->Load(&argc, argv, 0)) // 0 - dont call libpar_done
 		return 1;
 	
 	dmn = new DbDaemon(cfg);
-	assert (dmn != NULL);
+	ASSERT(dmn != NULL);
 	
 	if (dmn->ParseConfig(cfg)) {
 		return 1;

@@ -452,7 +452,7 @@ int fc_proto_impl::parse_frame()
 	for (size_t i = (byte + pwe_byte); i < (byte + pwe_byte + status_word); ++i) {
 		const unsigned char PCD1 = m_buffer.at(i);
 		if (PCD1 != 0)
-			m_log.log(7, "parse_frame warning - status word PCD1 (byte %d) is %X", i, PCD1);
+			m_log.log(7, "parse_frame warning - status word PCD1 (byte %zu) is %X", i, PCD1);
 	}
 
 	/* Ignoring 15 byte - output frequency */
@@ -518,7 +518,7 @@ int fc_proto_impl::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
 	xp_ctx->node = node;
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 
 	std::string _extra_id;

@@ -45,6 +45,7 @@
 #include "serialadapter.h"
 #include "atcconn.h"
 #include "daemonutils.h"
+#include "custom_assert.h"
 
 #ifndef SZARP_NO_DATA
 #define SZARP_NO_DATA -32768
@@ -88,7 +89,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	char *e;
 	int res = asprintf(&e, "./@%s", prop);
 	(void)res;
-	assert (e != nullptr);
+	ASSERT(e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -99,7 +100,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	char *e;
 	int res = asprintf(&e, "./@extra:%s", prop);
 	(void)res;
-	assert (e != nullptr);
+	ASSERT(e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -563,7 +564,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xmlLineNumbersDefault(1);
 
 	m_daemon_conf = new DaemonConfig("kamsdmn");
-	assert(m_daemon_conf != nullptr);
+	ASSERT(m_daemon_conf != nullptr);
 	if (m_daemon_conf->Load(&argc, argv)) {
 		throw KamsDmnException("Cannot load configuration");
 	}
@@ -592,18 +593,18 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 
 	/* get config data */
 	doc = m_daemon_conf->GetXMLDoc();
-	assert (doc != nullptr);
+	ASSERT(doc != nullptr);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != nullptr);
+	ASSERT(xp_ctx != nullptr);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	xp_ctx->node = m_daemon_conf->GetXMLDevice();
 

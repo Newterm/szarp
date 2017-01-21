@@ -52,6 +52,7 @@
 #include <event.h>
 #include <evdns.h>
 #include "ipchandler.h"
+#include "custom_assert.h"
 
 /**self-descriptive struct holding all aspects of serial port conifguration in one place*/
 struct serial_port_configuration {

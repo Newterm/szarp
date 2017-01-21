@@ -28,7 +28,6 @@
  */
 
 #include <unistd.h>
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <time.h>
@@ -36,6 +35,7 @@
 #include <liblog.h>
 
 #include "base_daemon.h"
+#include "custom_assert.h"
 
 BaseDaemon::BaseDaemon( const char* name )
 	: m_cfg(NULL), m_last(0) , name(name) 
@@ -61,7 +61,7 @@ int BaseDaemon::Init( const char*name , int argc, const char *argv[], TSzarpConf
 int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TSzarpConfig* sz_cfg , int dev_index )
 {
 	m_cfg = new DaemonConfig(name);
-	assert( m_cfg );
+	ASSERT( m_cfg );
 
 	if( m_cfg->Load(&argc, const_cast<char**>(argv), 1, sz_cfg, dev_index) ) {
 		sz_log(1,"Cannot load dmn cfg");
@@ -78,7 +78,7 @@ int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TS
 int BaseDaemon::InitIPC()
 {
 	ipc = new IPCHandler(m_cfg);
-	assert(ipc);
+	ASSERT(ipc);
 
 	if( !m_cfg->GetSingle() && ipc->Init() ) {
 		sz_log(1,"Cannot init ipc");
@@ -107,11 +107,11 @@ int BaseDaemon::InitSignals()
 	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = terminate_handler;
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	return 0;
 }

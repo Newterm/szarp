@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -20,7 +20,7 @@
  * $Id$
  */
 
-/* 
+/*
  SZARP daemon description block.
 
  @description_start
@@ -34,7 +34,7 @@
  	programu proxy uruchomionego na maszynie z dzia³aj±cym PRO 2000.
 
  @protocol Daemon uses simple text based protocol, with following definition:
-	Communication is performed over TCP/IP network. After establishing connection	 
+	Communication is performed over TCP/IP network. After establishing connection
 	client sends a semiconol delimited list of params numbers, a \n char terminates message.
 	In response server sends a semicolon delimited list of values with \n char terminating
 	message. Upon sednding response server terminates connection. Example:
@@ -44,7 +44,7 @@
 	24.0000;39.13\n
  @protocol.pl Sterownik wykorzystuje prosty protokó³ tekstowy do wymiany danych z aplikacj±
  	proxy dzia³aj±c± na maszynie z uruchomionym PRO 200.
-		
+
  @comment Launch obl_ch1.exe as proxy on PRO 2000 Windows machine.
  @comment.pl Wymaga uruchomienia na serwerze z Windows programu obl_ch1.exe.
 
@@ -53,7 +53,7 @@
  <device daemon="/opt/szarp/bin/prodmn" path="/dev/null" pro2000:address="192.168.1.1" pro2000:port="9911" pro2000:read_freq="10"
      xmlns:pro2000="http://www.praterm.com.pl/SZARP/ipk-extra">
    <unit id="1" type="2" subtype="1" bufsize="1">
-      <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1" 
+      <param name="Kocio³ 1:DDE:Temperatura wody przed kot³em" short_name="Twe" unit="°C" prec="1"
           pro2000:param="7001" base_ind="auto">
        ....
 
@@ -94,6 +94,7 @@
 #include "ipchandler.h"
 #include "xmlutils.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 bool g_single;
 
@@ -126,7 +127,10 @@ void dolog(int level, const char *fmt, ...)
 	if (g_single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		if (vasprintf(&l, fmt, fmt_args) == -1) {
+			sz_log(0, "Error occured when logging in single mode");
+			return;
+		}
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
@@ -198,13 +202,13 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	event_base_set(m_event_base, &m_timer);
 	xmlDocPtr doc = cfg->GetXMLDoc();
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert(xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 				 SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "pro2000",
 				 BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	xp_ctx->node = cfg->GetXMLDevice();
 	m_addr.sin_family = AF_INET;
 	c = (char *)xmlGetNsProp(cfg->GetXMLDevice(), BAD_CAST("address"),
@@ -235,9 +239,12 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 			p;
 			++i, p = p->GetNext()) {
 		char *expr;
-		asprintf(&expr, ".//ipk:param[position()=%d]", i + 1);
+		if (asprintf(&expr, ".//ipk:param[position()=%d]", i + 1) == -1) {
+			dolog(0, "Could not get param element");
+			return 1;
+		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(node);
+		ASSERT(node);
 		free(expr);
 		c = (char *)xmlGetNsProp(node, BAD_CAST("address"),
 					 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -296,7 +303,7 @@ do_connect:
 			m_fd = -1;
 			return;
 		}
-	} 
+	}
 	m_bufev =
 	    bufferevent_new(m_fd, PRO2000Daemon::ReadReadyCallback,
 			    PRO2000Daemon::ConnectCallback,
@@ -331,7 +338,7 @@ void PRO2000Daemon::HandleConnect()
 void PRO2000Daemon::SendQuery()
 {
 	size_t i;
-	assert(m_param_addrs.size());
+	ASSERT(m_param_addrs.size());
 	struct evbuffer *evb = evbuffer_new();
 	for (i = 0; i < m_param_addrs.size() - 1; i++)
 		evbuffer_add_printf(evb, "%d;", m_param_addrs[i]);
@@ -358,7 +365,7 @@ void PRO2000Daemon::HandleReadReady()
 	double v;
 	size_t i = 0;
 	while (i < m_param_addrs.size() && (iss >> v)) {
-		dolog(10, "Param %d(%zu), value %f", m_param_addrs[i], i, v); 
+		dolog(10, "Param %d(%zu), value %f", m_param_addrs[i], i, v);
 		m_ipc->m_read[i] = v * m_precs[i];
 		iss.ignore(1);
 		i += 1;
