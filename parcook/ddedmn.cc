@@ -127,7 +127,8 @@ void dolog(int level, const char * fmt, ...) {
 	va_start(fmt_args, fmt);
 
 	if (g_single) {
-		vasprintf(&l, fmt, fmt_args);
+		int ret = vasprintf(&l, fmt, fmt_args);
+		(void)ret;
 		std::cout << l << std::endl;
 		sz_log(level, "%s", l);
 		free(l);
@@ -209,6 +210,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert(ret == 0);
+	(void)ret;
 
 	xmlChar* _uri = xmlGetNsProp(xdev, BAD_CAST("uri"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (_uri== 0) {
@@ -232,9 +234,10 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 	TParam *param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
 	for (int i = 0; i < m_ipc->m_params_count; ++i) {
 		char *e;
-		asprintf(&e, "/ipk:params/ipk:device[position()=%d]/ipk:unit[position()=1]/ipk:param[position()=%d]",
+		int ret = asprintf(&e, "/ipk:params/ipk:device[position()=%d]/ipk:unit[position()=1]/ipk:param[position()=%d]",
 			cfg->GetLineNumber(), 
 			i + 1);
+		(void)ret;
 		assert (e != NULL);
 
 		xmlNodePtr n = uxmlXPathGetNode(BAD_CAST e, xp_ctx, false);

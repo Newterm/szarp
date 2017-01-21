@@ -132,9 +132,10 @@ int ipc::configure(int *argc, char *argv[]) {
 	m_read = m_ipc->m_read;
 	m_send = m_ipc->m_send;
 
-	sz_log(2, "m_read_count: %d, m_send_count: %d", m_read_count, m_send_count);
+	sz_log(2, "m_read_count: %lu, m_send_count: %lu", m_read_count, m_send_count);
 
-	if (!m_event_base) return 0;
+	if (!m_event_base)
+		return 0;
 
 	m_cycle.tv_sec  = 10;
 	m_cycle.tv_usec = 0;
@@ -176,21 +177,21 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_read ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		sz_log(7, "ipc::set_read ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
 		return;
 	}
 
 	if (Py_None == val.ptr()) {
-		sz_log(9, "ipc::set_read got None, setting %d to NO_DATA", index);
+		sz_log(9, "ipc::set_read got None, setting %lu to NO_DATA", index);
 		m_read[index] = SZARP_NO_DATA;
 		return;
 	}
 
 	try {
 		m_read[index] = py::extract<int>(val);
-		sz_log(9, "ipc::set_read setting value %d to %d", index, m_read[index]);
+		sz_log(9, "ipc::set_read setting value %lu to %d", index, m_read[index]);
 	} catch (py::error_already_set const &) {
-		sz_log(9, "ipc::set_read extract error, setting %d to NO_DATA", index);
+		sz_log(9, "ipc::set_read extract error, setting %lu to NO_DATA", index);
 		m_read[index] = SZARP_NO_DATA;
 		PyErr_Clear();
 	}
@@ -199,7 +200,7 @@ void ipc::set_read(size_t index, py::object & val) {
 bool ipc::check_for_no_data(size_t index, py::object & val) {
 	if (Py_None == val.ptr()) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int got NONE at %d", index);
+		sz_log(9, "Pythondmn sz4_int got NONE at %lu", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		m_read[index] = SZARP_NO_DATA;
 		if (m_sz4_auto) go_sz4();
@@ -218,7 +219,7 @@ void ipc::set_read_sz4_int(size_t index, py::object & val) {
 		set_read_sz4<int>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int extract error, setting %d to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_int extract error, setting %lu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -233,7 +234,7 @@ void ipc::set_read_sz4_float(size_t index, py::object & val) {
 		set_read_sz4<float>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_float extract error, setting %d to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_float extract error, setting %lu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -248,7 +249,7 @@ void ipc::set_read_sz4_double(size_t index, py::object & val) {
 		set_read_sz4<double>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_double extract error, setting %d to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_double extract error, setting %lu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -263,7 +264,7 @@ void ipc::set_read_sz4_short(size_t index, py::object & val) {
 		set_read_sz4<short>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_short extract error, setting %d to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_short extract error, setting %lu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -272,7 +273,7 @@ void ipc::set_read_sz4_short(size_t index, py::object & val) {
 
 template <typename T> void ipc::set_read_sz4(size_t index, T val) {
 	if (index >= m_read_count) {
-		sz_log(7, "Pythondmn ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		sz_log(7, "Pythondmn ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
 		return;
 	}
 
@@ -289,7 +290,7 @@ template void ipc::set_read_sz4<>(size_t index, double val);
 
 void ipc::set_no_data(size_t index) {
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_no_data ERROR index (%d) greater than params count (%d)", index, m_read_count);
+		sz_log(7, "ipc::set_no_data ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
 		return;
 	}
 
@@ -298,11 +299,11 @@ void ipc::set_no_data(size_t index) {
 
 int ipc::get_send(size_t index) {
 	if (index >= m_send_count) {
-		sz_log(0, "ipc::set ERROR index (%d) greater than params count (%d)", index, m_send_count);
+		sz_log(0, "ipc::set ERROR index (%lu) greater than params count (%lu)", index, m_send_count);
 		return SZARP_NO_DATA;
 	}
 
-	sz_log(9, "ipc::set index (%d) val: (%d)", index, m_send[index]);
+	sz_log(9, "ipc::set index (%lu) val: (%d)", index, m_send[index]);
 	return m_send[index];
 }
 
