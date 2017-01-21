@@ -725,13 +725,15 @@ void AqtBus::SendQuery (int fd, unsigned short Address )
 	unsigned char *Query ;
 	Query = (unsigned char *)malloc(1);
 	Query[0]=0xff;
-	write (fd, Query, 1) ; /* Budzenie przelicznika ze snu */
+	int ret = write(fd, Query, 1); /* Budzenie przelicznika ze snu */
+	(void)ret;
 	free (Query);
 	usleep(1000*100);
 //	usleep (1000 * 25) ;
 	Query = NULL ;
 	Query = CreateQuery(DEFAULT_DEVICE, Address) ;
-	write (fd, Query, PACKET_SIZE_8);
+	ret = write(fd, Query, PACKET_SIZE_8);
+	(void)ret;
 //	printf("Sprawdzam CRC zapytania: %d\n",CheckCRC(Query,PACKET_SIZE_8));	
 	free (Query) ;
 	usleep(1500*1000);
@@ -814,9 +816,8 @@ int main(int argc, char *argv[])
 	int value, value2 ;		
 	unsigned char ind; /* internal no data ;( */
 	int energy_register ;
-	int volume_register ;
-	int calculated_power ;
-	int calculated_flow ;
+	int calculated_power;
+	int calculated_flow;
 	ttime tt;
 	value=0;	
 	cfg = new DaemonConfig("aqtdmn");
@@ -854,8 +855,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqt
 	sz_log(2, "starting main loop");
 	//aqtinfo->SetNoData(ipc);
 //	int i;
-	energy_register = 0 ;
-	volume_register = 0 ;
+	energy_register = 0;
 	calculated_flow = 0;
 	calculated_power = 0;
 	DataPower power(10);
@@ -998,10 +998,8 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqt
 				calculated_flow = SZARP_NO_DATA ;
 			}else{
 				value = aqtinfo->ParseBlock( Block, AQT_VOLUME_P, AQT_VOLUME_S )  ; 
-				volume_register = value ;
 				ipc->m_read[AQT_VOLUME_O] =  value & 0xffff;
 				ipc->m_read[AQT_VOLUME_O+1] = value >> 16;
-				volume_register = value ;
 				GetLocalttime(&tt);
 				flow.UpdateEnergy(energy_register,tt);
 				calculated_flow = flow.ActualPower;

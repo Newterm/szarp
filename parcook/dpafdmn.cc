@@ -347,7 +347,7 @@ unsigned short MakeCommandSec(unsigned char *outbuf, unsigned short size_of_outb
   unsigned short len,size_of_command;
   unsigned i;
 
-  sprintf((char*)code, "%ld", tab_code[month-1][day-1]);
+  sprintf((char*)code, "%u", tab_code[month-1][day-1]);
 
   size_of_command = strlen((char*)code) + 8;
   len = 6 + size_of_command;
@@ -500,11 +500,14 @@ int ReadOutput(int sock,unsigned char *outbuf, unsigned short size_of_outbuf, lo
  
   j =  PartitionMessage(inbuf,index,value) ;
   if (j==-1) {
-    write(sock, NAK, 1) ;	  
+    int ret = write(sock, NAK, 1) ;	  
+	 (void)ret;
     if (Diagno) printf(" NAK sended \n");
   }
-  else
-	  write(sock, ACK, 1) ;
+  else {
+	  int ret = write(sock, ACK, 1) ;
+	  (void)ret;
+  }
   return j ;
 }
 
@@ -826,7 +829,8 @@ int main(int argc,char *argv[])
     printf("Nie moge otworzyc pliku %s \n",code_path) ;
     exit(1) ;
   }
-  fread(&tab_code[0][0],sizeof(uint32_t),12 * 31,plik);
+  int ret = fread(&tab_code[0][0],sizeof(uint32_t),12 * 31,plik);
+  (void)ret;
   fclose(plik);
   AVG = NULL;
   Vals2 = NULL;

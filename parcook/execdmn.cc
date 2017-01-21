@@ -165,8 +165,9 @@ int ExecDaemon::XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num)
 	xmlChar *c;
 	long l;
 
-	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@exec:frequency",
+	int ret = asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@exec:frequency",
 			dev_num);
+	(void)ret;
 	assert (e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
@@ -213,6 +214,7 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg)
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert (ret == 0);
+	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "exec",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	assert (ret == 0);
@@ -327,6 +329,7 @@ void init_signals()
 	sa.sa_handler = terminate_handler;
 	ret = sigaction(SIGTERM, &sa, NULL);
 	assert (ret == 0);
+	(void)ret;
 	ret = sigaction(SIGINT, &sa, NULL);
 	assert (ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
