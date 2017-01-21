@@ -164,14 +164,14 @@ void szb_probeblock_combined_t::FetchProbes() {
 	for (size_t i = 0; i < count; i++) {
 		if (buf_msw[i] == SZB_FILE_NODATA) {
 			data[fixed_probes_count + i] = SZB_NODATA;
-			sz_log(10, "Set NODATA as msw was NODATA (probe %d of %d)", i, count);
+			sz_log(10, "Set NODATA as msw was NODATA (probe %lu of %lu)", i, count);
 		} else {
 			SZBASE_TYPE combined_probe = (SZBASE_TYPE) ( (double)(
 				    int(szbfile_endian(buf_msw[i]) << 16)
 				    	| (unsigned short)(szbfile_endian(buf_lsw[i]))
 				    ) / prec10);
 			data[fixed_probes_count + i] = combined_probe;
-			sz_log(10, "Set %f (probe %d of %d)", combined_probe, i, count);
+			sz_log(10, "Set %f (probe %lu of %lu)", combined_probe, i, count);
 		}
 	}
 	if (server_time < start_time)
@@ -179,7 +179,7 @@ void szb_probeblock_combined_t::FetchProbes() {
 	fixed_probes_count = (server_time - start_time) / SZBASE_PROBE_SPAN + 1;
 	if (fixed_probes_count > probes_per_block)
 		fixed_probes_count = probes_per_block;
-	sz_log(10, "Fetched %d combined probes, fixed probes: %d", count, fixed_probes_count);
+	sz_log(10, "Fetched %lu combined probes, fixed probes: %d", count, fixed_probes_count);
 }
 
 void szb_probeblock_definable_t::FetchProbes() {
