@@ -5,7 +5,7 @@ dnl $Id$
 dnl
 
 AC_PREREQ(2.54)
-AC_INIT(szarp, 3.1, pawel@praterm.com.pl)
+AC_INIT(szarp, 3.1, devs@newterm.pl)
 
 AC_CONFIG_MACRO_DIR([m4])
 
