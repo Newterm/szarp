@@ -188,7 +188,8 @@ void Initialize(unsigned char linenum)
    }
   else
    {
-    fscanf(linedef,"%c%d\n", &ch, &val);
+    int ret = fscanf(linedef,"%c%d\n", &ch, &val);
+	 (void)ret;
     if (ch!='R')
       exit(-1);
     else
@@ -211,10 +212,12 @@ void Initialize(unsigned char linenum)
    {
     if (RadiosOnLine)
      {
-      fgets(RadioInfo[j].RadioName, 40, linedef);
+      char *r = fgets(RadioInfo[j].RadioName, 40, linedef);
+		(void)r;
       if ((chptr=strrchr(RadioInfo[j].RadioName, '\n'))!=NULL)
         *chptr=0;
-      fscanf(linedef, "%d\n", &val);
+      int ret = fscanf(linedef, "%d\n", &val);
+		(void)ret;
       RadioInfo[j].NumberOfUnits=UnitsOnLine=(unsigned char)val;
       if (Diagno)
         printf("Radio <%s> drives %d units\n", RadioInfo[j].RadioName,
@@ -224,8 +227,9 @@ void Initialize(unsigned char linenum)
       ErrMessage(1,NULL);
     for(i=0;i<UnitsOnLine;i++)
      { 
-      fscanf(linedef,"%c %u %u %u %u %u\n",&UnitsInfo[i].UnitCode,
+      int ret = fscanf(linedef,"%c %u %u %u %u %u\n",&UnitsInfo[i].UnitCode,
              &val,&val1,&val2,&val3,&val4);
+		(void)ret;
       UnitsInfo[i].RapId=(unsigned char)val;
       UnitsInfo[i].SubId=(unsigned char)val1;
       UnitsInfo[i].ParIn=(unsigned char)val2;
@@ -680,7 +684,8 @@ int main(int argc,char *argv[])
        {
         if (Simple)
           printf("Probing:%s\n", wbuf);
-        write(LineDes,wbuf,strlen(wbuf));
+        int ret = write(LineDes,wbuf,strlen(wbuf));
+		  (void)ret;
        } 
       else if (!DirectLine)
        {
@@ -689,11 +694,13 @@ int main(int argc,char *argv[])
         obuf[3]=UnitsInfo[i].UnitCode;
         if (Simple)
           printf("Sending:%s\n", obuf);
-        write(LineDes,obuf,strlen(obuf));
+        int ret = write(LineDes,obuf,strlen(obuf));
+		  (void)ret;
        }
       else
        {
-        write(LineDes,rbuf,3); 
+        int ret = write(LineDes,rbuf,3); 
+		  (void)ret;
         if (Simple)
           printf("Sending directly:%s\n", rbuf);
        }

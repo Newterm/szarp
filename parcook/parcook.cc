@@ -55,7 +55,6 @@
 #endif
 
 #include <argp.h>
-#include <assert.h>
 #include <vector>
 #include <sstream>
 #include <string>
@@ -78,6 +77,7 @@
 #include "szarp_config.h"
 
 #include "conversion.h"
+#include "custom_assert.h"
 
 using std::tr1::unordered_map;
 
@@ -978,32 +978,30 @@ int InitSignals()
 	sa.sa_mask = block_mask;
 	sa.sa_flags = 0;
 	ret = sigaction(SIGFPE, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGQUIT, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGILL, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGSEGV, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGBUS, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 	/* cleanup handlers for termination signals */
 	sa.sa_handler = Terminate;
 	sa.sa_flags = SA_RESTART;
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 	sa.sa_handler = ChildDied;
 	sa.sa_flags = 0;
 	ret = sigaction(SIGCHLD, &sa , NULL );
-	assert(ret == 0);
-
-	(void)ret;
+	ASSERT(ret == 0);
 
 	return 0;
 }
@@ -1267,7 +1265,8 @@ char * const * wstring2argvp(std::wstring path, int num, std::wstring device, st
 	}
 	char ** ret = (char **) malloc(sizeof(char *) * (argv_v.size() + 4));
 	ret[0] = strdup(SC::S2A(path).c_str());
-	asprintf(&(ret[1]), "%d", num);
+	int r = asprintf(&(ret[1]), "%d", num);
+	(void)r;
 	ret[2] = strdup(SC::S2A(device).c_str());
 	int j = 3;
 	for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
@@ -1449,7 +1448,7 @@ void execute_scripts(std::vector<LuaParamInfo*>& param_info) {
 			++i) {
 		TParam *p = (*i)->param;
 
-		assert(p->GetLuaParamReference() != LUA_NOREF);
+		ASSERT(p->GetLuaParamReference() != LUA_NOREF);
 
 		double result;
 		bool ret = execute_script(p, result);
@@ -1486,7 +1485,7 @@ void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>&
 	for (int i = 0; i < VTlen; ++i) {
 		if (p == NULL) {
 			sz_log(0, "IPK error, number of params mismatch, exiting!");
-			assert(false);
+			ASSERT(false);
 		}
 
 		double val = nan("");

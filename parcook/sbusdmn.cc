@@ -60,6 +60,7 @@
 #include "serialport.h"
 #include "serialadapter.h"
 #include "daemonutils.h"
+#include "custom_assert.h"
 
 bool single;
 
@@ -70,7 +71,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
 	int ret = asprintf(&e, "./@%s", prop);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	(void)ret;
@@ -81,7 +82,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	xmlChar *c;
 	char *e;
 	int ret = asprintf(&e, "./@extra:%s", prop);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	(void)ret;
@@ -572,7 +573,7 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
 
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST "./ipk:param", xp_ctx);
@@ -1030,7 +1031,7 @@ void SBUSUnit::SetParamsVals(unsigned short start, int count, Buffer& response) 
 		response.ReadChar();
 	}
 	for (unsigned short i = start; i < start + count; i++) {
-		assert(m_params.find(i) != m_params.end());
+		ASSERT(m_params.find(i) != m_params.end());
 		Param& p = m_params[i];
 
 		unsigned val = response.ReadInt();
@@ -1040,8 +1041,8 @@ void SBUSUnit::SetParamsVals(unsigned short start, int count, Buffer& response) 
 			case Param::FLOAT: {
 				float v = *((float*)&val);
 				if (p.x_m_conv != 0 && p.y_m_conv != 0) {
-					assert(p.x_m_conv != p.y_m_conv);
-					assert(p.x_a_conv != p.y_a_conv);
+					ASSERT(p.x_m_conv != p.y_m_conv);
+					ASSERT(p.x_a_conv != p.y_a_conv);
 	
 					v = (v - p.x_m_conv) * (p.y_a_conv - p.x_a_conv) / (p.y_m_conv - p.x_m_conv) + p.x_a_conv;
 				}
@@ -1050,8 +1051,8 @@ void SBUSUnit::SetParamsVals(unsigned short start, int count, Buffer& response) 
 			}
 			case Param::DECIMAL:
 				if (p.x_m_conv != 0 && p.y_m_conv != 0) {
-					assert(p.x_m_conv != p.y_m_conv);
-					assert(p.x_a_conv != p.y_a_conv);
+					ASSERT(p.x_m_conv != p.y_m_conv);
+					ASSERT(p.x_a_conv != p.y_a_conv);
 	
 					val = (val - p.x_m_conv) * (p.y_a_conv - p.x_a_conv) / (p.y_m_conv - p.x_m_conv) + p.x_a_conv;
 				}
@@ -1160,13 +1161,13 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	xp_ctx->node = xdev;
 
 	/* prepare xpath */
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
@@ -1232,10 +1233,10 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	}
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "sbus", BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 
 	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST ".//ipk:unit", xp_ctx);
@@ -1244,7 +1245,7 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 
 	int i = 0;
 	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
-		assert(i < rset->nodesetval->nodeNr);
+		ASSERT(i < rset->nodesetval->nodeNr);
 
 		SBUSUnit* u  = new SBUSUnit(this, m_event_base);
 		if (u->Configure(protocol, unit, rset->nodesetval->nodeTab[i], reads, m_port, speed) == false)

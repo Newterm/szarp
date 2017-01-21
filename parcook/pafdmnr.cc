@@ -31,7 +31,6 @@
 #include <sys/sem.h>
 #include <sys/msg.h>
 #include <errno.h>
-#include <assert.h>
 #include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
@@ -49,6 +48,7 @@
 
 #include "ipchandler.h"
 #include "liblog.h"
+#include "custom_assert.h"
 
 // #define WRITE_MESSAGE_SIZE 7
 #define WRITE_MESSAGE_SIZE 11
@@ -103,7 +103,7 @@ class DaemonClass{
 		if (Simple) Diagno=1; m_paramscount = _m_paramscount;\
 		path_to_device=(char *)malloc(strlen(_path_to_device) + 1);\
 		memcpy(path_to_device,_path_to_device,\
-		strlen(_path_to_device) + 1);assert(path_to_device!=NULL);\
+		strlen(_path_to_device) + 1);ASSERT(path_to_device!=NULL);\
 		LineDes=0;};
 		void ReadData();
 		int ReadOutput(int *buf, unsigned short *size);
@@ -121,7 +121,7 @@ void DaemonClass::OpenLine()
     int 	    serial;
     struct termios   rsconf;
     LineDes = open(path_to_device, O_RDWR | O_NDELAY | O_NONBLOCK);
-    assert(LineDes >= 0);
+    ASSERT(LineDes >= 0);
     tcgetattr(LineDes, &rsconf);
     rsconf.c_cflag = B300 | CS7 | CLOCAL | CREAD | CSTOPB | PARENB;
     rsconf.c_iflag = 0;

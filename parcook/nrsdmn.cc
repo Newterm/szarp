@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
+/*
  * RSDMN 1.5 - new generation of SZARP RS deamon.
  * <reksio@praterm.com.pl>
  * Significant part of the code through courtesy of tcpdmn.cc
@@ -33,17 +33,17 @@
  @devices Z-Elektronik PLC, Sterkom SK-2000 PLC, Sterkom SK-4000 PLC.
 
  @protocol Z-Elektronik.
- 
+
  @config For usage instruction use '--help' option. For configuration details
- see dmncfg.h file; one extra attribute is provided by this daemon - 
+ see dmncfg.h file; one extra attribute is provided by this daemon -
  extra:speed attribute for unit element sets special serial port
- communication speed for given unit. In the following example, default speed is set to 19200 bps, 
+ communication speed for given unit. In the following example, default speed is set to 19200 bps,
  but speed for unit 2 is 9600 bps.
 
- @config_example 
+ @config_example
  <device ... speed="19200">
  <unit id="1" .../>
- <unit id="2" ... xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" 
+ <unit id="2" ... xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
  	extra:speed=9600" ... />
  ...
 
@@ -61,7 +61,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include <deque>
 
@@ -77,13 +76,14 @@ using std::deque;
 #include "liblog.h"
 #include "tokens.h"
 #include "xmlutils.h"
+#include "custom_assert.h"
 
 /* number of pseudo-param carrying sender data checksum
- * DO NOT EVER CHANGE THIS VALUE without changing platform */ 
+ * DO NOT EVER CHANGE THIS VALUE without changing platform */
 #define SENDER_CHECKSUM_PARAM 299
 
 /* if this flag is defined demon writes one byte at a time
- * in SerailPort::Write command to a driver 
+ * in SerailPort::Write command to a driver
  * (this prevents pl2303 converter from stalling)
  * NOTE: this is deprecated, new driver (starting from kernel version
  * 2.6.14) does not need this.
@@ -98,29 +98,29 @@ void sig_usr_handler(int signo, siginfo_t * sig_info, void *ctx)
 	stop_daemon = !stop_daemon;
 	psetd_pid = sig_info->si_pid;
 }
-	
-/**Exception thrown when problem with communitaction thorugh 
+
+/**Exception thrown when problem with communitaction thorugh
  * @see SerialPort occurrs*/
-class SerialException : public std::exception 
+class SerialException : public std::exception
 {};
 
 /**Class handling comunication with serial port.*/
 class SerialPort {
 public:
-	/**Constructor 
+	/**Constructor
 	 * @param path path to a serial port device
 	 * @param speed connection speed
 	 * @param stopbits number of stop bits
-	 * @param timeout specifies number of seconds @see GetData should wait for data 
+	 * @param timeout specifies number of seconds @see GetData should wait for data
 	 * to arrive on a port*/
-	SerialPort(const char* path, int speed, int stopbits, int timeout) : 
+	SerialPort(const char* path, int speed, int stopbits, int timeout) :
 		m_fd(-1), m_path(path), m_speed(speed), m_curspeed(speed),
-		m_stopbits(stopbits), 
+		m_stopbits(stopbits),
 		m_timeout(timeout)
 	{};
 	/**Closes the port*/
 	void Close();
-	/**Opens the port throws @see SerialException 
+	/**Opens the port throws @see SerialException
 	* if it was unable to open a port or set connection
 	* parameters. Attempts to open a port only if it
 	* is not already opened or is opened with another speed
@@ -150,7 +150,7 @@ private:
 
 	int m_fd; 		/**<device descriptor, -1 indicates that the device is closed*/
 	const char* m_path;	/**<path to the device*/
-	int m_speed;		/**<configured connection speed (9600 def)*/ 
+	int m_speed;		/**<configured connection speed (9600 def)*/
 	int m_curspeed;		/**<current connection speed */
 	int m_stopbits;		/**<number of stop bits (1 default)*/
 	int m_timeout;		/**<timeout of read operation*/
@@ -159,9 +159,9 @@ private:
 /**Generates queries and parses repsonses from units*/
 class UnitExaminator {
 public:
-	UnitExaminator(bool debug, bool dump_hex) : 
+	UnitExaminator(bool debug, bool dump_hex) :
 		m_debug(debug), m_dump_hex(dump_hex),
-		m_extraspeed(0) 
+		m_extraspeed(0)
 	{}
 	/**
 	 * Checks unit configuration for extra:speed attribute.
@@ -170,7 +170,7 @@ public:
 	 */
 	void ConfigExtraSpeed(DaemonConfig* cfg, int unit_num);
 	/**
-	 * @return per-unit configured connection speed, 0 for default 
+	 * @return per-unit configured connection speed, 0 for default
 	 * device speed */
 	int GetExtraSpeed() { return m_extraspeed; }
 	/**Method responsibe for generating queries for unit
@@ -190,13 +190,13 @@ protected:
 		char m_id;		/**<unit id*/
 		Response() : m_params_count(0), m_params(NULL), m_id(-1) {};
 	};
-	/**Parses response 
+	/**Parses response
 	 * @param response string representing response
 	 * @param count size of response in bytes
 	 * @param resp output param result of parsing
 	 * @return true if string was successfully parsed*/
-	virtual bool ParseResponse(char* response, 
-			size_t count, Response* resp); 
+	virtual bool ParseResponse(char* response,
+			size_t count, Response* resp);
 	/**Prints contents of response to stdout*/
 	virtual void PrintResponse(const Response &resp);
 	/*Method prints to stdout contents of a buffer in
@@ -207,7 +207,7 @@ protected:
 	virtual ~UnitExaminator() {};
 
 	bool m_debug;		/**<true if in debug mode*/
-	bool m_dump_hex;	/**<true if data exchanged between unit and 
+	bool m_dump_hex;	/**<true if data exchanged between unit and
 				daemon should be print in hex terminal format*/
 	int m_extraspeed;	/**<non-default connection speed for
 				unit, set by extra:speed attribute,
@@ -226,9 +226,9 @@ public:
 /**Scanner - scans for units within provided ids' range*/
 class Scanner : public UnitExaminator {
 public:
-	Scanner(char id1, char id2, bool debug, bool dump_hex) : 
-		UnitExaminator(debug,dump_hex), 
-		m_id1(id1), m_id2(id2), m_id(id1) 
+	Scanner(char id1, char id2, bool debug, bool dump_hex) :
+		UnitExaminator(debug,dump_hex),
+		m_id1(id1), m_id2(id2), m_id(id1)
 	{}
 	virtual void GenerateQuery(char *&query, size_t& size);
 	virtual void SetData(char *response, size_t count);
@@ -238,15 +238,15 @@ private:
 };
 
 
-void SerialPort::Close() 
+void SerialPort::Close()
 {
-	if (m_fd < 0) 
+	if (m_fd < 0)
 		return;
 	close(m_fd);
 	m_fd = -1;
 }
 
-void SerialPort::Open(int force_speed) 
+void SerialPort::Open(int force_speed)
 {
 	if (force_speed == 0) {
 		force_speed = m_speed;
@@ -260,15 +260,15 @@ void SerialPort::Open(int force_speed)
 		}
 		m_curspeed = force_speed;
 	}
-	
+
 	m_fd = open(m_path, O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
-	
+
 	if (m_fd == -1) {
 		sz_log(1, "nrsdmn: cannot open device %s, errno:%d (%s)", m_path,
 			errno, strerror(errno));
 		throw SerialException();
 	}
-	
+
 	struct termios ti;
 	if (tcgetattr(m_fd, &ti) == -1) {
 		sz_log(1, "nrsdmn: cannot retrieve port settings, errno:%d (%s)",
@@ -309,8 +309,8 @@ void SerialPort::Open(int force_speed)
 
 	if (m_stopbits == 2)
 		ti.c_cflag |= CSTOPB;
-			
-	ti.c_oflag = 
+
+	ti.c_oflag =
 	ti.c_iflag =
 	ti.c_lflag = 0;
 
@@ -318,13 +318,13 @@ void SerialPort::Open(int force_speed)
 
 	if (tcsetattr(m_fd, TCSANOW, &ti) == -1) {
 		sz_log(1,"Cannot set port settings, errno: %d (%s)",
-			errno, strerror(errno));	
+			errno, strerror(errno));
 		Close();
 		throw SerialException();
 	}
 }
 
-bool SerialPort::Wait(int timeout) 
+bool SerialPort::Wait(int timeout)
 {
 	int ret;
 	struct timeval tv;
@@ -344,7 +344,7 @@ bool SerialPort::Wait(int timeout)
 		tv.tv_usec = 0;
 		FD_ZERO(&set);
 		FD_SET(m_fd, &set);
-	
+
 		ret = select(m_fd + 1, &set, NULL, NULL, &tv);
 		if (ret < 0) {
 			if (errno == EINTR) {
@@ -365,7 +365,7 @@ bool SerialPort::Wait(int timeout)
 	}
 }
 
-ssize_t SerialPort::GetData(char* buffer, size_t size) 
+ssize_t SerialPort::GetData(char* buffer, size_t size)
 {
 	char eom[] = { 0xd, 0xd, 0xd };
 	time_t t1,t2;
@@ -383,15 +383,15 @@ ssize_t SerialPort::GetData(char* buffer, size_t size)
 			delay = 1;
 		else
 			delay = m_timeout - (t2 - t1);
-			
+
 		if (!Wait(delay))
 			return r;
-		
+
 		ssize_t ret;
 again:
 		ret = read(m_fd, buffer + r , size - r - 1);
 		if (ret == -1) {
-			if (errno == EINTR) 
+			if (errno == EINTR)
 				goto again;
 			else {
 				Close();
@@ -403,12 +403,12 @@ again:
 		sz_log(8, "Read %zd bytes from port", r);
 		r += ret;
 		buffer[r] = 0;
-		
+
 		time(&t2);
 	}
 }
 
-void SerialPort::WriteData(const char* buffer, size_t size) 
+void SerialPort::WriteData(const char* buffer, size_t size)
 {
 	size_t sent = 0;
 	int ret;
@@ -418,8 +418,8 @@ void SerialPort::WriteData(const char* buffer, size_t size)
 #else
 		ret = write(m_fd, buffer + sent, size - sent);
 #endif
-			
-		if (ret < 0) { 
+
+		if (ret < 0) {
 			if (errno != EINTR) {
 				Close();
 				sz_log(2, "write failed, errno %d (%s)",
@@ -434,29 +434,32 @@ void SerialPort::WriteData(const char* buffer, size_t size)
 			throw SerialException();
 		}
 		sent += ret;
-	} 
+	}
 }
 
 void UnitExaminator::ConfigExtraSpeed(DaemonConfig* cfg, int unit_num)
 {
-	assert (cfg != NULL);
-	assert (unit_num >= 0);
+	ASSERT(cfg != NULL);
+	ASSERT(unit_num >= 0);
 	xmlDocPtr doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	xp_ctx->node = cfg->GetXMLDevice();
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 		SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	char *expr;
-	asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
-			unit_num + 1);
-	assert (expr);
+	if (asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
+			unit_num + 1) == -1) {
+		sz_log(0, "error occured reading extra:speed");
+		throw SerialException();
+	}
+	ASSERT(expr);
 	xmlChar *c = uxmlXPathGetProp(BAD_CAST expr, xp_ctx, false);
 	free(expr);
 	if (c != NULL) {
@@ -477,14 +480,14 @@ bool UnitExaminator::ParseResponse(char* response, size_t count, Response* resp)
 
 	if (tokc < 3) {
 		tokenize_d(NULL, &toks, &tokc, NULL);
-		if (m_debug) { 
+		if (m_debug) {
 			printf("Unable to parse response, it is too short.\n");
 		}
 		return false;
 	}
 
 	resp->m_params_count = tokc - 5;
-		
+
 	resp->m_id = toks[2][0];
 
 	int checksum = 0;
@@ -499,13 +502,13 @@ bool UnitExaminator::ParseResponse(char* response, size_t count, Response* resp)
 		checksum -= (uint) *c;
 	}
 	if (checksum != atoi(toks[tokc-1]))  {
-		if (m_debug) 
+		if (m_debug)
 			printf("Wrong checksum in response.\n");
 		sz_log(4, "Wrong checksum");
 		tokenize_d(NULL, &toks, &tokc, NULL);
 		return false;
 	}
-	
+
 	resp->m_params = (short*)malloc(sizeof(short) * resp->m_params_count);
 	for (size_t i = 0; i < resp->m_params_count ; i++) {
 		resp->m_params[i] = atoi(toks[i+4]);
@@ -514,12 +517,12 @@ bool UnitExaminator::ParseResponse(char* response, size_t count, Response* resp)
 	return true;
 }
 
-void UnitExaminator::PrintResponse(const Response &resp) 
+void UnitExaminator::PrintResponse(const Response &resp)
 {
-	printf("unit id:%c, params count: %zu\n", resp.m_id, 
+	printf("unit id:%c, params count: %zu\n", resp.m_id,
 			resp.m_params_count);
 	for (size_t i = 0;i < resp.m_params_count; ++i) {
-		printf("param no: %03zu, value: %06hd\n", i, 
+		printf("param no: %03zu, value: %06hd\n", i,
 				resp.m_params[i]);
 	}
 }
@@ -561,19 +564,19 @@ void UnitExaminator::DrawHex(const char *c, size_t size)
 	}
 }
 
-void Sniffer::GenerateQuery(char *&query, size_t& size) 
+void Sniffer::GenerateQuery(char *&query, size_t& size)
 {
 	/*empty, we are not sending anything*/
 	query = NULL;
 	size = 0;
 }
 
-void Sniffer::SetData(char *response, size_t count) 
+void Sniffer::SetData(char *response, size_t count)
 {
 	if (m_dump_hex)
 		DrawHex(response, count);
 	Response resp;
-	if (ParseResponse(response, count, &resp)) 
+	if (ParseResponse(response, count, &resp))
 		PrintResponse(resp);
 
 	free(resp.m_params);
@@ -593,7 +596,7 @@ void Scanner::GenerateQuery(char *&query, size_t& size)
 	}
 }
 
-void Scanner::SetData(char *response, size_t count) 
+void Scanner::SetData(char *response, size_t count)
 {
 	if (count <= 0) {
 		printf("No response\n");
@@ -621,13 +624,13 @@ class ZetUnit : public UnitExaminator {
 public:
 	/**
 	 * @param unit IPK API object describing a unit
-	 * @param read pointer to a data buffer whose values are copied into 
+	 * @param read pointer to a data buffer whose values are copied into
 	 * parcook shared memory segment
 	 * @param pointer to a buffer holding values received from sender
 	 * @param direct if true the unit has not assigned an id
-	 * @param debug indicates if all data recived from and sent to unit 
+	 * @param debug indicates if all data recived from and sent to unit
 	 * should be print to stdout*/
-	ZetUnit(TUnit *unit, short* read, short* send, 
+	ZetUnit(TUnit *unit, short* read, short* send,
 			bool direct, bool debug, bool dump_hex);
 	/**Generates query that should be sent to a unit
 	 * @param query output parameter, points to a buffer with query,
@@ -637,7 +640,7 @@ public:
 	/**
 	 * Parses data received from a unit, puts data
 	 * into shared memory segment.
-	 * @param response pointer to a buffer containing unit's 
+	 * @param response pointer to a buffer containing unit's
 	 * answer to a query
 	 * @param count size of response
 	 */
@@ -648,16 +651,16 @@ protected:
 	/**Averaging buffer*/
 	class AvgBuffer {
 	public:
-		/**Constructor 
+		/**Constructor
 		 * @param size number of probes in single element of a buffer
 		 * @param avg_size maximum size of a buffer*/
-		AvgBuffer(const size_t size ,const size_t avg_size) : 
+		AvgBuffer(const size_t size ,const size_t avg_size) :
 			m_size(size), m_avg_size(avg_size)
 		{ }
 		/*Inserts SZARP_NO_DATA values into a buffer*/
 		void SetNoData() { DecreaseSize(); }
-		/*Inserts data into a buffer, the length of the buffer should 
-		 * be equal to @see m_size, table pointed by the param data 
+		/*Inserts data into a buffer, the length of the buffer should
+		 * be equal to @see m_size, table pointed by the param data
 		 * will be freed by the @see AvgBuffer
 		 * @param data pointer to a table of probes' values
 		 */
@@ -676,24 +679,24 @@ protected:
 	}; /* class AvgBuffer */
 
 	AvgBuffer* m_avg_buffer;	/**<pointer to a averaging buffer*/
-	short* m_read;			/**<pointer to a data buffer whose 
-					values are copied into parcook 
+	short* m_read;			/**<pointer to a data buffer whose
+					values are copied into parcook
 					shared memory segment*/
-	size_t m_read_count;		/**<size of buffer pointed by 
+	size_t m_read_count;		/**<size of buffer pointed by
 					@see m_read */
-	short* m_send;			/**<pointer to a buffer holding values 
+	short* m_send;			/**<pointer to a buffer holding values
 					received from sender*/
-	bool* m_nodata_send;		/**<Array of boolean flags. Flags denote 
-					 if, for a given send param, SZARP_NO_DATA 
+	bool* m_nodata_send;		/**<Array of boolean flags. Flags denote
+					 if, for a given send param, SZARP_NO_DATA
 					 shall be sent to a regulator.*/
-	size_t m_sends_count;		/**<size of buffer pointed by @see 
+	size_t m_sends_count;		/**<size of buffer pointed by @see
 					m_send */
 	const bool m_direct;		/**<indicated if this unit has assigned
 					an address*/
 	char m_id;			/**<id(address) a of unit*/
 };
 
-void ZetUnit::AvgBuffer::DecreaseSize() 
+void ZetUnit::AvgBuffer::DecreaseSize()
 {
 	if (m_avg_buf.size() > 0) {
 		short* buf = m_avg_buf.front();
@@ -702,7 +705,7 @@ void ZetUnit::AvgBuffer::DecreaseSize()
 	}
 }
 
-void ZetUnit::AvgBuffer::SetData(short *data) 
+void ZetUnit::AvgBuffer::SetData(short *data)
 {
 	m_avg_buf.push_back(data);
 	if (m_avg_buf.size() > m_avg_size) {
@@ -713,13 +716,13 @@ void ZetUnit::AvgBuffer::SetData(short *data)
 void ZetUnit::AvgBuffer::GetValues(short *data) const
 {
 	size_t buf_size = m_avg_buf.size();
-	if (buf_size > 0) 
+	if (buf_size > 0)
 		for (size_t i = 0 ; i < m_size ; ++i) {
 			int val = 0;
 			int count = 0;
 			for (size_t j = 0; j < buf_size ; ++j) {
 				short probe = m_avg_buf[j][i];
-				if (probe == SZARP_NO_DATA) 
+				if (probe == SZARP_NO_DATA)
 					continue;
 
 				val += probe;
@@ -730,22 +733,22 @@ void ZetUnit::AvgBuffer::GetValues(short *data) const
 			else
 				data[i] = SZARP_NO_DATA;
 		}
-	else 
-		for (size_t i = 0 ; i < m_size ; ++i) 
+	else
+		for (size_t i = 0 ; i < m_size ; ++i)
 			data[i] = SZARP_NO_DATA;
-	
+
 }
 
-ZetUnit::AvgBuffer::~AvgBuffer() 
+ZetUnit::AvgBuffer::~AvgBuffer()
 {
 	for (size_t i = 0; i < m_avg_buf.size(); ++i) {
 		free(m_avg_buf[i]);
 	}
 }
 
-ZetUnit::ZetUnit(TUnit *unit, short* read, short* send, 
-		bool direct, bool debug, bool dump_hex) : 
-	UnitExaminator(debug, dump_hex), 
+ZetUnit::ZetUnit(TUnit *unit, short* read, short* send,
+		bool direct, bool debug, bool dump_hex) :
+	UnitExaminator(debug, dump_hex),
 	m_read(read), m_send(send), m_direct(direct)
 {
 	if (!m_direct) {
@@ -760,15 +763,15 @@ ZetUnit::ZetUnit(TUnit *unit, short* read, short* send,
 
 	size_t i = 0;
 	TSendParam* sp = unit->GetFirstSendParam();
-	for (; sp && i < m_sends_count; sp = sp->GetNext(), ++i) 
+	for (; sp && i < m_sends_count; sp = sp->GetNext(), ++i)
 		m_nodata_send[i] = sp->GetSendNoData() ? true : false;
 
 	//IPK check ;)
-	assert(sp == NULL && i == m_sends_count);
+	ASSERT(sp == NULL && i == m_sends_count);
 
 }
 
-void ZetUnit::GenerateQuery(char*& query, size_t& size) 
+void ZetUnit::GenerateQuery(char*& query, size_t& size)
 {
 	char msg_footer[] = "\x03\n";
 	short sender_checksum = 0;
@@ -784,8 +787,8 @@ void ZetUnit::GenerateQuery(char*& query, size_t& size)
 		for (size_t i = 0; i < m_sends_count; ++i) {
 			short value = m_send[i];
 
-			if (value == SZARP_NO_DATA && 
-					m_nodata_send[i] == false) 
+			if (value == SZARP_NO_DATA &&
+					m_nodata_send[i] == false)
 				continue;
 
 			m_send[i] = SZARP_NO_DATA;
@@ -794,12 +797,12 @@ void ZetUnit::GenerateQuery(char*& query, size_t& size)
 			fprintf(query_buf, "%zu,%hd,", i, value);
 			sender_checksum += i + value;
 			sender_checksum &= 0xffff;
-			sz_log(8,"Setting send param no:%zu value:%hd\n", 
+			sz_log(8,"Setting send param no:%zu value:%hd\n",
 					i, value);
 		}
 		if (sender_data)  {
 			/* add checksum, strip trailing comma */
-			fprintf(query_buf, "%d,%hd", 
+			fprintf(query_buf, "%d,%hd",
 					SENDER_CHECKSUM_PARAM, sender_checksum);
 		}
 		fprintf(query_buf, "%s", msg_footer);
@@ -811,16 +814,16 @@ void ZetUnit::GenerateQuery(char*& query, size_t& size)
 	fclose(query_buf);
 
 	sz_log(8,"Query: %s", query);
-		
+
 	if (m_dump_hex) {
 		printf("The packet:\n");
 		DrawHex(query, size);
 	}
 }
 
-void ZetUnit::SetData(char* response, size_t count) 
+void ZetUnit::SetData(char* response, size_t count)
 {
-	assert(response != NULL);
+	ASSERT(response != NULL);
 
 	if (m_dump_hex) {
 		printf("Received packet:\n");
@@ -837,7 +840,7 @@ void ZetUnit::SetData(char* response, size_t count)
 		sz_log(2, "Wrong id expected:%c, got:%c", m_id, resp.m_id);
 	}
 	if (resp.m_params_count != m_read_count ) {
-		sz_log(2, "Wrong params count expected:%zu, got:%zu", 
+		sz_log(2, "Wrong params count expected:%zu, got:%zu",
 				m_read_count, resp.m_params_count);
 		m_avg_buffer->SetNoData();
 		goto bad;
@@ -845,13 +848,13 @@ void ZetUnit::SetData(char* response, size_t count)
 	m_avg_buffer->SetData(resp.m_params);
 	m_avg_buffer->GetValues(m_read);
 	return;
-bad:	
+bad:
 	m_avg_buffer->SetNoData();
 	m_avg_buffer->GetValues(m_read);
 	free(resp.m_params);
 }
 
-void ZetUnit::SetNoData() 
+void ZetUnit::SetNoData()
 {
 	m_avg_buffer->SetNoData();
 	m_avg_buffer->GetValues(m_read);
@@ -871,7 +874,7 @@ public:
 	 * Periodically sends queries to units via SerialPort class.
 	 * Fetches data from sender and stores values retrieved from units
 	 * into parcook shared memory segment.*/
-	void Go(); 
+	void Go();
 private:
 
 	void SuspendOperations();
@@ -891,7 +894,7 @@ private:
 	int m_cycle_duration;
 };
 
-void Daemon::ConfigureDaemon(DaemonConfig *cfg) 
+void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 {
 	bool debug = cfg->GetSingle() || cfg->GetDiagno();
 	const char *device_name = strdup(cfg->GetDevicePath());
@@ -899,7 +902,7 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 		sz_log(0,"No device specified -- exiting");
 		exit(1);
 	}
-		
+
 	int speed = cfg->GetSpeed();
 	int stopbits = cfg->GetNoConf() ? 1 : cfg->GetDevice()->GetStopBits();
 	int wait_time;
@@ -932,10 +935,10 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 
 		TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
 		for (int i = 0; unit; unit = unit->GetNext(), i++) {
-			ZetUnit *zet = new ZetUnit(unit, 
-						read, 
-						send, 
-						special, 
+			ZetUnit *zet = new ZetUnit(unit,
+						read,
+						send,
+						special,
 						debug,
 						dumphex
 						);
@@ -948,26 +951,26 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 		m_cycle_duration = CYCLE_TIME;
 	}
 	m_port = new SerialPort(device_name,
-			speed, 
+			speed,
 			stopbits,
 			wait_time);
 	try {
 		m_port->Open();
 	} catch (SerialException&) {
 		sz_log(0, "Failed to open port:%s\n",device_name);
-		exit(1);	
+		exit(1);
 	}
 	m_delay = cfg->GetAskDelay();
 }
 
-void Daemon::Go() 
+void Daemon::Go()
 {
 	char buffer[BUF_SIZE];
 	while (true) {
 
 		if (stop_daemon)
 			SuspendOperations();
-		
+
 		time_t t1,t2;
 		time(&t1);
 
@@ -989,7 +992,7 @@ void Daemon::Go()
 				ssize_t read;
 				read = m_port->GetData(buffer, BUF_SIZE);
 				unit->SetData(buffer, read);
-				
+
 				if (read == 0)
 					m_port->Close();
 
@@ -1028,7 +1031,7 @@ void Daemon::SuspendOperations() {
 	}
 	sz_log(2, "Signalling suspned to %d", (int)psetd_pid);
 
-	while (stop_daemon && 
+	while (stop_daemon &&
 			(suspend_time = sleep(suspend_time)));
 
 	/*psetd didn't wake us up, continue anyway*/
@@ -1061,7 +1064,7 @@ int main(int argc, char *argv[]) {
 
 	try {
 		Daemon daemon(cfg);
-		if (cfg->GetNoConf() == 0) { 
+		if (cfg->GetNoConf() == 0) {
 			/* performs libxml cleanup ! */
 			cfg->CloseXML(1);
 			/* performs IPK cleanup ! */

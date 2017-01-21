@@ -94,6 +94,7 @@
 #include "serialadapter.h"
 #include "daemonutils.h"
 #include "xmlutils.h"
+#include "custom_assert.h"
 
 #define REGISTER_NOT_FOUND -1
 
@@ -129,7 +130,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	xmlChar *c;
 	char *e;
 	int ret = asprintf(&e, "./@%s", prop);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	(void)ret;
@@ -140,7 +141,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	xmlChar *c;
 	char *e;
 	int ret = asprintf(&e, "./@extra:%s", prop);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	(void)ret;
@@ -195,12 +196,12 @@ public:
 	 * @param params number of params to read
 	 */
 	KamstrupInfo(int params) {
-		assert(params >= 0);
+		ASSERT(params >= 0);
 
 		m_params_count = params;
 		if (params > 0) {
 			m_params = new ParamInfo[params];
-			assert(m_params != NULL);
+			ASSERT(m_params != NULL);
 		} else
 			m_params = NULL;
 	}
@@ -226,7 +227,7 @@ public:
 
 int KamstrupInfo::parseDevice(xmlNodePtr node)
 {
-	assert(node != NULL);
+	ASSERT(node != NULL);
 	char *str;
 	char *tmp;
 	dolog(10, "KamstrupInfo::parseDevice");
@@ -339,14 +340,14 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 			/*
 			 * for 'param' element 
 			 */
-			assert(params_found < m_params_count);
+			ASSERT(params_found < m_params_count);
 			m_params[params_found].reg = reg;
 			m_params[params_found].mul = mul;
 			m_params[params_found].type = type;
 			TParam *p =
 			    cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
 			    GetFirstParam()->GetNthParam(params_found);
-			assert(p != NULL);
+			ASSERT(p != NULL);
 			(void)p;
 			params_found++;
 		}
@@ -380,14 +381,14 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 	}
 	free(registers);
 
-	assert(params_found == m_params_count);
+	ASSERT(params_found == m_params_count);
 
 	return 0;
 }
 
 int KamstrupInfo::parseXML(xmlNodePtr node, DaemonConfig * cfg)
 {
-	assert(node != NULL);
+	ASSERT(node != NULL);
 	dolog(10, "KamstrupInfo:parseXML");
 
 	if (parseDevice(node))
@@ -642,17 +643,17 @@ void K601Daemon::Init(int argc, char *argv[])
 
 	/* get config data */
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();

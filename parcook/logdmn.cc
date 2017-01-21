@@ -104,8 +104,8 @@ public:
 		std::copy( msg , msg+recsize ,
 			 pname.begin() + LOG_PREFIX_LEN + 1 ) ;
 
-		sz_log(10,"size: %d + 1 + %d", LOG_PREFIX_LEN , recsize );
-		sz_log(10,"size: %d",pname.length());
+		sz_log(10,"size: %d + 1 + %zd", LOG_PREFIX_LEN , recsize );
+		sz_log(10,"size: %zu",pname.length());
 		sz_log(10,"datagram: %.*s", (int)recsize, msg);
 		sz_log(10,"param: %ls",pname.c_str());
 
