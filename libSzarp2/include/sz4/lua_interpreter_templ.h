@@ -61,7 +61,7 @@ template<class base> int lua_sz4(lua_State *lua) {
 		base_ipk_pair<base>* base_ipk = get_base_ipk_pair<base>(lua);
 		param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
 
-		if (param == NULL)
+		if (param)
 		{
 
 			weighted_sum<double, nanosecond_time_t> sum;
