@@ -532,13 +532,16 @@ int lua_szbase(lua_State *lua) {
 		assert(Lua::fixed.size() > 0);
 		Lua::fixed.top() = Lua::fixed.top() && fixed;
 
-		if (ok == false)
-			luaL_error(lua, "%s", SC::S2U(error).c_str());
-
-		lua_pushnumber(lua, result);
-
-		return 1;
-
+		if (ok) {
+			lua_pushnumber(lua, result);
+			return 1;
+		} else {
+			luaL_where(lua, 1);
+			lua_pushfstring(lua, "%s", SC::S2U(error).c_str());
+			lua_concat(lua, 2);
+			return lua_error(lua);
+		}
+	
 	}
 
 	int lua_szbase_move_time(lua_State* lua) {
@@ -570,10 +573,10 @@ int lua_szbase(lua_State *lua) {
 		return 1;
 	}
 
-	int lua_szbase_search_first(lua_State *lua) {
-		const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
-		Szbase* szbase = Szbase::GetObject();
-	
+int lua_szbase_search_first(lua_State *lua) {
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	Szbase* szbase = Szbase::GetObject();
+
 	bool ok;
 	time_t ret = szbase->SearchFirst(SC::U2S(param), ok);
 
@@ -581,8 +584,7 @@ int lua_szbase(lua_State *lua) {
 		lua_pushnumber(lua, double(ret));
 		return 1;
 	} else {
-		luaL_error(lua, "Param %ls not found", SC::U2S(param).c_str());
-		return 0;
+		return luaL_error(lua, "Param %s not found", param);
 	}
 }
 
@@ -597,8 +599,7 @@ int lua_szbase_search_last(lua_State *lua) {
 		lua_pushnumber(lua, double(ret));
 		return 1;
 	} else {
-		luaL_error(lua, "Param %ls not found", SC::U2S(param).c_str());
-		return 0;
+		return luaL_error(lua, "Param %s not found", param);
 	}
 }
 

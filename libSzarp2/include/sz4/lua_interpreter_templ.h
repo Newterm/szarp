@@ -53,25 +53,41 @@ template<class base> int lua_sz4(lua_State *lua) {
 	if (param_name == NULL) 
                  luaL_error(lua, "Invalid param name");
 
-	nanosecond_time_t time(lua_tonumber(lua, 2));
-	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
-
-	base_ipk_pair<base>* base_ipk = get_base_ipk_pair<base>(lua);
-	TParam* param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
-	if (param == NULL)
-                 return luaL_error(lua, "Param %s not found", param_name);
-
-	weighted_sum<double, nanosecond_time_t> sum;
+	TParam* param = NULL;
 	try {
-		base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
-	} catch (exception &e) {
-                 return luaL_error(lua, "%s", e.what());
-	}
-	base_ipk->first->fixed_stack().back()
-		= base_ipk->first->fixed_stack().back() & sum.fixed();
+		nanosecond_time_t time(lua_tonumber(lua, 2));
+		SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
 
-	lua_pushnumber(lua, scale_value(sum.avg(), param));
-	return 1;
+		base_ipk_pair<base>* base_ipk = get_base_ipk_pair<base>(lua);
+		param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
+
+		if (param == NULL)
+		{
+
+			weighted_sum<double, nanosecond_time_t> sum;
+			base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
+
+			base_ipk->first->fixed_stack().back() = base_ipk->first->fixed_stack().back() & sum.fixed();
+
+			lua_pushnumber(lua, scale_value(sum.avg(), param));
+
+			return 1;
+		}
+
+	} catch (exception &e) {
+		luaL_where(lua, 1);
+		lua_pushfstring(lua, "%s", e.what());
+		lua_concat(lua, 2);
+	}
+
+	if (param)
+	{
+		return lua_error(lua);
+	}	
+	else
+	{
+		return luaL_error(lua, "Param %s not found", param_name);
+	}
 }
 
 int lua_sz4_move_time(lua_State* lua);
@@ -80,14 +96,19 @@ int lua_sz4_round_time(lua_State* lua);
 
 template<class base> int lua_sz4_in_season(lua_State *lua) {
 	const unsigned char* prefix = reinterpret_cast<const unsigned char*>(luaL_checkstring(lua, 1));
-	time_t time(lua_tonumber(lua, 2));
-	base_ipk_pair<base>* base_ipk = get_base_ipk_pair<base>(lua);
+	TSzarpConfig* cfg = NULL;
+	{
+		time_t time(lua_tonumber(lua, 2));
+		base_ipk_pair<base>* base_ipk = get_base_ipk_pair<base>(lua);
 
-	TSzarpConfig *cfg = base_ipk->second->GetConfig(SC::U2S(prefix));
-	if (cfg == NULL)
-		luaL_error(lua, "Config %s not found", (char*)prefix);
-	lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(time));
-	return 1;
+		cfg = base_ipk->second->GetConfig(SC::U2S(prefix));
+		if (cfg) {
+			lua_pushboolean(lua, cfg->GetSeasons()->IsSummerSeason(time));
+			return 1;
+		}
+	}
+
+	return luaL_error(lua, "Config %s not found", (char*)prefix);
 }
 
 int lua_sz4_isnan(lua_State* lua);
