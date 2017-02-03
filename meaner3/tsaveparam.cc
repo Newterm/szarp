@@ -101,7 +101,7 @@ int TSaveParam::WriteBuffered(const fs::wpath& directory, time_t t, short int* d
 
 	/* get index */
 	index = szb_probeind(t, probe_length);
-	index = ((size_t)index > data_count) ? index - data_count + 1 : 0;
+	index = ((size_t)index >= data_count) ? index - data_count + 1 : 0;
 	
 	assert(index >= 0);
 	sz_log(10, "TSaveParam::Write(): index in file: %ld", index);
