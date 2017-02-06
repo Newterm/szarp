@@ -203,12 +203,14 @@ void DrawsController::DisplayState::NewValuesAdded(Draw *draw, bool non_fixed)
 	if (non_fixed) {
 		if (draw->GetSubscribed())
 			return;
-		m_c->ChangeObservedParamsRegistration({}, { draw->GetDrawInfo()->GetParam()->GetIPKParam() });
+		if (draw->GetDrawInfo()->IsValid())
+			m_c->ChangeObservedParamsRegistration({}, { draw->GetDrawInfo()->GetParam()->GetIPKParam() });
 		draw->SetSubscribed(true);
 	} else {
 		if (!draw->GetSubscribed() || draw->HasUnfixedData())
 			return;
-		m_c->ChangeObservedParamsRegistration({ draw->GetDrawInfo()->GetParam()->GetIPKParam() }, {});
+		if (draw->GetDrawInfo()->IsValid())
+			m_c->ChangeObservedParamsRegistration({ draw->GetDrawInfo()->GetParam()->GetIPKParam() }, {});
 		draw->SetSubscribed(false);
 	}
 }
