@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * scc - Szarp Control Center
  * SZARP
- 
+
  * Pawel Palucha pawel@praterm.com.pl
  *
  * $Id$
@@ -80,15 +80,13 @@ bool SCCApp::OnInit()
 		exit(0);
 #endif
 		return false;
-	} 
+	}
 
 	if (this->rTimer == nullptr) {
 		this->rTimer = new ReloadTimer(this);
 	}
 	const char *prefix;
 	const char *suffix;
-	char *buffer;
-	int animate = 1;
 	SCCMenu* smenu;
 	app_instance = NULL;
 
@@ -121,7 +119,7 @@ bool SCCApp::OnInit()
 #else
 	libpar_read_cmdline(&argc, argv);
 #endif
-	
+
 	szFrame::setDefaultIcon(wxICON(szarp64));
 
 #ifndef MINGW32
@@ -130,34 +128,29 @@ bool SCCApp::OnInit()
 	libpar_init_with_filename(SC::S2A((GetSzarpDir() + _T("resources/szarp.cfg"))).c_str(), 0);
 #endif
 	app_instance = new szSingleInstanceChecker(_T(".scc"), wxEmptyString, _T("scc"));
-#ifndef MINGW32	
+#ifndef MINGW32
 	wxString display;
 	if (wxGetEnv(_T("DISPLAY"),&display)) {
 		wxString idString = wxString::Format(_T(".scc-%s-%s"), wxGetUserId().c_str(), display.c_str());
 		app_instance2 = new szSingleInstanceChecker(idString, wxEmptyString, _T("scc"));
 	}
 #endif
-	
+
 	if (app_instance->IsAnotherRunning()) {
-#ifndef MINGW32	
-		if (app_instance2 && !app_instance2->IsAnotherRunning()) 
+#ifndef MINGW32
+		if (app_instance2 && !app_instance2->IsAnotherRunning())
 			wxMessageBox(_("SCC program is not accessible.\n"
 				"Most probably, you are seeing this message "
-				"because you have logged in more than once."), 
-				_("SCC - program already run"), 
+				"because you have logged in more than once."),
+				_("SCC - program already run"),
 				wxICON_HAND);
 #endif
 		return FALSE;
 	}
 
 	// Read params from szarp.cfg.
-        prefix = libpar_getpar("scc", "images_prefix", 0);
-        suffix = libpar_getpar("scc", "images_suffix", 0);
-        buffer = libpar_getpar("scc", "animate", 0);
-	if (buffer && (strcasecmp(buffer, "no") == 0))
-		animate = 0;
-	if (buffer)
-		free(buffer);
+	prefix = libpar_getpar("scc", "images_prefix", 0);
+	suffix = libpar_getpar("scc", "images_suffix", 0);
 
 	if (prefix == NULL)
 		prefix = strdup(SC::S2A(GetSzarpDir() + _T("resources/wx/anim/praterm")).c_str());
@@ -186,9 +179,9 @@ bool SCCApp::OnInit()
 	taskbar_item = new SCCTaskBarItem(smenu, wxString(SC::L2S(prefix)), wxString(SC::L2S(suffix)));
 
 	server = new SCCServer(this, scc_ipc_messages::scc_service);
-	
+
 	SetAppName(_("SCC"));
-	
+
 	return true;
 }
 
@@ -219,7 +212,7 @@ SCCMenu* SCCApp::CreateMainMenu() {
 #ifndef MINGW32
 		s = wxString(SC::L2S(libpar_getpar("scc", "prefix", 1)));
 		s = s.AfterLast(_T('/'));
-		
+
 		s = _T("CONFIG(\"") + s;
 		s += _T("\"), SEPARATOR, ");
 #endif
@@ -251,9 +244,9 @@ SCCMenu* SCCApp::CreateMainMenu() {
 			}
 
 			smenu->AddSeparator();
-			smenu->AddCommand(_("Update data"), 
+			smenu->AddCommand(_("Update data"),
 				sucommand + _T("xterm -e ") + command, NULL);
-		} 
+		}
 	}
 
 #endif
@@ -272,7 +265,7 @@ int SCCApp::OnExit()
 #ifndef MINGW32
 	delete app_instance2;
 #endif
-	
+
 	delete wxLog::SetActiveTarget(NULL);
 
 	return 0;
