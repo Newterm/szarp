@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ Client can set value of parameter with command:
 If value of parameter is changed, all connected clients gets refreshed info
 about parameter (in format like after first connect). Server can also set
 error info, one of strings:
- 
+
 :E_MIN if new value is less then allowed minimum
 
 :E_MAX if new value is grater then allowed maximum
@@ -54,7 +54,7 @@ error info, one of strings:
 
 :E_OTHER for other unspecified server error
 
-Error info string can be followed by optional message, that should be 
+Error info string can be followed by optional message, that should be
 presented to user.
 
 @devices TCP client, for example SZARP 'setter' program.
@@ -62,12 +62,12 @@ presented to user.
 @config_example
 
 <device daemon="/opt/szarp/bin/setdmn" xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra"
-	path="/dev/null" 
+	path="/dev/null"
 	extra:tcp-port="8010" 		<!-- TCP port to listen on -->
 	extra:tcp-allowed="192.168.1.2"	<!-- list of allowed IP addresses, delimited with spaces -->
 	>
 	<unit id="1" type="1" subtype="1" bufsize="1">
-		<param name="Some:Setable:Parameter" ... 
+		<param name="Some:Setable:Parameter" ...
 			extra:min="0"		<!-- minimum allowed value -->
 			extra:max="27.8"	<!-- maximum allowed value -->
 		> ... </param>
@@ -93,6 +93,7 @@ presented to user.
 #include "szbase/szbbase.h"
 #include "tokens.h"
 #include "xmlutils.h"
+#include "custom_assert.h"
 
 int g_debug = 0;		/**< global debug flag */
 const int DEFAULT_PORT = 8010;	/**< default tcp port number */
@@ -136,7 +137,7 @@ template <typename T> T string2num(std::wstring str) throw (std::invalid_argumen
 	return ret;
 }
 
-/** 
+/**
  * Main daemon class.
  * Libevent-based telnet-like server that allows clients to set value of configured
  * parameters.
@@ -171,10 +172,10 @@ class SetDaemon {
 		static void AcceptCallback(int fd, short event, void* ds);
 		/** Called on read event on client connection. Calls Read().
 		 * @param bufev libevent buffered event
-		 * @param ds 'this' pointer 
+		 * @param ds 'this' pointer
 		 */
 		static void ReadCallback(struct bufferevent *bufev, void* ds);
-		/** Called on error (or when client closes connections). Calls 
+		/** Called on error (or when client closes connections). Calls
 		 * CloseConnection().
 		 * @param bufev libevent buffered event
 		 * @param event type of event, ignored
@@ -189,7 +190,7 @@ class SetDaemon {
 		 * @param pointer pointer to TParam object
 		 * @param index index of param in ipc m_read array
 		 */
-		void AddParam(const std::wstring& name, double min, double max, double current, 
+		void AddParam(const std::wstring& name, double min, double max, double current,
 				TParam* pointer, size_t index);
 	protected:
 		int m_listen_fd;	/**< Server listening socket file descriptor. */
@@ -235,7 +236,7 @@ class SetDaemon {
 		 * Called by AcceptCallback().
 		 */
 		virtual void AcceptConnection();
-		/** Adds new connection to pool, sets libevent callbacks. Helper method 
+		/** Adds new connection to pool, sets libevent callbacks. Helper method
 		 * for AcceptConnection().
 		 * @param fd file descriptor of new connection
 		 * @return libevent buffer pointer for newly created connection
@@ -253,7 +254,7 @@ class SetDaemon {
 		 */
 		bool ParseIP(xmlXPathContextPtr xp_ctx);
 		/** Method for performing access check, basing on client addres. You can
-		 * overwrite it in child class - this implementation always return true, 
+		 * overwrite it in child class - this implementation always return true,
 		 * thus allowing connections from any address.
 		 * Method is called be AcceptConnection to see if connection should
 		 * be accepted.
@@ -292,7 +293,7 @@ SetDaemon::SetDaemon(DaemonConfig& cfg, IPCHandler& ipc):
 
 SetDaemon::~SetDaemon()
 {
-	for (std::map<struct bufferevent*, int>::iterator i = m_connections.begin(); 
+	for (std::map<struct bufferevent*, int>::iterator i = m_connections.begin();
 			i != m_connections.end(); ++i) {
 		CloseConnection((*i).first);
 	}
@@ -311,7 +312,7 @@ bool SetDaemon::SearchMinMax(xmlXPathContextPtr xp_ctx, const std::wstring& name
 	char *expr;
 	asprintf(&expr, ".//ipk:param[@name='%s']", SC::S2U(name).c_str());
 	xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-	assert(node);
+	ASSERT(node);
 	free(expr);
 	xmlChar* c = xmlGetNsProp(node, BAD_CAST("min"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
@@ -351,8 +352,8 @@ void SetDaemon::ReadVals()
 
 	szb_buffer_t* m_szb = szb_create_buffer(szb, SC::L2S(libpar_getpar("", "datadir", 1)),
 			m_ipc.m_params_count, m_cfg.GetIPK());
-	assert(m_szb != NULL);
-		
+	ASSERT(m_szb != NULL);
+
 	std::map<std::wstring, ParamInfo>::iterator i;
 	for (i = m_parameters.begin(); i != m_parameters.end(); ++i) {
 		dolog(10, "Searching for data for parameter (%s)", SC::S2A(i->first).c_str());
@@ -381,7 +382,7 @@ bool SetDaemon::ParseIP(xmlXPathContextPtr xp_ctx)
 	xmlChar *c;
 	char *e;
 	asprintf(&e, "./@extra:tcp-allowed");
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
@@ -412,13 +413,13 @@ bool SetDaemon::Init()
 {
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(m_cfg.GetXMLDoc());
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	xp_ctx->node = m_cfg.GetXMLDevice();
 	if (not ParseIP(xp_ctx)) return false;
@@ -426,7 +427,7 @@ bool SetDaemon::Init()
 	xmlChar *c;
 	char *e;
 	asprintf(&e, "./@extra:tcp-port");
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
 	if (c == NULL) {
@@ -447,7 +448,7 @@ bool SetDaemon::Init()
 		AddParam(name, min, max, min, p, num++);
 		p = p->GetNext();
 	}
-	
+
 	ReadVals();
 
 	/* standard TCP server stuff - socket, setsockopt, bind, listen, select */
@@ -471,12 +472,12 @@ bool SetDaemon::Init()
 			m_listen_fd = -1;
 			throw ex;
 		}
-	
+
 		struct sockaddr_in addr;
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(m_listen_port);
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		ret = bind(m_listen_fd, reinterpret_cast<struct sockaddr *>(&addr), 
+		ret = bind(m_listen_fd, reinterpret_cast<struct sockaddr *>(&addr),
 				sizeof(addr));
 		if (ret == -1) {
 			TcpServException ex;
@@ -503,7 +504,7 @@ bool SetDaemon::Init()
 		throw ex;
 	}
 	/* set 'accept' callback */
-	event_set(&m_listen_event, m_listen_fd, EV_READ | EV_PERSIST, 
+	event_set(&m_listen_event, m_listen_fd, EV_READ | EV_PERSIST,
 			AcceptCallback, this);
         event_add(&m_listen_event, NULL);
 	return 0;
@@ -531,10 +532,10 @@ void SetDaemon::AcceptConnection()
 	socklen_t addr_size = sizeof(addr);
 	int fd;
 
-	while ((fd = accept(m_listen_fd, reinterpret_cast<sockaddr*>(&addr), 
+	while ((fd = accept(m_listen_fd, reinterpret_cast<sockaddr*>(&addr),
 					&addr_size) ) == -1) {
 		switch (errno) {
-			case EINTR: 
+			case EINTR:
 				continue;
 			case EAGAIN:
 			//case EWOULDBLOCK:
@@ -559,7 +560,7 @@ void SetDaemon::WriteValue(struct bufferevent* buf, const std::wstring& name)
 {
 	ParamInfo& p = m_parameters.at(name);
 	std::ostringstream s;
-	s << std::string("\"") << SC::S2U(name).c_str() << "\" " << p.current 
+	s << std::string("\"") << SC::S2U(name).c_str() << "\" " << p.current
 			<< " " << p.min << " " << p.max << "\n";
 	bufferevent_write(buf, const_cast<char*>(s.str().c_str()), strlen(s.str().c_str()));
 }
@@ -613,7 +614,7 @@ void SetDaemon::Read(struct bufferevent* bufev)
 		}
 	}
 }
-		
+
 bool SetDaemon::ParseRequest(struct bufferevent* bufev)
 {
 	std::vector<unsigned char>& buf = m_buffers[bufev];
@@ -641,7 +642,7 @@ void SetDaemon::SetValue(const std::wstring& name, double val)
 	m_ipc.m_read[p.index] = p.param->ToIPCValue(val);
 	dolog(10, "Setting value to %d", m_ipc.m_read[p.index]);
 	p.current = double(m_ipc.m_read[p.index]) / pow10(p.param->GetPrec());
-	
+
 	std::map<struct bufferevent*, int>::iterator i;
 	for (i = m_connections.begin(); i != m_connections.end(); ++i) {
 		WriteValue(i->first, name);
@@ -652,7 +653,7 @@ void SetDaemon::SetValue(const std::wstring& name, double val)
 bool SetDaemon::AddressAllowed(struct sockaddr_in* addr)
 {
 	if (m_allowed_ips.size() == 0) return true;
-	
+
 	for (size_t i = 0; i < m_allowed_ips.size(); i++) {
 		if (m_allowed_ips[i].s_addr == addr->sin_addr.s_addr) return true;
 	}
@@ -676,7 +677,7 @@ int main(int argc, char** argv)
 	event_init();
 
 	DaemonConfig cfg("setdmn");
-	
+
 	if (cfg.Load(&argc, argv, false))
 		return 1;
 

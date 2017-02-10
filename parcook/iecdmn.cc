@@ -58,6 +58,7 @@
 #include "tokens.h"
 #include "xmlutils.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 bool g_single;
 
@@ -528,13 +529,13 @@ bool IECDaemon::Configure(DaemonConfig* cfg) {
 
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 	xmlXPathObjectPtr uset = xmlXPathEvalExpression(BAD_CAST ".//ipk:unit", xp_ctx);
 	int param_index = 0;
 	int i = 0;
 	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
-		assert(i < uset->nodesetval->nodeNr);
+		ASSERT(i < uset->nodesetval->nodeNr);
 		xmlNodePtr xunit = uset->nodesetval->nodeTab[i];
 		if (!ConfigureUnit(unit, xunit, param_index, xp_ctx))
 			return false;

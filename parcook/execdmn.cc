@@ -71,7 +71,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <math.h>
@@ -91,6 +90,7 @@
 #include "execute.h"
 
 #include "conversion.h"
+#include "custom_assert.h"
 
 #include <string>
 #include <boost/tokenizer.hpp>
@@ -145,7 +145,7 @@ protected :
  */
 ExecDaemon::ExecDaemon(int params) 
 {
-	assert(params >= 0);
+	ASSERT(params >= 0);
 
 	m_params_count = params;
 	m_freq = DAEMON_INTERVAL;
@@ -168,7 +168,7 @@ int ExecDaemon::XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num)
 	int ret = asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@exec:frequency",
 			dev_num);
 	(void)ret;
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
@@ -201,23 +201,22 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg)
 	int ret;
 	
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	dev_num = cfg->GetLineNumber();
-	assert (dev_num > 0);
+	ASSERT(dev_num > 0);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
-	(void)ret;
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "exec",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	if (XMLCheckFreq(xp_ctx, dev_num))
 		return 1;
@@ -328,12 +327,11 @@ void init_signals()
 	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = terminate_handler;
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert (ret == 0);
-	(void)ret;
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 }
 
 int main(int argc, char *argv[])
@@ -347,15 +345,15 @@ int main(int argc, char *argv[])
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("execdmn");
-	assert (cfg != NULL);
-	
+	ASSERT(cfg != NULL);
+
 	if (cfg->Load(&argc, argv))
 		return 1;
-	
+
 	dmn = new ExecDaemon(cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetParamsCount());
-	assert (dmn != NULL);
-	
+	ASSERT(dmn != NULL);
+
 	if (dmn->ParseConfig(cfg)) {
 		return 1;
 	}

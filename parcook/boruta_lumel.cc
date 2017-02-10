@@ -56,6 +56,7 @@
 #include "ipchandler.h"
 #include "tokens.h"
 #include "borutadmn.h"
+#include "custom_assert.h"
 
 namespace {
 
@@ -271,7 +272,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
 	xp_ctx->node = node;
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
     
 	TParam* param = unit->GetFirstParam();
@@ -279,7 +280,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 		char *expr;
 	        asprintf(&expr, ".//ipk:param[position()=%d]",  i + 1);
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(pnode);
+		ASSERT(pnode);
 		free(expr);
 
 		std::string _addr;
@@ -383,7 +384,7 @@ void lumel_serial_client::scheduled(struct bufferevent* bufev, int fd) {
 		break;
 	    default:
 		m_log.log(2, "Unknown state, something went teribly wrong");
-		assert(false);
+		ASSERT(false);
 		break;
 	}
 }

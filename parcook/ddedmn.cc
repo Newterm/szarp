@@ -113,6 +113,7 @@
 #include "xmlutils.h"
 #include "httpcl.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 bool g_single;
 
@@ -209,8 +210,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
-	(void)ret;
+	ASSERT(ret == 0);
 
 	xmlChar* _uri = xmlGetNsProp(xdev, BAD_CAST("uri"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (_uri== 0) {
@@ -238,10 +238,10 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			cfg->GetLineNumber(), 
 			i + 1);
 		(void)ret;
-		assert (e != NULL);
+		ASSERT(e != NULL);
 
 		xmlNodePtr n = uxmlXPathGetNode(BAD_CAST e, xp_ctx, false);
-		assert(n != NULL);
+		ASSERT(n != NULL);
 		free(e);
 
 		xmlChar* _topic = xmlGetNsProp(n,

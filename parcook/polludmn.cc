@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * Polludmn 
+ * Polludmn
  * Pawe³ Kolega
  * demon dla ciep³omierza Pollustat - E demon powsta³ po zdebugowaniu protoko³u
  * pomiêdzy programem Minicom a ciep³omierzem (Transmisja oparta o protokó³ Mbus - nie myliæ z ModBus-em).
@@ -43,13 +43,13 @@
  @devices.pl Ciep³omierz Polustat-E.
  @protocol Reverse-engineered, Mbus based:
 
-  Datum/uhrzeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+  Datum/uhrzeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16
 
-  Mittelungszeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+  Mittelungszeit: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16
 
-  Mbus primaadrrese setzen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+  Mbus primaadrrese setzen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16
 
-  Absolut maxima loshen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16 
+  Absolut maxima loshen: #68#09#09#68#53#FE#51#04#6D#30#14#AD#01#05#16
 
   Zahlereinstellungen lesen: #10#40#FE#3E#16, #10#5B#FE#59#16
 
@@ -69,8 +69,9 @@
 #include "ipchandler.h"
 #include "liblog.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
-#define SLEEP_ERROR 180 
+#define SLEEP_ERROR 180
 
 #define DAEMON_ERROR 1
 
@@ -89,7 +90,7 @@ const unsigned char REQ_UD2[REQ_UD2_LENGTH] = {0x10, 0x5B, 0xFE, 0x59, 0x16};
 
 /* Response OK */
 
-const unsigned char RESPONSE_OK = 0xE5 ; 
+const unsigned char RESPONSE_OK = 0xE5 ;
 
 
 #define NO_PARITY 0
@@ -114,8 +115,8 @@ class           PolluMbus {
 	 * @param sends number of params to send (write)
 	 */
 	PolluMbus(int params, int sends) {
-		assert(params >= 0);
-		assert(sends >= 0);
+		ASSERT(params >= 0);
+		ASSERT(sends >= 0);
 
 		m_params_count = params;
 		m_sends_count = sends;
@@ -136,7 +137,7 @@ class           PolluMbus {
 	 * @param Device Path to device np "/dev/ttyS0"
 	 * @param BaudRate baud rate
 	 * @param StopBits stop bits 1 od 2
-	 * @param Parity parity : NO_PARITY, ODD, EVEN 
+	 * @param Parity parity : NO_PARITY, ODD, EVEN
 	 * @param return file descriptor
 	 */
 
@@ -160,7 +161,7 @@ class           PolluMbus {
       private:
 	/**
 	 * Function calculates decimal powers of 10
-	 * @param n 
+	 * @param n
 	 * @return - n power of 10
  	*/
 	unsigned long pow10(int n);
@@ -321,7 +322,7 @@ int PolluMbus::GetResponse(int fd, unsigned char *Response)
      }
      else
      {   return TIMEOUT_ERROR ;
-	    
+
      }
 
 }
@@ -378,17 +379,17 @@ const unsigned short  POWER_OFFSET = 37;
 unsigned long buffer;
 
  if (DataSize<=0) return -1;
- 
+
  if (PacketCopy(Data,tmpData,ENERGY_OFFSET) == 0) return -2;
  buffer = ParseValue(tmpData);
  ParsedData[0] = buffer & 0x0000ffff; /* Energy MSB */
- ParsedData[1] = (buffer & 0xffff0000) >>16; /* Energy LSB */ 
+ ParsedData[1] = (buffer & 0xffff0000) >>16; /* Energy LSB */
  if (PacketCopy(Data,tmpData,FLOW_OFFSET)   == 0) return -3;
- ParsedData[2] = (short)ParseValue(tmpData); 
+ ParsedData[2] = (short)ParseValue(tmpData);
  if (PacketCopy(Data,tmpData,INLET_TEMPERATURE_OFFSET) == 0) return -4;
- ParsedData[3] = (short)ParseValue(tmpData); 
+ ParsedData[3] = (short)ParseValue(tmpData);
  if (PacketCopy(Data,tmpData,OUTLET_TEMPERATURE_OFFSET)  == 0) return -5;
- ParsedData[4] = (short)ParseValue(tmpData); 
+ ParsedData[4] = (short)ParseValue(tmpData);
  if (PacketCopy(Data,tmpData,TEMPERATURE_DIFFERENCE_OFFSET)  == 0) return -6;
  ParsedData[5] = (short)(ParseValue(tmpData) / 10);
  if (PacketCopy(Data,tmpData,POWER_OFFSET)   == 0) return -7;
@@ -405,10 +406,10 @@ int main(int argc, char *argv[])
 	int             fd;
 	int 		ResponseStatus;
 	int		i;
-	short ParsedData[10];	
+	short ParsedData[10];
 	unsigned char buf[1000];
 	unsigned long buffer;
-		
+
 
 	cfg = new DaemonConfig("polludmn");
 
@@ -433,7 +434,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 			return 1;
 	}
 
-	
+
 	sz_log(2, "starting main loop");
 	mbinfo->SetNoData(ipc);
 	while (true) {
@@ -443,14 +444,14 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 			sz_log(2, "problem with serial port (open)\n");
 			close(fd);
 			sleep(SLEEP_ERROR);
-			continue;	
+			continue;
 		}
 
 		if (write(fd,SND_NKE,SND_NKE_LENGTH)<0){ //Sending first Question
 			sz_log(2, "problem with serial port (open)\n");
 			close(fd);
 			sleep(SLEEP_ERROR);
-			continue;	
+			continue;
 		}
 
 		if (cfg->GetSingle()){
@@ -467,7 +468,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 				sz_log(2, "problem with serial port (read)\n");
 				close(fd);
 				sleep(SLEEP_ERROR);
-				continue;	
+				continue;
 			}
 
 		}
@@ -476,16 +477,16 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 				sz_log(2, "problem with serial port (write)\n");
 				close(fd);
 				sleep(SLEEP_ERROR);
-				continue;	
+				continue;
 			}
-			
+
 			if (cfg->GetSingle()){
 				fprintf(stderr,"Sending : REQ_UD2\n");
 			}
 			sleep(1);
 			ResponseStatus = mbinfo->GetResponse(fd,buf); //Sending second question
-			if (ResponseStatus<0){ 
-				mbinfo->SetNoData(ipc); 
+			if (ResponseStatus<0){
+				mbinfo->SetNoData(ipc);
 				if (cfg->GetSingle()){
 					fprintf(stderr,"Error: NO DIALTONE\n");
 				}
@@ -493,12 +494,12 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 					sz_log(2, "problem with serial port (read)\n");
 					close(fd);
 					sleep(SLEEP_ERROR);
-					continue;	
+					continue;
 				}
 			}
 			else{
 				if (mbinfo->ParsePacket(buf, (unsigned int)ResponseStatus, ParsedData)==0){
-					memcpy(ipc->m_read, ParsedData, mbinfo->m_params_count*sizeof(short));		
+					memcpy(ipc->m_read, ParsedData, mbinfo->m_params_count*sizeof(short));
 					if (cfg->GetSingle()){
 						fprintf(stderr,"Received data :\n");
 						buffer = 0;
@@ -508,10 +509,10 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 							switch (i){
 								case 0:
 									buffer = 0;
-									buffer |= ParsedData[i] <<16 ; 
+									buffer |= ParsedData[i] <<16 ;
 								break;
 								case 1:
-									buffer |= ParsedData[i] ; 
+									buffer |= ParsedData[i] ;
 									fprintf(stderr, "Scalled Energy %lu \n",buffer);
 								break;
 
@@ -520,7 +521,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 								break;
 							}
 						}
-					
+
 					}
 
 				}

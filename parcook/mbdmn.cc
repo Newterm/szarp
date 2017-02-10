@@ -138,7 +138,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -169,6 +168,7 @@
 #include "liblog.h"
 #include "xmlutils.h"
 #include "tokens.h"
+#include "custom_assert.h"
 
 const unsigned short int MB_DEFAULT_PORT = 502;
 const unsigned char MB_ERROR_CODE = 0x80;
@@ -637,7 +637,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	char *e;
 	const int ret = asprintf(&e, "./@modbus:%s", prop);
 	(void)ret;
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -957,7 +957,7 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 	} 
 
 	URMAP::iterator i = m_registers.find(uid);
-	assert(i != m_registers.end());
+	ASSERT(i != m_registers.end());
 	RMAP& unit = i->second;
 
 	size_t data_index = 1;
@@ -1099,7 +1099,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		const int ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
 		(void)ret;
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(node);
+		ASSERT(node);
 		free(expr);
 
 		c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -1381,7 +1381,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		free(expr);
 
-		assert(node);
+		ASSERT(node);
 		xp_ctx->node = node;
 		if (configure_unit(u, xp_ctx))
 			return 1;
@@ -1759,7 +1759,7 @@ void modbus_client::reset_cycle() {
 
 void modbus_client::find_continous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
-	assert(i != regs.end());
+	ASSERT(i != regs.end());
 
 	m_unit = i->first;
 	m_start_addr = current = i->second.second;
@@ -1848,7 +1848,7 @@ void modbus_client::send_next_query() {
 			send_query();
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 			break;
 	}
 }
@@ -2615,21 +2615,21 @@ int configure_daemon(modbus_daemon **dmn, DaemonConfig *cfg) {
 	xmlDocPtr doc;
 
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
@@ -2646,7 +2646,7 @@ int main(int argc, char *argv[]) {
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("mbdmn");
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	
 	if (cfg->Load(&argc, argv))
 		return 1;
