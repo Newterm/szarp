@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,12 +32,12 @@
 #include "latin2.h"
 
 SFileSyncer::Request::Request(SFileSyncer::Request::Type type, uint32_t num, rs_signature_t *sig)
-	: m_type(type), m_num(num), m_signature(sig) { } 
+	: m_type(type), m_num(num), m_signature(sig) { }
 
 SFileSyncer::Request::Request(SFileSyncer::Request::Type type, uint32_t num, uint32_t size) :
 	m_type(type), m_num(num), m_size(size) { }
 
-SFileSyncer::RequestReceiver::RequestReceiver(std::deque<Request>& request_queue, PacketExchanger* exchanger) 
+SFileSyncer::RequestReceiver::RequestReceiver(std::deque<Request>& request_queue, PacketExchanger* exchanger)
 	: m_request_queue(request_queue), m_exchanger(exchanger), m_state(IDLE) {
 	m_exchanger->SetReader(this);
 }
@@ -62,7 +62,7 @@ void SFileSyncer::RequestReceiver::ReadPacket(Packet *p) {
 
 		uint16_t msg_type = ntohs(*(uint16_t*)p->m_data);
 		sz_log(8, "Syncer, got message type: %zu", (size_t) msg_type);
-		if (msg_type == MessageType::SEND_COMPLETE_FILE) 
+		if (msg_type == MessageType::SEND_COMPLETE_FILE)
 			HandleNewFilePacket(p);
 		else if (msg_type == MessageType::SEND_FILE_PATCH)
 			HandleSigPacket(p);
@@ -78,7 +78,7 @@ void SFileSyncer::RequestReceiver::ReadPacket(Packet *p) {
 
 			m_request_queue.push_back(Request(Request::EOR, 0));
 		}
-	} else { 
+	} else {
 		assert(m_state == SIGNATURE_RECEPTION);
 		HandleSigPacket(p);
 	}
@@ -101,7 +101,7 @@ void SFileSyncer::RequestReceiver::HandleNewFilePacket(Packet* p, bool link) {
 
 	m_state = IDLE;
 	uint32_t file_no = ntohl(*(uint32_t*) (p->m_data + sizeof(uint16_t)));
-	Request::Type type; 
+	Request::Type type;
 	if (link)
 		type = Request::LINK;
 	else
@@ -158,10 +158,10 @@ void SFileSyncer::RequestReceiver::HandleSigPacket(Packet* p) {
 	delete(p);
 }
 
-SFileSyncer::ResponseGenerator::ResponseGenerator(TPath& local_dir, 
+SFileSyncer::ResponseGenerator::ResponseGenerator(TPath& local_dir,
 	std::vector<TPath>& file_list,
 	std::deque<Request>& request_queue,
-	PacketExchanger *exchanger) 
+	PacketExchanger *exchanger)
 	:
 	m_local_dir(local_dir),
 	m_file_list(file_list),
@@ -172,14 +172,14 @@ SFileSyncer::ResponseGenerator::ResponseGenerator(TPath& local_dir,
 	m_exchanger->SetWriter(this);
 }
 
-Packet* SFileSyncer::ResponseGenerator::GivePacket() { 
-	
-	if (m_request_queue.size() == 0) 
+Packet* SFileSyncer::ResponseGenerator::GivePacket() {
+
+	if (m_request_queue.size() == 0)
 		return NULL;
 
 	sz_log(9, "Request queue size %zu", m_request_queue.size());
 	Request& request = m_request_queue.front();
-	
+
 	switch (request.m_type) {
 		case Request::COMPLETE_FILE:
 			return RawFilePacket();
@@ -338,7 +338,7 @@ Packet* SFileSyncer::ResponseGenerator::PatchPacket() {
 	Packet *p = new Packet;
 	p->m_data = (uint8_t*) malloc(Packet::MAX_LENGTH);
 	p->m_type = Packet::OK_PACKET;
-		
+
 	p->m_size = 0;
 	uint8_t *packet_buf = p->m_data;
 
@@ -353,7 +353,7 @@ Packet* SFileSyncer::ResponseGenerator::PatchPacket() {
 			size_t r = ReadFully(m_state_data.m_file, m_state_data.m_buf_start, buf_size);
 
 			m_state_data.m_buf.avail_in = r;
-			if (r != buf_size) 
+			if (r != buf_size)
 				m_state_data.m_buf.eof_in = 1;
 		}
 
@@ -441,7 +441,7 @@ bool InExFileMatcher::operator() (const TPath& path) const {
 		return false;
 
 	int ret = regexec(&m_expreg, path.BaseName().GetPath(), 0, NULL, 0);
-	if (ret != 0) 
+	if (ret != 0)
 		return true;
 
 	ret = regexec(&m_inpreg, path.BaseName().GetPath(), 0, NULL, 0);
@@ -504,22 +504,22 @@ Server::SynchronizationInfo Server::Authenticate() {
 		ver = rmsg.GetUInt16();
 		user = rmsg.GetString();
 		password = rmsg.GetString();
-	
-	
+
+
 		sz_log(4, "Auth info: user %s, password %s", user, password);
 		char *basedir, *sync;
-		
+
 		bool auth_ok = m_userdb->FindUser(user, password, &basedir, &sync);
-		
+
 		if(ver != MessageType::AUTH) {
 			int ssserver;
 			char *msg;
-			
+
 			key = rmsg.GetString();
 			ssserver = m_userdb->CheckUser(ver, user, password, key, &msg);
 			MessageSender smsg(m_exchanger);
 			sz_log(1,"HWKEY: %s USER: %s, IP: %s", key, user, m_client_addr);
-			
+
 			if (!auth_ok) {
 				smsg.PutUInt16(Message::AUTH_FAILURE);
 				smsg.PutUInt16(Message::INVALID_AUTH_INFO);
@@ -527,7 +527,7 @@ Server::SynchronizationInfo Server::Authenticate() {
 				m_exchanger->Disconnect();
 				throw AppException(ssstring(_("User authenticaiond failed")));
 			}
-			
+
 			if (ssserver == Message::AUTH_REDIRECT) {
 				smsg.PutUInt16(Message::AUTH_REDIRECT);
 				smsg.PutString(msg);
@@ -543,8 +543,8 @@ Server::SynchronizationInfo Server::Authenticate() {
 				smsg.FinishMessage();
 				m_exchanger->Disconnect();
 
-				
-				if (ssserver == Message::ACCOUNT_EXPIRED) 
+
+				if (ssserver == Message::ACCOUNT_EXPIRED)
 					throw  AppException(ssstring(_("Account expired")));
 				else if (ssserver == Message::INVALID_HWKEY)
 					throw  AppException(ssstring(_("Bad hwkey")));
@@ -552,15 +552,15 @@ Server::SynchronizationInfo Server::Authenticate() {
 					throw AppException(ssstring(_("User authenticaiond failed")));
 				else
 					throw AppException(ssstring(_("Unknown error")));
-				
-			}				 
-			
-			
-		} 
-		
-		
+
+			}
+
+
+		}
+
+
 		// Backward compatibility for old clients
-		
+
 		if (!auth_ok && ver == MessageType::AUTH) {
 			MessageSender smsg(m_exchanger);
 			smsg.PutUInt32(0);
@@ -568,7 +568,7 @@ Server::SynchronizationInfo Server::Authenticate() {
 			smsg.FinishMessage();
 			throw AppException(ssstring(_("User authenticaiond failed")));
 		}
-		
+
 		bool unicode = false;
 		if (ver == MessageType::AUTH3) {
 			unicode = true;
@@ -648,7 +648,7 @@ void Server::SendFileList(const TPath& dir, const char* exclude, const char *inc
 
 			TPath& file = result[i];
 
-			TPath path(file.GetPath() + strlen(info.GetBaseDir()) + 1, 
+			TPath path(file.GetPath() + strlen(info.GetBaseDir()) + 1,
 					file.GetType(),
 					file.GetModTime(),
 					file.GetSize());
@@ -676,7 +676,7 @@ void Server::SendFileList(const TPath& dir, const char* exclude, const char *inc
 					tmp = (char *) fromUTF8((unsigned char *) tmp);
 					char *tmp2 = strdup(path.GetPath());
 					tmp2 = (char *) fromUTF8((unsigned char *) tmp2);
-					
+
 					char * patch = CreateScript(tmp, tmp2);
 					toUTF8(patch);
 
@@ -687,9 +687,9 @@ void Server::SendFileList(const TPath& dir, const char* exclude, const char *inc
 				}
 
 			}
-				
+
 			smsg.PutUInt32(path.GetSize());
-	
+
 			time_t mtime = path.GetModTime();
 			struct tm* time = gmtime(&mtime);
 			smsg.PutUInt16(time->tm_year);
@@ -719,10 +719,10 @@ char* Server::CreateScript(const char* a, const char *b) {
 #define PUTVAL(STREAM, VAL) 								\
 {											\
 	assert((VAL) < 126 * 126);							\
-	fprintf(STREAM,  "%c", uint8_t(((VAL) / 126) + 1));				\
+	fprintf(STREAM, "%c", uint8_t(((VAL) / 126) + 1));				\
 	fprintf(STREAM, "%c", ((VAL) % 126) + 1);					\
 }
-	
+
 	char *result;
 	size_t result_size;
 	FILE* result_stream = open_memstream(&result, &result_size);
@@ -746,7 +746,7 @@ char* Server::CreateScript(const char* a, const char *b) {
 			len++;
 		i++;
 	}
-	
+
 	ssize_t d = strlen(b) - strlen(a);
 
 	if (d > 0) {
@@ -755,7 +755,7 @@ char* Server::CreateScript(const char* a, const char *b) {
 	} else if (d < 0) {
 		fprintf(result_stream, "%c", uint8_t(3));
 		d = -d;
-		PUTVAL(result_stream, d);
+		fprintf(result_stream, "%zu", d);
 	}
 
 	fclose(result_stream);
@@ -771,7 +771,7 @@ void Server::SynchronizeFiles(std::vector<TPath>& file_list, TPath path) {
 	m_exchanger->FlushOutput();
 }
 
-Server::Server(int socket, SSL_CTX* ctx, UserDB* db) 
+Server::Server(int socket, SSL_CTX* ctx, UserDB* db)
 	: m_userdb(db) {
 
 	m_client_addr = (char *)malloc(INET_ADDRSTRLEN);
@@ -781,16 +781,16 @@ Server::Server(int socket, SSL_CTX* ctx, UserDB* db)
 	struct sockaddr_in addr_inet;
 	socklen_t addr_inet_len = sizeof(addr_inet);
 
-	if (-1 == getpeername(socket, (struct sockaddr *)&addr_inet, &addr_inet_len)) 
+	if (-1 == getpeername(socket, (struct sockaddr *)&addr_inet, &addr_inet_len))
 	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
-	
+
 	if (NULL == inet_ntop(AF_INET, &addr_inet.sin_addr, m_client_addr, INET_ADDRSTRLEN))
 	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
-	
-	
+
+
 	BIO* bio = BIO_new_socket(socket, BIO_CLOSE);
 	SSL* ssl = SSL_new(ctx);
-	if (!ssl || !bio) 
+	if (!ssl || !bio)
                 	throw SSLException(ERR_get_error());
 
 	SSL_set_bio(ssl, bio, bio);
@@ -866,7 +866,7 @@ void Server::Serve() {
 				SendBaseStamp(synced_dir_list.at(dirno));
 			} else if (msg == MessageType::GET_FILE_LIST) {
 				char *exclude = NULL, *include = NULL;
-				try { 
+				try {
 					uint32_t dirno = recv.GetUInt32();
 					sz_log(9, "Request for files list for dir %d", dirno);
 					exclude = recv.GetString();
@@ -877,7 +877,7 @@ void Server::Serve() {
 						files_list,
 						info);
 					free(exclude);
-					free(include);	
+					free(include);
 				} catch (...) {
 					free(exclude);
 					free(include);
@@ -886,7 +886,7 @@ void Server::Serve() {
 				//and now we are syncing
 				SynchronizeFiles(files_list, TPath(info.GetBaseDir()));
 			} else {
-				sz_log(0, "Recevied unexpected message type: %zu", msg);
+				sz_log(0, "Recevied unexpected message type: %d", msg);
 				return;
 			}
 
@@ -1064,7 +1064,7 @@ int main(int argc, char *argv[]) {
 		serv.Serve();
 	}
 	catch (Exception& e) {
-		sz_log(0, "error %s", e.What().c_str()); 
+		sz_log(0, "error %s", e.What().c_str());
 		return 1;
 	}
 	catch (...) {
