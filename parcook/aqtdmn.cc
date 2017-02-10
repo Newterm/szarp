@@ -45,7 +45,6 @@
 #include <sys/sem.h>
 #include <sys/msg.h>
 #include <errno.h>
-#include <assert.h>
 #include <libxml/tree.h>
 #include <termio.h>
 #include <fcntl.h>
@@ -64,6 +63,7 @@
 #include "ipchandler.h"
 #include "liblog.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #define DAEMON_ERROR 1
 
@@ -417,7 +417,7 @@ class           AqtBus {
 	 * @param sends number of params to send (write)
 	 */
 	AqtBus(int params) {
-		assert(params >= 0);
+		ASSERT(params >= 0);
 		m_params_count = params;
 	}
 
@@ -757,8 +757,8 @@ unsigned int AqtBus::CalculateEnergy(unsigned char Wh_j_fl, unsigned int Energy)
 
 int AqtBus::parseDevice(xmlNodePtr node)
 {
-	assert(node != NULL);
-	char           *str;
+	ASSERT(node != NULL);
+	char *str;
 	
 	str = (char *) xmlGetNsProp(node,
 				    BAD_CAST("refresh"),

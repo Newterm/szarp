@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * Demon do komunikacji ze sterownikami ZET/SK2000/SK4000 (protokó³ Pratermu)
  * z wykorzystaniem ethernetowego serwera portów szeregowych, np. dla trybu
  * TCP Server urz±dzenia Moxa NPort W2250/2150.
- * 
+ *
  * $Id$
  */
 /*
@@ -27,15 +27,15 @@
  @class 4
  @devices Z-Elektronik, SK-2000 or SK-4000 PLCs, using ethernet serial port
  server, for example Moxa NPort W2250/2150 in TCP Server mode.
- @devices.pl Sterowniki Z-Elektronik, SK-2000 i SK-4000 z wykorzystaniem 
+ @devices.pl Sterowniki Z-Elektronik, SK-2000 i SK-4000 z wykorzystaniem
  sieciowego serwera portów szeregowych, np. Moxa  NPort W2250/2150 w trybie TCP Server.
  @protocol Z-Elektronik through TCP/IP link.
- @config.pl Konfiguracja w params.xml, atrybuty z przestrzeni nazw 'tcp' s± wymagane, 
+ @config.pl Konfiguracja w params.xml, atrybuty z przestrzeni nazw 'tcp' s± wymagane,
  chyba ¿e napisano inaczej:
  @config_example.pl
- <device 
+ <device
       xmlns:tcp="http://www.praterm.com.pl/SZARP/ipk-extra"
-      daemon="/opt/szarp/bin/tcpdmn" 
+      daemon="/opt/szarp/bin/tcpdmn"
       tcp:tcp-ip="192.168.6.10"
       		serial ports' server address
       tcp:tcp-port="4001"
@@ -44,7 +44,7 @@
  		czy po³±czenie TCP powinno mieæ opcjê Keep-Alive; dopuszczalne
 		warto¶ci to "yes" i "no"
 	tcp:nodata-timeout="15"
-		czas w sekundach, po jakim ustawiamy 'NO_DATA' je¿eli dane nie 
+		czas w sekundach, po jakim ustawiamy 'NO_DATA' je¿eli dane nie
 		przysz³y, opcjonalny - domy¶lnie 20 sekund
 	tcp:nodata-value="-1"
 		warto¶æ (typu float) jak± wysy³amy zamiast 'NO_DATA' dla
@@ -56,8 +56,8 @@
                       ...
               </param>
                ...
-              <send 
-                      param="..." 
+              <send
+                      param="..."
                       type="min"
                       ...
               </send>
@@ -78,7 +78,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -100,6 +99,7 @@
 #include "xmlutils.h"
 #include "tokens.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #define TCP_DEFAULT_PORT 4001
 
@@ -119,15 +119,15 @@ public :
 	TCPServer(int params, int sends, char id);
 	~TCPServer();
 
-	/** 
+	/**
 	 * Parses XML 'device' element. Device element must have attributes
-	 * 'tcp-mode' ("server"), tcp-port, and optionally 'tcp-allowed' 
+	 * 'tcp-mode' ("server"), tcp-port, and optionally 'tcp-allowed'
 	 * and 'tcp-keepalive'.
 	 * Every 'param' and 'send' children of first 'unit'
 	 * element must have attributes 'address' (modebus address, decimal or
 	 * hex) and 'val_type' ("integer" or "float").
 	 * @param cfg pointer to daemon config object
-	 * @return - 0 on success, 1 on error 
+	 * @return - 0 on success, 1 on error
 	 */
 	int ParseConfig(DaemonConfig * cfg);
 
@@ -150,19 +150,19 @@ public :
 	int Connect();
 
 	/**
-	 * @return -1 on error, 0 on timeout, 1 if data is available 
+	 * @return -1 on error, 0 on timeout, 1 if data is available
 	 */
 	int Wait(int timeout);
 
 	/**
-	 * Waits for response from PLC. 
+	 * Waits for response from PLC.
 	 * @param ipc IPCHandler object
 	 * @return 0 on success or timeout, 1 on error
 	 */
 	int GetData(IPCHandler *ipc);
 
-	/** 
-	 * Closes opened sockets. Returns without error if server state is 
+	/**
+	 * Closes opened sockets. Returns without error if server state is
 	 * 'not running'.
 	 * @return 0 on success, 1 on error
 	 */
@@ -171,21 +171,21 @@ public :
 	/**
 	 * Closes communication socket. */
 	void Reset();
-	
+
 protected :
-	/** helper function for XML parsing 
+	/** helper function for XML parsing
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num);
-	/** helper function for XML parsing 
+	/** helper function for XML parsing
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num);
-	/** helper function for XML parsing 
+	/** helper function for XML parsing
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num);
-	/** helper function for XML parsing 
+	/** helper function for XML parsing
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx, int dev_num);
-	/** helper function for XML parsing 
+	/** helper function for XML parsing
 	 * @return 1 on error, 0 otherwise */
 	int XMLCheckNodataValue(xmlXPathContextPtr xp_ctx, int dev_num);
 	/** Checks if IP is allowed.
@@ -203,11 +203,11 @@ protected :
 				/**< port number to listen on */
 	float m_nodata_value;	/**< value sended instead of NO_DATA */
 	int m_nodata_timeout;	/**< timeout for 'NO_DATA' */
-	
+
 	struct in_addr m_ip;	/**< IP address to connect to */
-	
+
 	int m_socket;		/**< Listen socket descriptor. */
-	
+
 	long int m_debug_send;	/**< Number of questions sent */
 	long int m_debug_ok;	/**< Number of correct answers */
 
@@ -217,10 +217,10 @@ protected :
  * @param params number of params to read
  * @param sends number of params to send (write)
  */
-TCPServer::TCPServer(int params, int sends, char id) 
+TCPServer::TCPServer(int params, int sends, char id)
 {
-	assert(params >= 0);
-	assert(sends >= 0);
+	ASSERT(params >= 0);
+	ASSERT(sends >= 0);
 
 	m_id = id;
 	m_params_count = params;
@@ -234,7 +234,7 @@ TCPServer::TCPServer(int params, int sends, char id)
 	m_debug_ok = 0;
 }
 
-TCPServer::~TCPServer() 
+TCPServer::~TCPServer()
 {
 	Stop();
 }
@@ -248,7 +248,7 @@ int TCPServer::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-port",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL){
@@ -280,7 +280,7 @@ int TCPServer::XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num)
 
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-ip",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
 	if (c != NULL) {
@@ -300,10 +300,10 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 {
 	char *e;
 	xmlChar *c;
-	
+
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-keepalive",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL) {
@@ -325,17 +325,17 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	xmlFree(c);
 	return 0;
 }
-	
-int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx, 
+
+int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 		int dev_num)
 {
 	char *e;
 	xmlChar *c;
 	long l;
-	
+
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:nodata-timeout",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
@@ -346,13 +346,13 @@ int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
 		sz_log(0, "incorrect value '%s' for tcp:nodata-timeout for device %d -  integer expected",
-					SC::U2A(c).c_str(), dev_num); 
+					SC::U2A(c).c_str(), dev_num);
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 600)) {
-		sz_log(0, "value '%ld' for tcp:nodata-timeout for device %d outside expected range [1..600]", 
+		sz_log(0, "value '%ld' for tcp:nodata-timeout for device %d outside expected range [1..600]",
 				l, dev_num);
 		return 1;
 	}
@@ -368,24 +368,24 @@ int TCPServer::ParseConfig(DaemonConfig * cfg)
 	xmlXPathContextPtr xp_ctx;
 	int dev_num;
 	int ret;
-	
+
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	dev_num = cfg->GetLineNumber();
-	assert (dev_num > 0);
+	ASSERT(dev_num > 0);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "tcp",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	if (XMLCheckIP(xp_ctx, dev_num))
 		return 1;
@@ -400,7 +400,7 @@ int TCPServer::ParseConfig(DaemonConfig * cfg)
 		return 1;
 
 	xmlXPathFreeContext(xp_ctx);
-	
+
 	m_single = cfg->GetSingle();
 
 	return 0;
@@ -411,14 +411,14 @@ int TCPServer::Connect()
 {
 	struct sockaddr_in addr;
 
-	assert (m_socket < 0);
+	ASSERT(m_socket < 0);
 	m_socket = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_socket < 0) {
 		sz_log(0, "socket() failed, errno %d (%s)",
 				errno, strerror(errno));
 		return -1;
 	}
-	int ret = setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, 
+	int ret = setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE,
 			&m_keepalive, sizeof(m_keepalive));
 	if (ret < 0) {
 		sz_log(0, "setsockopt() failed, errno %d (%s)",
@@ -489,16 +489,16 @@ int TCPServer::Stop()
 }
 
 
-int TCPServer::Wait(int timeout) 
+int TCPServer::Wait(int timeout)
 {
 	int ret;
 	struct timeval tv;
 	fd_set set;
 	time_t t1, t2;
-	
-	assert (m_socket >= 0);
+
+	ASSERT(m_socket >= 0);
 	time(&t1);
-	
+
 	sz_log(10, "Waiting for data");
 	if (m_single)
 		printf("DEBUG: Waiting for data\n");
@@ -513,7 +513,7 @@ int TCPServer::Wait(int timeout)
 		tv.tv_usec = 0;
 		FD_ZERO(&set);
 		FD_SET(m_socket, &set);
-		
+
 		ret = select(m_socket + 1, &set, NULL, NULL, &tv);
 		if (ret < 0) {
 			if (errno == EINTR) {
@@ -535,21 +535,21 @@ int TCPServer::Wait(int timeout)
 			return 1;
 		}
 	}
-	
+
 	return 0;
 }
 
 int TCPServer::GetData(IPCHandler *ipc)
 {
-	int count; 
+	int count;
 #define BUFSIZE 1024
 	char inbuf[BUFSIZE];
 	int i;
 	int checksum = 0;
-	
+
 	if (m_socket < 0)
 		return -1;
-	
+
 	if (m_single)
 		printf("Reading data\n");
 
@@ -588,7 +588,7 @@ again:
 	for (int j = 0; j < count; j++) {
 		checksum += (uint) inbuf[j];
 	}
-	
+
 	if (m_single) {
 		printf("GOT DATA - %d bytes\n", count);
 	}
@@ -605,7 +605,7 @@ again:
 		sz_log(0, "Incorrect number of params (got %d, %d expected)\n", tokc - 5, m_params_count);
 		goto error;
 	}
-	
+
 	if (toks[2][0] != m_id) {
 		if (m_single) {
 			printf("Bad FunId code (expected '%c' [%d] got '%c' [%d]\n",
@@ -619,7 +619,7 @@ again:
 		printf("Raport FunID: %s\n", toks[2]);
 		printf("Date: %s\n", toks[3]);
 	}
-	
+
 	for (i = 0; i < m_params_count; i++) {
 		ipc->m_read[i] = atoi(toks[i+4]);
 		if (m_single)
@@ -636,7 +636,7 @@ again:
 	}
 	if (checksum != atoi(toks[tokc-1]))
 		goto error;
-	
+
 	tokenize_d(NULL, &toks, &tokc, NULL);
 
 	m_debug_ok++;
@@ -677,11 +677,11 @@ void init_signals()
 	sa.sa_handler = terminate_handler;
 	sa.sa_mask = block_mask;
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	signal(SIGPIPE, SIG_IGN);
 }
 
@@ -696,28 +696,28 @@ int main(int argc, char *argv[])
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("tcpdmn");
-	assert (cfg != NULL);
-	
+	ASSERT(cfg != NULL);
+
 	if (cfg->Load(&argc, argv))
 		return 1;
-	
+
 	server = new TCPServer(cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetParamsCount(),
 			cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetSendParamsCount(),
 			cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetId());
-	assert (server != NULL);
-	
+	ASSERT(server != NULL);
+
 	g_server = server;
-	
+
 	if (server->ParseConfig(cfg)) {
 		return 1;
 	}
 
 	if (cfg->GetSingle()) {
-		printf("line number: %d\ndevice: %ls\nparams in: %d\nparams out %d\n", 
-				cfg->GetLineNumber(), 
-				cfg->GetDevice()->GetPath().c_str(), 
+		printf("line number: %d\ndevice: %ls\nparams in: %d\nparams out %d\n",
+				cfg->GetLineNumber(),
+				cfg->GetDevice()->GetPath().c_str(),
 				cfg->GetDevice()->GetFirstRadio()->
 				GetFirstUnit()->GetParamsCount(),
 				cfg->GetDevice()->GetFirstRadio()->
@@ -775,7 +775,7 @@ int main(int argc, char *argv[])
 		/* sleep up to 10 seconds */
 		time(&t1);
 		if (t1 - t < DAEMON_INTERVAL) {
-			sz_log(10, "Sleeping for %ld seconds", 
+			sz_log(10, "Sleeping for %ld seconds",
 					DAEMON_INTERVAL - (t1 - t));
 			int rest = sleep(DAEMON_INTERVAL - (t1 - t));
 			while (rest > 0) {

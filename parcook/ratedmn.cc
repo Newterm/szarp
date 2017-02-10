@@ -46,6 +46,7 @@
 
 #include "ipchandler.h"
 #include "liblog.h"
+#include "custom_assert.h"
 
 #define N_OF_PARAMS 4
 #define N_OF_SENDS 1
@@ -360,8 +361,8 @@ class           RateInfo {
 	 * @param sends number of params to send (write)
 	 */
 	RateInfo(int params, int sends) {
-		assert(params >= 0);
-		assert(sends >= 0);
+		ASSERT(params >= 0);
+		ASSERT(sends >= 0);
 		m_params_count = params;
 		m_sends_count = sends;
 	}
@@ -410,7 +411,7 @@ int RateInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg, list_of_periods_t
 	
 	char           *str;
 	xmlNodePtr node = NULL;
-	assert(unit !=NULL);
+	ASSERT(unit !=NULL);
 	for (unit = unit->children; unit; unit = unit->next) {
 		if ((unit->ns &&
 		    !strcmp((char *) unit->ns->href,

@@ -46,6 +46,7 @@
 #include "ipchandler.h"
 #include "liblog.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #define DAEMON_ERROR 1
 
@@ -102,8 +103,8 @@ class           LecMbus {
 	 * @param sends number of params to send (write)
 	 */
 	LecMbus(int params, int sends) {
-		assert(params >= 0);
-		assert(sends >= 0);
+		ASSERT(params >= 0);
+		ASSERT(sends >= 0);
 
 		m_params_count = params;
 		m_sends_count = sends;

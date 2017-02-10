@@ -120,7 +120,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -145,6 +144,7 @@
 #include "liblog.h"
 #include "xmlutils.h"
 #include "tokens.h"
+#include "custom_assert.h"
 
 #define MODBUS_DEFAULT_PORT 502
 
@@ -422,20 +422,20 @@ protected :
  */
 ModbusTCP::ModbusTCP(int params, int sends) 
 {
-	assert(params >= 0);
-	assert(sends >= 0);
+	ASSERT(params >= 0);
+	ASSERT(sends >= 0);
 
 	m_params_count = params;
 	if (params > 0) {
 		m_params = new ParamInfo[params];
-		assert(m_params != NULL);
+		ASSERT(m_params != NULL);
 	} else {
 		m_params = NULL;
 	}
 	m_sends_count = sends;
 	if (sends > 0) {
 		m_sends = new ParamInfo[sends];
-		assert(m_sends != NULL);
+		ASSERT(m_sends != NULL);
 	} else {
 		m_sends = NULL;
 	}
@@ -482,7 +482,7 @@ ModbusTCP::~ModbusTCP()
 void ModbusTCP::SetNoData(IPCHandler * ipc)
 {
 	int i;
-	assert (ipc != NULL);
+	ASSERT(ipc != NULL);
 
 	for (i = 0; i < ipc->m_params_count; i++)
 		ipc->m_read[i] = SZARP_NO_DATA;
@@ -495,7 +495,7 @@ int ModbusTCP::XMLCheckMode(xmlXPathContextPtr xp_ctx, int dev_num)
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-mode",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
 	if (c == NULL)
@@ -522,7 +522,7 @@ int ModbusTCP::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-port",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
 	if (c == NULL)
@@ -554,7 +554,7 @@ int ModbusTCP::XMLCheckAllowedIP(xmlXPathContextPtr xp_ctx, int dev_num)
 
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-allowed",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
@@ -567,7 +567,7 @@ int ModbusTCP::XMLCheckAllowedIP(xmlXPathContextPtr xp_ctx, int dev_num)
 			m_allowed_ip = (struct in_addr *) calloc(
 					m_allowed_count,
 					sizeof(struct in_addr));
-			assert (m_allowed_ip != NULL);
+			ASSERT(m_allowed_ip != NULL);
 		}
 		for (int i = 0; i < tokc; i++) {
 			int ret = htonl(inet_aton(toks[i], &m_allowed_ip[i]));
@@ -588,13 +588,13 @@ int ModbusTCP::XMLCheckAllowedIP(xmlXPathContextPtr xp_ctx, int dev_num)
 }
 
 int ModbusTCP::XMLCheckServerIP(xmlXPathContextPtr xp_ctx, int dev_num) {
-	assert(m_type == CLIENT);
+	ASSERT(m_type == CLIENT);
 	char *e;
 	xmlChar *c;
 
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-address",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c != NULL) {
@@ -621,7 +621,7 @@ int ModbusTCP::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-keepalive",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL){
@@ -653,7 +653,7 @@ int ModbusTCP::XMLCheckServerTimeout(xmlXPathContextPtr xp_ctx,
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:tcp-timeout",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL)
@@ -686,7 +686,7 @@ int ModbusTCP::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:nodata-timeout",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL){
@@ -721,7 +721,7 @@ int ModbusTCP::XMLCheckNodataValue(xmlXPathContextPtr xp_ctx,
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:nodata-value",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL) {
@@ -749,7 +749,7 @@ int ModbusTCP::XMLCheckFloatOrder(xmlXPathContextPtr xp_ctx, int dev_num)
 	
 	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@modbus:FloatOrder",
 			dev_num);
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	if (c == NULL) {
@@ -793,7 +793,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 			dev_num, 
 			i != j ? "send" : "param" ,
 			i + 1);
-		assert (e != NULL);
+		ASSERT(e != NULL);
 		c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 		free(e);
 		if (c == NULL)
@@ -822,7 +822,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 			dev_num, 
 			i != j ? "send" : "param" ,
 			i + 1);
-		assert (e != NULL);
+		ASSERT(e != NULL);
 		c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 		free(e);
 		if (c == NULL)
@@ -848,7 +848,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 		asprintf(&e, "/ipk:params/ipk:device[position()=%d]/ipk:unit[position()=1]/ipk:param[position()=%d]/@modbus:val_op",
 			dev_num, 
 			i + 1);
-		assert (e != NULL);
+		ASSERT(e != NULL);
 		c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 		free(e);
 		if (c == NULL) {
@@ -878,22 +878,22 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 	int ret;
 	
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	dev_num = cfg->GetLineNumber();
-	assert (dev_num > 0);
+	ASSERT(dev_num > 0);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	if (XMLCheckPort(xp_ctx, dev_num))
 		return 1;
@@ -935,17 +935,17 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 
 	TParam *p = cfg->GetDevice()->GetFirstRadio()->
 		GetFirstUnit()->GetFirstParam();
-	assert (p != NULL);
+	ASSERT(p != NULL);
 	for (int i = 0; i < m_params_count; i++, p = p->GetNext()) {
-		assert(p != NULL);
+		ASSERT(p != NULL);
 		m_params[i].prec = (int)lrint(exp10(p->GetPrec()));
 	}
 	if (m_sends_count > 0) { 
 		TSendParam *s = cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetFirstSendParam();
-		assert (s != NULL);
+		ASSERT(s != NULL);
 		for (int i = 0; i < m_sends_count; i++, s = s->GetNext()) {
-			assert (s != NULL);
+			ASSERT(s != NULL);
 			p = cfg->GetIPK()->getParamByName(s->GetParamName());
 			if (p == NULL) {
 				sz_log(0, "parameter with name '%ls' not found (send parameter %d for device %d)",
@@ -968,8 +968,8 @@ int ModbusTCP::CreateRegisters()
 	int max;
 	int i;
 	
-	assert (m_registers == NULL);
-	assert (m_reg_write == NULL);
+	ASSERT(m_registers == NULL);
+	ASSERT(m_reg_write == NULL);
 	/* search for max address */
 	max = 0;
 	for (i = 0; i < m_params_count; i++) {
@@ -997,9 +997,9 @@ int ModbusTCP::CreateRegisters()
 	}
 	m_registers_size = max + 1;
 	m_registers = (int16_t *) calloc(m_registers_size, sizeof(int16_t));
-	assert (m_registers != NULL);
+	ASSERT(m_registers != NULL);
 	m_reg_write = (time_t *) calloc(m_registers_size, sizeof(time_t));
-	assert (m_reg_write != NULL);
+	ASSERT(m_reg_write != NULL);
 	return CheckRegisters();
 }
 
@@ -1008,8 +1008,8 @@ int ModbusTCP::CheckRegisters()
 	int i, j;
 	ParamInfo *arr;
 	
-	assert (m_registers_size > 0);
-	assert (m_registers != NULL);
+	ASSERT(m_registers_size > 0);
+	ASSERT(m_registers != NULL);
 
 	arr = m_params;
 	for (i = 0, j = 0; j < m_params_count + m_sends_count; j++, i++) {
@@ -1049,16 +1049,16 @@ int ModbusTCP::CheckRegisters()
 
 void ModbusTCP::CleanRegisters()
 {
-	assert (m_registers != NULL);
-	assert (m_registers_size > 0);
+	ASSERT(m_registers != NULL);
+	ASSERT(m_registers_size > 0);
 	memset(m_registers, 0, m_registers_size * sizeof(int16_t));
 }
 
 int ModbusTCP::IPAllowed(struct sockaddr_in *addr)
 {
 	int i;
-	assert (addr != NULL);
-	assert (addr->sin_family = AF_INET);
+	ASSERT(addr != NULL);
+	ASSERT(addr->sin_family = AF_INET);
 	if (m_allowed_count <= 0)
 		return 1;
 	for (i = 0; i < m_allowed_count; i++) {
@@ -1132,7 +1132,7 @@ int ModbusTCP::Accept(int timeout)
 	int ret;
 	time_t t1, t2;
 
-	assert (m_listen_socket >= 0);
+	ASSERT(m_listen_socket >= 0);
 	if (timeout <= 0)
 		return 1;
 	time(&t1);
@@ -1187,11 +1187,11 @@ int ModbusTCP::Read(int size, unsigned char **buffer)
 {
 	int toread, c;
 	
-	assert (size > 0);
-	assert (m_socket >= 0);
+	ASSERT(size > 0);
+	ASSERT(m_socket >= 0);
 	
 	*buffer = (unsigned char *) calloc (size, sizeof(unsigned char));
-	assert (*buffer != NULL);
+	ASSERT(*buffer != NULL);
 	toread = size;
 	while (toread > 0) {
 		errno = 0;
@@ -1212,8 +1212,8 @@ int ModbusTCP::Read(int size, unsigned char **buffer)
 
 void ModbusTCP::CreateResponse()
 {
-	assert (m_received_message != NULL);
-	assert (m_received_message_size >= 2);
+	ASSERT(m_received_message != NULL);
+	ASSERT(m_received_message_size >= 2);
 
 	if (m_received_message_size == 2) {
 		CreateException(m_received_message[0], MB_ILLEGAL_FUNCTION);
@@ -1239,7 +1239,7 @@ void ModbusTCP::CreateException(char function, char code)
 {
 	m_send_message_size = 2;
 	m_send_message = (char *) calloc(m_send_message_size, sizeof(char));
-	assert (m_send_message != NULL);
+	ASSERT(m_send_message != NULL);
 	m_send_message[0] = function | MODBUS_ERROR_CODE;
 	m_send_message[1] = code;
 	sz_log(4, "created exception response, function %d, code %d",
@@ -1264,7 +1264,7 @@ void ModbusTCP::ParseFunReadHoldingReg(unsigned char *frame, int size)
 	
 	m_send_message_size = 2 + 2 * quantity;
 	m_send_message = (char *) calloc(m_send_message_size, sizeof(char));
-	assert (m_send_message != NULL);
+	ASSERT(m_send_message != NULL);
 	
 	m_send_message[0] = MB_F_RHR;
 	m_send_message[1] = 2 * quantity;
@@ -1337,7 +1337,7 @@ int ModbusTCP::CheckServerResponseError(unsigned char *frame, int size) {
 }
 
 int ModbusTCP::SendReadMultReg(int from, int to, int timeout) {
-	assert(to > from);
+	ASSERT(to > from);
 	int quantity = to - from;
 	m_send_message_size = 5;
 	m_send_message = (char*) calloc(m_send_message_size, sizeof(char));
@@ -1422,7 +1422,7 @@ int ModbusTCP::SendReadRegisters(int timeout) {
 }
 
 int ModbusTCP::SendWriteMultReg(int from, int to, int timeout) {
-	assert(to > from);
+	ASSERT(to > from);
 	int quantity = to - from;
 
 	m_send_message_size = 6 + 2 * quantity;
@@ -1518,7 +1518,7 @@ void ModbusTCP::ParseFunWriteMultReg(unsigned char *frame, int size)
 
 	m_send_message_size = 5;
 	m_send_message = (char *) calloc (m_send_message_size, sizeof(char));
-	assert (m_send_message != NULL);
+	ASSERT(m_send_message != NULL);
 	memcpy(m_send_message, frame, 5);
 }
 
@@ -1585,7 +1585,7 @@ int ModbusTCP::Connect(int timeout) {
 		if (ret == 0)
 			connected = true;
 		else {
-			assert(ret < 0);
+			ASSERT(ret < 0);
 			if (errno == EINTR)
 				continue;
 			if (errno == EINPROGRESS) while (!connected) {
@@ -1640,7 +1640,7 @@ int ModbusTCP::ReadMessage(int timeout)
 	fd_set set;
 	time_t t1, t2;
 	
-	assert (m_running != 0);
+	ASSERT(m_running != 0);
 	time(&t1);
 	
 	if (m_socket < 0)
@@ -1724,7 +1724,7 @@ int ModbusTCP::SendMessage(int timeout)
 	int c, towrite;
 	struct iovec iobuf[2];
 	
-	assert (m_running != 0);
+	ASSERT(m_running != 0);
 	if (m_socket < 0) {
 		ret = 0;
 		goto out;
@@ -1808,10 +1808,10 @@ out:
 }
 
 void ModbusTCP::UpdateParamRegisters(IPCHandler *ipc) {
-	assert (ipc != NULL);
-	assert (m_registers != NULL);
-	assert (m_registers_size > 0);
-	assert (m_params_count == ipc->m_params_count);
+	ASSERT(ipc != NULL);
+	ASSERT(m_registers != NULL);
+	ASSERT(m_registers_size > 0);
+	ASSERT(m_params_count == ipc->m_params_count);
 
 	time_t t;
 	int i;
@@ -1830,10 +1830,10 @@ void ModbusTCP::UpdateParamRegisters(IPCHandler *ipc) {
 
 void ModbusTCP::UpdateSendRegisters(IPCHandler *ipc)
 {
-	assert (ipc != NULL);
-	assert (m_registers != NULL);
-	assert (m_registers_size > 0);
-	assert (m_sends_count == ipc->m_sends_count);
+	ASSERT(ipc != NULL);
+	ASSERT(m_registers != NULL);
+	ASSERT(m_registers_size > 0);
+	ASSERT(m_sends_count == ipc->m_sends_count);
 
 	time_t t;
 	int i;
@@ -1917,7 +1917,7 @@ void ModbusTCP::WriteRegister(int address, ModbusValType type,
 		}
 		return;
 	}
-	assert (type == MB_TYPE_FLOAT);
+	ASSERT(type == MB_TYPE_FLOAT);
 	float f;
 	if (value == SZARP_NO_DATA) {
 		f = m_nodata_value;
@@ -2001,11 +2001,11 @@ void init_signals()
 	sa.sa_handler = terminate_handler;
 	sigemptyset(&sa.sa_mask);
 	ret = sigaction(SIGTERM, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = sigaction(SIGHUP, &sa, NULL);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 }
 
 int server_loop(ModbusTCP *mtcp, IPCHandler *ipc, DaemonConfig *cfg)
@@ -2107,7 +2107,7 @@ int main(int argc, char *argv[])
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("mbtcpdmn");
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	
 	if (cfg->Load(&argc, argv))
 		return 1;
@@ -2116,7 +2116,7 @@ int main(int argc, char *argv[])
 			GetFirstUnit()->GetParamsCount(),
 			cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetSendParamsCount());
-	assert (mtcp != NULL);
+	ASSERT(mtcp != NULL);
 	
 	if (mtcp->ParseConfig(cfg)) {
 		return 1;

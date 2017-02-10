@@ -58,7 +58,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <assert.h>
 
 #include <vector>
 #include <string>
@@ -69,6 +68,7 @@
 #include "dmncfg.h"
 #include "liblog.h"
 #include "ipchandler.h"
+#include "custom_assert.h"
 
 #define MAX_UNIT_ADDRESS 0xFFU
 #define MAX_PARAM_ADDRESS 0xFFU
@@ -217,8 +217,8 @@ class Daemon {
 			 * @tu pointer to a TUnit object
 			 * @return ptr to unit object*/
 			static Unit* Create(xmlNodePtr node,TUnit* tu) {
-				assert(node != NULL);
-				assert(tu != NULL);
+				ASSERT(node != NULL);
+				ASSERT(tu != NULL);
 				char *str = NULL;
 				Unit* unit = new Unit();
 				unit->param_buf = NULL;
@@ -294,7 +294,7 @@ class Daemon {
 					case 2: return (short) ceilf(fval * 100);
 					case 3: return (short) ceilf(fval * 1000);
 					case 4: return (short) ceilf(fval * 10000);
-					default: assert(false);
+					default: ASSERT(false);
 				}
 
 				return SZARP_NO_DATA;
@@ -366,16 +366,16 @@ class Daemon {
 		 * @param cfg pointer to DaemonConfig object
 		 * @return UnitsList object*/
 		static UnitsList* Create(DaemonConfig *cfg) {
-			assert(cfg != NULL);
+			ASSERT(cfg != NULL);
 
 			TDevice* td = cfg->GetDevice();
-			assert(td != NULL);
+			ASSERT(td != NULL);
 
 			TRadio *tr = td->GetFirstRadio();
-			assert(tr != NULL);
+			ASSERT(tr != NULL);
 
 			xmlNodePtr device_node = cfg->GetXMLDevice();
-			assert(device_node != NULL);
+			ASSERT(device_node != NULL);
 
 			UnitsList *ul = new UnitsList();
 
@@ -383,7 +383,7 @@ class Daemon {
 				TUnit *tu = tr->GetFirstUnit();
 				for (xmlNodePtr node = device_node->children; node && tu ; node = node->next) 
 					if (!strcmp( (char*) node->name, "unit")) {
-						assert(tu != NULL);
+						ASSERT(tu != NULL);
 						Unit* u = Unit::Create(node, tu);
 						ul->buf_size += u->GetReqBufferSize();
 						ul->units.push_back(u);
@@ -890,7 +890,7 @@ class Daemon {
 	/**<Initializes daemon
 	 * @param cfg pointer to DaemonsConfig configuration*/
 	Daemon(DaemonConfig *cfg) : ul(NULL), sp(NULL), ph(NULL), dc(cfg) {
-		assert(cfg != NULL);
+		ASSERT(cfg != NULL);
 		try {
 			ul = UnitsList::Create(dc);
 			sp = new SerialPort();

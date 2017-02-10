@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,11 +17,11 @@
 */
 /*
  * Demon Modbus RTU do odczytu systemu monitoringu spalin.
- * 
+ *
  * $Id$
  */
 
-/* 
+/*
  @description_start
  @class 4
  @protocol Modbus RTU.
@@ -31,9 +31,9 @@
  @comment.pl Demon przestarza³y, zastêpuje go uniwersalny demon protoko³u Modbus - mbdmn.
 
  @config_example
- <device 
+ <device
       xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra"
-      daemon="/opt/szarp/bin/mbrtudmn" 
+      daemon="/opt/szarp/bin/mbrtudmn"
       path="/dev/ttyA11"
       modbus:id="0xA1"
       modbus:mode="master"
@@ -60,8 +60,8 @@
                       ...
               </param>
               ...
-              <send 
-                      param="..." 
+              <send
+                      param="..."
                       type="min"
                       modbus:address="0x1f"
                       modbus:type="bcd">
@@ -85,8 +85,8 @@
                       ...
               </param>
               ...
-              <send 
-                      param="..." 
+              <send
+                      param="..."
                       type="min"
                       modbus:address="0x1f"
                       modbus:type="float">
@@ -107,11 +107,12 @@
 #include "conversion.h"
 #include "xmlutils.h"
 
-using std::vector; 
+using std::vector;
 
 #include "mbrtu.h"
 #include "ipchandler.h"
 #include "liblog.h"
+#include "custom_assert.h"
 
 #define DAEMON_ERROR 1
 #define NOT_FOUND -1
@@ -162,9 +163,9 @@ class ModbusUnit;
 
 class ModbusLine {
 	int m_fd;
-	
+
 	int m_parity;
-	
+
 	int m_stop_bits;
 
 	bool m_debug;
@@ -213,7 +214,7 @@ class           ModbusUnit {
 					  value to get real value; for example
 					  if integer value is 131 and prec is
 					  100, real value is 131/100 = 1.31 */
-		int		function ; /**< function id in MODBUS standard 0..0x10 - this field is supported in MASTER mode. 
+		int		function ; /**< function id in MODBUS standard 0..0x10 - this field is supported in MASTER mode.
 					    In slave this param is automagicaly created from MASTER frame*/
 		int		extra ; /**< Extra configuration */
 	};
@@ -221,7 +222,7 @@ class           ModbusUnit {
 	bool m_debug;
 
 	int             m_id;	/**< id */
-	
+
 	short* m_reads_buffer;
 				/**< array of params values*/
 	ParamInfo      *m_params;
@@ -243,11 +244,11 @@ class           ModbusUnit {
 
 	int 		DelayBetweenChars ; /** < Delay between received chars */
 	int 		ReceiveTimeout ; /** < Select timeout error */
-	
+
 	int 		SendDelay ; /** < Sending delay */
-	
+
 	char 		zerond; /** < convert Zero to SZARP_NO_DATA? */
-	
+
 	char 		FloatOrder; /** < In float conversion MSBLSB or LSBMSB */
 	char 		LongOrder; /** < In float conversion MSBLSB or LSBMSB */
 	char		WriteOneTime ;	/** < Sends data only One time (required for CRP05 Heatmeter) */
@@ -261,18 +262,18 @@ class           ModbusUnit {
 	/* This is an orginal constructor */
 	ModbusUnit(TUnit *unit): m_unit(unit)
        	{
-		assert(m_unit != NULL);
+		ASSERT(m_unit != NULL);
 		m_params_count = m_unit->GetParamsCount();
 		if (m_params_count > 0) {
 			m_params = new ParamInfo[m_params_count];
-			assert(m_params != NULL);
+			ASSERT(m_params != NULL);
 		} else
 			m_params = NULL;
 
 		m_sends_count = m_unit->GetSendParamsCount();
 		if (m_sends_count > 0) {
 			m_sends = new ParamInfo[m_sends_count];
-			assert(m_sends != NULL);
+			ASSERT(m_sends != NULL);
 		} else
 			m_sends = NULL;
 		/* Ustalam cykl tej zmiennej rowny sumie parametrow wysylanych i odczytywanych */
@@ -300,7 +301,7 @@ class           ModbusUnit {
 
 	/**
 	 * finding memory index
-	 * @param Address finding Address 
+	 * @param Address finding Address
 	 * @return -1 error, other value found index
 	 */
 	int             FindRegIndex(unsigned short Address);
@@ -345,13 +346,13 @@ class           ModbusUnit {
 	 * Filling m_read structure SZARP_NO_DATA value
 	 */
 	void            SetNoData();
-	
+
 	/**
 	 * Filling current element m_read SZARP_NO_DATA value
 	 */
 	void            SetNoData(int param);
 
-	/** 
+	/**
 	 * Parses XML 'device' element. Device element must have attributes
 	 * id' (integer identifier, may be
 	 * decimal or hex). Every 'param' and 'send' children of first 'unit'
@@ -359,16 +360,16 @@ class           ModbusUnit {
 	 * hex) and 'val_type' ("integer" or "float").
 	 * @param node XML 'device' element
 	 * @param ipk pointer to daemon config object
-	 * @return - 0 on success, 1 on error 
+	 * @return - 0 on success, 1 on error
 	 */
 
 	int parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node);
 
-	bool Configure(short *read_buffer, 
-			short *send_buffer, 
-			xmlNodePtr unit_node, 
+	bool Configure(short *read_buffer,
+			short *send_buffer,
+			xmlNodePtr unit_node,
 			xmlNodePtr device_node,
-			DaemonConfig *cfg, 
+			DaemonConfig *cfg,
 			ModbusMode mode);
 	/**
 	 * Parses 'param' and 'send' children of 'unit' element,
@@ -384,7 +385,7 @@ class           ModbusUnit {
 	 * m_sends_buffer. m_reads_buffer with SZARP_NO_DATA.
 	 * @param fd descriptor of port to write to
 	 * @param ipc IPCHandler object (contains data to send)
-	 * @return 0 on success, 1 on error; on error no response 
+	 * @return 0 on success, 1 on error; on error no response
 	 * is expected
 	 */
 	int             MasterAsk(int fd);
@@ -404,7 +405,7 @@ class           ModbusUnit {
 	int             SlaveWait(int fd, int secs);
 
 	/**
-	 * Send response to master using data from m_sends_buffer array. 
+	 * Send response to master using data from m_sends_buffer array.
 	 * Fills in m_reads_buffer with SZARP_NO_DATA.
 	 * @param fd descriptor of port to write to
 	 * @param ipc IPCHandler object (contains data to send)
@@ -429,7 +430,7 @@ class           ModbusUnit {
 						 * registers */
 	int             PSRegPtr;	/* auxilary pointer to Memregisters */
 	int ReqCycle ;/**<Cykl przechodzenia po zapytaniach*/
-	int StatusCycle ; /**<Aktualny cykl przechodzenia po zapytaniach*/ 
+	int StatusCycle ; /**<Aktualny cykl przechodzenia po zapytaniach*/
 };
 
 int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
@@ -652,7 +653,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 				}
 			}
 			free(str);
-		
+
 			str = (char *) xmlGetNsProp(node, BAD_CAST("function"),
 						    BAD_CAST
 						    (IPKEXTRA_NAMESPACE_STRING));
@@ -663,7 +664,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 				free(str);
 				return 1;
 			}
-			
+
 			function = strtol(str, &tmp, 0);
 			if (tmp[0] != 0) {
 				sz_log(0,
@@ -678,7 +679,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 				    "modebus:function is not compatible with MODBUS standard (line %ld)",
 				    xmlGetLineNo(node));
 				return 1;
-	
+
 			}
 
 		}
@@ -740,40 +741,40 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 
 		if (!strcmp((char *) node->name, "param")) {
 			/*
-			 * for 'param' element 
+			 * for 'param' element
 			 */
-			assert(params_found < m_params_count);
+			ASSERT(params_found < m_params_count);
 			m_params[params_found].addr = addr;
 			m_params[params_found].type = type;
 			m_params[params_found].function = function;
 			m_params[params_found].extra = extra;
-			
+
 			TParam         *p =
 				m_unit->GetFirstParam()->
 				GetNthParam(params_found);
-			assert(p != NULL);
+			ASSERT(p != NULL);
 			for (int i = 0; i < p->GetPrec(); i++)
 				prec *= 10;
 			m_params[params_found].prec = prec;
 			params_found++;
 		} else {
 			/*
-			 * for 'send' element 
+			 * for 'send' element
 			 */
-			assert(sends_found < m_sends_count);
+			ASSERT(sends_found < m_sends_count);
 			m_sends[sends_found].addr = addr;
 			m_sends[sends_found].type = type;
 			m_sends[sends_found].function = function;
 			TSendParam     *s =
 				m_unit->GetFirstSendParam()->
 				GetNthParam(sends_found);
-			assert(s != NULL);
+			ASSERT(s != NULL);
 			std::wstring c = s->GetParamName();
 
 			if (!c.empty()) {
 				TParam         *p =
 					cfg->GetIPK()->getParamByName(c);
-				assert(p != NULL);
+				ASSERT(p != NULL);
 				for (int i = 0; i < p->GetPrec(); i++)
 					prec *= 10;
 			}
@@ -783,11 +784,11 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 	}
 
 	/*
-	 * buildnig virtual memory map registers 
+	 * buildnig virtual memory map registers
 	 */
 	MemRegistersPtr = 0;
 	/*
-	 * Calculating memory space for memory MAP 
+	 * Calculating memory space for memory MAP
 	 */
 	for (int i = 0; i < this->m_params_count; i++) {
 		switch (this->m_params[i].type) {
@@ -924,11 +925,11 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 	}
 
 	/*
-	 * end of building memory registers 
+	 * end of building memory registers
 	 */
 
-	assert(params_found == m_params_count);
-	assert(sends_found == m_sends_count);
+	ASSERT(params_found == m_params_count);
+	ASSERT(sends_found == m_sends_count);
 
 	return 0;
 }
@@ -1003,11 +1004,11 @@ void ModbusUnit::SetNoData(int param)
 	m_reads_buffer[param] = SZARP_NO_DATA;
 }
 
-bool ModbusUnit::Configure(short *read_buffer, 
-		short *send_buffer, 
-		xmlNodePtr unit_node, 
+bool ModbusUnit::Configure(short *read_buffer,
+		short *send_buffer,
+		xmlNodePtr unit_node,
 		xmlNodePtr device_node,
-		DaemonConfig *cfg, 
+		DaemonConfig *cfg,
 		ModbusMode mode)
 {
 	m_reads_buffer = read_buffer;
@@ -1020,7 +1021,7 @@ bool ModbusUnit::Configure(short *read_buffer,
 		return false;
 
 	/*
-	 * parse 'param' and 'send' elements 
+	 * parse 'param' and 'send' elements
 	 */
 	if (parseParams(unit_node, cfg, mode))
 		return false;
@@ -1102,7 +1103,7 @@ int ModbusUnit::MasterAsk(int fd)
 			}
 		break;
 	}
-	
+
 	if (m_debug) {
 		if (StatusCycle==PARAMS_CYCLE){
 			fprintf(stderr,"DEBUG[]: PARAMS CYCLE: %d\n",ReqCycle);
@@ -1128,7 +1129,7 @@ int ModbusUnit::MasterGet(int fd)
 	int status ;
 	sz_log(10, "calling MasterGet()");
 
-	status = ReceiveSlavePacket(fd, &SlaveFrame, NULL, ReceiveTimeout,DelayBetweenChars);  
+	status = ReceiveSlavePacket(fd, &SlaveFrame, NULL, ReceiveTimeout,DelayBetweenChars);
 	if ((status == GENERAL_ERROR) || (status == TIMEOUT_ERROR)){
 		if (status==GENERAL_ERROR){
 			if (m_debug) {
@@ -1139,13 +1140,13 @@ int ModbusUnit::MasterGet(int fd)
 		}
 
 		if (status==TIMEOUT_ERROR){
-			if (m_debug) 
+			if (m_debug)
 				fprintf(stderr,"DEBUG[]: select zwróci³ TIMEOUT_ERROR\n");
 			if (StatusCycle==PARAMS_CYCLE)
 					SetNoData(ReqCycle);
 		}
 
-		
+
 		/* Konczymy i wychodzimy */
 		UpdateReqCycle() ;
 		return status;
@@ -1153,9 +1154,9 @@ int ModbusUnit::MasterGet(int fd)
 	switch (StatusCycle){
 		case PARAMS_CYCLE:
 			m_reads_buffer[ReqCycle] = SZARP_NO_DATA ;
-			/* Trzeba sparsowac co SLAVE przyslal */			
+			/* Trzeba sparsowac co SLAVE przyslal */
 			/* Zalozenie: przy zamianie float 2 MSB,LSB 2 parametry maja ten sam adres i sa obok siebie */
-			
+
 			switch (this->m_params[ReqCycle].type) {
 				case MB_TYPE_INT:
 					bin2int(SlaveFrame.Body[0], &fi);
@@ -1165,7 +1166,7 @@ int ModbusUnit::MasterGet(int fd)
 					int err;
 					m_reads_buffer[ReqCycle] = bcd2int(SlaveFrame.Body[0], &err);
 					if (err) {
-						sz_log(1, "Error parsing BCD value %x", 
+						sz_log(1, "Error parsing BCD value %x",
 								SlaveFrame.Body[0]);
 						m_reads_buffer[ReqCycle] = SZARP_NO_DATA;
 					}
@@ -1173,23 +1174,23 @@ int ModbusUnit::MasterGet(int fd)
 				case MB_TYPE_FLOAT:
 					switch (FloatOrder){
 						case MSBLSB:
-						bMSB =  SlaveFrame.Body[0] ; 
-						bLSB =  SlaveFrame.Body[1] ; 
+						bMSB =  SlaveFrame.Body[0] ;
+						bLSB =  SlaveFrame.Body[1] ;
 						break;
 						case LSBMSB:
-						bLSB =  SlaveFrame.Body[0] ; 
-						bMSB =  SlaveFrame.Body[1] ; 
+						bLSB =  SlaveFrame.Body[0] ;
+						bMSB =  SlaveFrame.Body[1] ;
 						break;
 						default:
-						bMSB =  SlaveFrame.Body[0] ; 
-						bLSB =  SlaveFrame.Body[1] ; 
+						bMSB =  SlaveFrame.Body[0] ;
+						bLSB =  SlaveFrame.Body[1] ;
 						break;
 					}
 					if (m_params[ReqCycle].extra==FLOAT_SINGLE){
 						bin2float(bMSB, bLSB,&f);
 						m_reads_buffer[ReqCycle] = float2int(f,m_params[ReqCycle].prec);
 					}
-				
+
 					if ((m_params[ReqCycle].extra==FLOAT_MSB) || (m_params[ReqCycle].extra==FLOAT_LSB)){
 						bin2float(bMSB, bLSB,&f);
 						/*fprintf(stderr,"Wartosc orginalna: %f\n",f);*/
@@ -1206,7 +1207,7 @@ int ModbusUnit::MasterGet(int fd)
 							ReqCycle++;
 							m_reads_buffer[ReqCycle] = lMSB ;
 						}
-					
+
 					}
 
 				break;
@@ -1214,22 +1215,22 @@ int ModbusUnit::MasterGet(int fd)
 				case MB_TYPE_LONG:
 					switch (LongOrder){
 						case MSBLSB:
-						bMSB =  SlaveFrame.Body[0] ; 
-						bLSB =  SlaveFrame.Body[1] ; 
+						bMSB =  SlaveFrame.Body[0] ;
+						bLSB =  SlaveFrame.Body[1] ;
 						break;
 						case LSBMSB:
-						bLSB =  SlaveFrame.Body[0] ; 
-						bMSB =  SlaveFrame.Body[1] ; 
+						bLSB =  SlaveFrame.Body[0] ;
+						bMSB =  SlaveFrame.Body[1] ;
 						break;
 						default:
-						bMSB =  SlaveFrame.Body[0] ; 
-						bLSB =  SlaveFrame.Body[1] ; 
+						bMSB =  SlaveFrame.Body[0] ;
+						bLSB =  SlaveFrame.Body[1] ;
 						break;
 					}
 					if (m_params[ReqCycle].extra==FLOAT_SINGLE){
 						m_reads_buffer[ReqCycle] = bMSB;
 					}
-				
+
 					if ((m_params[ReqCycle].extra==FLOAT_MSB) || (m_params[ReqCycle].extra==FLOAT_LSB)){
 						/*fprintf(stderr,"Wartosc zlozona: %d\n",fii);*/
 						if (m_params[ReqCycle].extra == FLOAT_MSB){
@@ -1242,9 +1243,9 @@ int ModbusUnit::MasterGet(int fd)
 							ReqCycle++;
 							m_reads_buffer[ReqCycle] = bMSB ;
 						}
-					
+
 					}
-						
+
 				break;
 					case MB_TYPE_ERR:
 				break;
@@ -1266,20 +1267,20 @@ int ModbusUnit::MasterGet(int fd)
 int ModbusUnit::SlaveWait(int fd, int secs)
 {
 	sz_log(10, "calling SlaveWait()");
-	return ReceiveMasterPacket(fd, 
-			&oMasterFrame, 
+	return ReceiveMasterPacket(fd,
+			&oMasterFrame,
 			&CRCStatus,
 			secs,
 			DelayBetweenChars);
 }
 
 /*
- * Debug 
+ * Debug
  */
 /*FILE           *debag; */
 
 /*
- * //Debug 
+ * //Debug
  */
 int ModbusUnit::SlaveReply(int fd)
 {
@@ -1296,7 +1297,7 @@ int ModbusUnit::SlaveReply(int fd)
 	tWSlaveFrame iSlaveFrame;
 
 	if (oMasterFrame.DeviceId != m_id)
-		return SLAVE_ERROR;	// Is packet to us? 
+		return SLAVE_ERROR;	// Is packet to us?
 
 	if ((CRCStatus != CRC_OK) && (CheckCRC == ENABLE)) {	// Chcecking CRC
 		iErrorFrame.DeviceId = m_id;
@@ -1308,12 +1309,12 @@ int ModbusUnit::SlaveReply(int fd)
 		SendErrorPacket(fd, iErrorFrame);
 		return SLAVE_ERROR;
 	}
-	
+
 	if ((CRCStatus != CRC_OK) && (CheckCRC == DISABLE)) {	// Chcecking CRC
 		return SLAVE_ERROR;
 	}
 
-	
+
 	if ((oMasterFrame.FunctionId != MB_F_RHR)
 	    && (oMasterFrame.FunctionId != MB_F_WMR)) {
 		// Only functions Read Holding Register (0x03) and Write
@@ -1329,7 +1330,7 @@ int ModbusUnit::SlaveReply(int fd)
 	}
 
 	/*
-	 * Searching Addresses to send 
+	 * Searching Addresses to send
 	 */
 	if (oMasterFrame.FunctionId == MB_F_RHR) {	/* Read Holding Register */
 		if (m_debug)
@@ -1343,14 +1344,14 @@ int ModbusUnit::SlaveReply(int fd)
 		 * sendera do pamieci zywcem
 		 */
 		/*
-		 * Inicjalizacja 
+		 * Inicjalizacja
 		 */
 		/*
-		 * Przepisywanie czesci SEND 
+		 * Przepisywanie czesci SEND
 		 */
 		for (i = 0; i < m_sends_count; i++) for (j = 0; j < MemRegistersPtr; j++) {
-			if (m_sends[i].addr != MemRegisters[j].Address) 
-				continue;	
+			if (m_sends[i].addr != MemRegisters[j].Address)
+				continue;
 			// MemRegisters[j].ValueType =
 			// m_sends[i].type; //To jest chyba
 			// zbedne po 1349 modyfikacji
@@ -1419,7 +1420,7 @@ int ModbusUnit::SlaveReply(int fd)
 									 &bMSB,
 									 &bLSB);
 							break;
-		
+
 						}
 					}
 					Write1Data(bMSB, MemRegisters[j].Address);
@@ -1445,7 +1446,7 @@ int ModbusUnit::SlaveReply(int fd)
 					j++;
 					continue;
 				}
-				
+
 				found = TRUE;
 				switch (this->MemRegisters[j].ValueType) {
 					case MB_TYPE_INT:
@@ -1478,7 +1479,7 @@ int ModbusUnit::SlaveReply(int fd)
 						break;
 					default:
 						break;
-				} 
+				}
 				j++;
 			}
 			if (found == FALSE)
@@ -1518,11 +1519,11 @@ int ModbusUnit::SlaveReply(int fd)
 			return SLAVE_SEND_OK;
 		}
 		return SLAVE_SEND_OK;
-	} 
+	}
 	/* Read holding Register */
 	if (oMasterFrame.FunctionId == MB_F_WMR) {	/* Read Holding Register */
 		/*
-		 * To ma byc przed engine do parsowania 
+		 * To ma byc przed engine do parsowania
 		 */
 		if (m_debug)
 			fprintf(stderr,"DEBUG[]: WMR recived\n");
@@ -1531,7 +1532,7 @@ int ModbusUnit::SlaveReply(int fd)
 		IndexData = 0;
 		NotFound = FALSE;
 		/*
-		 * Parsowanie pakietu do pamieci rejestrow 
+		 * Parsowanie pakietu do pamieci rejestrow
 		 */
 		while (i < oMasterFrame.DataSize) {
 			j = 0;
@@ -1602,11 +1603,11 @@ int ModbusUnit::SlaveReply(int fd)
 			usleep(SendDelay * 1000);
 			if (m_debug)
 				fprintf(stderr,"DEBUG[]: Ivalid data adress - element is not accessible\n");
-	
+
 			SendErrorPacket(fd, iErrorFrame);
 			return SLAVE_RECEIVE_ERROR;
 		}
-	
+
 		if (NotFound == FALSE) {
 			iSlaveFrame.DeviceId = m_id;
 			iSlaveFrame.FunctionId = MB_F_WMR;
@@ -1617,13 +1618,13 @@ int ModbusUnit::SlaveReply(int fd)
 			if (m_debug)
 				fprintf(stderr,"DEBUG[]: WMR Succesfully parsed\n");
 		}
-	
+
 		/*
 		 * Przepisywanie Grab z pamiêci do stuktury parcookowej
 		 * (m_params)
 		 */
 		for (i = 0; i < m_params_count; i++) for (j = 0; j < MemRegistersPtr; j++) {
-			if (m_params[i].addr != MemRegisters[j].Address) 
+			if (m_params[i].addr != MemRegisters[j].Address)
 				continue;
 			// MemRegisters[j].ValueType =
 			// m_params[i].type; Nie ma potrzeby
@@ -1670,14 +1671,14 @@ int ModbusUnit::SlaveReply(int fd)
 				default:
 					break;
 			}
-	
+
 			/* Experymentalne */
 			if (zerond == YES) {
-				if (m_reads_buffer[i] <= 0) { 
+				if (m_reads_buffer[i] <= 0) {
 					m_reads_buffer[i] = SZARP_NO_DATA ;
 				}
 			}
-	
+
 		}
 
 		/* end of WRITE_MULTIPLE REGISTER */
@@ -1701,7 +1702,7 @@ void ModbusUnit::UpdateReqCycle() {
 	}
 	ReqCycle = (ReqCycle + 1) % TotalCycle ;
 
-	if (ReqCycle >= m_params_count)	
+	if (ReqCycle >= m_params_count)
 		StatusCycle = SENDS_CYCLE ;
 	else
 		StatusCycle = PARAMS_CYCLE ;
@@ -1710,13 +1711,13 @@ void ModbusUnit::UpdateReqCycle() {
 		if (StatusCycle == SENDS_CYCLE) {
 			WriteOneTimeLatch = YES;
 		}
-		
-		if ((StatusCycle == PARAMS_CYCLE) && (WriteOneTimeLatch == YES)) {	
+
+		if ((StatusCycle == PARAMS_CYCLE) && (WriteOneTimeLatch == YES)) {
 			WriteOneTimeLatch2 = YES;
 		}
 
 		if (WriteOneTimeLatch2 == YES) {
-			StatusCycle = PARAMS_CYCLE ;	
+			StatusCycle = PARAMS_CYCLE ;
 		}
 	}
 }
@@ -1730,15 +1731,15 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 		SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus",
 		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	xmlChar *c = uxmlXPathGetProp(BAD_CAST strdup("./@modbus:mode"), xp_ctx);
 	if (c == NULL)
 		return false;
-	if (!xmlStrcmp(c, BAD_CAST "master")) 
+	if (!xmlStrcmp(c, BAD_CAST "master"))
 		m_mode = MB_MODE_MASTER;
 	else if (!xmlStrcmp(c, BAD_CAST "slave"))
 		m_mode = MB_MODE_SLAVE;
@@ -1756,8 +1757,8 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 			m_parity = NO_PARITY;
 		}else if (!xmlStrcmp(c, BAD_CAST "ODD")){
 			m_parity = ODD;
-		
-		}else if (!xmlStrcmp(c, BAD_CAST "EVEN")){ 
+
+		}else if (!xmlStrcmp(c, BAD_CAST "EVEN")){
 			m_parity = EVEN;
 		}else{
 			sz_log(0, "Unknown modbus:parity attribute %s",  (char *)c);
@@ -1802,15 +1803,15 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		free(expr);
 
-		assert(node);
+		ASSERT(node);
 
 		ModbusUnit *mbu = new ModbusUnit(unit);
 
-		bool configured = mbu->Configure(read, 
-					send, 
-					node, 
-					cfg->GetXMLDevice(), 
-					cfg, 
+		bool configured = mbu->Configure(read,
+					send,
+					node,
+					cfg->GetXMLDevice(),
+					cfg,
 					m_mode);
 
 		if (configured == false)
@@ -1819,12 +1820,12 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 		m_units.push_back(mbu);
 		read += unit->GetParamsCount();
 		send += unit->GetSendParamsCount();
-		
+
 		unit_num++;
 
 	}
 
-	if (m_mode == MB_MODE_SLAVE && 
+	if (m_mode == MB_MODE_SLAVE &&
 			unit_num > 1) {
 
 		sz_log(0, "Configuration error - daemon is in slave mode and more than one unit is present in configuration, exiting");
@@ -1859,7 +1860,7 @@ void ModbusLine::PerformSlaveCycle(time_t start) {
 		int status = u->SlaveWait(m_fd, wait);
 
 		if (status > 0) {
-			if (m_debug) 
+			if (m_debug)
 				fprintf(stderr, "We have a packet\n");
 
 			status = u->SlaveReply(m_fd);
@@ -1878,10 +1879,10 @@ void ModbusLine::PerformSlaveCycle(time_t start) {
 					return;
 			}
 		} else if (status == TIMEOUT_ERROR) {
-			if (m_debug) 
+			if (m_debug)
 				fprintf(stderr, "Timeout while waiting for frame from slave");
 		} else {
-			if (m_debug) 
+			if (m_debug)
 				fprintf(stderr, "Error while reading data from master %d\n", status);
 
 		}
@@ -1912,7 +1913,7 @@ void ModbusLine::PerformCycle(time_t start) {
 			PerformSlaveCycle(start);
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 			break;
 	}
 	m_ipc->GoParcook();
@@ -1940,7 +1941,7 @@ void ModbusLine::Go() {
 
 	do {
 		time_t start = time(NULL);
-		if (m_fd == -1) 
+		if (m_fd == -1)
 			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
 				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
@@ -1961,9 +1962,9 @@ finish_cycle:
 		if (current_cycle == 0) {
 			time_t now = time(NULL);
 			int s = 10 - (now - start);
-			if (s < 1) 
+			if (s < 1)
 				sz_log(3, "Cycle lasts longer than 10sec (%ld)!!!", (now - start));
-			
+
 			if (s > 0)
 				while ((s = sleep(s)) > 0);
 		}

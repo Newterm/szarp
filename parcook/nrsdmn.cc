@@ -61,7 +61,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include <deque>
 
@@ -77,6 +76,7 @@ using std::deque;
 #include "liblog.h"
 #include "tokens.h"
 #include "xmlutils.h"
+#include "custom_assert.h"
 
 /* number of pseudo-param carrying sender data checksum
  * DO NOT EVER CHANGE THIS VALUE without changing platform */ 
@@ -439,24 +439,24 @@ void SerialPort::WriteData(const char* buffer, size_t size)
 
 void UnitExaminator::ConfigExtraSpeed(DaemonConfig* cfg, int unit_num)
 {
-	assert (cfg != NULL);
-	assert (unit_num >= 0);
+	ASSERT(cfg != NULL);
+	ASSERT(unit_num >= 0);
 	xmlDocPtr doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 	xp_ctx->node = cfg->GetXMLDevice();
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 		SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
 		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	char *expr;
 	asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
 			unit_num + 1);
-	assert (expr);
+	ASSERT(expr);
 	xmlChar *c = uxmlXPathGetProp(BAD_CAST expr, xp_ctx, false);
 	free(expr);
 	if (c != NULL) {
@@ -764,7 +764,7 @@ ZetUnit::ZetUnit(TUnit *unit, short* read, short* send,
 		m_nodata_send[i] = sp->GetSendNoData() ? true : false;
 
 	//IPK check ;)
-	assert(sp == NULL && i == m_sends_count);
+	ASSERT(sp == NULL && i == m_sends_count);
 
 }
 
@@ -820,7 +820,7 @@ void ZetUnit::GenerateQuery(char*& query, size_t& size)
 
 void ZetUnit::SetData(char* response, size_t count) 
 {
-	assert(response != NULL);
+	ASSERT(response != NULL);
 
 	if (m_dump_hex) {
 		printf("Received packet:\n");

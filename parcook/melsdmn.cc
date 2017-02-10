@@ -51,6 +51,7 @@
 #include "tokens.h"
 #include "xmlutils.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #include <dlfcn.h>
 #include <libgen.h>
@@ -69,7 +70,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 
 	int ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 
 	int i, j;
 	TParam *param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
@@ -83,10 +84,10 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 			cfg->GetLineNumber(), 
 			i != j ? "send" : "param" ,
 			i + 1);
-		assert (e != NULL);
+		ASSERT(e != NULL);
 
 		xmlNodePtr n = uxmlXPathGetNode(BAD_CAST e, xp_ctx, false);
-		assert(n != NULL);
+		ASSERT(n != NULL);
 		free(e);
 
 		xmlChar* _address = xmlGetNsProp(n,
