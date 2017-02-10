@@ -146,7 +146,7 @@ void Sz4LuaParam::test2() {
 #else
 		file_path_str = file_path.external_file_string();
 #endif
-		int fd;
+		int fd = 0;
 		CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock(file_path_str.c_str(), O_WRONLY | O_CREAT));
 
 		char buf[3];
