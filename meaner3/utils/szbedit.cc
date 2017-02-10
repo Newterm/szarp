@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ static struct argp_option options[] = {
 
 struct arguments
 {
-	char *args[0];
+	char *args[1];
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -82,16 +82,16 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			if (state->arg_num >= 1)
 				/* Too many arguments. */
 				argp_usage (state);
-			
+
 			arguments->args[state->arg_num] = arg;
-			
+
 			break;
-			
+
 		case ARGP_KEY_END:
 			if (state->arg_num < 1)
 				/* Not enough arguments. */
 				argp_usage (state);
-			break;									       
+			break;
 		default:
 			return ARGP_ERR_UNKNOWN;
 	}
@@ -164,7 +164,7 @@ void EnterNumber(newtComponent list, int key, int year, int month)
 	int minus = 1;
 	int i;
 	char *str;
-	
+
 	newtPushHelpLine("  ESC - wyj¶cie |");
 	while (1) {
 		if (key == '-')
@@ -242,15 +242,15 @@ void AddEntry(newtComponent list, int index, short int data, int year,
 	char * str;
 
 	str = PrepareEntry(index, year, month, data);
-	newtListboxAddEntry(list, str, (void*)index);
+	newtListboxAddEntry(list, str, (void*)(intptr_t)index);
 	free(str);
 }
 
 /** analises path argument, sets maximum number of probes, write
- * first info line 
+ * first info line
  * @param path file path
  * @param width width of the screen
- * @param maxprobes returns maximum number of probes for file 
+ * @param maxprobes returns maximum number of probes for file
  * @param year returns year
  * @param month returns month
  */
@@ -292,19 +292,19 @@ void CheckPath(char *path, int width, int * maxprobes, int * year,
 				filename[i] - '0';
 			break;
 		}
-		i--;		
+		i--;
 	}
 	if ((*year <= 0) || (*year > 9999) || (*month <= 0) || (*month > 12))
 		*year = *month = 0;
-	
+
 	if (l > (width - 41)) {
 		filename[width - 41] = 0;
-		asprintf(&str, "%s... | ¦RD: NO_DATA |   %c | Y: %04d M: %02d", 
-				filename, (*year > 0) ? 'L' : 'U', 
+		asprintf(&str, "%s... | ¦RD: NO_DATA |   %c | Y: %04d M: %02d",
+				filename, (*year > 0) ? 'L' : 'U',
 				*year,* month);
 	} else
 		asprintf(&str, "%s%*s| ¦RD: NO_DATA |   %c | Y: %04d M: %02d",
-				filename, width -l - 37, " ", 
+				filename, width -l - 37, " ",
 				(*year > 0) ? 'L' : 'U', *year, *month);
 	if ((*year > 0) && (*month > 0))
 		*maxprobes = szb_probecnt(*year, *month);
@@ -368,7 +368,7 @@ static const char * help_message="\
 void PrintHelp(int w, int h)
 {
 	newtComponent form, text, button;
-	
+
 	newtCenteredWindow(w - 4, h - 4, "POMOC");
 	text = newtTextbox(1, 1, w-8, h - 10, NEWT_FLAG_SCROLL);
 	newtTextboxSetText(text, help_message);
@@ -408,7 +408,7 @@ void PrintError(char *str)
 	int l;
 
 	l = strlen(str);
-	newtCenteredWindow(l+6, 8, "B£¡D"); 
+	newtCenteredWindow(l+6, 8, "B£¡D");
 	label = newtLabel(2, 1, str);
 	button = newtButton(l / 2, 3, "Ok");
 	form = newtForm(NULL, NULL, 0);
@@ -439,7 +439,7 @@ void SaveFile(char * path, int lines, int full, int avg)
 	//} else
 	// do not write average value
 	towrite = (lines - 1) * sizeof(short int);
-		
+
 	if (write(fd, buf, towrite) != towrite ) {
 		char *str;
 		asprintf(&str, "B³±d numer %d podczas zapisu do pliku!",
@@ -459,10 +459,10 @@ int CheckExit()
 	newtComponent form, label, b1, b2;
 	struct newtExitStruct ex;
 	int ret;
-	
+
 	if (modified == 0)
 		return 1;
-	newtCenteredWindow(40, 8, "Wyj¶cie"); 
+	newtCenteredWindow(40, 8, "Wyj¶cie");
 	label = newtLabel(2, 1, "Wyj¶æ bez zapisywania?");
 	b1 = newtButton(10, 3, "Nie");
 	b2 = newtButton(20, 3, "Tak");
@@ -473,7 +473,7 @@ int CheckExit()
 	newtFormDestroy(form);
 	newtPopWindow();
 	return ret;
-	
+
 }
 
 int main(int argc, char* argv[]) {
@@ -487,33 +487,32 @@ int main(int argc, char* argv[]) {
 	int maxprobes;
 	int year, month;
 	int full = 0;
-	
+
 	newtComponent form, mainlist;
 
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
-	
+
 	path = arguments.args[0];
-	
-	
-	fd = open(path, O_RDWR | O_CREAT, 
+
+	fd = open(path, O_RDWR | O_CREAT,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (fd < 0) {
 		fprintf(stderr, "Cannot open file '%s', errno %d\n", path,
 				errno);
 		return 1;
 	}
-	
+
 	InitTerminal();
-	
+
 	newtGetScreenSize(&w, &h);
 	assert (w > 40);
 	assert (h > 15);
 	CheckPath(path, w, &maxprobes, &year, &month);
-	
+
 	buf = (short int*) malloc ((maxprobes) * sizeof(short int));
 	lines = read(fd, buf, (maxprobes) * sizeof(short int));
 	if (lines < 0) {
-		fprintf(stderr, "Error reading from file '%s', errno %d", 
+		fprintf(stderr, "Error reading from file '%s', errno %d",
 				path, errno);
 		close(fd);
 		return 1;
@@ -529,7 +528,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	if ((avgcnt > 0) && (avg != SZB_FILE_NODATA)) {
-		if ((avgsum / avgcnt) != avg) 
+		if ((avgsum / avgcnt) != avg)
 			newtDrawRootText(0, -20, "!");
 		else
 			newtDrawRootText(0, -20, "¦");
@@ -541,8 +540,8 @@ int main(int argc, char* argv[]) {
 	//	avg = buf[maxprobes];
 	//	lines -= sizeof(short int);
 	//}
-	
-	
+
+
 	newtPushHelpLine("  ESC - wyjd¼ | DEL - usuñ | <numer> - modifykuj | F2 - zapisz | F1 - pomoc ");
 
 	form = newtForm(NULL, NULL, 0);
@@ -553,12 +552,12 @@ int main(int argc, char* argv[]) {
 	for (i = 0; i < lines; i++)
 		AddEntry(mainlist, i, buf[i], year, month);
 	if (lines < maxprobes) {
-		newtListboxAddEntry(mainlist, append_string, (void*)lines);
+		newtListboxAddEntry(mainlist, append_string, (void*)(intptr_t)lines);
 		lines++;
 	}
 	newtDrawForm(form);
 	newtRefresh();
-	
+
 	while (1) {
 		if (full == 0) {
 			if (lines == (maxprobes - 1)) {
@@ -617,7 +616,7 @@ int main(int argc, char* argv[]) {
 			case NEWT_KEY_DELETE:
 				i = (long) newtListboxGetCurrent(mainlist);
 				if (i < (lines - 1)) {
-					EnterNumber(mainlist, NEWT_KEY_DELETE, 
+					EnterNumber(mainlist, NEWT_KEY_DELETE,
 							year, month);
 					newtListboxSetCurrent(mainlist, i+1);
 				} else if (lines > 1) {
@@ -627,11 +626,11 @@ int main(int argc, char* argv[]) {
 					newtListboxSetEntry(mainlist, lines,
 							"");
 					newtListboxDeleteEntry(mainlist,
-							(void*)lines);
+							(void*)(intptr_t)lines);
 					newtRefresh();
 					lines--;
 					newtListboxDeleteEntry(mainlist,
-							(void*)lines);
+							(void*)(intptr_t)lines);
 					if (buf[lines] != SZB_FILE_NODATA) {
 						avgsum -= buf[lines];
 						avgcnt--;
@@ -640,9 +639,9 @@ int main(int argc, char* argv[]) {
 					}
 					Modify();
 					newtRefresh();
-					newtListboxAddEntry(mainlist, 
+					newtListboxAddEntry(mainlist,
 							append_string,
-							(void*)lines);
+							(void*)(intptr_t)lines);
 						newtListboxSetCurrent(mainlist,
 								lines);
 						lines++;
@@ -654,11 +653,11 @@ int main(int argc, char* argv[]) {
 						((key >= '0') && (key <= '9'))) {
 					EnterNumber(mainlist, key, year, month);
 					i = (long) newtListboxGetCurrent(mainlist);
-					if ((i == (lines - 1)) && 
+					if ((i == (lines - 1)) &&
 							(lines < maxprobes)) {
-						newtListboxAddEntry(mainlist, 
+						newtListboxAddEntry(mainlist,
 							append_string,
-							(void*)lines);
+							(void*)(intptr_t)lines);
 						lines++;
 						Modify();
 					}
