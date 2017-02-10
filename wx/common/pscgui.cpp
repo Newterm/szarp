@@ -360,9 +360,9 @@ void PscFrame::OnGridEdit(wxGridEvent & evt)
 }
 
 void PscFrame::StartWaiting() {
-	wxList children = GetChildren();
-	for (wxList::Node *node = children.GetFirst(); node; node = node->GetNext()) {
-		wxWindow *current = (wxWindow*) node->GetData();
+	wxWindowList& children = GetChildren();
+	for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
+		wxWindow *current = (wxWindow *)it->GetData();
 		current->Disable();
 	}
 
@@ -381,9 +381,9 @@ void PscFrame::StartWaiting() {
 }
 
 void PscFrame::StopWaiting() {
-	wxList children = GetChildren();
-	for (wxList::Node *node = children.GetFirst(); node; node = node->GetNext()) {
-		wxWindow *current = (wxWindow*) node->GetData();
+	wxWindowList& children = GetChildren();
+	for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
+		wxWindow *current = (wxWindow *)it->GetData();
 		current->Enable(true);
 	}
 
@@ -402,9 +402,9 @@ void PscFrame::StopWaiting() {
 void PscFrame::EnableEditingControls(bool enable) {
 	for (size_t i = 1; i < 3; i++) {
 		wxWindow* p = m_notebook->GetPage(i);
-		wxList children = p->GetChildren();
-		for (wxList::Node *node = children.GetFirst(); node; node = node->GetNext()) {
-			wxWindow *current = (wxWindow*) node->GetData();
+		wxWindowList& children = p->GetChildren();
+		for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
+			wxWindow *current = (wxWindow *)it->GetData();
 			current->Enable(enable);
 		}
 	}
