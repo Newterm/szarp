@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * $Id$
 
  * Paweł Pałucha <pawel@praterm.com.pl>
- * 
+ *
  * Program for merging few IPK configuration into one, suitable for viewing in
  * SzarpDraw program as a single one. This makes sense only for szarpbase
  * configuration.
@@ -30,16 +30,16 @@
  *
 
 <?xml version="1.0" encoding="ISO-8859-2"?>
-                                                                                
+
 <aggregate xmlns="http://www.praterm.com.pl/IPK/aggregate"
                 xmlns:ipk="http://www.praterm.com.pl/IPK/params"
                 prefix="zamX"
                 title="Zamość">
-                                                                                
+
         <config prefix="zamo">
 		<remove xpath="//ipk:raport"/>
 	</config>
-                                                                                
+
         <config prefix="zmk1">
                 <regexp xpath="//ipk:draw/@title">s/.+/KM-1\0/</regexp>
 		<remove xpath="//ipk:raport"/>
@@ -64,7 +64,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <regex.h>
 #include <unistd.h>
 #include <errno.h>
@@ -89,21 +88,22 @@ using namespace std::tr1;
 #include "szbase/szbbase.h"
 #include "xmlutils.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 #ifdef LIBXML_XPATH_ENABLED
-			
+
 #define AGGREGATE_HREF "http://www.praterm.com.pl/IPK/aggregate"
 
 
-/* Makes regular expresion substitution. 
+/* Makes regular expresion substitution.
  * @param content source string
  * @param substitute string
  * @param regs info about sub-expresions to substitute
  * @return result string (allocated with malloc) */
 char *regsub(const char *content, char *subst, re_registers* regs)
 {
-	assert (content != NULL);
-	assert (subst != NULL);
+	ASSERT(content != NULL);
+	ASSERT(subst != NULL);
 
 	char *ret;
 	char *c;
@@ -112,16 +112,14 @@ char *regsub(const char *content, char *subst, re_registers* regs)
 	size_t len, n;
 
 	int match_start;
-	int match_size;
-	assert (regs);
-	assert (regs->num_regs > 0);
+	ASSERT(regs);
+	ASSERT(regs->num_regs > 0);
 	match_start = regs->start[0];
-	match_size = regs->end[0] - match_start;
 
 	retlen = match_start;
 	retsize = 100 + match_start;
 	ret = (char *) malloc (retsize);
-	assert (ret != NULL);
+	ASSERT(ret != NULL);
 	/* copy part before matched string */
 	strncpy(ret, content, match_start);
 
@@ -131,7 +129,7 @@ char *regsub(const char *content, char *subst, re_registers* regs)
 		if (retlen >= (retsize - 1)) {
 			retsize *= 2;
 			ret = (char*) realloc(ret, retsize);
-			assert (ret != NULL);
+			ASSERT(ret != NULL);
 		}
 		if (*c != '\\') {
 			ret[retlen++] = *c++;
@@ -148,11 +146,11 @@ char *regsub(const char *content, char *subst, re_registers* regs)
 			return NULL;
 		}
 		len = regs->end[n] - regs->start[n];
-		
+
 		if (retlen + len >= (retsize -1)) {
 			retsize = retsize + 2 + len;
 			ret = (char*) realloc(ret, retsize);
-			assert (ret != NULL);
+			ASSERT(ret != NULL);
 		}
 		strncpy(ret + retlen, content + regs->start[n], len);
 		retlen += len;
@@ -163,7 +161,7 @@ char *regsub(const char *content, char *subst, re_registers* regs)
 		if ((retlen + tocopy) >= retsize) {
 			retsize = retlen + tocopy + 1;
 			ret = (char*) realloc(ret, retsize);
-			assert (ret != NULL);
+			ASSERT(ret != NULL);
 		}
 		strncpy(ret + retlen, content + regs->end[0], tocopy);
 		retlen += tocopy;
@@ -234,25 +232,25 @@ int add_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 	int ret;
 	xmlXPathContextPtr xpath_ctx;
 	xmlXPathObjectPtr xpath_obj;
-	
-	assert (xpath_expr != NULL);
-	assert (doc != NULL);
-	assert (name != NULL);
-	assert (value != NULL);
+
+	ASSERT(xpath_expr != NULL);
+	ASSERT(doc != NULL);
+	ASSERT(name != NULL);
+	ASSERT(value != NULL);
 
 	/* create new xpath context */
 	xpath_ctx = xmlXPathNewContext(doc);
-	assert (xpath_ctx != NULL);
-	
+	ASSERT(xpath_ctx != NULL);
+
 	/* register IPK namespace */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'", 
+		sz_log(0, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -262,14 +260,14 @@ int add_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 		for (int i = 0; i < xpath_obj->nodesetval->nodeNr; i++) {
 			xmlNodePtr node = xpath_obj->nodesetval->nodeTab[i];
 			xmlSetProp(node, name, value);
-			
+
 			/* from xpath2.c */
-			if (xpath_obj->nodesetval->nodeTab[i]->type != 
+			if (xpath_obj->nodesetval->nodeTab[i]->type !=
 					XML_NAMESPACE_DECL)
 				xpath_obj->nodesetval->nodeTab[i] = NULL;
 		}
 	}
-	
+
 	xmlXPathFreeObject(xpath_obj);
 	xmlXPathFreeContext(xpath_ctx);
 	return 0;
@@ -288,25 +286,25 @@ int copy_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 	int ret;
 	xmlXPathContextPtr xpath_ctx;
 	xmlXPathObjectPtr xpath_obj;
-	
-	assert (xpath_expr != NULL);
-	assert (doc != NULL);
-	assert (name != NULL);
-	assert (copy != NULL);
+
+	ASSERT(xpath_expr != NULL);
+	ASSERT(doc != NULL);
+	ASSERT(name != NULL);
+	ASSERT(copy != NULL);
 
 	/* create new xpath context */
 	xpath_ctx = xmlXPathNewContext(doc);
-	assert (xpath_ctx != NULL);
-	
+	ASSERT(xpath_ctx != NULL);
+
 	/* register IPK namespace */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'", 
+		sz_log(0, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -343,19 +341,19 @@ int copy_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 				return 1;
 			}
 			xmlSetProp(node, name, cnode->children->content);
-			
-			
+
+
 			/* from xpath2.c */
-			if (xpath_obj->nodesetval->nodeTab[i]->type != 
+			if (xpath_obj->nodesetval->nodeTab[i]->type !=
 					XML_NAMESPACE_DECL)
 				xpath_obj->nodesetval->nodeTab[i] = NULL;
-			if (xpath_cobj->nodesetval->nodeTab[0]->type != 
+			if (xpath_cobj->nodesetval->nodeTab[0]->type !=
 					XML_NAMESPACE_DECL)
 				xpath_cobj->nodesetval->nodeTab[0] = NULL;
 			xmlXPathFreeObject(xpath_cobj);
 		}
 	}
-	
+
 	xmlXPathFreeObject(xpath_obj);
 	xmlXPathFreeContext(xpath_ctx);
 	return 0;
@@ -371,23 +369,23 @@ int remove_xpath(xmlDocPtr doc, xmlChar *xpath_expr)
 	int ret;
 	xmlXPathContextPtr xpath_ctx;
 	xmlXPathObjectPtr xpath_obj;
-	
-	assert (doc != NULL);
-	assert (xpath_expr != NULL);
+
+	ASSERT(doc != NULL);
+	ASSERT(xpath_expr != NULL);
 
 	/* create new xpath context */
 	xpath_ctx = xmlXPathNewContext(doc);
-	assert (xpath_ctx != NULL);
-	
+	ASSERT(xpath_ctx != NULL);
+
 	/* register IPK namespace */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'", 
+		sz_log(0, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -397,14 +395,14 @@ int remove_xpath(xmlDocPtr doc, xmlChar *xpath_expr)
 		for (int i = xpath_obj->nodesetval->nodeNr - 1; i >= 0; i--) {
 			xmlNodePtr node = xpath_obj->nodesetval->nodeTab[i];
 			xmlUnlinkNode(node);
-			if (xpath_obj->nodesetval->nodeTab[i]->type != 
+			if (xpath_obj->nodesetval->nodeTab[i]->type !=
 					XML_NAMESPACE_DECL) {
 				xmlFreeNode(node);
 				xpath_obj->nodesetval->nodeTab[i] = NULL;
 			}
 		}
 	}
-	
+
 	xmlXPathFreeObject(xpath_obj);
 	xmlXPathFreeContext(xpath_ctx);
 	return 0;
@@ -419,7 +417,7 @@ int remove_xpath(xmlDocPtr doc, xmlChar *xpath_expr)
  * @param subst - copy of substitute expresion, free it after use
  * @return 0 on success, 1 on error
  */
-int compile_subst(xmlChar* expresion, re_pattern_buffer* preg, 
+int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 		char **pattern, char **subst)
 {
 	char *regx = strdup(SC::U2A(expresion).c_str());
@@ -455,11 +453,11 @@ int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 		sz_log(0, "Error parsing substitute expresion '%s', trailing characters",
 				regx);
 		return 1;
-		
+
 	}
 	*subst = strdup(c + 1);
 	free(regx);
-	
+
 	preg->translate = 0;
 	preg->fastmap = 0;
 	preg->buffer = 0;
@@ -486,23 +484,23 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 	xmlXPathObjectPtr xpath_obj;
 	regex_t preg;
 
-	assert(doc != NULL);
-	assert(xpath_expr != NULL);
-	assert(regexp != NULL);
+	ASSERT(doc != NULL);
+	ASSERT(xpath_expr != NULL);
+	ASSERT(regexp != NULL);
 
 	/* create new xpath context */
 	xpath_ctx = xmlXPathNewContext(doc);
-	assert (xpath_ctx != NULL);
-	
+	ASSERT(xpath_ctx != NULL);
+
 	/* register IPK namespace */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'", 
+		sz_log(0, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -514,7 +512,7 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 	if (compile_subst(regexp, &preg, &pattern, &subst)) {
 		return 1;
 	}
-	
+
 	re_registers regs;
 
 	/* process result nodes */
@@ -528,20 +526,20 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 			//char *content = strdup((char *)node->children->content);
 			xmlChar *u_content = xmlNodeGetContent(node);
 			std::string content(SC::U2L(u_content));
-			if (re_search(&preg, content.c_str(), 
+			if (re_search(&preg, content.c_str(),
 						content.size(),
-						0, content.size() - 1, 
+						0, content.size() - 1,
 						&regs) < 0) {
 				xmlFree(u_content);
 				continue;
 			}
 			char *nc = regsub(content.c_str(), subst, &regs);
 			xmlNodeSetContent(node, SC::L2U(nc, true).c_str());
-			
+
 			xmlFree(u_content);
 			free(nc);
 			/* from xpath2.c */
-			if (xpath_obj->nodesetval->nodeTab[i]->type != 
+			if (xpath_obj->nodesetval->nodeTab[i]->type !=
 					XML_NAMESPACE_DECL)
 				xpath_obj->nodesetval->nodeTab[i] = NULL;
 		}
@@ -555,8 +553,8 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 
 	return 0;
 }
-	
-	
+
+
 /** Makes link in szarpbase directory.
  * @param prefix prefix of 'from' param
  * @param old name of 'from' param
@@ -566,21 +564,21 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
  * deeper directory (Status vi Status/Execute/bodas_error).
  * @return 0 on success, 1 on error
  */
-int make_link(xmlChar *prefix, xmlChar *old, xmlChar *name, xmlChar *result_prefix, 
+int make_link(xmlChar *prefix, xmlChar *old, xmlChar *name, xmlChar *result_prefix,
 		int dir = 1)
 {
 	std::wstring from, to;
 	std::wstring fromname, toname;
 
-	assert (prefix != NULL);
-	assert (old != NULL);
-	assert (name != NULL);
-	assert (result_prefix != NULL);
+	ASSERT(prefix != NULL);
+	ASSERT(old != NULL);
+	ASSERT(name != NULL);
+	ASSERT(result_prefix != NULL);
 
 	fromname = SC::U2S(old);
 	toname = SC::U2S(name);
 	if (dir) {
-		size_t i; 
+		size_t i;
 		i = fromname.find(L':');
 		if (i != std::wstring::npos)
 			fromname = fromname.substr(0, i);
@@ -588,29 +586,29 @@ int make_link(xmlChar *prefix, xmlChar *old, xmlChar *name, xmlChar *result_pref
 		if (i != std::wstring::npos)
 			toname = toname.substr(0, i);
 	}
-	
+
 	fromname = wchar2szb(fromname);
 	toname = wchar2szb(toname);
 
 	from = std::wstring(L"/opt/szarp/") + SC::U2S(prefix) + L"/szbase/" + fromname;
 	to = std::wstring(L"/opt/szarp/") + SC::U2S(result_prefix) + L"/szbase/" + toname;
-	
+
 	if (szb_cc_parent(from)) {
 		sz_log(0, "Error creating parent dir for '%ls', errno %d (%s)", from.c_str(), errno, strerror(errno));
 		return 1;
 	}
-	
+
 	if (szb_cc_parent(to)) {
 		sz_log(0, "Error creating parent dir for '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
 		return 1;
 	}
-	
+
 	if (unlink(SC::S2A(to).c_str()) && (errno != ENOENT)) {
 		sz_log(0, "Error removing '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
 		return 1;
 	}
 	if (symlink(SC::S2A(from).c_str(), SC::S2A(to).c_str())) {
-		sz_log(0, "Error creating link from '%ls' to '%ls', errno %d (%s)", 
+		sz_log(0, "Error creating link from '%ls' to '%ls', errno %d (%s)",
 				from.c_str(), to.c_str(), errno, strerror(errno));
 		return 1;
 	}
@@ -620,7 +618,7 @@ int make_link(xmlChar *prefix, xmlChar *old, xmlChar *name, xmlChar *result_pref
 
 /**
  * Add configuration prefix to the name of parameter and make appropriate link
- * for szarpbase data. 
+ * for szarpbase data.
  * @param node XML node with parameter description
  * @param prefix configuration prefix, may be NULL
  * @param result_prefix prefix of output configuration
@@ -631,26 +629,26 @@ int process_param(xmlNodePtr node, xmlChar *prefix, xmlChar *result_prefix, xmlC
 	xmlChar *name;
 	xmlChar *old;
 	xmlChar *base_ind;
-	
-	assert (node != NULL);
-	
+
+	ASSERT(node != NULL);
+
 	old = xmlGetProp(node, BAD_CAST "name");
-	assert (old != NULL);
-	
+	ASSERT(old != NULL);
+
 	base_ind = xmlGetProp(node, BAD_CAST "base_ind");
 	if (prefix != NULL) {
-		asprintf((char **)&name, "{%s} %s", BAD_CAST prefix, 
+		asprintf((char **)&name, "{%s} %s", BAD_CAST prefix,
 				BAD_CAST old);
-		assert (name != NULL);
+		ASSERT(name != NULL);
 		xmlSetProp(node, BAD_CAST "name", name);
 
-		if (base_ind && make_link(source_prefix, old, name, 
+		if (base_ind && make_link(source_prefix, old, name,
 					result_prefix))
 			return 1;
-		
+
 		free(name);
 	} else {
-		if (base_ind && make_link(source_prefix, old, old, 
+		if (base_ind && make_link(source_prefix, old, old,
 					result_prefix))
 			return 1;
 	}
@@ -686,14 +684,14 @@ xmlChar *edit_formula(xmlChar *formula, xmlChar *prefix)
 			c5 = NULL;
 		}
 		/*
-		 
+
 		      c4           c3            c5
 		   [........]([...........])[...........]
 		   |         |             |
 		   +ret      +c            +c2
-		  
+
 		 */
-		
+
 		if (c5) {
 			asprintf(&c6, "%s({%s} %s)%s", c4, (char *) prefix, c3, c5);
 			free(c5);
@@ -727,18 +725,18 @@ int process_formulas(xmlDocPtr doc, xmlChar *prefix)
 	xmlXPathObjectPtr xpath_obj;
 	int ret;
 
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 	if (prefix == NULL)
 		return 0;
-	
+
 	xpath_ctx = xmlXPathNewContext(doc);
-	assert (xpath_ctx != NULL);
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ASSERT(xpath_ctx != NULL);
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	xpath_obj = xmlXPathEvalExpression(
-			BAD_CAST "//ipk:param/ipk:define[@type='RPN']/@formula | //ipk:param/ipk:define[@type='DRAWDEFINABLE']/@formula", 
+			BAD_CAST "//ipk:param/ipk:define[@type='RPN']/@formula | //ipk:param/ipk:define[@type='DRAWDEFINABLE']/@formula",
 			xpath_ctx);
 	if (xpath_obj->nodesetval && (xpath_obj->nodesetval->nodeNr > 0)) {
 		for (int i = 0;  i < xpath_obj->nodesetval->nodeNr; i++) {
@@ -754,7 +752,7 @@ int process_formulas(xmlDocPtr doc, xmlChar *prefix)
 
 	xmlXPathFreeObject(xpath_obj);
 	xmlXPathFreeContext(xpath_ctx);
-	return 0;	
+	return 0;
 }
 
 /** Add params from included configuration to output document.
@@ -765,7 +763,7 @@ int process_formulas(xmlDocPtr doc, xmlChar *prefix)
  * @param result_prefix prefix of output configuration
  * @return 0 on success, 1 on error
  */
-int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *result_prefix, 
+int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *result_prefix,
 		xmlChar *source_prefix)
 {
 	int ret;
@@ -773,49 +771,49 @@ int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *resul
 	xmlXPathContextPtr xpath_ctx_out;
 	xmlXPathObjectPtr xpath_obj;
 	xmlXPathObjectPtr insert_point;
-	
-	assert (out != NULL);
-	assert (cfg != NULL);
-	
+
+	ASSERT(out != NULL);
+	ASSERT(cfg != NULL);
+
 	/* modify formulas according to prefix */
 	if (process_formulas(cfg, prefix))
 		return 1;
-	
+
 	/* create new xpath contexts */
 	xpath_ctx = xmlXPathNewContext(cfg);
-	assert (xpath_ctx != NULL);
+	ASSERT(xpath_ctx != NULL);
 	xpath_ctx_out = xmlXPathNewContext(out);
-	assert (xpath_ctx_out != NULL);
-	
+	ASSERT(xpath_ctx_out != NULL);
+
 	/* register IPK namespace */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
-	ret = xmlXPathRegisterNs(xpath_ctx_out, BAD_CAST "ipk", 
+	ASSERT(ret == 0);
+	ret = xmlXPathRegisterNs(xpath_ctx_out, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	/* get device and defined parameters */
-	xpath_obj = xmlXPathEvalExpression(BAD_CAST "//ipk:device//ipk:param | //ipk:defined//ipk:param", 
+	xpath_obj = xmlXPathEvalExpression(BAD_CAST "//ipk:device//ipk:param | //ipk:defined//ipk:param",
 			xpath_ctx);
-	assert (xpath_obj != NULL); 
-	
+	ASSERT(xpath_obj != NULL);
+
 	insert_point = xmlXPathEvalExpression(BAD_CAST "//ipk:defined", xpath_ctx_out );
-	assert (insert_point != NULL);
-	assert (insert_point->nodesetval);
-	assert (insert_point->nodesetval->nodeNr == 1);
+	ASSERT(insert_point != NULL);
+	ASSERT(insert_point->nodesetval);
+	ASSERT(insert_point->nodesetval->nodeNr == 1);
 
 	/* copy nodes into result document */
 	if (xpath_obj->nodesetval && (xpath_obj->nodesetval->nodeNr > 0)) {
 		xmlNodePtr ins_parent = insert_point->nodesetval->nodeTab[0];
 		for (int i = 0;  i < xpath_obj->nodesetval->nodeNr; i++) {
 			xmlNodePtr node = xmlDocCopyNode(
-					xpath_obj->nodesetval->nodeTab[i], 
+					xpath_obj->nodesetval->nodeTab[i],
 					out, 1);
 			//xmlUnlinkNode(node);
-			assert (node != NULL);
+			ASSERT(node != NULL);
 			node = xmlAddChild(ins_parent, node);
-			assert (node != NULL);
+			ASSERT(node != NULL);
 			if (process_param(node, prefix, result_prefix, source_prefix))
 				return 1;
 
@@ -824,7 +822,7 @@ int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *resul
 				 * range for drawdefinable params */
 				xmlChar *c = xmlGetProp(node, BAD_CAST "name");
 				if (make_link(source_prefix, c,
-						BAD_CAST "fake:fake:fake", 
+						BAD_CAST "fake:fake:fake",
 						result_prefix, 0))
 					return 1;
 				xmlFree(c);
@@ -833,28 +831,28 @@ int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *resul
 	}
 	xmlXPathFreeObject(xpath_obj);
 	xmlXPathFreeObject(insert_point);
-	
+
 	/* get drawdefinable parameters */
 	xpath_obj = xmlXPathEvalExpression(BAD_CAST "//ipk:drawdefinable//ipk:param", xpath_ctx);
-	assert (xpath_obj != NULL); 
-	
+	ASSERT(xpath_obj != NULL);
+
 	insert_point = xmlXPathEvalExpression(BAD_CAST "//ipk:drawdefinable", xpath_ctx_out );
-	assert (insert_point != NULL);
-	assert (insert_point->nodesetval);
-	assert (insert_point->nodesetval->nodeNr == 1);
+	ASSERT(insert_point != NULL);
+	ASSERT(insert_point->nodesetval);
+	ASSERT(insert_point->nodesetval->nodeNr == 1);
 
 	/* copy nodes into result document */
 	if (xpath_obj->nodesetval && (xpath_obj->nodesetval->nodeNr > 0)) {
 		xmlNodePtr ins_parent = insert_point->nodesetval->nodeTab[0];
 		if (xpath_obj->nodesetval) for (int i = 0;  i < xpath_obj->nodesetval->nodeNr; i++) {
 			xmlNodePtr node = xmlDocCopyNode(
-					xpath_obj->nodesetval->nodeTab[i], 
+					xpath_obj->nodesetval->nodeTab[i],
 					out, 1);
-			assert(node != NULL);
+			ASSERT(node != NULL);
 			if (process_param(node, prefix, result_prefix, source_prefix))
 				return 1;
 			node = xmlAddChild(ins_parent, node);
-			assert(node != NULL);
+			ASSERT(node != NULL);
 		}
 	}
 
@@ -866,26 +864,26 @@ int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *resul
 		insert_point = xmlXPathEvalExpression(BAD_CAST "//ipk:params", xpath_ctx_out );
 		xpath_obj = xmlXPathEvalExpression(BAD_CAST "//ipk:params//ipk:seasons", xpath_ctx);
 
-		assert (insert_point != NULL);
-		assert (insert_point->nodesetval);
-		assert (insert_point->nodesetval->nodeNr == 1);
-		assert (xpath_obj != NULL);
+		ASSERT(insert_point != NULL);
+		ASSERT(insert_point->nodesetval);
+		ASSERT(insert_point->nodesetval->nodeNr == 1);
+		ASSERT(xpath_obj != NULL);
 
 		xmlNodePtr ins_parent = insert_point->nodesetval->nodeTab[0];
 		for (int i = 0;  i < xpath_obj->nodesetval->nodeNr; i++) {
 			xmlNodePtr node = xmlDocCopyNode(
-					xpath_obj->nodesetval->nodeTab[i], 
+					xpath_obj->nodesetval->nodeTab[i],
 					out, 1);
-			assert(node != NULL);
+			ASSERT(node != NULL);
 			node = xmlAddChild(ins_parent, node);
-			assert(node != NULL);
+			ASSERT(node != NULL);
 		}
 
 		xmlXPathFreeContext(xpath_ctx);
 		xmlXPathFreeContext(xpath_ctx_out);
 
 	}
-		
+
 	/* clean-up namespaces mess; doesn't work :-( */
 	xmlReconciliateNs(out, out->children);
 	return 0;
@@ -901,8 +899,8 @@ int process_config(xmlDocPtr out, xmlDocPtr cfg, xmlChar *prefix, xmlChar *resul
  */
 int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_prefix, time_t *max_szbase_stamp_time)
 {
-	assert (doc != NULL);
-	assert (cfg != NULL);
+	ASSERT(doc != NULL);
+	ASSERT(cfg != NULL);
 	xmlChar *prefix;
 	xmlDocPtr cur;
 	xmlNodePtr node;
@@ -928,7 +926,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 	/* try to load configuration */
 	asprintf(&c, "/opt/szarp/%s/config/params.xml", SC::U2A(prefix).c_str());
 	cur = xmlParseFile(c);
-	
+
 	if (cur == NULL) {
 		sz_log(0, "Couldn't parse file '%s'", c);
 		return 1;
@@ -939,7 +937,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 	for (node = cfg->children; node; node = node->next) {
 		xmlChar *xpath_expr;
 		xmlChar *regexp;
-		
+
 		if (node->type != XML_ELEMENT_NODE)
 			continue;
 		if (node->ns == NULL)
@@ -962,7 +960,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 			xmlChar *value = xmlGetProp(node, BAD_CAST "value");
 			xmlChar *copy = xmlGetProp(node, BAD_CAST "copy");
 			if ((value == NULL) && (copy == NULL)) {
-				
+
 				sz_log(0, "Error, attribute 'value' or 'copy' not found for element 'attribute' on line %ld",
 					xmlGetLineNo(node));
 				return 1;
@@ -992,7 +990,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 				return 1;
 			xmlFree(xpath_expr);
 			continue;
-			
+
 		}
 		if (xmlStrcmp(node->name, BAD_CAST "regexp")) {
 			if (xpath_expr)
@@ -1004,7 +1002,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 					xmlGetLineNo(node));
 			return 1;
 		}
-		if ((node->children == NULL) || 
+		if ((node->children == NULL) ||
 				(node->children->type != XML_TEXT_NODE) ||
 				(node->children->content == NULL)) {
 			sz_log(0, "Error, no text content for element 'regexp' on line %ld",
@@ -1026,7 +1024,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 	/* link status parameters */
 	if (is_primary)
 		make_link(prefix, BAD_CAST "Status", BAD_CAST "Status", result_prefix);
-	
+
 	xmlFreeDoc(cur);
 	sz_log(8, "Adding config with prefix '%s'\n", SC::U2A(prefix).c_str());
 	xmlFree(prefix);
@@ -1041,28 +1039,28 @@ int add_null_formulas(xmlDocPtr doc)
 	xmlXPathContextPtr xpath_ctx;
 	xmlXPathObjectPtr params, fake;
 	int ret;
-	
+
 	xpath_ctx = xmlXPathNewContext(doc);
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
-	
-	params = xmlXPathEvalExpression(BAD_CAST "//ipk:defined//ipk:param[not(/ipk:define)]", 
+	ASSERT(ret == 0);
+
+	params = xmlXPathEvalExpression(BAD_CAST "//ipk:defined//ipk:param[not(/ipk:define)]",
 			xpath_ctx);
-	assert (params != NULL); 
-	
+	ASSERT(params != NULL);
+
 	if (params->nodesetval && (params->nodesetval->nodeNr > 0)) {
 		fake = xmlXPathEvalExpression(BAD_CAST "//ipk:param[@name='fake:fake:fake']/ipk:define",
 			xpath_ctx);
-		assert (fake != NULL);
-		assert (fake->nodesetval != NULL);
-		
+		ASSERT(fake != NULL);
+		ASSERT(fake->nodesetval != NULL);
+
 		xmlNodePtr define = fake->nodesetval->nodeTab[0];
 		for (int i = 0;  i < params->nodesetval->nodeNr; i++) {
 			xmlNodePtr node = params->nodesetval->nodeTab[i];
-			assert(node != NULL);
+			ASSERT(node != NULL);
 			node = xmlAddChild(node, xmlCopyNode(define, 1));
-			assert(node != NULL);
+			ASSERT(node != NULL);
 		}
 		xmlXPathFreeObject(fake);
 	}
@@ -1081,9 +1079,9 @@ xmlDocPtr create_empty_config(xmlChar *title, xmlChar *prefix, xmlChar* document
 	char *c;
 	xmlDocPtr doc;
 
-	assert (title != NULL);
-	assert (prefix != NULL);
-	
+	ASSERT(title != NULL);
+	ASSERT(prefix != NULL);
+
 	asprintf(&c, "\
 <?xml version=\"1.0\"?>\n\
 <params xmlns=\"http://www.praterm.com.pl/SZARP/ipk\"\n\
@@ -1101,10 +1099,10 @@ xmlDocPtr create_empty_config(xmlChar *title, xmlChar *prefix, xmlChar* document
   <drawdefinable/>\n\
 </params>\n\
 			", title, documentation_base_url == NULL ? "http://szarp.com.pl" : (char*) documentation_base_url, prefix);
-	assert (c != NULL);
+	ASSERT(c != NULL);
 
 	doc = xmlParseMemory(c, strlen(c) + 1);
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	free(c);
 	return doc;
@@ -1123,16 +1121,16 @@ typedef unordered_map<int, std::string> vars_map_t;
 vars_map_t g_vars;
 
 /**
- * Makes substitution on string with variables from vars. 
+ * Makes substitution on string with variables from vars.
  * @param str string to substitute
  * @param vars hash with variables
- * @return NULL if no substitution was made, 
+ * @return NULL if no substitution was made,
  * substituted string (mallocated copy) otherwise.
  */
 xmlChar* subst_string(const xmlChar* str, vars_map_t vars)
 {
-	assert (str != NULL);
-	
+	ASSERT(str != NULL);
+
 	std::string tmp = "";
 	const xmlChar *c = str;
 	while (*c != 0) {
@@ -1147,7 +1145,7 @@ xmlChar* subst_string(const xmlChar* str, vars_map_t vars)
 				std::string val = vars[*s - '0'];
 				tmp += val;
 			}
-			c++;	
+			c++;
 		} else {
 			tmp += *c;
 		}
@@ -1164,7 +1162,7 @@ xmlChar* subst_string(const xmlChar* str, vars_map_t vars)
  * @param ctx XPath context in which xpath variable is evaluated
  * @return 0 on success, 1 on error
  */
-int add_template_variable(vars_map_t& vars, xmlNodePtr v, 
+int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 		xmlXPathContextPtr ctx)
 {
 	xmlChar* c;
@@ -1184,7 +1182,7 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 #endif
 	xmlFree(c);
 	c = xmlGetProp(v, BAD_CAST "xpath");
-	
+
 	if (c == NULL) {
 		c = xmlStrdup(BAD_CAST "");
 	} else {
@@ -1202,7 +1200,7 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 			return 1;
 		}
 		xmlFree(c);
-		assert (obj->stringval != NULL);
+		ASSERT(obj->stringval != NULL);
 		c = xmlStrdup(obj->stringval);
 	}
 	xmlChar *subst = xmlNodeGetContent(v);
@@ -1226,11 +1224,11 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 			c = BAD_CAST nc;
 		}
 	}
-	
+
 	vars[i] = (char *) SC::A2U((char *) c, true).c_str();
 	sz_log(8, "Setting variable '%d' to '%s'", i, c);
 	xmlFree(c);
-	
+
 	return 0;
 }
 
@@ -1257,7 +1255,7 @@ int subst_node(xmlNodePtr node, vars_map_t& vars)
 	if (node->type != XML_ELEMENT_NODE) {
 		return 0;
 	}
-	for (xmlAttrPtr attr = node->properties; attr; 
+	for (xmlAttrPtr attr = node->properties; attr;
 			attr = (xmlAttrPtr)attr->next) {
 		if (attr->type != XML_ATTRIBUTE_NODE) {
 			continue;
@@ -1295,7 +1293,7 @@ int subst_node(xmlNodePtr node, vars_map_t& vars)
  * @param name template name
  * @result 0 on success, 1 on error
  */
-int template_for_node(xmlNodePtr templ, xmlNodePtr node, 
+int template_for_node(xmlNodePtr templ, xmlNodePtr node,
 		xmlNodePtr drawdefinable, xmlXPathContextPtr xpath_ctx,
 		xmlChar* name)
 {
@@ -1322,7 +1320,7 @@ int template_for_node(xmlNodePtr templ, xmlNodePtr node,
 		}
 		/* make copy of all other nodes (usually, IPK nodes) */
 		xmlNodePtr nnode = xmlAddChild(drawdefinable, xmlCopyNode(n, 1));
-		assert (nnode != NULL);
+		ASSERT(nnode != NULL);
 		/* substitute content of newly copied node */
 		if (subst_node(nnode, g_vars)) {
 			return 1;
@@ -1337,13 +1335,13 @@ int template_for_node(xmlNodePtr templ, xmlNodePtr node,
  * @param xpath_ctx XPath context for result document
  * @return 0 on success, 1 on error
  */
-int process_template(xmlNodePtr templ, xmlNodePtr drawdefinable, 
+int process_template(xmlNodePtr templ, xmlNodePtr drawdefinable,
 		xmlXPathContextPtr xpath_ctx)
 {
-	assert (templ != NULL);
-	assert (templ != drawdefinable);
-	assert (xpath_ctx != NULL);
-	
+	ASSERT(templ != NULL);
+	ASSERT(templ != drawdefinable);
+	ASSERT(xpath_ctx != NULL);
+
 	xmlChar *name = xmlGetProp(templ, BAD_CAST "name");
 	xmlChar *xpath = xmlGetProp(templ, BAD_CAST "xpath");
 	if (xpath == NULL) {
@@ -1355,17 +1353,17 @@ int process_template(xmlNodePtr templ, xmlNodePtr drawdefinable,
 	xmlXPathObjectPtr obj = xmlXPathEvalExpression(xpath, xpath_ctx);
 	if (obj && obj->nodesetval) {
 		for (int i = 0; i < obj->nodesetval->nodeNr; i++) {
-			if (template_for_node(templ, obj->nodesetval->nodeTab[i], 
+			if (template_for_node(templ, obj->nodesetval->nodeTab[i],
 					drawdefinable, xpath_ctx, name)) {
 				return 1;
 			}
 		}
 	}
 	xmlXPathFreeObject(obj);
-	
+
 	xmlFree(xpath);
 	if (name) xmlFree(name);
-	
+
 	return 0;
 }
 
@@ -1382,29 +1380,29 @@ int add_drawdefinable(xmlXPathObjectPtr children, xmlDocPtr output)
 	xmlXPathObjectPtr obj;
 	int ret;
 
-	assert (children != NULL);
-	assert (output != NULL);
+	ASSERT(children != NULL);
+	ASSERT(output != NULL);
 
 	if (children->nodesetval == NULL)
 		return 0;
 	ctx = xmlXPathNewContext(output);
-	assert (ctx != NULL);
-	ret = xmlXPathRegisterNs(ctx, BAD_CAST "ipk", 
+	ASSERT(ctx != NULL);
+	ret = xmlXPathRegisterNs(ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	obj = xmlXPathEvalExpression(BAD_CAST "//ipk:drawdefinable",
 			ctx);
-	assert (obj != NULL);
-	assert (obj->nodesetval != NULL);
-	assert (obj->nodesetval->nodeNr == 1);
+	ASSERT(obj != NULL);
+	ASSERT(obj->nodesetval != NULL);
+	ASSERT(obj->nodesetval->nodeNr == 1);
 
 	for (int i = 0; i < children->nodesetval->nodeNr; i++) {
 		xmlNodePtr node = children->nodesetval->nodeTab[i];
-		assert (node != NULL);
-		if ((node->type == XML_ELEMENT_NODE) 
+		ASSERT(node != NULL);
+		if ((node->type == XML_ELEMENT_NODE)
 				&& (node->ns)
 				&& !xmlStrcmp(node->ns->href, BAD_CAST AGGREGATE_HREF)
-				&& !xmlStrcmp(node->name, BAD_CAST "template")) 
+				&& !xmlStrcmp(node->name, BAD_CAST "template"))
 		{
 			/* process template */
 			process_template(node, obj->nodesetval->nodeTab[0], ctx);
@@ -1412,9 +1410,9 @@ int add_drawdefinable(xmlXPathObjectPtr children, xmlDocPtr output)
 		}
 		/* copy all other nodes */
 		node = xmlDocCopyNode(node, output, 1);
-		assert (node != NULL);
+		ASSERT(node != NULL);
 		node = xmlAddChild(obj->nodesetval->nodeTab[0], node);
-		assert (node != NULL);
+		ASSERT(node != NULL);
 	}
 
 	xmlXPathFreeObject(obj);
@@ -1435,13 +1433,13 @@ unsigned int get_digest(char *text, unsigned char *digest)
 
 	OpenSSL_add_all_digests();
 	md = EVP_get_digestbyname("md5");
-	
+
 	EVP_MD_CTX_init(&mdctx);
 	EVP_DigestInit_ex(&mdctx, md, NULL);
 	EVP_DigestUpdate(&mdctx, text, strlen(text));
 	EVP_DigestFinal_ex(&mdctx, digest, &md_len);
 	EVP_MD_CTX_cleanup(&mdctx);
-	
+
 	return md_len;
 }
 
@@ -1461,8 +1459,8 @@ int process_file(char *path, bool verbose, bool force)
 	xmlChar *doc_base_url;
 	char *out_path, *szbase_stamp_path;
 	struct stat st;
-	
-	assert (path != NULL);
+
+	ASSERT(path != NULL);
 
 	/* load config file */
 	cfg = xmlParseFile(path);
@@ -1475,14 +1473,14 @@ int process_file(char *path, bool verbose, bool force)
 
 	/* create XPath context */
 	xpath_ctx = xmlXPathNewContext(cfg);
-	assert (xpath_ctx != NULL);
+	ASSERT(xpath_ctx != NULL);
 	/* register namespaces */
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "aggr", 
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "aggr",
 			BAD_CAST AGGREGATE_HREF);
-	assert (ret == 0);
-	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk", 
+	ASSERT(ret == 0);
+	ret = xmlXPathRegisterNs(xpath_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 
 	prefix = uxmlXPathGetProp(BAD_CAST "/aggr:aggregate/@prefix",
 			xpath_ctx);
@@ -1506,9 +1504,9 @@ int process_file(char *path, bool verbose, bool force)
 
 	/* retrive 'config' elements */
 	xpath_obj = xmlXPathEvalExpression(
-			BAD_CAST "/aggr:aggregate/aggr:config", 
+			BAD_CAST "/aggr:aggregate/aggr:config",
 			xpath_ctx);
-	assert (xpath_obj != NULL);
+	ASSERT(xpath_obj != NULL);
 
 	if (!xpath_obj->nodesetval) {
 		sz_log(0, "Error parsing config - '/aggregate/config' not found");
@@ -1547,14 +1545,14 @@ int process_file(char *path, bool verbose, bool force)
 	xpath_obj = xmlXPathEvalExpression(
 			BAD_CAST "/aggr:aggregate/ipk:drawdefinable/*",
 			xpath_ctx);
-	assert (xpath_obj != NULL);
+	ASSERT(xpath_obj != NULL);
 	if (add_drawdefinable(xpath_obj, output))
 		return 1;
 	xmlXPathFreeObject(xpath_obj);
-	
+
 	/* remove text nodes */
 	remove_xpath(output, (xmlChar *) "//text() and not(//script/text())");
-	
+
 	bool save = true;
 	if (!force) {
 		xmlChar *docptr;
@@ -1562,12 +1560,12 @@ int process_file(char *path, bool verbose, bool force)
 		unsigned int md_len_dest = 0;
 
 		if (stat(out_path, &st) >= 0 ) {
-			
+
 			int textlen;
-	
+
 			/* dump XML to string */
 			xmlDocDumpFormatMemory(output, &docptr, &textlen, 1);
-			
+
 			if(st.st_size == textlen) {
 				int indf;
 				indf = open(out_path, O_RDONLY);
@@ -1576,27 +1574,27 @@ int process_file(char *path, bool verbose, bool force)
 					int result = 0;
 					int tmpresult = 0;
 					file = (char*) malloc(textlen);
-				
+
 					do {
 						tmpresult = read(indf, &(((char*)file)[result]), textlen - result);
 						result += tmpresult;
 					} while (result != textlen && tmpresult != 0);
-					
+
 					md_len_dest = get_digest(file, md_value_dest);
-					
+
 					if(verbose) {
 						printf("Destination file digest is: ");
 						for(i = 0; (uint)i < md_len_dest; i++) printf("%02x", md_value_dest[i]);
 						printf("\n");
 					}
-					
+
 					free(file);
 				} else {
 					if(verbose) {
 						perror("Error while opening old output file.\n");
 					}
 				}
-			
+
 			} else {
 				if(verbose) {
 					printf("No old output file has diffirent length - overriding.\n");
@@ -1607,7 +1605,7 @@ int process_file(char *path, bool verbose, bool force)
 				printf("No old output file for comparison.\n");
 			}
 		}
-		
+
 		if(md_len_dest > 0) {
 			unsigned char md_value[EVP_MAX_MD_SIZE];
 			unsigned int md_len;
@@ -1620,7 +1618,7 @@ int process_file(char *path, bool verbose, bool force)
 			}
 
 			if(md_len == md_len_dest) {
-				for(i = 0; (uint)i < md_len; i++) 
+				for(i = 0; (uint)i < md_len; i++)
 					if(md_value[i] != md_value_dest[i]) {
 						break;
 					}
@@ -1630,7 +1628,7 @@ int process_file(char *path, bool verbose, bool force)
 			}
 		}
 	}
-	
+
 	if(save){
 		if(verbose) {
 				printf("Saving new output file.\n");
@@ -1646,14 +1644,14 @@ int process_file(char *path, bool verbose, bool force)
 			printf("Files don`t differ.\n");
 		}
 	}
-	
+
 	xmlXPathFreeContext(xpath_ctx);
 	free(out_path);
 	xmlFree(title);
 	xmlFree(prefix);
 	xmlFreeDoc(output);
 	xmlFreeDoc(cfg);
-	
+
 	return 0;
 }
 
