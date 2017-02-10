@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- * draw3 
+/*
+ * draw3
  * SZARP
 
  *
@@ -45,7 +45,6 @@
 #include <wx/datetime.h>
 #include <wx/colour.h>
 #include <wx/dynarray.h>
-#include <wx/arrimpl.cpp>
 #include <wx/glcanvas.h>
 #include <FTGL/ftgl.h>
 #include <GL/glu.h>
@@ -83,7 +82,7 @@ class GLGraphs : public wxGLCanvas, public DrawGraphs, public SetInfoDropReceive
 
 	struct GraphState {
 		GraphState();
-		enum { STILL, FADING, EMERGING } fade_state; 
+		enum { STILL, FADING, EMERGING } fade_state;
 		float fade_level;
 	};
 
@@ -176,7 +175,7 @@ public:
 	virtual void Refresh() { m_refresh = true; }
 
 	virtual void FullRefresh() { Refresh(); }
-	
+
 	virtual void SetFocus();
 
 	void OnPaint(wxPaintEvent&);
@@ -247,4 +246,4 @@ public:
 #endif
 #endif
 
-#endif 
+#endif
