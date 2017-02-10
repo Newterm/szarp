@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
+/*
  * draw3
  * SZARP
  */
@@ -145,7 +145,7 @@ ParamEdit::ParamEdit(wxWindow *parent, ConfigManager *cfg, DatabaseManager *dbmg
 void ParamEdit::InitWidget(wxWindow *parent) {
 
 	wxXmlResource::Get()->LoadDialog(this, parent, _T("param_edit"));
-	
+
 	m_unit_input = XRCCTRL(*this, "text_ctrl_unit", wxTextCtrl);
 	assert(m_unit_input);
 
@@ -168,13 +168,13 @@ void ParamEdit::InitWidget(wxWindow *parent) {
 	m_found_date_label = XRCCTRL(*this, "found_date_label", wxStaticText);
 
 	m_prec_spin = XRCCTRL(*this, "spin_ctrl_prec", wxSpinCtrl);
-	
+
 	m_spin_ctrl_start_hours = XRCCTRL(*this, "spin_ctrl_start_hours", wxSpinCtrl);
-	
+
 	m_spin_ctrl_start_minutes = XRCCTRL(*this, "spin_ctrl_start_minutes", wxSpinCtrl);
-	
+
 	m_datepicker_ctrl_start_date = XRCCTRL(*this, "datepicker_ctrl_start_date", wxDatePickerCtrl);
-	
+
 	m_checkbox_start = XRCCTRL(*this, "checkbox_start", wxCheckBox);
 
 	m_button_base_config = XRCCTRL(*this, "button_base_config", wxButton);
@@ -190,7 +190,7 @@ void ParamEdit::InitWidget(wxWindow *parent) {
 	m_param_name_input = XRCCTRL(*this, "parameter_name", wxTextCtrl);
 
 	m_user_param_label = XRCCTRL(*this, "user_param_label", wxStaticText);
-	
+
 	m_datepicker_ctrl_start_date->Enable(false);
 	m_datepicker_ctrl_start_date->SetValue(wxDateTime::Now());
 	m_spin_ctrl_start_hours->Enable(false);
@@ -249,7 +249,7 @@ void ParamEdit::OnButtonBaseConfig(wxCommandEvent& event) {
 }
 
 void ParamEdit::Close() {
-	if (IsModal()) 
+	if (IsModal())
 		EndModal(wxID_OK);
 	else {
 		SetReturnCode(wxID_OK);
@@ -292,19 +292,19 @@ bool ParamEdit::ParamExists(const std::string &param)
 
 	wxString confid(param.substr(0, param.find(std::string(":"))).c_str(), wxConvUTF8);
 	wxString pname(param.substr(param.find(std::string(":"))+1, std::string::npos).c_str(), wxConvUTF8);
-	
+
 	SortedSetsArray sorted(DrawSet::CompareSets);
 	DrawsSets* conf = m_cfg_mgr->GetConfigByPrefix(confid);
 	if (conf == NULL) return false;
 	sorted = conf->GetSortedDrawSetsNames(true);
-	
+
 	//check if param exists
 	int count = sorted.size();
-	for (int i = 0; i < count; i++) { 
+	for (int i = 0; i < count; i++) {
 		DrawSet* set = sorted.Item(i);
 		for (size_t j = 0; j < set->GetDraws()->size(); j++) {
 			DrawInfo* info = m_cfg_mgr->GetDraw(confid, set->GetName(), j);
-			if (info == NULL) 
+			if (info == NULL)
 				continue;
 			if (pname.Cmp(info->GetParam()->GetParamName()) == 0)
 			{
@@ -312,7 +312,7 @@ bool ParamEdit::ParamExists(const std::string &param)
 			}
 		}
 	}
-	
+
 	//check user defined params
 	DefinedDrawsSets * defined = m_cfg_mgr->GetDefinedDrawsSets();
 	std::vector<DefinedParam*> definedParams = defined->GetDefinedParams();
@@ -330,8 +330,8 @@ bool ParamEdit::ValidateParamNames()
 {
 	std::vector<std::string> params;
 	std::string text = std::string(m_formula_input->GetText().mb_str());
-	int found = -1;
-	int pstart, pend;
+	size_t found = -1;
+	size_t pstart, pend;
 
 	//find all param names in formula. Param lies between "p(" and ", t, pt)"
 	while( (found = text.find(std::string("p("), found+1)) != std::string::npos)
@@ -344,7 +344,7 @@ bool ParamEdit::ValidateParamNames()
 
 		found = text.find(std::string(", t, pt)"), found+1);
 		if(found == std::string::npos || found != pend+1) return false;
-		
+
 		params.push_back(text.substr(pstart+1, pend - pstart - 1));
 		found += 5;
 	}
@@ -363,7 +363,7 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 		EndModal(wxID_OK);
 		return;
 	}
-	
+
 	if(!ValidateParamNames()){
 		wxMessageBox(_("One of the given parameters doesn't exist. Check them again."), _("Invalid param"),
 			wxOK | wxICON_ERROR, this);
@@ -373,14 +373,14 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 	if (!ValidateComma(m_formula_input->GetText())) {
 		int answer = wxMessageBox(_("Comma next to a number found. Do you want to correct it?"), _("Comma found"),
 			wxYES_NO | wxICON_WARNING, this);
-		if(answer == wxYES)	
-		{	
+		if(answer == wxYES)
+		{
 			return;
 		}
 	}
 
 	if (m_formula_input->GetText().Trim().IsEmpty()) {
-		wxMessageBox(_("You must provide a formula."), _("Formula missing."), 
+		wxMessageBox(_("You must provide a formula."), _("Formula missing."),
 			     wxOK | wxICON_ERROR, this);
 		return;
 	}
@@ -413,7 +413,7 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 }
 
 void ParamEdit::OnCancel(wxCommandEvent & event) {
-	if (IsModal()) 
+	if (IsModal())
 		EndModal(wxID_CANCEL);
 	else {
 		SetReturnCode(wxID_CANCEL);
@@ -436,19 +436,19 @@ void ParamEdit::TransferToWindow(DefinedParam *param) {
 	m_param_name_input->SetValue(param->GetParamName().AfterLast(L':'));
 	m_unit_input->SetValue(param->GetUnit());
 	m_formula_type_choice->SetSelection(param->GetFormulaType() == TParam::LUA_VA ? 0 : 1);
-	
-	
+
+
 	if (param->GetStartTime() > 0) {
 		struct tm *start_date;
 		time_t tmp_time = param->GetStartTime();
 		start_date = localtime(&tmp_time);
-	
+
 		m_spin_ctrl_start_minutes->SetValue(start_date->tm_min);
 		m_spin_ctrl_start_hours->SetValue(start_date->tm_hour);
-	
+
 		m_datepicker_ctrl_start_date->SetValue(wxDateTime(param->GetStartTime()));
 		m_checkbox_start->SetValue(true);
-		
+
 		m_datepicker_ctrl_start_date->Enable(true);
 		m_spin_ctrl_start_hours->Enable(true);
 		m_spin_ctrl_start_minutes->Enable(true);
@@ -493,13 +493,13 @@ int ParamEdit::View(DefinedParam * param)
 	m_param_name_input->Enable(false);
 	m_unit_input->Enable(false);
 	m_formula_type_choice->Enable(false);
-	
+
 	m_spin_ctrl_start_minutes->Enable(false);
 	m_spin_ctrl_start_hours->Enable(false);
-	
+
 	m_datepicker_ctrl_start_date->Enable(false);
 	m_checkbox_start->Enable(false);
-		
+
 	m_datepicker_ctrl_start_date->Enable(false);
 	m_spin_ctrl_start_hours->Enable(false);
 	m_spin_ctrl_start_minutes->Enable(false);
@@ -510,7 +510,7 @@ int ParamEdit::View(DefinedParam * param)
 	wxSizer *buttons_sizer = m_button_formula_redo->GetContainingSizer();
 	main_sizer->Show(buttons_sizer, false, true);
 
-	wxWindow *cancel_button = FindWindow(wxID_CANCEL); 
+	wxWindow *cancel_button = FindWindow(wxID_CANCEL);
 	wxSizer *button_sizer = cancel_button->GetContainingSizer();
 	button_sizer->Show(cancel_button, false, true);
 	button_sizer->Layout();
@@ -551,20 +551,20 @@ DrawInfo* ParamEdit::GetCurrentDrawInfo() {
 time_t ParamEdit::GetStartTime() {
 	if(m_checkbox_start->GetValue()){
 		struct tm start_date;
-		
+
 		start_date.tm_sec = 0;
 		start_date.tm_min = m_spin_ctrl_start_minutes->GetValue();
 		start_date.tm_hour = m_spin_ctrl_start_hours->GetValue();
-		
+
 		wxDateTime dt = m_datepicker_ctrl_start_date->GetValue();
-		
+
 		start_date.tm_mday = dt.GetDay();
 		start_date.tm_mon = dt.GetMonth();
 		start_date.tm_year = dt.GetYear() - 1900;
 		start_date.tm_wday = 0;
 		start_date.tm_yday = 0;
 		start_date.tm_isdst = -1;
-		
+
 		return mktime(&start_date);
 	} else {
 		return -1;
@@ -640,7 +640,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	q->draw_info = ddi;
 	q->param = param->GetIPKParam();
 	q->draw_no = -1;
-	ToNanosecondTime(wxInvalidDateTime,		
+	ToNanosecondTime(wxInvalidDateTime,
 		q->search_data.end_second,
 		q->search_data.end_nanosecond
 		);
@@ -694,7 +694,7 @@ void ParamEdit::SearchResultReceived(DatabaseQuery *q) {
 void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
 
 	switch (m_widget_mode) {
-		case EDITING_PARAM: 
+		case EDITING_PARAM:
 			FormulaCompiledForParam(q);
 			break;
 		case EDITING_SEARCH_EXPRESSION:
@@ -759,7 +759,7 @@ void ParamEdit::PrepareSearchFormula() {
 
 	DrawParam *p = draw_info->GetParam();
 	wxString pname = p->GetParamName();
-	
+
 	m_formula_input->AddText(wxString::Format(_T("p(\"%s:%s\", t, pt) "), draw_info->GetBasePrefix().c_str(), pname.c_str()));
 }
 
@@ -773,7 +773,7 @@ void ParamEdit::OnFormulaInsertParam(wxCommandEvent &event) {
 		m_inc_search = new IncSearch(m_cfg_mgr, m_remarks_handler, ct, this, -1, _("Find"), false, false);
 	else
 		m_inc_search->SetConfigName(ct);
-	
+
 
 	if (m_inc_search->ShowModal() != wxID_OK)
 		return;
@@ -797,9 +797,9 @@ void ParamEdit::OnFormulaInsertUserParam(wxCommandEvent &event) {
 	if (m_params_list->ShowModal() != wxID_OK) {
 		return;
 	}
-		
+
 	DefinedParam *p = m_params_list->GetSelectedParam();
-	
+
 	wxString pname = p->GetParamName();
 
 	m_formula_input->AddText(wxString::Format(_T("p(\"%s:%s\", t, pt) "), p->GetBasePrefix().c_str(), pname.c_str()));
@@ -811,7 +811,7 @@ void ParamEdit::SetCurrentConfig(wxString prefix) {
 
 	m_button_base_config->SetLabel(m_cfg_mgr->GetConfigByPrefix(prefix)->GetID());
 
-	if (m_inc_search) 
+	if (m_inc_search)
 		m_inc_search->SetConfigName(m_cfg_mgr->GetConfigByPrefix(prefix)->GetID());
 }
 
@@ -885,7 +885,7 @@ void ParamEdit::OnForwardButton(wxCommandEvent& event) {
 	if (m_search_direction != NOT_SEARCHING)
 		return;
 
-	m_search_direction = SEARCHING_RIGHT;	
+	m_search_direction = SEARCHING_RIGHT;
 	SendCompileFormulaQuery();
 }
 
@@ -893,7 +893,7 @@ void ParamEdit::OnBackwardButton(wxCommandEvent& event) {
 	if (m_search_direction != NOT_SEARCHING)
 		return;
 
-	m_search_direction = SEARCHING_LEFT;	
+	m_search_direction = SEARCHING_LEFT;
 	SendCompileFormulaQuery();
 }
 

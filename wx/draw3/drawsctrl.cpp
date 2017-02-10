@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 /*
  * draw3 program
  * SZARP
- 
+
  * $Id: draw.h 11 2009-07-15 09:16:00Z reksi0 $
  */
 
@@ -80,9 +80,9 @@ void DrawsController::State::ParamDataChanged(TParam* param) {
 		if (!(*i)->GetEnable())
 			continue;
 
-		if (param != (*i)->GetDrawInfo()->GetParam()->GetIPKParam()) 
+		if (param != (*i)->GetDrawInfo()->GetParam()->GetIPKParam())
 			continue;
-		
+
 		DatabaseQuery *q = (*i)->GetDataToFetch(true);
 		if (q)
 			m_c->QueryDatabase(q);
@@ -348,13 +348,13 @@ void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, cons
 	q->draw_info = m_c->m_draws[m_c->m_selected_draw]->GetDrawInfo();
 	if (q->draw_info->IsValid())
 		q->param = q->draw_info->GetParam()->GetIPKParam();
-	else 
+	else
 		q->param = NULL;
 	q->draw_no = m_c->m_selected_draw;
-	ToNanosecondTime(start, 
+	ToNanosecondTime(start,
 		q->search_data.start_second,
 		q->search_data.start_nanosecond);
-	ToNanosecondTime(end, 
+	ToNanosecondTime(end,
 		q->search_data.end_second,
 		q->search_data.end_nanosecond);
 	q->search_data.period_type = m_c->m_draws[m_c->m_selected_draw]->GetPeriod();
@@ -401,7 +401,7 @@ void DrawsController::SearchLeft::Enter(const DTime& search_from) {
 	m_search_time = search_from;
 	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
 	SendSearchQuery((search_from + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Seconds(10),
-		wxInvalidDateTime, -1); 
+		wxInvalidDateTime, -1);
 }
 
 void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
@@ -416,7 +416,7 @@ void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
 
 void DrawsController::SearchRight::Enter(const DTime& search_from) {
 	m_search_time = search_from;
-	SendSearchQuery(search_from.GetTime(), wxInvalidDateTime, 1); 
+	SendSearchQuery(search_from.GetTime(), wxInvalidDateTime, 1);
 }
 
 void DrawsController::SearchRight::HandleRightResponse(wxDateTime& time) {
@@ -443,7 +443,7 @@ DTime DrawsController::SearchBoth::FindCloserTime(const DTime& reference, const 
 
 void DrawsController::SearchBothPreferCloser::Enter(const DTime& search_from) {
 	m_search_time = search_from;
-	SendSearchQuery(search_from.GetTime(), 
+	SendSearchQuery(search_from.GetTime(),
 			wxInvalidDateTime,
 			1);
 }
@@ -454,7 +454,7 @@ void DrawsController::SearchBothPreferCloser::HandleRightResponse(wxDateTime& ti
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10), 
+		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
 			wxInvalidDateTime,
 			-1);
 	}
@@ -519,7 +519,7 @@ void DrawsController::SearchBothPreferRight::Enter(const DTime& search_from) {
 	m_search_time = search_from;
 	m_start_time = index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod();
 
-	SendSearchQuery(search_from.GetTime(), 
+	SendSearchQuery(search_from.GetTime(),
 			index.GetStartTime().GetTime() - wxTimeSpan::Seconds(10),
 			1);
 }
@@ -530,7 +530,7 @@ void DrawsController::SearchBothPreferRight::HandleRightResponse(wxDateTime& tim
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_RIGHT, m_right_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10), 
+		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
 			wxInvalidDateTime,
 			-1);
 	}
@@ -545,7 +545,7 @@ void DrawsController::SearchBothPreferRight::HandleLeftResponse(wxDateTime& time
 				m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 				m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
 			} else {
-				DTime closer = FindCloserTime(m_search_time, left_result, m_right_result);	
+				DTime closer = FindCloserTime(m_search_time, left_result, m_right_result);
 				m_c->MoveToTime(m_c->ChooseStartDate(closer, m_start_time));
 				m_c->EnterState(WAIT_DATA_NEAREST, closer);
 			}
@@ -568,7 +568,7 @@ void DrawsController::SearchBothPreferLeft::Enter(const DTime& search_from) {
 	m_search_time = search_from;
 	m_start_time = index.GetStartTime() + index.GetDatePeriod() + index.GetTimePeriod();
 
-	SendSearchQuery(search_from.GetTime(), 
+	SendSearchQuery(search_from.GetTime(),
 			index.GetFirstNotDisplayedTime().GetTime(),
 			-1);
 }
@@ -579,7 +579,7 @@ void DrawsController::SearchBothPreferLeft::HandleLeftResponse(wxDateTime& time)
 		m_c->MoveToTime(m_c->ChooseStartDate(m_left_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_RIGHT, m_left_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10), 
+		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
 					wxInvalidDateTime,
 					1);
 	}
@@ -594,7 +594,7 @@ void DrawsController::SearchBothPreferLeft::HandleRightResponse(wxDateTime& time
 				m_c->MoveToTime(m_c->ChooseStartDate(m_left_result, m_start_time));
 				m_c->EnterState(WAIT_DATA_NEAREST, m_left_result);
 			} else {
-				DTime closer = FindCloserTime(m_search_time, m_left_result, right_result);	
+				DTime closer = FindCloserTime(m_search_time, m_left_result, right_result);
 				m_c->MoveToTime(m_c->ChooseStartDate(closer, m_start_time));
 				m_c->EnterState(WAIT_DATA_NEAREST, closer);
 			}
@@ -614,7 +614,7 @@ void DrawsController::SearchBothPreferLeft::HandleRightResponse(wxDateTime& time
 
 
 DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager) :
-	DBInquirer(database_manager), 
+	DBInquirer(database_manager),
 	m_time_reference(wxDateTime::Now()),
 	m_config_manager(config_manager),
 	m_current_time(PERIOD_T_OTHER),
@@ -665,26 +665,6 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_state = m_states[STOP];
 }
 
-namespace {
-std::vector<TParam*> GetSetParams(DrawSet* set) {
-	std::vector<TParam*> v;
-	if (set == NULL)
-		return v;
-
-	DrawInfoArray *draws = set->GetDraws();
-	for (DrawInfoArray::iterator i = draws->begin(); i != draws->end(); i++) {
-		DrawInfo *di = *i;
-		if (!di->IsValid())
-			continue;
-		TParam* param = di->GetParam()->GetIPKParam();
-		assert(param);
-		v.push_back(param);
-	}
-		
-	return v;
-}
-}
-
 DrawsController::~DrawsController() {
 	ChangeObservedParamsRegistration(GetSubscribedParams(), std::vector<TParam*>());
 
@@ -702,7 +682,7 @@ void DrawsController::DisableDisabledDraws() {
 	for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++) {
 		DrawInfo *di = (*i)->GetDrawInfo();
 		if (di != NULL &&
-				m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), (*i)->GetDrawNo()))) 
+				m_disabled_draws.find(std::make_pair(di->GetSetName(), std::make_pair(di->GetName(), (*i)->GetDrawNo())))
 					!= m_disabled_draws.end()) {
 			(*i)->SetEnable(false);
 			any_disabled_draw_present = true;
@@ -711,7 +691,7 @@ void DrawsController::DisableDisabledDraws() {
 		}
 	}
 
-	if (m_draws[m_selected_draw]->GetEnable() == false) for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++) 
+	if (m_draws[m_selected_draw]->GetEnable() == false) for (std::vector<Draw*>::iterator i = m_draws.begin(); i != m_draws.end(); i++)
 		if ((*i)->GetEnable()) {
 			m_selected_draw = std::distance(m_draws.begin(), i);
 			break;
@@ -719,7 +699,7 @@ void DrawsController::DisableDisabledDraws() {
 
 	if (m_draws[m_selected_draw]->GetEnable() == false)
 		m_draws[m_selected_draw]->SetEnable(true);
-	
+
 	if (!any_disabled_draw_present) for (size_t i = MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS; i < m_draws.size(); i++) {
 		DrawInfo *di = m_draws[i]->GetDrawInfo();
 		m_draws[i]->SetEnable(false);
@@ -826,10 +806,10 @@ DTime DrawsController::ChooseStartDate(const DTime& _found_time, const DTime& su
 		else
 			ret = found_time;
 	else
-		if (found_time < start_time 
-				+ 2 * index.GetDatePeriod() 
-				+ 2 * index.GetTimePeriod()) 
-			ret = found_time 
+		if (found_time < start_time
+				+ 2 * index.GetDatePeriod()
+				+ 2 * index.GetTimePeriod())
+			ret = found_time
 					- index.GetTimePeriod()
 					- index.GetDatePeriod()
 					+ TimeIndex::PeriodMult[m_period_type] * index.GetTimeRes()
@@ -917,19 +897,19 @@ void DrawsController::FetchData() {
 
 void DrawsController::MoveToTime(const DTime &time) {
 	std::vector<size_t> moved;
-	wxLogInfo(_T("Moving to time: %s"), time.GetTime().Format().c_str());	
-	
+	wxLogInfo(_T("Moving to time: %s"), time.GetTime().Format().c_str());
+
 	Draw *d = GetSelectedDraw();
 	if (d->GetBlocked()) {
 		d->MoveToTime(time);
 		moved.push_back(d->GetDrawNo());
-	} else 
+	} else
 		for (size_t i = 0; i < m_draws.size(); i++)
 			if (m_draws[i]->GetBlocked() == false) {
 				m_draws[i]->MoveToTime(time);
 				if (m_draws[i]->GetDrawInfo())
 					moved.push_back(i);
-	
+
 			}
 
 	for (std::vector<size_t>::iterator i = moved.begin();
@@ -964,7 +944,7 @@ void DrawsController::DoSet(DrawSet *set) {
 	}
 
 	for (size_t i = 0; i < draws->size(); i++)
-		m_draws.at(i)->SetDraw((*draws)[i]);	
+		m_draws.at(i)->SetDraw((*draws)[i]);
 
 	for (size_t i = draws->size(); i < m_draws.size(); i++)
 		delete m_draws.at(i);
@@ -1007,7 +987,7 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 		m_draws[i]->RefreshData(true);
 
 	m_state->Reset();
-		
+
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyDrawInfoReloaded(m_draws[i]);
 }
@@ -1443,7 +1423,7 @@ void DrawsController::SetBlocked(int index, bool blocked) {
 				if ((*i)->GetBlocked() == false) {
 					moved.push_back(*i);
 					(*i)->MoveToTime(dt);
-				}	
+				}
 		} else {
 			dt = m_draws[m_selected_draw]->GetStartTime();
 			moved.push_back(m_draws[index]);
@@ -1635,7 +1615,7 @@ namespace {
 }
 
 void DrawsController::SortDraws(SORTING_CRITERIA criteria) {
-	bool (*cmp_func)(const Draw*, const Draw*);
+	std::function<bool(const Draw*, const Draw*)> cmp_func;
 	switch (criteria) {
 		case NO_SORT:
 			cmp_func = cmp_dno;
@@ -1679,7 +1659,7 @@ void DrawsObservers::DetachObserver(DrawObserver *observer) {
 	std::vector<DrawObserver*>::iterator i;
 
 	i = std::remove(m_observers.begin(),
-		m_observers.end(), 
+		m_observers.end(),
 		observer);
 
 	m_observers.erase(i, m_observers.end());
@@ -1688,7 +1668,7 @@ void DrawsObservers::DetachObserver(DrawObserver *observer) {
 void DrawsObservers::NotifyNewData(Draw *draw, int idx) {
 	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
 			i != m_observers.end();
-			++i) 
+			++i)
 		(*i)->NewData(draw, idx);
 }
 
@@ -1707,7 +1687,7 @@ void DrawsObservers::NotifyStatsChanged(Draw *draw) {
 void DrawsObservers::NotifyDrawMoved(Draw *draw, const wxDateTime &start_date) {
 	for (std::vector<DrawObserver*>::iterator i = m_observers.begin();
 			i != m_observers.end();
-			++i) 
+			++i)
 		(*i)->ScreenMoved(draw, start_date);
 }
 
