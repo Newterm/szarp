@@ -65,6 +65,7 @@ noinst_HEADERS = \
 	@srcdir@/include/convuri.h \
 	@srcdir@/include/ppset.h \
 	@srcdir@/include/xmlutils.h \
+	@srcdir@/include/custom_assert.h \
 	$(INCLUDE_PROTOBUF)
 
 if MINGW32_OPT
