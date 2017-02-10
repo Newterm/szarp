@@ -1,5 +1,5 @@
 /* XPM */
-static char *draw_tree_xpm[] = {
+static const char* draw_tree_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 16 131 2",
 "   c #387822622EAF",
