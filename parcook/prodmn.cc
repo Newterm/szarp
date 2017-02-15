@@ -127,7 +127,10 @@ void dolog(int level, const char *fmt, ...)
 	if (g_single) {
 		char *l;
 		va_start(fmt_args, fmt);
-		vasprintf(&l, fmt, fmt_args);
+		if (vasprintf(&l, fmt, fmt_args) == -1) {
+			sz_log(0, "Error occured when logging in single mode");
+			return;
+		}
 		va_end(fmt_args);
 
 		std::cout << l << std::endl;
@@ -236,7 +239,10 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 			p;
 			++i, p = p->GetNext()) {
 		char *expr;
-		asprintf(&expr, ".//ipk:param[position()=%d]", i + 1);
+		if (asprintf(&expr, ".//ipk:param[position()=%d]", i + 1) == -1) {
+			dolog(0, "Could not get param element");
+			return 1;
+		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		ASSERT(node);
 		free(expr);

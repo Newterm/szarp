@@ -246,8 +246,11 @@ int TCPServer::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 	xmlChar *c;
 	long l;
 
-	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-port",
-			dev_num);
+	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-port",	dev_num) == -1) {
+			sz_log(0, "error occured reading tcp:tcp-port");
+			free(e);
+			return 1;
+	}
 	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
@@ -278,8 +281,12 @@ int TCPServer::XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num)
 	char *e;
 	xmlChar *c;
 
-	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-ip",
-			dev_num);
+	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-ip", dev_num) == -1) {
+		sz_log(0, "error occured reading tcp:tcp-ip");
+		free(e);
+		return 1;
+	}
+
 	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx);
 	free(e);
@@ -301,8 +308,11 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	char *e;
 	xmlChar *c;
 
-	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-keepalive",
-			dev_num);
+	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-keepalive", dev_num) == -1) {
+		sz_log(0, "Error reading tcp:nodata-timeout");
+		free(e);
+		return 1;
+	}
 	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
@@ -333,8 +343,11 @@ int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	xmlChar *c;
 	long l;
 
-	asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:nodata-timeout",
-			dev_num);
+	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:nodata-timeout", dev_num) == -1) {
+		sz_log(0, "Error reading tcp:nodata-timeout");
+		free(e);
+		return 1;
+	}
 	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
@@ -455,7 +468,12 @@ int TCPServer::Send(int timeout)
 		}
 	}
 	char *outbuf;
-	asprintf(&outbuf, "\x11\x02P%c\x03", m_id);
+	if(asprintf(&outbuf, "\x11\x02P%c\x03", m_id) == -1) {
+		sz_log(0, "error occured on writing out buffor");
+		close(m_socket);
+		m_socket = -1;
+		return -1;
+	}
 	if (m_single)
 		printf("DEBUG: sending data (%s)\n", outbuf);
 	int ret = write(m_socket, outbuf, strlen(outbuf));
