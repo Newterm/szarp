@@ -51,7 +51,7 @@ TDevice::TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daem
 	special(0), special_value(0), options(_options), radios(NULL),
 	next(NULL), parcookDevice(_parcookDevice), deviceTimeval()
 {
-	deviceTimeval.tv_sec  = 0;// default should be sz4 heartbeat
+	deviceTimeval.tv_sec  = 10;// default should be sz4 heartbeat
 	deviceTimeval.tv_usec = 0;
 }
 #define FREE(x)	if (x != NULL) free(x)
@@ -286,7 +286,7 @@ xmlNodePtr TDevice::generateXMLNode(void)
 		xmlSetProp(r, X"daemon", SC::S2U(daemon).c_str());
 	if (!path.empty())
 		xmlSetProp(r, X"path", SC::S2U(path).c_str());
-	if (deviceTimeval.tv_sec != 0) {
+	if (deviceTimeval.tv_sec != 10) {
 		xmlSetProp(r, X"sec_period", SC::A2U(boost::lexical_cast<std::string>(deviceTimeval.tv_sec)).c_str());
 	}
 	if (deviceTimeval.tv_usec != 0) {
