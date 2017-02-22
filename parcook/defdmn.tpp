@@ -5,7 +5,7 @@
 #include "szarp_base_common/lua_strings_extract.h"
 
 float ChooseFun(float funid, float *parlst);
-void putParamsFromString(const std::wstring& script_string, std::wregex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
+void putParamsFromString(const std::wstring& script_string, boost::regex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
 
 namespace sz4 {
 template <class time_type> time_type getTimeNow() { return *new time_type(NULL); }
@@ -39,8 +39,6 @@ public:
 	virtual void executeAndUpdate(zmqhandler&) = 0;
 
 	void param_data_changed(TParam *p) override { /* needed for sz4 to update */ }
-
-	virtual void prepareParamsFromScript() = 0;
 
 	void subscribe_on_params(sz4::base* base) {
 		std::vector<TParam*> params_to_register;
@@ -101,6 +99,7 @@ class LuaParam: public BaseParamImpl<v,t> {
 public:
 	LuaParam(TParam* param, size_t index): BaseParamImpl<v,t>(param, index) {
 		compileScript();
+		extract_strings_from_formula(SC::U2S(this->param->GetLuaScript()), ref(this->preparedParams));
 	}
 
 	void compileScript() {
@@ -136,11 +135,6 @@ public:
 		this->param->SetLuaParamRef(luaL_ref(lua, LUA_REGISTRYINDEX)); // register the lua function to call later
 	}
 
-	void prepareParamsFromScript() override {
-		extract_strings_from_formula(SC::U2S(this->param->GetLuaScript()), ref(this->preparedParams));
-	}
-
-
 	void executeAndUpdate(zmqhandler& zmq) override {
 		assert(this->param->GetLuaParamReference() != LUA_NOREF);
 
@@ -168,31 +162,15 @@ template <class v, class t>
 class RPNParam: public BaseParamImpl<v,t> {
 public:
 	std::wstring tab;
-	RPNParam(TParam* param, size_t index, std::wstring formula): BaseParamImpl<v,t>(param, index), tab() {
-		std::wstring::size_type idx = formula.rfind(L'#');
+	RPNParam(TParam* param, size_t index): BaseParamImpl<v,t>(param, index), tab() {
+		tab = param->GetParcookFormula(true, &(this->preparedParams));
+		if (tab.empty()) {
+			throw SzException("Param "+SC::S2A(param->GetGlobalName())+" was ill-formed");
+		}
+
+		std::wstring::size_type idx = tab.rfind(L'#');
 		if (idx != std::wstring::npos)
-			tab = formula.substr(0, idx);
-		else tab = formula;
-	}
-
-	void prepareParamsFromScript() override {
-		std::wstring rpn_string(this->param->GetFormula());
-		std::vector<std::wstring> ret_params;
-		constexpr int name_match_prefix = 1;
-		constexpr int name_match_sufix = 2;
-
-		std::wregex ipc_par_regex(L"\\(([^:\\(\\)]*:){2}[^:\\(\\)]*\\)");
-		putParamsFromString(rpn_string, ipc_par_regex, name_match_prefix, name_match_sufix, ret_params);
-		std::wstring prefix = SC::A2S(std::string(libpar_getpar("", "prefix", 1))) + L":";
-		prefix = prefix.substr(1, prefix.length());
-		const auto addPrefix = [&prefix](std::wstring& name) {
-			name.insert(0, prefix);
-		};
-		std::for_each(ret_params.begin(), ret_params.end(), addPrefix);
-
-		ipc_par_regex.assign(L"\\(([^:\\(\\)]*:){3}[^:\\(\\)]*\\)");
-		putParamsFromString(rpn_string, ipc_par_regex, name_match_prefix, name_match_sufix, ret_params);
-		this->preparedParams = ret_params;
+			tab = tab.substr(0, idx);
 	}
 
 	void executeAndUpdate(zmqhandler& zmq) override
@@ -423,9 +401,9 @@ public:
 class RPNParamBuilder
 {
 public:
-	template<class data_type, class time_type> static DefParamBase* op(TParam* par, size_t index, std::wstring tab)
+	template<class data_type, class time_type> static DefParamBase* op(TParam* par, size_t index)
 	{
-		return new RPNParam<data_type, time_type>(par, index, tab);
+		return new RPNParam<data_type, time_type>(par, index);
 	}
 };
 

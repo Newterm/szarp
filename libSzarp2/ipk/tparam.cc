@@ -1466,7 +1466,7 @@ TParam::PrepareDefinable() throw(TCheckException)
 }
 
 std::wstring
-TParam::GetParcookFormula(bool ignoreIndexes) throw(TCheckException)
+TParam::GetParcookFormula(bool ignoreIndexes, std::vector<std::wstring>* ret_params_list) throw(TCheckException)
 {
 	if( _ftype != RPN )
 		return std::wstring();
@@ -1523,6 +1523,10 @@ TParam::GetParcookFormula(bool ignoreIndexes) throw(TCheckException)
 		   sz_log(0, "GetParcookFormula: parameter '%s' not found in formula for '%s'", SC::S2A(c2).c_str(), SC::S2A(GetName()).c_str());
 		   throw TCheckException();
 		}
+
+		if (ret_params_list)
+			ret_params_list->push_back(c2);
+
 		str << p->GetIpcInd();
 
 		st = 0;

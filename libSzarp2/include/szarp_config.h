@@ -944,7 +944,7 @@ public:
 	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
 	 * @return newly allocated string with formula in parcook format
 	 */
-	std::wstring GetParcookFormula(bool ignoreIndexes = false) throw(TCheckException);
+	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr) throw(TCheckException);
 
 	/** @return type of formula (RPN, DEFINABLE or NONE) */
 	FormulaType GetFormulaType() { return _ftype; }

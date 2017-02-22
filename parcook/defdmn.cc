@@ -37,7 +37,7 @@
 #include "liblog.h"
 #include "libpar.h"
 
-#include <regex>
+#include <boost/regex.hpp>
 #include <vector>
 
 #include <iostream>
@@ -163,14 +163,8 @@ void Defdmn::configure(int* argc, char** argv) {
 			if (p->GetLuaScript()) {
 				param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd())));
 			} else {
-				std::wstring formula = p->GetParcookFormula(true);
-				if (!formula.empty()) {
-					param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd(), formula)));
-				} else {
-					throw SzException("Param "+SC::S2A(p->GetGlobalName())+" was ill-formed");
-				}
+				param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd())));
 			}
-			param_info.back()->prepareParamsFromScript();
 		} // if any param is ill-formed, stop the daemon
 	}
 
@@ -208,14 +202,6 @@ float ChooseFun(float funid, float *parlst)
 	if (fid >= MAX_FID)
 		return (0.0);
 	return ((*(FunTable[fid])) (parlst));
-}
-
-void putParamsFromString(const std::wstring& script_string, std::wregex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params) {
-	std::wsmatch pmatch;
-	for (auto searchStart = script_string.cbegin(); std::regex_search(searchStart, script_string.cend(), pmatch, ipc_par_reg); searchStart += pmatch.position() + pmatch.length()) {
-		std::wstring name(pmatch.str().substr(name_match_prefix, pmatch.length()-name_match_sufix));
-		ret_params.push_back(name);
-	}
 }
 
 std::wstring makeParamNameGlobal(const char* pname) {
