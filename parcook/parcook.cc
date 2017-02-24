@@ -1901,6 +1901,13 @@ int main(int argc, char *argv[])
 	zmq::context_t zmq_context(1);
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
+#ifdef ZMQ_SNDHWM
+	int hwm = 10;
+	socket.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+#else
+	uint64_t hwm = 10;
+	socket.setsockopt(ZMQ_HWM, &hwm, sizeof(hwm));
+#endif
 
 	sz_log(7, "ZMQ connect to '%s'", parhub_address.c_str());
 	try {
