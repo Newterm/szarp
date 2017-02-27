@@ -124,7 +124,7 @@ msgstr "Operacja się nie powiodła."
 #: dbmgr.cpp:153 dbmgr.cpp:174 dbmgr.cpp:177
 #, c-format
 msgid "Error in connection with probe server: %s"
-msgstr "Bład połączenia z serwerem próbek: %s"
+msgstr "Błąd połączenia z serwerem próbek: %s"
 
 #: dbmgr.cpp:157 dbmgr.cpp:181
 #, c-format
@@ -567,7 +567,7 @@ msgstr ""
 
 #: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Error in communicatoin with server: "
-msgstr "Bład komunikacji z serwerem: %s"
+msgstr "Błąd komunikacji z serwerem: "
 
 #: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Failed to update paramaters"
