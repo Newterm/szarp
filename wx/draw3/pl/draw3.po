@@ -2081,11 +2081,11 @@ msgstr "Zamknij zakładkę\tCtrl+W"
 
 #: GUI/resources.xrc:1173
 msgid "XY Graph\tCtrl+Shift+X"
-msgstr "Wykres XY\tCtrl+X"
+msgstr "Wykres XY\tCtrl+Shift+X"
 
 #: GUI/resources.xrc:1176
 msgid "XYZ Graph\tCtrl+Shift+Z"
-msgstr "Wykres XYZ\tCtrl+Z"
+msgstr "Wykres XYZ\tCtrl+Shift+Z"
 
 #: GUI/resources.xrc:1179
 msgid "Statistics window\tCtrl+Shift+S"
