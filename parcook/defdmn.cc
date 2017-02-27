@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,13 +15,51 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* $Id$ */
 
 /*
- * SZARP 2.0
- * parcook
- * parcook.c
+ * Demon do wyliczania parametrów ze skryptów LUA i formuł RPN
+ * 
+ * Mateusz Morusiewicz <mmorusiewicz@newterm.pl>
+ * 
+ * $Id$
  */
+
+/*
+ SZARP daemon description block.
+
+ @description_start
+
+ @class 4
+
+ @devices Daemon processes LUA and RPN formulas
+ @devices.pl Sterownik wylicza parametry ze skryptów LUA i formuł RPN
+
+ @config Daemon is configured in szarp.cfg.
+
+ @config.pl Sterownik jest konfigurowany w pliku szarp.cfg.
+
+ @config_example
+ <device 
+      xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra"
+      daemon="/opt/szarp/bin/defdmn" 
+      options="--some-option -f some-argument">
+      ...
+
+ # in szarp.cfg
+ :available parhubs
+ servers=local_hub some_other
+
+ :local_hub
+ prefix=$prefix$
+ address=tcp://127.0.0.1:56662
+
+ :some_other
+ prefix=othr
+ address=tcp://192.168.0.42:56662
+
+ @description_end
+*/
+
 
 #ifndef NO_LUA
 
