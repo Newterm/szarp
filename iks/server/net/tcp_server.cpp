@@ -128,11 +128,16 @@ void TcpConnection::do_write_line( const std::string& line )
 {
 	lines.emplace( line.back() == '\n' ? line : line + '\n' );
 
-	ba::async_write(socket_,
-		ba::buffer( lines.back() ),
-		bind(&TcpConnection::handle_write, shared_from_this(), placeholders::_1));
+	/** JK: If there is no pending line start sending this one */
+	if( lines.size() == 1 )
+		schedule_next_line();
+}
 
-	sz_log(9, "   >>>   %s", line.c_str() );
+void TcpConnection::schedule_next_line()
+{
+	ba::async_write(socket_,
+		ba::buffer( lines.front() ),
+		bind(&TcpConnection::handle_write, shared_from_this(), placeholders::_1));
 }
 
 void TcpConnection::handle_write(const bs::error_code& error)
@@ -142,6 +147,10 @@ void TcpConnection::handle_write(const bs::error_code& error)
 
 	/** This line was send */
 	lines.pop();
+
+	/** JK: Continue sending */
+	if( !lines.empty() )
+		schedule_next_line();
 }
 
 void TcpConnection::do_close()

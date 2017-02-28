@@ -68,6 +68,8 @@ private:
 	void do_read_line();
 	void do_close();
 
+	void schedule_next_line();
+
 	boost::asio::ip::tcp::socket& get_socket()
 	{	return socket_; }
 
