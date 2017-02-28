@@ -126,17 +126,28 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 
 void TcpConnection::do_write_line( const std::string& line )
 {
-	lines.emplace( line.back() == '\n' ? line : line + '\n' );
+	outbox.emplace_back( line.back() == '\n' ? line : line + '\n' );
 
-	/** JK: If there is no pending line start sending this one */
-	if( lines.size() == 1 )
+	/** If there is no pending line start sending this one */
+	if( sendbox.empty() )
 		schedule_next_line();
 }
 
 void TcpConnection::schedule_next_line()
 {
+	std::vector<ba::const_buffer> bufs;
+
+	// sendbox should be empty here
+	// assert( sendbox.empty() );
+	sendbox.swap( outbox );
+
+	for( auto& line : sendbox )
+	{
+		bufs.push_back( ba::buffer( line ) );
+	}
+
 	ba::async_write(socket_,
-		ba::buffer( lines.front() ),
+		bufs,
 		bind(&TcpConnection::handle_write, shared_from_this(), placeholders::_1));
 }
 
@@ -145,11 +156,10 @@ void TcpConnection::handle_write(const bs::error_code& error)
 	if( handle_error(error) )
 		return;
 
-	/** This line was send */
-	lines.pop();
+	sendbox.clear();
 
-	/** JK: Continue sending */
-	if( !lines.empty() )
+	/** Continue sending */
+	if( !outbox.empty() )
 		schedule_next_line();
 }
 
