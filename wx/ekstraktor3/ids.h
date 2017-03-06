@@ -54,6 +54,7 @@ enum EkstraktorMainWindowIDs {
 
 	ID_Average,
 	ID_End,
+	ID_HourValue,
 
 	ID_SeparatorChange,
 	ID_Minimize, 

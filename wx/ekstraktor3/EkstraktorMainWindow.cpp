@@ -34,9 +34,9 @@
 #include "cconv.h"
 
 #include "ekstraktor3.h"
+#include "sz4/base.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
-
 DECLARE_APP(EkstrApp)
 
 /** uncomment following line to turn on option for fonts configuration; it is
@@ -105,7 +105,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	|| *parameterListWidget          ||                  |||                        ||
 	||
 	|+-------------------------------++------------------+ +------------------------+|
-        | *chooseParamsBtn     *writeToDiskBtn                                           |
+	| *chooseParamsBtn     *write_bt                                                 |
 	+--------------------------------------------------------------------------------+
 
 	*/
@@ -113,7 +113,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	selectedPeriod = PT_MIN10 - PT_SEC10; // PT_SEC10 is the first type used by ekstraktor3, we need to index accordingly
 	selectedSeparator = COMMA;
 
-	wxPanel* panel = new wxPanel(this);
+	panel = new wxPanel(this);
 
 	// Building begin/end date section
 	firstDatabaseText = new wxStaticText(panel, -1, 
@@ -166,14 +166,19 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 			0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_HourPeriod, _("HOUR")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_8HourPeriod, _("8 HOURS")), 0, wxEXPAND | wxRIGHT, 20);
-	period_box_sizer->Add(new wxRadioButton(panel, ID_DayPeriod, _("DAY")), 0, wxEXPAND | wxRIGHT, 20);
+	dayPeriodBtn = new wxRadioButton(panel, ID_DayPeriod, _("DAY"));
+	period_box_sizer->Add(dayPeriodBtn, 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_WeekPeriod, _("WEEK")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_MonthPeriod, _("MONTH")), 0, wxEXPAND | wxRIGHT, 20);
 
-
-	wxStaticBoxSizer *value_type_box_sizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Values type:"));
-	value_type_box_sizer->Add(new wxRadioButton(panel, ID_Average, _("Average"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP), 0, wxEXPAND | wxRIGHT, 20);
-	value_type_box_sizer->Add(new wxRadioButton(panel, ID_End, _("Counter")), 0, wxEXPAND | wxRIGHT, 20);
+	value_type_box_sizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Values type:"));
+	averageBtn = new wxRadioButton(panel, ID_Average, _("Average"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	value_type_box_sizer->Add(averageBtn, 0, wxEXPAND | wxRIGHT, 20);
+	counterBtn = new wxRadioButton(panel, ID_End, _("Counter"));
+	value_type_box_sizer->Add(counterBtn, 0, wxEXPAND | wxRIGHT, 20);
+	HourValue = new wxCheckBox(panel, ID_HourValue, _("Hour"));
+	HourValue->SetValue(false);
+	HourValue->Disable();
 
         sizer_top = new wxBoxSizer(wxVERTICAL);
         sizer1 = new wxBoxSizer(wxHORIZONTAL);
@@ -187,11 +192,11 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	sizer1_1_1_1->Add(firstDatabaseText, 0, wxTOP | wxLEFT | wxEXPAND, 5);
 	sizer1_1_1_1->Add(startDateText, 0, wxLEFT | wxEXPAND, 5);
 
-        sizer1_1_1_1->Add(lastDatabaseText, 0, wxLEFT | wxEXPAND, 5);
+    sizer1_1_1_1->Add(lastDatabaseText, 0, wxLEFT | wxEXPAND, 5);
 	sizer1_1_1_1->Add(stopDateText, 0, wxLEFT | wxEXPAND, 5);
 
-	sizer1_1_1_2->Add(setStartDateBtn, 0, wxALL | wxEXPAND, 5);
-	sizer1_1_1_2->Add(setStopDateBtn, 0, wxALL | wxEXPAND, 5);
+	sizer1_1_1_2->Add(setStartDateBtn, 0, wxALL | wxEXPAND, 6);
+	sizer1_1_1_2->Add(setStopDateBtn, 0, wxALL | wxEXPAND, 6);
 
 	sizer1_1_1->Add(sizer1_1_1_1, 0, 0, 0);
 	sizer1_1_1->Add(sizer1_1_1_2, 0, 0, 0);
@@ -203,6 +208,7 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	sizer1_2->Add(minimize, 0, wxALL, 5);
 	sizer1_2->Add(period_box_sizer, 0, wxALL, 5);
 	sizer1_2->Add(value_type_box_sizer, 0, wxALL, 5);
+	sizer1_2->Add(HourValue, 0, wxALL, 5);
 
 	sizer1_1->Add(new wxStaticText(panel, -1, 
 			_("Parameters to be extracted:"), wxDefaultPosition, wxDefaultSize), 0, wxALL, 5);
@@ -763,6 +769,29 @@ void EkstraktorMainWindow::ResumeProgressBar()
 
 void EkstraktorMainWindow::onPeriodChange(wxCommandEvent &event) {
 	selectedPeriod = event.GetId() - ID_Sec10Period;
+
+	if(event.GetId() == ID_DayPeriod){
+		HourValue->Enable();
+	} else {
+		HourValue->Disable();
+		HourValue->SetValue(false);
+		averageBtn->Enable();
+	}
+
+	if((event.GetId() == ID_DayPeriod) && (averageBtn->GetValue())){
+		HourValue->Disable();
+	}
+}
+
+void EkstraktorMainWindow::onHourChecked(wxCommandEvent &event) {
+	if(HourValue->IsChecked()){
+		selectedValueType = SzbExtractor::TYPE_START;
+		averageBtn->Disable();
+		counterBtn->SetValue(true);
+	} else {
+		selectedValueType = SzbExtractor::TYPE_END;
+		averageBtn->Enable();
+	}
 }
 
 void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
@@ -774,10 +803,16 @@ void EkstraktorMainWindow::onSeparatorChange(wxCommandEvent &event) {
 
 void EkstraktorMainWindow::onAverageTypeSet(wxCommandEvent &event) {
 	selectedValueType = SzbExtractor::TYPE_AVERAGE;
+	if(averageBtn->GetValue()){
+		HourValue->Disable();
+	}
 }
 
 void EkstraktorMainWindow::onEndTypeSet(wxCommandEvent &event) {
 	selectedValueType = SzbExtractor::TYPE_END;
+	if((!averageBtn->GetValue())&& dayPeriodBtn->GetValue()){
+		HourValue->Enable();
+	}
 }
 
 BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
@@ -812,13 +847,14 @@ BEGIN_EVENT_TABLE(EkstraktorMainWindow, wxFrame)
 	EVT_RADIOBUTTON(ID_End, EkstraktorMainWindow::onEndTypeSet)
 
 	EVT_CHECKBOX(ID_Minimize, EkstraktorMainWindow::onMinimize)
+	EVT_CHECKBOX(ID_HourValue, EkstraktorMainWindow::onHourChecked)
 	EVT_BUTTON(ID_ChangeStartDate, EkstraktorMainWindow::onStartDate)
 	EVT_BUTTON(ID_ChangeStopDate, EkstraktorMainWindow::onStopDate)
 	EVT_BUTTON(ID_AddParametersBt, EkstraktorMainWindow::onChooseParams)
 	EVT_BUTTON(ID_DeleteParametersBt, EkstraktorMainWindow::onDeleteParams)
 	EVT_BUTTON(ID_WriteResultsBt, EkstraktorMainWindow::onWriteResults)
 	EVT_SZ_PARADD(ID_ParSelectDlg, EkstraktorMainWindow::onAddParams)
-	//EVT_COMMAND(ID_ParSelectDlg, wxEVT_SZ_PARADD, EkstraktorMainWindow::onAddParams)
+//EVT_COMMAND(ID_ParSelectDlg, wxEVT_SZ_PARADD, EkstraktorMainWindow::onAddParams)
 END_EVENT_TABLE()
 
 void *print_progress(int progress, void *data)

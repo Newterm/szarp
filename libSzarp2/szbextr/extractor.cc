@@ -187,6 +187,12 @@ SZBASE_TYPE SzbExtractor::get_probe( const Param& p , TParam*tp , time_t t , SZA
 	case TYPE_END :
 		res = base->GetData(tp, s, pt);
 		break;
+
+	case TYPE_START :
+		time_t h = szb_round_time(t, PT_MIN10, ct);
+		time_t n = szb_move_time(h, 12, PT_MIN10, ct);
+		res = base->GetData(tp, n, PT_MIN10);
+		break;
 	}
 
 	return res;

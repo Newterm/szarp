@@ -191,13 +191,11 @@ public:
 				m_x += 1;
 				if (std::isnan(m_canvas->m_vertices[i + 1]))
 					continue;
-				std::cout << "Found a point\n";
 				return true;
 			}
 			m_z += 1;
 			m_x = 0;
 		}
-		std::cout << "No point found\n";
 		return false;
 	}
 };
@@ -1305,7 +1303,7 @@ wxImage XYZCanvas::GetGraphImage() {
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_EXT, color_buffer_id);
 
 	if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-		std::cout << "Framebuffer error" << std::endl;
+		std::cerr << "Framebuffer error" << std::endl;
 		return img;
 	}
 

@@ -58,7 +58,7 @@ msgstr "SZARP plik z definicją zestawu (*.xds)|*.xds|All files (*.*)|*.*"
 #: cfgmgr.cpp:1433
 #, c-format
 msgid "Export of set to file: %s failed"
-msgstr "Export zestawu do pliku %s nie powiódł się"
+msgstr "Eksport zestawu do pliku %s nie powiódł się"
 
 #: cfgmgr.cpp:1433 defcfg.cpp:2014 defcfg.cpp:2021 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
@@ -82,7 +82,7 @@ msgstr ""
 #: cfgmgr.cpp:1453
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
-msgstr "Set o nazwie %s już istnieje. Podaj inną nazwe dla zestawu:"
+msgstr "Zestaw o nazwie %s już istnieje. Podaj inną nazwę dla zestawu:"
 
 #: cfgmgr.cpp:1454
 msgid "Set already exists"
@@ -115,7 +115,7 @@ msgstr "Operacja zakończona."
 #: cfgmgr.cpp:1506
 #, c-format
 msgid "Failed to import set from file: %s"
-msgstr "Nie udało się zaimporować zestawu z pliku :%s"
+msgstr "Nie udało się zaimportować zestawu z pliku :%s"
 
 #: cfgmgr.cpp:1506 defcfg.cpp:1578
 msgid "Operation failed."
@@ -124,7 +124,7 @@ msgstr "Operacja się nie powiodła."
 #: dbmgr.cpp:153 dbmgr.cpp:174 dbmgr.cpp:177
 #, c-format
 msgid "Error in connection with probe server: %s"
-msgstr "Bład połączenia z serwerem próbek: %s"
+msgstr "Błąd połączenia z serwerem próbek: %s"
 
 #: dbmgr.cpp:157 dbmgr.cpp:181
 #, c-format
@@ -402,7 +402,7 @@ msgstr "Wybierz liczbę wyświetlanych tygodni"
 
 #: drawfrm.cpp:245
 msgid "Defined sets saved succesfully."
-msgstr "Zapisano zestawy definowalne."
+msgstr "Zapisano zestawy definiowalne."
 
 #: drawfrm.cpp:245
 msgid "Information."
@@ -567,7 +567,7 @@ msgstr ""
 
 #: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Error in communicatoin with server: "
-msgstr "Bład komunikacji z serwerem: %s"
+msgstr "Błąd komunikacji z serwerem: "
 
 #: drawfrm.cpp:1232 incsearch.cpp:800 incsearch.cpp:813 paramslist.cpp:351
 msgid "Failed to update paramaters"
@@ -948,7 +948,7 @@ msgstr "Klawiatura ekranowa"
 
 #: drawtb.cpp:88
 msgid "Go to latest date"
-msgstr "Idż do najnowszej danej"
+msgstr "Idź do najnowszej danej"
 
 #: drawtb.cpp:89 remarks.cpp:489 GUI/resources.xrc:400 GUI/resources.xrc:614
 #: GUI/resources.xrc:619 GUI/resources.xrc:1364 GUI/resources.xrc:1435
@@ -1082,7 +1082,7 @@ msgstr "Najpierw wybierz parametr"
 
 #: paramslist.cpp:247
 msgid "Are you sure you want to delete this param?"
-msgstr "Czy na pewno chcesz usunąć ten parameter?"
+msgstr "Czy na pewno chcesz usunąć ten parametr?"
 
 #: paramslist.cpp:247
 msgid "Warning!"
@@ -1103,7 +1103,7 @@ msgstr ""
 
 #: paramslist.cpp:360
 msgid "Failed to remove parameter, error: "
-msgstr "Nie udało się usunąc parametru:"
+msgstr "Nie udało się usunąć parametru:"
 
 #: paramslist.cpp:368
 msgid "You are not allowed to remove this paramter"
@@ -1791,7 +1791,7 @@ msgstr "Nowy komentarz"
 
 #: GUI/resources.xrc:84
 msgid "Remark reffering to current window"
-msgstr "Komentarz odnoszący się do bierzącego okna"
+msgstr "Komentarz odnoszący się do bieżącego okna"
 
 #: GUI/resources.xrc:85
 msgid "Remark reffering to whole installation"
@@ -1935,7 +1935,7 @@ msgstr "Pobierz listę grup"
 
 #: GUI/resources.xrc:633
 msgid "Options"
-msgstr "O&pcje"
+msgstr "Opcje"
 
 #: GUI/resources.xrc:637
 msgid "Close window"
@@ -2081,11 +2081,11 @@ msgstr "Zamknij zakładkę\tCtrl+W"
 
 #: GUI/resources.xrc:1173
 msgid "XY Graph\tCtrl+Shift+X"
-msgstr "Wykres XY\tCtrl+X"
+msgstr "Wykres XY\tCtrl+Shift+X"
 
 #: GUI/resources.xrc:1176
 msgid "XYZ Graph\tCtrl+Shift+Z"
-msgstr "Wykres XYZ\tCtrl+Z"
+msgstr "Wykres XYZ\tCtrl+Shift+Z"
 
 #: GUI/resources.xrc:1179
 msgid "Statistics window\tCtrl+Shift+S"
@@ -2105,7 +2105,7 @@ msgstr "Zamknij\tCtrl+Q"
 
 #: GUI/resources.xrc:1197
 msgid "Sets"
-msgstr "Z&estawy"
+msgstr "Zestawy"
 
 #: GUI/resources.xrc:1199
 msgid "New set\tCtrl+A"
