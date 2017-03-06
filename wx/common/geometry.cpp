@@ -62,6 +62,7 @@ int get_geometry(wxString geometry, int* x, int* y, int* width, int* height)
 	int length = geometry.Length();
 	int n;
 	bool minus, nminus;
+	int temp;
 
 	/* get windows' width */
 	if ((pos < length) && isdigit(geometry.GetChar(pos))) {
