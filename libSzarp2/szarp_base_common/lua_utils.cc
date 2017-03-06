@@ -86,6 +86,8 @@ bool compile_lua_formula(lua_State *lua, const char *formula, const char *formul
 	paramfunction					<< 
 	"return function ()"				<< endl <<
 	"	local p = szbase"			<< endl <<
+	"	local PT_SEC = ProbeType.PT_SEC"	<< endl <<
+	"	local PT_SEC10 = ProbeType.PT_SEC10"	<< endl <<
 	"	local PT_MIN10 = ProbeType.PT_MIN10"	<< endl <<
 	"	local PT_HOUR = ProbeType.PT_HOUR"	<< endl <<
 	"	local PT_HOUR8 = ProbeType.PT_HOUR8"	<< endl <<
