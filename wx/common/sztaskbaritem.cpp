@@ -28,7 +28,7 @@ static void status_icon_on_left_click(GtkStatusIcon *status_icon,
 	szTaskBarItem* item = (szTaskBarItem*) user_data;
 
 	wxTaskBarIconEvent e(wxEVT_TASKBAR_LEFT_DOWN, NULL);
-	item->ProcessEvent(e);
+	item->GetEventHandler()->ProcessEvent(e);
 
 }
 
@@ -37,7 +37,7 @@ static void status_icon_on_right_click(GtkStatusIcon *status_icon, guint button,
 	szTaskBarItem* item = (szTaskBarItem*) user_data;
 
 	wxTaskBarIconEvent e(wxEVT_TASKBAR_RIGHT_DOWN, NULL);
-	item->ProcessEvent(e);
+	item->GetEventHandler()->ProcessEvent(e);
 }
 
 

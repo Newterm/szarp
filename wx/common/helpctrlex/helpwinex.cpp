@@ -221,7 +221,7 @@ bool wxHtmlHelpHtmlWindowEx::PageDown()
         if (parent && parent->GetToolBar())
         {
             wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED, wxID_HTML_DOWN);
-            parent->GetToolBar()->ProcessEvent(event);
+            parent->GetToolBar()->GetEventHandler()->ProcessEvent(event);
         }
 
         return false;
@@ -897,7 +897,7 @@ void wxHtmlHelpWindowEx::DisplayIndexItem(const wxHtmlHelpMergedIndexItemEx *it)
         wxSingleChoiceDialog dlg(this,
                                  _("Please choose the page to display:"),
                                  _("Help Topics"),
-                                 arr, NULL, wxCHOICEDLG_STYLE & ~wxCENTRE);
+                                 arr, (void **)NULL, (long)wxCHOICEDLG_STYLE, wxDefaultPosition);
         if (dlg.ShowModal() == wxID_OK)
         {
             m_HtmlWin->LoadPage(it->items[dlg.GetSelection()]->GetFullPath());
@@ -1051,7 +1051,7 @@ void wxHtmlHelpWindowEx::CreateContents()
     if (m_PagesHash)
     {
         WX_CLEAR_HASH_TABLE(*m_PagesHash);
-        delete m_PagesHash;
+		delete m_PagesHash;
     }
     
     const wxHtmlHelpDataItems& contents = m_Data->GetContentsArray();
