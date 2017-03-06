@@ -62,12 +62,14 @@ int get_geometry(wxString geometry, int* x, int* y, int* width, int* height)
 	int length = geometry.Length();
 	int n;
 	bool minus, nminus;
+	int temp;
 
 	/* get windows' width */
 	if ((pos < length) && isdigit(geometry.GetChar(pos))) {
 	      	n = 0;
 		while ((pos < length) && isdigit(geometry.GetChar(pos))) {
-			n = n * 10 + geometry.GetChar(pos) - '0';
+			temp = geometry.GetChar(pos);
+			n = n * 10 + temp - '0';
 			pos++;
 		}
 		*width = n;
@@ -80,7 +82,8 @@ int get_geometry(wxString geometry, int* x, int* y, int* width, int* height)
 		if ((pos < length) && isdigit(geometry.GetChar(pos))) {
 			n = 0;
 			while ((pos < length) && isdigit(geometry.GetChar(pos))) {
-				n = n * 10 + geometry.GetChar(pos) - '0';
+				temp = geometry.GetChar(pos);
+				n = n * 10 + temp - '0';
 				pos++;
 			}
 			*height = n;
@@ -106,7 +109,8 @@ int get_geometry(wxString geometry, int* x, int* y, int* width, int* height)
 		nminus = false;
 	n = 0;
 	while ((pos < length) && (isdigit(geometry.GetChar(pos)))) {
-		n = n * 10 + geometry.GetChar(pos) - '0';
+		temp = geometry.GetChar(pos);
+		n = n * 10 + temp - '0';
 		pos++;
 	}
 	if (nminus)
@@ -131,7 +135,8 @@ int get_geometry(wxString geometry, int* x, int* y, int* width, int* height)
 	} else
 		nminus = false;
 	while ((pos < length) && (isdigit(geometry.GetChar(pos)))) {
-		n = n * 10 + geometry.GetChar(pos) - '0';
+		temp = geometry.GetChar(pos);
+		n = n * 10 + temp - '0';
 		pos++;
 	}
 	if (nminus)

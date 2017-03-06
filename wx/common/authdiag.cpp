@@ -44,7 +44,7 @@ AuthInfoDialog::AuthInfoDialog(wxWindow *parent) : wxDialog(parent, wxID_ANY, wx
 
 	sizer_1->AddStretchSpacer();
 
-	wxFlexGridSizer *sizer_2 = new wxFlexGridSizer(2, 2);
+	wxFlexGridSizer *sizer_2 = new wxFlexGridSizer(2);
 	sizer_2->AddGrowableCol(1);
 
 	stat_text = new wxStaticText(this, wxID_ANY, _("Username:"));
