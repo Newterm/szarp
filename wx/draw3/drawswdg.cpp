@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * draw3
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -82,7 +82,7 @@ BEGIN_EVENT_TABLE(DrawsWidget, wxEvtHandler)
     EVT_TIMER(KEYBOARD_TIMER_ID, DrawsWidget::OnKeyboardTimerEvent)
 END_EVENT_TABLE()
 
-DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager* dm, DrawGraphs* graphs, RemarksFetcher *rf) : 
+DrawsWidget::DrawsWidget(DrawPanel * parent, ConfigManager *cfg, DatabaseManager* dm, DrawGraphs* graphs, RemarksFetcher *rf) :
 	m_graphs(graphs), m_cfg(cfg), m_parent(parent), m_draws_controller(NULL), m_action(NONE), m_remarks_fetcher(rf)
 {
 	m_display_timer = new wxTimer(this, DISPLAY_TIMER_ID);
@@ -186,7 +186,7 @@ bool DrawsWidget::GetDrawBlocked(size_t index) {
 }
 
 void DrawsWidget::SelectDraw(int idx, bool move_time, wxDateTime move_datetime)
-{	
+{
 	if (move_time)
 		m_draws_controller->Set(idx, move_datetime);
 	else
@@ -332,7 +332,7 @@ void DrawsWidget::OnJumpToDate() {
 	if (date.IsValid() == false)
 		return;
 
-	DateChooserWidget *dcw = 
+	DateChooserWidget *dcw =
 		new DateChooserWidget(
 				m_parent,
 				_("Select date"),
@@ -341,7 +341,7 @@ void DrawsWidget::OnJumpToDate() {
 				wxDateTime::Now().GetTicks(),
 				10
 		);
-	
+
 	bool ret = dcw->GetDate(date);
 	delete dcw;
 
@@ -358,10 +358,12 @@ bool DrawsWidget::DoubleCursorSet(bool enable) {
 			return true;
 		if (m_draws_controller->SetDoubleCursor(true) == false)
 			return false;
+		m_parent->ToggleSplitCursorIcon(true);
 		return true;
 	} else {
 		if (m_draws_controller->GetDoubleCursor())
 			m_draws_controller->SetDoubleCursor(false);
+		m_parent->ToggleSplitCursorIcon(false);
 		return  false;
 	}
 
@@ -382,7 +384,7 @@ bool DrawsWidget::ToggleSplitCursor() {
 
 }
 
-bool DrawsWidget::GetDoubleCursor() { 
+bool DrawsWidget::GetDoubleCursor() {
 	Draw* draw = GetSelectedDraw();
 
 	if (draw == NULL)
@@ -413,7 +415,7 @@ void DrawsWidget::Print(bool preview) {
 	std::vector<Draw*> draws;
 	for (size_t i = 0; i < m_draws_controller->GetDrawsCount(); i++)
 		draws.push_back(m_draws_controller->GetDraw(i));
-			
+
 	if (preview)
 		Print::DoPrintPreviev(draws, draws.size());
 	else
@@ -421,7 +423,7 @@ void DrawsWidget::Print(bool preview) {
 
 	m_parent->SetFocus();
 }
-		
+
 size_t DrawsWidget::GetDrawsCount() {
 	return m_draws_controller->GetDrawsCount();
 }
@@ -446,16 +448,16 @@ void DrawsWidget::RefreshData(bool auto_refresh)
 }
 
 wxDragResult DrawsWidget::SetSetInfo(wxString window,
-		wxString prefix, 
+		wxString prefix,
 		time_t time,
-		PeriodType pt, 
+		PeriodType pt,
 		wxDragResult def) {
 
 	return SetSet(window, prefix, time, pt, 0) ? def : wxDragError;
 }
 
 bool DrawsWidget::SetSet(wxString sset,
-		wxString prefix, 
+		wxString prefix,
 		time_t time,
 		PeriodType pt,
 		int selected_draw) {
@@ -513,10 +515,10 @@ void DrawsWidget::CopyToClipboard() {
 
 	if (wxTheClipboard->Open() == false)
 		return;
-	
+
 	DrawInfo *di = d->GetDrawInfo();
 
-	SetInfoDataObject* wido = 
+	SetInfoDataObject* wido =
 		new SetInfoDataObject(di->GetBasePrefix(), di->GetSetName(), d->GetPeriod(), d->GetCurrentTime().GetTicks(), d->GetDrawNo());
 
 	wxTheClipboard->SetData(wido);
@@ -529,7 +531,7 @@ void DrawsWidget::PasteFromClipboard() {
 		return;
 
 	SetInfoDataObject wido(_T(""), _T(""), PERIOD_T_OTHER, -1, -1);
-	if (wxTheClipboard->GetData(wido)) 
+	if (wxTheClipboard->GetData(wido))
 		SetSet(wido.GetSet(), wido.GetPrefix(), wido.GetTime(), wido.GetPeriod(), wido.GetSelectedDraw());
 
 	wxTheClipboard->Close();
@@ -575,7 +577,7 @@ wxString DrawsWidget::GetUrl(bool with_infinity) {
 
 	DrawInfo* di = d->GetDrawInfo();
 
-	SetInfoDataObject* wido = 
+	SetInfoDataObject* wido =
 		new SetInfoDataObject(prefix, di->GetSetName(), d->GetPeriod(), t , d->GetDrawNo());
 
 	wxString tmp = wido->GetUrl();

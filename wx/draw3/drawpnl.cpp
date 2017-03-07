@@ -1,6 +1,6 @@
 /*
   SZARP: SCADA software
-  
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -388,7 +388,7 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 #endif
 	if (style == _T("GCDC"))
 		dg = new GCDCGraphs(this, cfg);
-	else 
+	else
 		dg = new WxGraphs(this, cfg);
 
 	tb = new DrawToolBar(this);
@@ -432,7 +432,7 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 			dw,
 			pt);
 
-	
+
 	/* Hide/Show interface according to state of checkboxes */
 	if(menu_bar->FindItem(XRCID("ShowInterface"))->IsChecked()) {
 		tw->Show(menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked());
@@ -548,7 +548,7 @@ void DrawPanel::OnRefresh(wxCommandEvent & evt) {
 	dw->RefreshData(false);
 }
 
-void DrawPanel::OnShowAverage(wxCommandEvent &evt) 
+void DrawPanel::OnShowAverage(wxCommandEvent &evt)
 {
 	if (tw) {
 		bool is_checked = menu_bar->FindItem(XRCID("ShowAverage"))->IsChecked();
@@ -573,7 +573,7 @@ void DrawPanel::OnShowAverage(wxCommandEvent &evt)
 	}
 }
 
-void DrawPanel::OnShowInterface(wxCommandEvent &evt) 
+void DrawPanel::OnShowInterface(wxCommandEvent &evt)
 {
 	if (tw && iw && ssw && dtw && sw) {
 		bool is_checked = menu_bar->FindItem(XRCID("ShowInterface"))->IsChecked();
@@ -655,13 +655,13 @@ void DrawPanel::StartDrawSearch()
 		return;
 
 	dw->SetSet(set, di);
-	
+
 }
 
 void DrawPanel::StartSetSearch() {
 	assert(cfg != NULL);
 	assert(prefix != wxEmptyString);
-	
+
 	wxWindow *tlw = GetParent();
 	while (!tlw->IsTopLevel())
 		tlw = tlw->GetParent();
@@ -745,7 +745,7 @@ void DrawPanel::ShowRelWindow(bool show) {
 	if (show) {
 		rw->Show(show);
 		GetParent()->Raise();
-	} else 
+	} else
 		rw->Show(show);
 #endif
 	if (active) {
@@ -784,14 +784,7 @@ void DrawPanel::SetLatestDataFollow(bool follow) {
 
 void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
 	bool is_double = dw->ToggleSplitCursor();
-	if(is_double) {
-		tb->DoubleCursorToolCheck();
-      menu_bar->FindItem(XRCID("SplitCursor"))->Check(true);
-	}
-	else {
-		tb->DoubleCursorToolUncheck();
-      menu_bar->FindItem(XRCID("SplitCursor"))->Check(false);
-	}
+	ToggleSplitCursorIcon(is_double);
 
 	GetSizer()->Layout();
 
@@ -807,6 +800,18 @@ void DrawPanel::ToggleSplitCursor(wxCommandEvent& WXUNUSED(event)) {
 	}
 	am.Update();
 #endif
+}
+
+void DrawPanel::ToggleSplitCursorIcon(bool is_double)
+{
+	if(is_double) {
+		tb->DoubleCursorToolCheck();
+		menu_bar->FindItem(XRCID("SplitCursor"))->Check(true);
+	}
+	else {
+		tb->DoubleCursorToolUncheck();
+		menu_bar->FindItem(XRCID("SplitCursor"))->Check(false);
+	}
 }
 
 void DrawPanel::SelectSet(DrawSet *set) {
@@ -829,13 +834,13 @@ void DrawPanel::DrawInfoChanged(Draw *d) {
 			menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
 			menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
 			menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
-			menu_bar->Check(XRCID("SplitCursor"), false); 
+			menu_bar->Check(XRCID("SplitCursor"), false);
 			df->SetTitle(GetConfigName(), GetPrefix());
 			//possibly
-			PeriodChanged(d, d->GetPeriod());	
+			PeriodChanged(d, d->GetPeriod());
 		}
 		df->UpdatePanelName(this);
-		
+
 	}
 }
 
@@ -844,6 +849,7 @@ void DrawPanel::PeriodChanged(Draw *d, PeriodType pt) {
 		return;
 
 	tb->DoubleCursorToolUncheck();
+	menu_bar->Check(XRCID("SplitCursor"), false);
 
 	if (active == false)
 		return;
@@ -981,7 +987,7 @@ void DrawPanel::OnDrawTree(wxCommandEvent&) {
 		dtd = new DrawTreeDialog(this, cfg);
 	dtd->SetSelectedSet(GetSelectedSet());
 	if (dtd->ShowModal() == wxID_OK)
-		SelectSet(dtd->GetSelectedSet());	
+		SelectSet(dtd->GetSelectedSet());
 }
 
 bool DrawPanel::IsUserDefined() {
@@ -1080,7 +1086,7 @@ void DrawPanel::SetActive(bool _active) {
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
 		item->Check(smw->IsShown());
 
-        	menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
+		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {
