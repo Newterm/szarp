@@ -52,7 +52,6 @@ bin_PROGRAMS = \
 	      lbdmn \
 	      lecmdmn \
 	      linedmn \
-	      lmldmn \
 	      logdmn \
 	      mbdmn \
 	      borutadmn \
@@ -60,20 +59,15 @@ bin_PROGRAMS = \
 	      mbrtudmn \
 	      mbtcpdmn \
 	      mbusdmn \
-	      melsdmn \
-	      muksdmn \
-	      npozytondmn \
 	      nrsdmn \
 	      pafdmn \
 	      pafdmnr \
 	      parcook \
 	      polludmn \
-	      pozytondmn \
 	      ratedmn \
 	      rsdmn \
 	      sampledmn \
 	      sbusdmn \
-	      setdmn \
 	      iecdmn \
 	      prodmn \
 	      tcpdmn \
@@ -110,8 +104,6 @@ kwmsdmn_SOURCES = kwmsdmn.cc
 
 linedmn_SOURCES = linedmn.cc
 
-lmldmn_SOURCES = lmldmn.cc
-
 logdmn_SOURCES = logdmn.cc $(basedmn_SOURCES)
 
 mbrtudmn_SOURCES = mbrtudmn.cc
@@ -133,15 +125,7 @@ ratedmn_SOURCES = ratedmn.cc
 
 lecmdmn_SOURCES = lecmdmn.cc
 
-muksdmn_SOURCES = muksdmn.cc
-
 aqtdmn_SOURCES = aqtdmn.cc
-
-pozytondmn_SOURCES = pozytondmn.cc pozyton-prop-plugin.h
-pozytondmn_LDADD = $(LDADD) $(DL)
-
-npozytondmn_SOURCES = npozytondmn.cc npozyton-prop-plugin.h
-npozytondmn_LDADD = $(LDADD) $(DL)
 
 rsdmn_SOURCES = nrsdmn.cc
 
@@ -158,9 +142,6 @@ mbusdmn_SOURCES = mbusdmn.cc
 wlkdmn_SOURCES = wlkdmn.cc
 wlkdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
 
-melsdmn_SOURCES = melsdmn.cc mels-prop-plugin.h
-melsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(DL)
-
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
@@ -176,9 +157,6 @@ sbusdmn_SOURCES = sbusdmn.cc
 
 ddedmn_SOURCES = ddedmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++
-
-setdmn_SOURCES = setdmn.cc
-setdmn_LDADD = $(LDADD) @EVENT_LIBS@ -lstdc++
 
 iecdmn_SOURCES = iecdmn.cc
 iecdmn_LDADD = $(LDADD)
