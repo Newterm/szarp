@@ -375,7 +375,12 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 	gtk_window_set_accept_focus(rw->GetHandle(), 0);
 #endif
 
+#ifdef MINGW32
+	wxString style = _T("GCDC");
+#else
 	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
+#endif
+
 #ifdef HAVE_GLCANVAS
 #ifdef HAVE_FTGL
 	if (style == _T("3D") && wxGetApp().GLWorks()) {

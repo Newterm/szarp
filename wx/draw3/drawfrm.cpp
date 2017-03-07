@@ -934,10 +934,19 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
 
 	wxArrayString choices;
 
+#ifdef MINGW32
+
+	wxString style = _T("GCDC");
+	choices.push_back(_("Antialiased"));
+	choices[0] = choices[0] + _T(" (") + _("currently selected") + _T(")");
+	wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
+
+#else
+
+	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
 	choices.push_back(_("Classic"));
 	choices.push_back(_("'3D'"));
 	choices.push_back(_("Antialiased"));
@@ -952,7 +961,7 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 		selected = 0;
 
 	choices[selected] = choices[selected] + _T(" (") + _("currently selected") + _T(")");
-	
+
 	int ret = wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
 	if (ret == -1)
 		return;
@@ -971,9 +980,10 @@ void DrawFrame::OnGraphsView(wxCommandEvent &e) {
 		style = _T("Classic");
 	}
 
+#endif
+
 	wxConfig::Get()->Write(_T("GRAPHS_VIEW"), style);
 	wxConfig::Get()->Flush();
-
 }
 
 void DrawFrame::OnAddRemark(wxCommandEvent &event) {
