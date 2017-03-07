@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * 
+ *
  * Krzysztof Ga³±zka <kg@newterm.pl>
- * 
+ *
  */
 /*
  Daemon description block.
@@ -109,8 +109,8 @@ int lumel_register::get_val(double & value) {
 
     errno = 0; // according to man to check for errors in conversion
     const char * str = m_val.c_str();
-    double val = strtod(str, &endptr); 
- 
+    double val = strtod(str, &endptr);
+
     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
 	m_log->log(2, "Error in ascii to doble conversion");
 	return 1;
@@ -170,7 +170,7 @@ protected:
 
     LRMAP m_registers;
     LRMAP::iterator m_registers_iterator;
-    
+
     std::vector<read_val_op *> m_read_operators;
 
     unsigned char checksum(std::vector<unsigned char> & buffer) ;
@@ -180,7 +180,7 @@ protected:
     void make_read_request();
     int parse_frame();
     void to_parcook();
-	
+
     void start_read_timer();
     void stop_read_timer();
 
@@ -192,7 +192,7 @@ public:
     virtual void starting_new_cycle();
     virtual void scheduled(struct bufferevent* bufev, int fd);
     virtual void data_ready(struct bufferevent* bufev, int fd);
-    
+
     void read_timer_event();
     static void read_timer_callback(int fd, short event, void* lumel_serial_client);
 };
@@ -214,7 +214,7 @@ void lumel_serial_client::start_read_timer() {
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = m_timeout;
-	evtimer_add(&m_read_timer, &tv); 
+	evtimer_add(&m_read_timer, &tv);
 	m_read_timer_started = true;
 	m_log.log(10, "lumel_serial_client::stop_read_timer: Read timer started");
 }
@@ -274,11 +274,11 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-    
+
 	TParam* param = unit->GetFirstParam();
 	for (size_t i = 0; i < m_read_count ; i++) {
 		char *expr;
-	        asprintf(&expr, ".//ipk:param[position()=%d]",  i + 1);
+	        asprintf(&expr, ".//ipk:param[position()=%zu]",  i + 1);
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		ASSERT(pnode);
 		free(expr);
@@ -294,10 +294,10 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 		if (*e != 0 || l < 0 || l > 0x32) {
 			m_log.log(0, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
 			return 1;
-		} 
+		}
 		unsigned char addr = (unsigned char)l;
 		m_log.log(10, "lumel_serial_client::configure _addr: %ld, addr: %hhu", l, addr);
-		
+
 		int prec = exp10(param->GetPrec());
 		std::string _prec;
 		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
@@ -310,7 +310,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 		    if (*e != 0 || l < 0) {
 			    m_log.log(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
 			    return 1;
-		    } 
+		    }
 		    prec = exp10(l);
 		    m_log.log(10, "lumel_serial_client::configure _addr: %ld, prec: %d", l, addr);
 		}
@@ -328,7 +328,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 			m_log.log(0, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
 			return 1;
 		    }
-		    reg = new lumel_register(addr, &m_log); 
+		    reg = new lumel_register(addr, &m_log);
 		    m_registers[addr] = reg;
 		    m_read_operators.push_back(new short_read_val_op(reg, prec));
 		}
@@ -415,7 +415,7 @@ void lumel_serial_client::next_request() {
 	default:
 	    break;
     }
-    
+
     m_registers_iterator++;
     if (m_registers_iterator == m_registers.end()) {
 	// TODO end of cycle
@@ -423,7 +423,7 @@ void lumel_serial_client::next_request() {
 	m_state = IDLE;
 	m_manager->driver_finished_job(this);
 	return;
-    } 
+    }
 
     send_request();
 }
@@ -504,12 +504,12 @@ int lumel_serial_client::parse_frame() {
 	return 1;
     }
 
-    m_log.log(8, "lumel_serial_client::parse_frame, l: %d", m_buffer.size());
+    m_log.log(8, "lumel_serial_client::parse_frame, l: %zu", m_buffer.size());
 
     for (size_t i = 0; i < 7; i++) {
 	if (m_buffer[i] != m_request_buffer[i]) {
 	    // TODO error
-	    m_log.log(2, "Wrong response at character %d", i);
+	    m_log.log(2, "Wrong response at character %zu", i);
 	    return 1;
 	}
     }
@@ -541,13 +541,13 @@ int lumel_serial_client::parse_frame() {
     std::string sv = val.str();
 
     m_registers_iterator->second->set_val(sv);
-    
+
     return 0;
 }
 
 
 void lumel_serial_client::to_parcook() {
-    m_log.log(10, "lumel_serial_client::to_parcook, m_read_count: %d", m_read_count);
+    m_log.log(10, "lumel_serial_client::to_parcook, m_read_count: %zu", m_read_count);
     for (size_t i = 0; i < m_read_count; i++) {
 	m_read[i] = m_read_operators[i]->val();
 	m_log.log(9, "Parcook param no %zu set to %hu", i, m_read[i]);
