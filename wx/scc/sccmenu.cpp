@@ -769,7 +769,7 @@ SCCMenu* SCCMenu::CreateDrawItem(const wxString& title, const wxString& prefix, 
 #ifdef MINGW32
 		_T(" /base:")
 #else
-		_T(" -Dprefix=")
+		_T(" -base:")
 #endif
 		+ prefix;
 
