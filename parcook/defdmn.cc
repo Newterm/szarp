@@ -198,9 +198,11 @@ void Defdmn::configure(int* argc, char** argv) {
 	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext()) {
 		for (TParam * p = unit->GetFirstParam(); p; p = unit->GetNextParam(p)) {
 			if (p->GetLuaScript()) {
-				param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd())));
+				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd()));
+				param_info.push_back(ptr);
 			} else {
-				param_info.push_back(*new std::shared_ptr<DefParamBase>(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd())));
+				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd()));
+				param_info.push_back(ptr);
 			}
 		} // if any param is ill-formed, stop the daemon
 	}

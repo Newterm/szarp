@@ -8,13 +8,13 @@ float ChooseFun(float funid, float *parlst);
 void putParamsFromString(const std::wstring& script_string, boost::regex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
 
 namespace sz4 {
-template <class time_type> time_type getTimeNow() { return *new time_type(NULL); }
+template <class time_type> time_type getTimeNow() { return time_type(NULL); }
 
 template<> sz4::second_time_t getTimeNow<sz4::second_time_t>() {
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 	auto duration = now.time_since_epoch();
 	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-	return *new sz4::second_time_t(seconds);
+	return sz4::second_time_t(seconds);
 }
 
 template<> sz4::nanosecond_time_t getTimeNow<sz4::nanosecond_time_t>() {
@@ -22,7 +22,7 @@ template<> sz4::nanosecond_time_t getTimeNow<sz4::nanosecond_time_t>() {
 	auto duration = now.time_since_epoch();
 	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 	const auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-	return *new sz4::nanosecond_time_t(seconds, nanoseconds);
+	return sz4::nanosecond_time_t(seconds, nanoseconds);
 }
 }
 
