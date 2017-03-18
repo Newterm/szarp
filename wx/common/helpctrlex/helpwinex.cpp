@@ -1050,7 +1050,7 @@ void wxHtmlHelpWindowEx::CreateContents()
 
     if (m_PagesHash)
     {
-        WX_CLEAR_HASH_TABLE(*m_PagesHash);
+		WX_CLEAR_HASH_TABLE(*m_PagesHash);
 		delete m_PagesHash;
     }
     
@@ -1835,7 +1835,7 @@ Help books (*.htb)|*.htb|Help books (*.zip)|*.zip|\
 HTML Help Project (*.hhp)|*.hhp|\
 All files (*.*)|*"
                                             ),
-                                            wxOPEN | wxFILE_MUST_EXIST,
+                                            wxFD_OPEN | wxFD_FILE_MUST_EXIST,
                                             this);
                 if (!s.IsEmpty())
                 {
