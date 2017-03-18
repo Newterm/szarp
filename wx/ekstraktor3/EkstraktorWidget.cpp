@@ -33,18 +33,21 @@
 #include "cconv.h"
 
 #include "../../resources/wx/icons/extr64.xpm"
+#include "../common/parlist.cpp"
 
 void* progress_update(int progress, void* prog) {
 	((wxProgressDialog*) prog)->Update(progress);
 	return NULL;
 }
  
-namespace SC {
+using namespace SC;
+/*  
+{
 	std::wstring W2S(const wxString& c) {
 		return (std::wstring(c.ToStdWstring()));
 	}
 }
-
+*/
 EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry, std::pair<wxString, wxString> prober_address, bool sz4) : sz4(sz4)
 {
 	int x, y, width, height;
