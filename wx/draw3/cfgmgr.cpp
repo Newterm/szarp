@@ -584,7 +584,6 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 	if (config_path == wxEmptyString)
 		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
 
-
 	DrawsSets* ret;
 	if (ipk == NULL)
 		ret = NULL;
