@@ -629,7 +629,7 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			, ipk_container(ipk_container) {
 
 	std::tie(connection_mgr, base, io) =
-		build_iks_client(ipk_container, address, port, _("User:Param:"));
+		build_iks_client(ipk_container, address, port, _T("User:Param:"));
 
 	io_thread = start_connection_manager(connection_mgr);
 }

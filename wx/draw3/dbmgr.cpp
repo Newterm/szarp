@@ -33,6 +33,9 @@
 #include "defcfg.h"
 #include "errfrm.h"
 #include "dbmgr.h"
+#include "../common/parlist.cpp"
+
+using namespace SC;
 
 bool
 SyncedPrefixSet::Contains(wxString prefix) {
@@ -320,7 +323,7 @@ void DatabaseManager::AddParams(const std::vector<DefinedParam*>& ddi) {
 		wxLogInfo(_T("Adding param with prefix: %s"), (*i)->GetBasePrefix().c_str());
 
 		IPKContainer *ic = IPKContainer::GetObject();
-		ic->AddExtraParam((*i)->GetBasePrefix().c_str(), (*i)->GetIPKParam());
+		ic->AddExtraParam((*i)->GetBasePrefix().wc_str(), (*i)->GetIPKParam());
 
 		DatabaseQuery* query = new DatabaseQuery;
 		query->type = DatabaseQuery::ADD_PARAM;

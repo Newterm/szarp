@@ -150,8 +150,8 @@ void DrawPanelKeyboardHandler::OnKeyUp(wxKeyEvent & event)
 	case WXK_RIGHT:
 	case WXK_HOME:
 	case WXK_END:
-	case WXK_PRIOR:
-	case WXK_NEXT:
+	case WXK_PAGEUP:
+	case WXK_PAGEDOWN:
 		panel->dw->SetKeyboardAction(NONE);
 		break;
 	case '?':
@@ -192,13 +192,13 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 	case WXK_END:
 		panel->dw->SetKeyboardAction(CURSOR_END_KB);
 		break;
-	case WXK_PRIOR:
+	case WXK_PAGEUP:
 		if (event.ControlDown())
 			panel->df->SelectPreviousTab();
 		else
 			panel->dw->SetKeyboardAction(SCREEN_LEFT_KB);
 		break;
-	case WXK_NEXT:
+	case WXK_PAGEDOWN:
 		if (event.ControlDown())
 			panel->df->SelectNextTab();
 		else
