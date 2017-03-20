@@ -82,7 +82,7 @@ SCCTaskBarItem::SCCTaskBarItem(SCCMenu* _menu, wxString prefix,	wxString suffix)
 
 	help = new szHelpController;
 
-	wxIcon icon(wxICON(szarp64));
+	wxIcon icon(szarp64_xpm);
 	if (icon.Ok())
 		SetIcon(icon, _("Start SZARP applications"));
 }

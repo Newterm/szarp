@@ -81,7 +81,7 @@ szKontroler::szKontroler(wxWindow *par, bool remote_mode, bool operator_mode, wx
   const int widths[] = { 50, -1, 75 };
   stat_sb->SetFieldsCount(3, widths);
 
-  wxIcon icon(wxICON(kontr64));
+  wxIcon icon(kontr64_xpm);
   SetIcon(icon);
   szFrame::setDefaultIcon(icon);
 
@@ -396,7 +396,7 @@ void szKontroler::SaveKonFile(const wxString &fname) {
 void szKontroler::OnParamLoad(wxCommandEvent &ev) {
   wxString fn = wxFileSelector(_("Load params: choose a file"),
     _T(""), _T(""), _T("*.xkon"), _("Kontorler params (*.xkon)|*.xkon|All files (*)|*"),
-    wxOPEN, this);
+    wxFD_OPEN, this);
   if (fn.empty()) {
     wxLogMessage(_T("kon: not loading"));
   } else {
@@ -408,7 +408,7 @@ void szKontroler::OnParamLoad(wxCommandEvent &ev) {
 void szKontroler::OnParamSave(wxCommandEvent &ev) {
   wxString fn = wxFileSelector(_("Save params: choose a file"),
     _T(""), _T(""), _T("*.xkon"), _("Kontorler params (*.xkon)|*.xkon|All files (*)|*"),
-    wxSAVE | wxOVERWRITE_PROMPT, this);
+    wxFD_SAVE | wxFD_OVERWRITE_PROMPT, this);
 
   if (fn.empty()) {
     wxLogMessage(_T("kon: not saveing"));

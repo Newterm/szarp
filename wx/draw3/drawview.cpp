@@ -371,7 +371,7 @@ void BackgroundDrawer::DrawYAxisVals(wxDC *dc, int tick_len, int line_width) {
 void BackgroundDrawer::DrawBackground(wxDC *dc) {
 	assert(dc);
 
-	if (!dc->Ok())
+	if (!dc->IsOk())
 		return;
 
 	int w, h;
