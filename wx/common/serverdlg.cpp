@@ -171,7 +171,7 @@ bool szServerDlg::GetReports(wxString server, szHTTPCurlClient *m_http, wxString
 	}
 	pr->Update(0);
 
-	xmlDocPtr doc = m_http->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
+	xmlDocPtr doc = m_http->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, 0);
 
 	wxString msg;
 	bool error = false;
@@ -242,7 +242,7 @@ void* GetIPKThread::Entry()
 	long time = wxGetLocalTimeMillis().ToLong();
 	
 	int ret = 0;
-	xmlDocPtr doc = (*m_http)->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, NULL);
+	xmlDocPtr doc = (*m_http)->GetXML(const_cast<char*>(SC::S2A(path).c_str()), NULL, 0);
 
 	if (doc != NULL) {
 		ret = (*m_ipk)->parseXML(doc);
