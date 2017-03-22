@@ -50,14 +50,12 @@ bin_PROGRAMS = \
 	      kamsdmn \
 	      kwmsdmn \
 	      lbdmn \
-	      lecmdmn \
 	      linedmn \
 	      logdmn \
 	      mbdmn \
 	      borutadmn \
 	      borutadmn_z \
 	      mbrtudmn \
-	      mbtcpdmn \
 	      mbusdmn \
 	      nrsdmn \
 	      pafdmn \
@@ -111,8 +109,6 @@ mbrtudmn_SOURCES = mbrtudmn.cc
 k601dmn_SOURCES = k601dmn.cc k601-prop-plugin.h
 k601dmn_LDADD = $(LDADD) $(DL)
 
-mbtcpdmn_SOURCES = mbtcpdmn.cc
-
 pafdmn_SOURCES = pafdmn.cc
 
 pafdmnr_SOURCES = pafdmnr.cc
@@ -122,8 +118,6 @@ polludmn_SOURCES = polludmn.cc
 calcdmn_SOURCES = calcdmn.cc
 
 ratedmn_SOURCES = ratedmn.cc
-
-lecmdmn_SOURCES = lecmdmn.cc
 
 aqtdmn_SOURCES = aqtdmn.cc
 

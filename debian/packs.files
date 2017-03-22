@@ -9,10 +9,16 @@ Files: opt/szarp/logs
 Files: var/log/szarp
 
 Package: szarp-daemons
-Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py,remarks_server.py,prober}
-Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,lecmdmn,linedmn,mbrtudmn,mbtcpdmn,mbdmn}
-Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,logdmn,mbusdmn,nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn,tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn,k601dmn,borutadmn,pythondmn}
-Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py,probes_server.tac,meaner4,paramsvalues_pb2.py,parhub.py,test_ipc.py*}
+Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd}
+Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
+Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,linedmn,mbrtudmn,mbdmn}
+Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,logdmn,mbusdmn}
+Files: opt/szarp/bin/{nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn}
+Files: opt/szarp/bin/{tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn}
+Files: opt/szarp/bin/{k601dmn,borutadmn,pythondmn}
+Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py}
+Files: opt/szarp/lib/python/{probes_server.tac,meaner4,paramsvalues_pb2.py
+Files: opt/szarp/lib/python/{parhub.py,test_ipc.py*}
 Files: opt/szarp/lib/libpysz*
 Files: opt/szarp/bin/wlkdmn
 Files: etc/szarp/ssconf.cfg
