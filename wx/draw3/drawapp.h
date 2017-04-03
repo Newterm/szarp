@@ -196,7 +196,8 @@ protected:
 	enum {
 		SZBASE_BASE,
 		SZ4_BASE,
-		IKS_BASE
+		IKS_BASE,
+		NO_BASE
 	} m_base_type;
 
 	wxString m_iks_server;

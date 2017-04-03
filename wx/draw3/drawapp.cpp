@@ -124,7 +124,14 @@ int GL_ATTRIBUTES[] = {
 	0 };
 }
 
-DrawApp::DrawApp() : DrawGLApp(), m_base_type(SZBASE_BASE), m_iks_port(_T("9002")) {
+DrawApp::DrawApp()
+	: DrawGLApp()
+#ifdef MINGW32
+	, m_base_type(SZ4_BASE)
+#else
+	, m_base_type(NO_BASE)
+#endif
+	, m_iks_port(_T("9002")) {
 	m_gl_context = NULL;
 }
 
@@ -221,13 +228,29 @@ bool DrawApp::OnInit() {
 	}
 
 	{
+		if (m_base_type == NO_BASE) {
+			const auto cfg_base_type = libpar_getpar("draw3", "base_type", 0);
+			if (cfg_base_type) {
+				const std::string base_type(cfg_base_type);
+				if (base_type == "sz4" || base_type == "SZ4"|| base_type == "4") {
+					m_base_type = SZ4_BASE;
+				} else if (base_type == "iks"|| base_type == "IKS"|| base_type == "i") {
+					m_base_type = IKS_BASE;
+				} else {
+					m_base_type = SZBASE_BASE;
+				}
+			}
+		}
 
-		if (m_base_type != IKS_BASE) {
-			char *iks_server = libpar_getpar("draw3", "iks_server", 0);
-			if (iks_server) {
-				m_iks_server = SC::L2S(iks_server);
-				m_base_type = IKS_BASE;
-				free(iks_server);
+		if (m_base_type == IKS_BASE) {
+			if (m_iks_server == wxEmptyString) {
+				char *iks_server = libpar_getpar("draw3", "iks_server", 0);
+				if (iks_server) {
+					m_iks_server = SC::L2S(iks_server);
+					free(iks_server);
+				} else {
+					m_iks_server = m_base;
+				}
 			}
 
 			char *iks_port = libpar_getpar("draw3", "iks_server_port", 0);
@@ -331,18 +354,22 @@ bool DrawApp::OnInit() {
 
 	Draw3Base* draw_base;
 	switch (m_base_type) {
-		case SZBASE_BASE:
-			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().c_str(),
-				&ConfigurationFileChangeHandler::handle,
-				wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-			break;
 		case SZ4_BASE:
 			draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().c_str(),
 				IPKContainer::GetObject());
+			wxLogError(_T("Using sz4 base engine"));
 			break;
 		case IKS_BASE:
 			draw_base = new Sz4ApiBase(m_dbmgr, m_iks_server.c_str(), m_iks_port.c_str(),
 				IPKContainer::GetObject());
+			wxLogError(_T("Connecting to iks at %s:%s"), m_iks_server.c_str(), m_iks_port.c_str());
+			break;
+		case SZBASE_BASE:
+		default:
+			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().c_str(),
+				&ConfigurationFileChangeHandler::handle,
+				wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
+			wxLogError(_T("Using sz3 base engine"));
 			break;
 	}
 
@@ -467,11 +494,11 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddSwitch(_T("v"), _T("verbose"), _("verbose logging"));
 
-	parser.AddSwitch(_T("4"), _T("sz4"), _("use sz4 base format"));
+	parser.AddSwitch(_T("4"), _T("sz4"), _("force sz4 base format"));
 
-	parser.AddSwitch(_T("3"), _T("sz3"), _("use sz3 base format"));
+	parser.AddSwitch(_T("3"), _T("sz3"), _("force sz3 base format"));
 
-	parser.AddSwitch(_T("i"), _T("iks"), _("use iks server"));
+	parser.AddSwitch(_T("i"), _T("iks"), _("force iks server"));
 
 	parser.AddSwitch(_T("V"), _T("version"), 
 		_("print version number and exit"));
@@ -481,10 +508,6 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
 	parser.AddOption(wxEmptyString, _T("iks-server-port"),
 		_("IKS server port"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
-#if 0
-	parser.AddSwitch(_T("D<name>=<str>"), wxEmptyString,
-		_("libparnt value initialization"));
-#endif
 	
 	parser.AddOption(_T("d"), _T("debug"), _("debug level"), wxCMD_LINE_VAL_NUMBER);
 	
@@ -542,23 +565,16 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	else
 		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
 
-#ifdef MINGW32
-	m_base_type = SZ4_BASE;
-#endif
-
-	if (parser.Found(_T("4")))
-		m_base_type = SZ4_BASE;
-
-	if (parser.Found(_T("3")))
-		m_base_type = SZBASE_BASE;
 
 	if (parser.Found(_T("i"))) {
 		m_base_type = IKS_BASE;
-
-		if (!parser.Found(_T("iks-server"), &m_iks_server))
-			m_iks_server = m_base;
-
+		parser.Found(_T("iks-server"), &m_iks_server);
 		parser.Found(_T("iks-server-port"), &m_iks_port);
+
+	} else if (parser.Found(_T("4"))) {
+		m_base_type = SZ4_BASE;
+	} else if (parser.Found(_T("3"))) {
+		m_base_type = SZBASE_BASE;
 	}
 
 	return true;

@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * draw3
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -59,27 +59,27 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	 * @param parent parent window
 	 * @param id widget identifier
 	 */
-	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxMenuBar* menu_bar, wxString prefix, const wxString& set, PeriodType pt, time_t time, 
+	DrawPanel(DatabaseManager *_db_mgr, ConfigManager *cfg, RemarksHandler *rh, wxMenuBar* menu_bar, wxString prefix, const wxString& set, PeriodType pt, time_t time,
 		wxWindow *parent, wxWindowID id, DrawFrame *_df, int selected_draw = 0);
 	virtual ~DrawPanel();
 
 	/**Displays @see IncSearch widget allowing user to switch set and draw*/
-	void StartDrawSearch(); 
+	void StartDrawSearch();
 
 	/**Displays @see IncSearch widget allowing user to switch set*/
-	void StartSetSearch(); 
+	void StartSetSearch();
 
 	void StartPSC();
 
 	/**Makes given set a current set.
 	 * @param set set to select*/
 	void SelectSet(DrawSet *set);
-	
+
 	/**Menu event handler, causes data refetch*/
-	void OnRefresh(wxCommandEvent &evt); 
-	
+	void OnRefresh(wxCommandEvent &evt);
+
 	/** Show/Hide average type panel */
-	void OnShowAverage(wxCommandEvent &evt); 
+	void OnShowAverage(wxCommandEvent &evt);
 
 	/** Show/Hide interface */
 	void OnShowInterface(wxCommandEvent &evt);
@@ -88,7 +88,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	void ClearCache();
 
 	/**Menu event handler, displays @see IncSearch widget*/
-	void OnFind(wxCommandEvent &evt); 
+	void OnFind(wxCommandEvent &evt);
 
 	/**Show/hides summary window, toolbar icon event handler*/
 	void OnSummaryWindow(wxCommandEvent &event);
@@ -138,6 +138,9 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**toggles split cursor*/
 	void ToggleSplitCursor(wxCommandEvent &event);
 
+	/* toggles split cursor icon on toolbar */
+	void ToggleSplitCursorIcon(bool is_double);
+
 	void SetLatestDataFollow(bool follow);
 
 	/**Handles priting request.
@@ -145,7 +148,7 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	void Print(bool preview);
 
 	PeriodType SetPeriod(PeriodType pt);
-	
+
 	PeriodType GetPeriod();
 
 	DTime GetBeginCurrentTime();
@@ -280,7 +283,7 @@ protected:
 	bool realized;
 
 	bool active;
-	
+
 	/**Menu that allows user to choose filter level*/
 	wxMenu *filter_popup_menu;
 

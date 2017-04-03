@@ -1176,14 +1176,14 @@
                 <label>XYZ Graph\tCtrl+Shift+Z</label>
             </object>
             <object class="wxMenuItem" name="StatsWin">
-                <label>Statistics window\tCtrl+Shift+S</label>
+                <label>Statistics window\tCtrl+Alt+S</label>
             </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="Print">
                 <label>Print\tCtrl+P</label>
             </object>
             <object class="wxMenuItem" name="PageSetup">
-                <label>Page Settings\tCtrl+Shift+S</label>
+                <label>Page Settings\tCtrl+Alt+P</label>
             </object>
             <object class="wxMenuItem" name="PrintPrev">
                 <label>Print preview\tCtrl+Shift+P</label>
@@ -1280,7 +1280,7 @@
                 <checkable>1</checkable>
             </object>
             <object class="wxMenuItem" name="Ratio">
-                <label>Ratio window\tCtrl+Shift+R</label>
+                <label>Ratio window\tCtrl+Shift+S</label>
                 <checkable>1</checkable>
             </object>
             <object class="separator"/>
