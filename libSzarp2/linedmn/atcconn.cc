@@ -1,7 +1,8 @@
 #include "atcconn.h"
 
 AtcConnection::AtcConnection(struct event_base* base)
-:TcpConnection(base), m_event_base(base), m_action_queued(NO_ACTION), m_open_finished_pending(true)
+	:TcpConnection(base), m_event_base(base), m_action_queued(NO_ACTION),
+	m_open_finished_pending(true), m_control_port(DEFAULT_CONTROL_PORT)
 {
 	m_http_client = new AtcHttpClient(base);
 	m_http_client->AddListener(this);
@@ -13,6 +14,13 @@ AtcConnection::~AtcConnection()
 	delete m_http_client;
 }
 
+void AtcConnection::InitTcp(std::string address,
+	int data_port, int control_port)
+{
+	TcpConnection::InitTcp(address, data_port);
+	m_control_port = control_port;
+}
+
 void AtcConnection::AtcError(const AtcHttpClient* client)
 {
 	// use "unrecoverable error encountered"
@@ -22,7 +30,7 @@ void AtcConnection::AtcError(const AtcHttpClient* client)
 void AtcConnection::Open()
 {
 	TcpConnection::Open();
-	m_http_client->Connect(m_address);
+	m_http_client->Connect(m_address, m_control_port);
 	m_action_queued = RESET;
 	m_http_client->GetAuthCookie();
 }
