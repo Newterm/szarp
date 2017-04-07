@@ -20,7 +20,7 @@ public:
 	 * @param address IP address to connect to, in dot format
 	 * @param port port number to connect to
 	 */
-	void InitTcp(std::string address, int port);
+	void InitTcp(const std::string& address, int port);
 
 	/* BaseConnection interface */
 	void Open() override;

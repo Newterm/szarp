@@ -14,7 +14,7 @@ AtcConnection::~AtcConnection()
 	delete m_http_client;
 }
 
-void AtcConnection::InitTcp(std::string address,
+void AtcConnection::InitTcp(const std::string& address,
 	int data_port, int control_port)
 {
 	TcpConnection::InitTcp(address, data_port);

@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include <sstream>
 
 TcpConnection::TcpConnection(struct event_base* base)
 	:BaseConnection(base),
@@ -19,14 +18,11 @@ TcpConnection::~TcpConnection()
 	}
 }
 
-void TcpConnection::InitTcp(std::string address, int port)
+void TcpConnection::InitTcp(const std::string& address, int port)
 {
 	m_address = address;
 	m_port = port;
-
-	std::ostringstream s;
-	s << m_address << ":" << m_port;
-	m_id = s.str();
+	m_id = address + ":" + std::to_string(m_port);
 
 	/* server address */
 	m_server_addr.sin_family = AF_INET;

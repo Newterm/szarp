@@ -88,7 +88,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	char *e;
 	int res = asprintf(&e, "./@%s", prop);
 	(void)res;
-	assert (e != NULL);
+	assert (e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -99,7 +99,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	char *e;
 	int res = asprintf(&e, "./@extra:%s", prop);
 	(void)res;
-	assert (e != NULL);
+	assert (e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -122,7 +122,7 @@ public:
 		SZ_INHERIT_CONSTR(NoDataException, KamsDmnException)
 	};
 
-	kams_daemon() : m_daemon_conf(NULL), m_ipc(NULL),
+	kams_daemon() : m_daemon_conf(nullptr), m_ipc(nullptr),
 			m_state(SET_COMM_WRITE),
 			m_read_mode(MODE_B1200_EVEN),
 			m_chars_written(0),
@@ -130,7 +130,7 @@ public:
 			m_path(""),
 			m_ip(""),
 			m_use_atc(false),
-			m_connection(NULL)
+			m_connection(nullptr)
 	{
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
@@ -140,13 +140,13 @@ public:
 
 	~kams_daemon()
 	{
-		if (m_daemon_conf != NULL) {
+		if (m_daemon_conf != nullptr) {
 			delete m_daemon_conf;
 		}
-		if (m_ipc != NULL) {
+		if (m_ipc != nullptr) {
 			delete m_ipc;
 		}
-		if (m_connection != NULL) {
+		if (m_connection != nullptr) {
 			delete m_connection;
 		}
 	}
@@ -563,7 +563,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xmlLineNumbersDefault(1);
 
 	m_daemon_conf = new DaemonConfig("kamsdmn");
-	assert(m_daemon_conf != NULL);
+	assert(m_daemon_conf != nullptr);
 	if (m_daemon_conf->Load(&argc, argv)) {
 		throw KamsDmnException("Cannot load configuration");
 	}
@@ -592,11 +592,11 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 
 	/* get config data */
 	doc = m_daemon_conf->GetXMLDoc();
-	assert (doc != NULL);
+	assert (doc != nullptr);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	assert (xp_ctx != nullptr);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert (ret == 0);
@@ -608,11 +608,11 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xp_ctx->node = m_daemon_conf->GetXMLDevice();
 
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
-	if (c == NULL) {
+	if (c == nullptr) {
 		xmlChar *atc_ip = get_device_node_extra_prop(xp_ctx, "atc-ip");
-		if (atc_ip == NULL) {
+		if (atc_ip == nullptr) {
 			xmlChar *path = get_device_node_prop(xp_ctx, "path");
-			if (path == NULL) {
+			if (path == nullptr) {
 				throw KamsDmnException("ERROR!: neither IP nor device path "
 						"has been specified");
 			}
@@ -651,7 +651,7 @@ int kams_daemon::get_int_attr_def(const xmlXPathContextPtr& xp_ctx,
 	const char* name, int default_value)
 {
 	xmlChar* str_value = get_device_node_extra_prop(xp_ctx, name);
-	if (str_value == NULL) {
+	if (str_value == nullptr) {
 		dolog(2, "Unspecified '%s', assuming default: %hu", name, default_value);
 		return default_value;
 	}

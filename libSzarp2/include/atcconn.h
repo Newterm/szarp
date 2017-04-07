@@ -16,7 +16,7 @@ public:
 	AtcConnection(struct event_base* base);
 	~AtcConnection() override;
 
-	void InitTcp(std::string address,
+	void InitTcp(const std::string& address,
 		int data_port=DEFAULT_DATA_PORT,
 		int control_port=DEFAULT_CONTROL_PORT);
 
