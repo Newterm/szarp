@@ -271,7 +271,7 @@ void SzastFrame::DoHandleSaveReport(wxCommandEvent& event) {
 
 	wxFileDialog dlg(this, _("Choose a file"), _T(""), _T(""),
 			_T("*.txt"),
-			wxSAVE | wxCHANGE_DIR);
+			wxFD_SAVE | wxFD_CHANGE_DIR);
 
 	szSetDefFont(&dlg);
 	if (dlg.ShowModal() != wxID_OK)
@@ -288,8 +288,8 @@ void SzastFrame::DoHandleSaveReport(wxCommandEvent& event) {
 	os << wxString::Format(_("EEPROM: %s, Program: %s, Library: %s, Library built: %s"),
 				m_psc_report.nE.c_str(),
 				m_psc_report.np.c_str(),
-				m_psc_report.nL.Length() ? m_psc_report.nL.c_str() : _("none"),
-				m_psc_report.nb.Length() ? m_psc_report.nb.c_str() : _("none")) << _T("\n");
+				m_psc_report.nL.Length() ? m_psc_report.nL.wc_str() : _("none"),
+				m_psc_report.nb.Length() ? m_psc_report.nb.wc_str() : _("none")) << _T("\n");
 	for (size_t i = 0; i < m_psc_report.values.size(); i++) 
 		os << wxString::Format(_T("%d: %d\n"), (int)i, (int)m_psc_report.values[i]);
 

@@ -42,6 +42,7 @@
 
 #include <wx/treectrl.h>
 #include <wx/notebook.h>
+#include <wx/aui/auibook.h>
 
 #include <libxml/tree.h>
 
@@ -413,7 +414,7 @@ protected:
 	wxGrid *m_pack_grid;
 
 		/**Notebook holding @see m_pack_grid and @see m_const_grid*/
-	wxNotebook *m_notebook;
+	wxAuiNotebook *m_notebook;
 
 	void EnableEditingControls(bool enable);
 

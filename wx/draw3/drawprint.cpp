@@ -203,7 +203,7 @@ wxFont PrintedRegion::GetFont() const {
 }
 
 /**Prints graphs background*/
-class BackgroundPrinter : public BackgroundDrawer, public PrintedRegion {
+class BackgroundPrinter :   public BackgroundDrawer, public PrintedRegion {
 	/**Finds distance (in 'pixels' between verticals axes*/
 	int FindVerticalAxesDistance(wxDC *dc, std::vector<Draw*> draws, const SS &sd);
 public:
@@ -587,18 +587,18 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	wxDC *dc = GetDC();
 #ifndef MINGW32
 	try {
-		wxPostScriptDC *psdc = dynamic_cast<wxPostScriptDC*>(dc);
-		if (psdc != nullptr)
-			psdc->PsPrint(_("\n/ISOLatin1Encoding [\n/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/minus/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde/.notdef/.notdef/Lslash/lslash/Nacute/nacute/aogonek/Cacute/cacute/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/dotlessi/grave/acute/Oacute/tilde/macron/breve/dotaccent/Eogonek/eogonek/Sacute/sacute/.notdef/hungarumlaut/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot/hyphen/registered/macron/degree/plusminus/twosuperior/oacute/acute/mu/paragraph/periodcentered/.notdef/Zacute/zacute/.notdef/z/onehalf/threequarters/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/Ograve/Oacute/.notdef/.notdef/.notdef/multiply/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/oacute/.notdef/.notdef/.notdef/divide/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n] def\n"));
+		//wxPostScriptDC *psdc = dynamic_cast<wxPostScriptDC*>(dc);
+		//if (psdc != nullptr)
+			//psdc->PsPrint(_("\n/ISOLatin1Encoding [\n/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/minus/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde/.notdef/.notdef/Lslash/lslash/Nacute/nacute/aogonek/Cacute/cacute/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/dotlessi/grave/acute/Oacute/tilde/macron/breve/dotaccent/Eogonek/eogonek/Sacute/sacute/.notdef/hungarumlaut/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot/hyphen/registered/macron/degree/plusminus/twosuperior/oacute/acute/mu/paragraph/periodcentered/.notdef/Zacute/zacute/.notdef/z/onehalf/threequarters/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/Ograve/Oacute/.notdef/.notdef/.notdef/multiply/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/oacute/.notdef/.notdef/.notdef/divide/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n] def\n"));
 	} catch(...) { // tu ew. usuniecie polskich znakow
 	}
 #endif
 
 	wxFont f;
 #ifdef __WXMSW__ 
-	f.Create(50, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #else
-	f.Create(8, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #endif
 
 	dc->SetMapMode(wxMM_TEXT);
@@ -957,9 +957,9 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 
 	wxFont f;
 #ifdef __WXMSW__ 
-	f.Create(50, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #else
-	f.Create(8, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #endif
 
 	wxDC *dc = GetDC();
@@ -1318,9 +1318,9 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 		return false;
 	wxFont f;
 #ifdef __WXMSW__ 
-	f.Create(50, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #else
-	f.Create(8, wxSWISS, wxNORMAL, wxNORMAL);
+	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 #endif
 
 	wxDC *dc = GetDC();
@@ -1389,7 +1389,8 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 
 	ty += th * 12 / 10;
 	for (size_t i = 0; i < 3; i++) {
-		txt = wxString() + (L'X' + i) + _T(": ") + m_graph->m_di[i]->GetShortName() + _T(" ") + m_graph->m_di[i]->GetName();
+		//txt = wxString() +  (L'X' + i) + _T(": ") + m_graph->m_di[i]->GetShortName() + _T(" ") + m_graph->m_di[i]->GetName();
+		txt = wxString() + wxString::Format(wxT("%ld"), (L'X' + i)) + _T(": ") + m_graph->m_di[i]->GetShortName() + _T(" ") + m_graph->m_di[i]->GetName();
 		dc->SetTextForeground(m_graph->m_di[i]->GetDrawColor());
 		dc->GetTextExtent(txt, &tw, &th);
 		dc->DrawText(txt, (pw - tw) / 2, ty);

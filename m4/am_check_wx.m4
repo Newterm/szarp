@@ -145,7 +145,7 @@ AC_DEFUN([AM_PATH_WXCONFIG],
     if test "x$wx_ver_ok" = x ; then
       no_wx=yes
     else
-      WX_LIBS=`$WX_CONFIG_WITH_ARGS --libs`
+      WX_LIBS=`$WX_CONFIG_WITH_ARGS --libs std,aui`
       if echo `$WX_CONFIG_WITH_ARGS --basename` | grep -q 'gtk' ; then
         WX_LIBS="$WX_LIBS -lgdk-x11-2.0 -lgtk-x11-2.0 -lgobject-2.0"
       fi

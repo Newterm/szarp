@@ -63,7 +63,7 @@ class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver 
 	wxRegion m_invalid_region;
 
 	wxSize m_size; /**<size of the widget*/
-
+	wxRect m_rect;
 	bool m_draw_current_draw_name;
 
 	ConfigManager *m_cfg_mgr;

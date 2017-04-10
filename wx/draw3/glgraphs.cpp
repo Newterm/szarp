@@ -707,7 +707,7 @@ void GLGraphs::DrawCurrentParamName() {
 
 	wxString text = m_cfg_mgr->GetConfigTitles()[di->GetBasePrefix()] + _T(":") + di->GetParamName();
 
-	FTBBox bbox = _font->BBox(text.c_str());
+	FTBBox bbox = _font->BBox(text.wc_str());
 	float tw = bbox.Upper().Xf() - bbox.Lower().Xf();
 	float th = bbox.Upper().Yf() - bbox.Lower().Yf();
 
@@ -715,7 +715,7 @@ void GLGraphs::DrawCurrentParamName() {
 			
 	glPushMatrix();
 		glTranslatef(m_size.GetWidth() / 2 - tw / 2, m_size.GetHeight() / 2 - th / 2, 0);
-		_font->Render(text.c_str());
+		_font->Render(text.wc_str());
 	glPopMatrix();
 
 	_font->FaceSize(fs);
@@ -793,9 +793,9 @@ void GLGraphs::RecalculateMargins() {
 	wxString min = di->GetValueStr(di->GetMin(), _T(""));
 	wxString unit = di->GetUnit();
 
-	float max_width = _font->Advance(max.c_str());
-	float min_width = _font->Advance(min.c_str());
-	float unit_width = _font->Advance(unit.c_str());
+	float max_width = _font->Advance(max.wc_str());
+	float min_width = _font->Advance(min.wc_str());
+	float unit_width = _font->Advance(unit.wc_str());
 
 	m_screen_margins.leftmargin = wxMax(wxMax(max_width, min_width) + 3, unit_width + 6);
 
@@ -1175,11 +1175,11 @@ void GLGraphs::DrawXAxisVals(Draw *draw) {
 
 		glPushMatrix();
 		{
-			FTBBox bbox = _font->BBox(datestring.c_str()); float width = bbox.Upper().Xf() - bbox.Lower().Xf();
+			FTBBox bbox = _font->BBox(datestring.wc_str()); float width = bbox.Upper().Xf() - bbox.Lower().Xf();
 			float height = bbox.Upper().Yf() - bbox.Lower().Yf();
 
 			glTranslatef(x - width / 2, m_screen_margins.bottommargin - 4 - height, 0);
-			_font->Render(datestring.c_str());
+			_font->Render(datestring.wc_str());
 		}
 		glPopMatrix();
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -1261,13 +1261,13 @@ void GLGraphs::DrawYAxisVals(Draw *draw) {
 
 		wxString sval = draw->GetDrawInfo()->GetValueStr(val, _T(""));
 
-		FTBBox bbox = _font->BBox(sval.c_str());
+		FTBBox bbox = _font->BBox(sval.wc_str());
 		float width = bbox.Upper().Xf() - bbox.Lower().Xf();
 		float height = bbox.Upper().Yf() - bbox.Lower().Yf();
 
 		glPushMatrix();
 			glTranslatef(m_screen_margins.leftmargin - width - 3, y - 2 - height, 0);
-			_font->Render(sval.c_str());
+			_font->Render(sval.wc_str());
 		glPopMatrix();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -1277,10 +1277,10 @@ void GLGraphs::DrawYAxisVals(Draw *draw) {
 void GLGraphs::DrawUnit(Draw *d) {
 	const wxString& s = d->GetDrawInfo()->GetUnit();
 
-	float width = _font->Advance(s.c_str());
+	float width = _font->Advance(s.wc_str());
 	glPushMatrix();
 		glTranslatef(m_screen_margins.leftmargin - width - 6, m_size.GetHeight() - m_screen_margins.topmargin + 3, 0);
-		_font->Render(s.c_str());
+		_font->Render(s.wc_str());
 	glPopMatrix();
 }
 
@@ -1304,14 +1304,14 @@ void GLGraphs::DrawShortNames() {
 			const wxColor& wc = info->GetDrawColor();
 			const float gc[] = { float(wc.Red()) / 255, float(wc.Green()) / 255, float(wc.Blue()) / 255, 1};
 
-			FTBBox bbox = _font->BBox(info->GetShortName().c_str());
+			FTBBox bbox = _font->BBox(info->GetShortName().wc_str());
 			float width = bbox.Upper().Xf() - bbox.Lower().Xf();
 
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, gc); glMaterialfv(GL_FRONT, GL_SPECULAR, gc);
 			
 			glPushMatrix();
 				glTranslatef(x, 0, 0);
-				_font->Render(info->GetShortName().c_str());
+				_font->Render(info->GetShortName().wc_str());
 			glPopMatrix();
 			x += width + 5;
 		}
@@ -1406,11 +1406,11 @@ void GLGraphs::DrawSeasonLimitInfo(Draw *d, int i, int month, int day, bool summ
 			ty -= letter_height - 4;
 			continue;
 		}
-		float width = _font->Advance(letter.c_str());
+		float width = _font->Advance(letter.wc_str());
 		glPushMatrix();
 		{
 			glTranslatef(x + 2 + (letter_w_width - width) / 2, ty, 0);
-			_font->Render(letter.c_str());
+			_font->Render(letter.wc_str());
 		}
 		glPopMatrix();
 		ty -= letter_height - 4;
