@@ -288,9 +288,10 @@ msgstr "Wczytywanie konfiguracji..."
 #: drawapp.cpp:416
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
-"file."
+"file or use i2smo test."
 msgstr ""
-"Błąd podczas ładowania domyślnej konfiguracji. Sprawdź swój plik szarp.cfg"
+"Błąd podczas ładowania domyślnej konfiguracji. Sprawdź swój plik szarp.cfg, "
+"bądź wywołaj i2smo."
 
 #: drawapp.cpp:422
 msgid "Missing starting base specification."

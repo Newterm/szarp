@@ -319,6 +319,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					throw XMLWrapperException();
 				}
 
+				bool request_lua_formula = false;
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
 					try {
@@ -334,6 +335,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							else
 							 if (!strcmp((char*)attr, "LUA")) {
 								_param_type = TParam::P_LUA;
+								request_lua_formula = true;
 							}
 						} else // end "type"
 						if (xw.IsAttr("lua_formula")) {
@@ -387,6 +389,11 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 						xw.XMLErrorWrongAttrValue();
 					}
 				} // end FORALLATTR
+#ifndef NO_LUA
+				if (request_lua_formula && !(_ftype == LUA_AV || _ftype == LUA_VA || _ftype == LUA_IPC)) {
+					xw.XMLErrorAttr((const xmlChar *)"define", "lua_formula");
+				}
+#endif
 			} // end "define"
 		} else
 		if (xw.IsTag("script")) {

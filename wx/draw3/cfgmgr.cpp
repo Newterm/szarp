@@ -577,7 +577,7 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, b
 {
 	if(splashscreen != NULL) {
 		wxString msg = _("Loading configuration: ");
-		msg += config_path;
+		msg += prefix;
 		splashscreen->PushStatusText(msg);
 	}
 
