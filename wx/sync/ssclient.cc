@@ -1950,7 +1950,7 @@ void ProgressFrame::StartSync(bool show, wxArrayString dirList, bool delete_opti
 	m_synced_prefixes.clear();
 	m_to_sync.clear();
 	for (size_t i = 0; i < dirList.GetCount(); i++)
-		m_to_sync.insert(dirList[i].c_str());
+		m_to_sync.insert(dirList[i].wc_str());
 
 	if (show) {
 		Iconize(false);
@@ -2624,7 +2624,7 @@ SSCTaskBarItem::SSCTaskBarItem(wxString szarp_dir) {
 
 	m_help = new szHelpController;
 
-	wxIcon icon(wxICON(ssc64));
+	wxIcon icon(ssc64_xpm);
 	SetIcon(icon, _("Synchronize SZARP data"));
 	szFrame::setDefaultIcon(icon);
 	m_log->GetFrame()->SetIcon(icon);
@@ -3114,7 +3114,7 @@ int SSCApp::OnExit() {
 
 wxChar* SSCConnection::SendMsg(const wxChar* msg)
 {
-	return Request(msg);
+	return (wchar_t *) Request(msg);
 }
 
 int SSCClient::SendReload()

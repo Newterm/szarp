@@ -108,7 +108,7 @@ PscFrame::PscFrame(wxWindow * parent, wxWindowID id)
 
 	m_packs_widget = new PscPacksWidget(this);
 
-	m_notebook = wxDynamicCast(FindWindow(XRCID("psc_notebook")), wxNotebook); 
+	m_notebook = wxDynamicCast(FindWindow(XRCID("psc_notebook")), wxAuiNotebook); 
 	assert(m_notebook);
 
 	wxPanel *panel_c = wxDynamicCast(m_notebook->FindWindow(XRCID("psc_constants_notebook_pane")), wxPanel);

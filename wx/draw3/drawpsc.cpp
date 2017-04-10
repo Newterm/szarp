@@ -107,7 +107,7 @@ void DrawPscSystemConfigurationEditor::SetSettableParams(IPKConfig *cfg) {
 			if (pn.IsEmpty())
 				continue;
 
-			TParam *p = sc->getParamByName(pn.c_str());
+			TParam *p = sc->getParamByName(pn.wc_str());
 			if (p != NULL)
 				p->SetPSC(true);
 

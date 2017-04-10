@@ -140,7 +140,7 @@ bool parse_rss_item(xmlNodePtr node, wxString &url, wxString &version, wxString 
 		xmlFree(_str);
 	}
 
-	if (datetime.ParseRfc822Date(datetime_string.c_str()) == NULL) {
+	if (datetime.ParseRfc822Date(datetime_string.wc_str()) == NULL) {
 		xmlXPathFreeContext(xp_ctx);
 		return false;
 	}

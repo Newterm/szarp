@@ -320,8 +320,8 @@ void ConfFrame::OnOpen(wxCommandEvent& WXUNUSED(event))
                 _T(""),                             // no default file
                 _("XML files (*.xml)|*.xml|All files|*.*"),
                                                 // type of files
-                wxOPEN |                        // open file dialog
-                wxCHANGE_DIR);                  // change directory to last
+                wxFD_OPEN |                        // open file dialog
+                wxFD_CHANGE_DIR);                  // change directory to last
         if (dialog->ShowModal() == wxID_CANCEL)
                 return;
         LoadFile(dialog->GetPath());
@@ -386,8 +386,8 @@ void ConfFrame::OnSaveAs(wxCommandEvent& event)
                 _T(""),                             // no default file
                 _("XML files (*.xml)|*.xml|All files|*.*"),
                                                 // type of files
-                wxSAVE |                        // save file dialog
-                wxCHANGE_DIR);                  // change directory to last
+                wxFD_SAVE |                        // save file dialog
+                wxFD_CHANGE_DIR);                  // change directory to last
         if (dialog->ShowModal() == wxID_CANCEL)
                 return;
 	filename = dialog->GetPath();

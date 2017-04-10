@@ -81,7 +81,7 @@ bool Updater::needToDownloadFile(wxString newChecksum, wxString version) {
 		return true;
 	}
 
-	fs::wpath file = wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version.c_str());
+	fs::wpath file = wxGetApp().getInstallerLocalPath() / VersionToInstallerName(version.wc_str());
 
 	if (!fs::exists(file)) {
 		return true;
@@ -176,7 +176,7 @@ bool Updater::InstallFileReadyOnStartup(){
 	wxString version = m_downloader->getVersion();
 
 	if (isVersionNewer(version)) {
-		SetCurrentVersion(version.c_str());
+		SetCurrentVersion(version.wc_str());
 
 		bool ret = needToDownloadFile(m_downloader->getChecksum(), version);
 		if (ret) {
@@ -223,7 +223,7 @@ void Updater::Run() {
 
 		if (is_newer_available) {
 
-			SetCurrentVersion(version.c_str());
+			SetCurrentVersion(version.wc_str());
 
 			if (needToDownloadFile(m_downloader->getChecksum(), version)) {
 				setStatus(DOWNLOADING);

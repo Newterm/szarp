@@ -157,7 +157,7 @@ void DrawEdit::Close() {
 }
 
 bool DrawEdit::IsSummaried() {
-	return m_summary_checkbox->IsChecked() || TParam::IsHourSumUnit(GetUnit().c_str());
+	return m_summary_checkbox->IsChecked() || TParam::IsHourSumUnit(GetUnit().wc_str());
 }
 
 void DrawEdit::OnOK(wxCommandEvent & event)
@@ -180,7 +180,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		return;
 	}
 
-	std::wistringstream miss(m_min_input->GetValue().c_str());
+	std::wistringstream miss(m_min_input->GetValue().wc_str());
 	miss >> m_min;
 	if (!miss.eof() || miss.fail()) {
 		wxMessageBox(_("Min must be a number."), _("Wrong value"),
@@ -188,7 +188,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		return;
 	}
 
-	std::wistringstream mass(m_max_input->GetValue().c_str());
+	std::wistringstream mass(m_max_input->GetValue().wc_str());
 	mass >> m_max;
 	if (!mass.eof() || mass.fail()) {
 		wxMessageBox(_("Max must be a number."), _("Wrong value"),
@@ -202,7 +202,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		return;
 	}
 
-	std::wistringstream sss(m_scale_input->GetValue().c_str());
+	std::wistringstream sss(m_scale_input->GetValue().wc_str());
 	sss >> m_scale;
 	if (!sss.eof() || sss.fail() || m_scale < 0) {
 		wxMessageBox(_("Invalid value of scale percentage, must be a positive integer."), _("Wrong value"),
@@ -210,7 +210,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		return;
 	}
 
-	std::wistringstream masss(m_max_scale_input->GetValue().c_str());
+	std::wistringstream masss(m_max_scale_input->GetValue().wc_str());
 	masss >> m_max_scale;
 	if (!masss.eof() || masss.fail() || m_max_scale > m_max || m_max_scale < m_min) {
 		if (m_scale) {
@@ -222,7 +222,7 @@ void DrawEdit::OnOK(wxCommandEvent & event)
 		}
 	}
 
-	std::wistringstream misss(m_min_scale_input->GetValue().c_str());
+	std::wistringstream misss(m_min_scale_input->GetValue().wc_str());
 	misss >> m_min_scale;
 	if (!misss.eof() || misss.fail() || m_min_scale >= m_max_scale || m_min_scale < m_min) {
 		if (m_scale) {

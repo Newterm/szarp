@@ -36,6 +36,7 @@
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/aui/aui.h>
+#include <wx/aui/auibook.h>
 #endif
 
 #include <vector>

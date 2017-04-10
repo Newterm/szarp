@@ -136,7 +136,7 @@ void RemarksFetcher::OnRemarksResponse(RemarksResponseEvent &e) {
 		ConfigNameHash::iterator j = cnh.find(i->GetPrefix());
 
 		if (j != cnh.end())
-			i->SetBaseName(j->second.c_str());
+			i->SetBaseName(j->second.wc_str());
 	}
 
 	if (e.GetResponseType() == RemarksResponseEvent::BASE_RESPONSE) {

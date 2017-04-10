@@ -1182,7 +1182,7 @@ void DrawFrame::OnExportDataToFile(wxCommandEvent& e) {
 			_("Choose file to extract data to"),
 			wxString(directory),
 			_T(""),
-			_("Comma Separated Values (*.csv)"), wxSAVE | wxOVERWRITE_PROMPT);
+			_("Comma Separated Values (*.csv)"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	file.SetFilterIndex(3);
 
 	if (file.ShowModal() != wxID_OK)
@@ -1196,11 +1196,11 @@ void DrawFrame::OnExportDataToFile(wxCommandEvent& e) {
 
 	DrawInfoList dil = draw_panel->GetDrawInfoList();
 	for (size_t i = 0; i < dil.size(); i++) {
-		query->extraction_parameters.params->push_back(dil.at(i)->GetParamName().c_str());
-		query->extraction_parameters.prefixes->push_back(dil.at(i)->GetBasePrefix().c_str());
+		query->extraction_parameters.params->push_back(dil.at(i)->GetParamName().wc_str());
+		query->extraction_parameters.prefixes->push_back(dil.at(i)->GetBasePrefix().wc_str());
 	}
 
-	std::wstring filename = (file.GetDirectory() + L"/" + file.GetFilename()).c_str();
+	std::wstring filename = (file.GetDirectory() + L"/" + file.GetFilename()).wc_str();
 	if (filename.size() < 4 || filename.find(L'.') == std::wstring::npos)
 		filename += L".csv";
 

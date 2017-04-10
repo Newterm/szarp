@@ -41,8 +41,10 @@ wxString DrawClient::SendMsg(wxString topic, wxString msg) {
 	wxConnection* conn = dynamic_cast<wxConnection*>(MakeConnection(_T("localhost"), m_service, topic));
 
 	if (conn) {
-		int size;
-		wxChar *res = conn->Request(msg, &size);
+		size_t size;
+		const void *temp = conn->Request(msg, &size);
+		char* temp2 = (char *) temp;
+		char res = *temp2;
 		if (res != NULL) {
 			wxString ret(res, size);
 			delete conn;

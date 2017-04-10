@@ -178,7 +178,7 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 
 				wxLogInfo(_T("Repainting - x:%d y:%d, w:%d h:%d"), x, y, w, h);
 
-				if (pdc->Ok())
+				if (pdc->IsOk())
 					dc.Blit(x, y, w, h, pdc, x, y, wxCOPY);
 
 				for (size_t j = 0; j <= m_draws.size(); ++j) {
@@ -198,7 +198,7 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 						continue;
 
 					wxDC *pdc = m_graphs.at(i)->GetDC();
-					if (pdc->Ok()) 
+					if (pdc->IsOk()) 
 						dc.Blit(x, y, w, h, pdc, x, y, wxCOPY, true);
 		
 				}
@@ -209,7 +209,7 @@ void WxGraphs::OnPaint(wxPaintEvent & WXUNUSED(event))
 		int w, h, tw, th;
 		GetClientSize(&w, &h);
 
-		if (pdc->Ok())
+		if (pdc->IsOk())
 			dc.Blit(0, 0, w, h, pdc, 0, 0, wxCOPY);
 
 		wxString no_data = _("No data");
@@ -263,7 +263,7 @@ void WxGraphs::DrawCurrentParamName(wxDC *dc) {
 }
 
 void WxGraphs::Refresh() {
-	m_invalid_region.Union(m_size);
+	m_invalid_region.Union(m_rect);
 }
 
 void WxGraphs::FullRefresh() {
@@ -391,6 +391,7 @@ void WxGraphs::OnSize(wxSizeEvent & WXUNUSED(event))
 		return;
 
 	m_size = wxSize(w, h);
+	m_rect = wxRect(m_size);
 
 	wxLogVerbose(_T("Resizing to %d:%d"), w, h);
 	for (size_t i = 0; i < m_draws.size(); ++i) {
