@@ -96,7 +96,7 @@ void live_cache::run(std::promise<void> promise) {
 
 	for (auto& sock : m_socks) {
 		zmq::pollitem_t poll;
-		poll.socket = *sock;
+		poll.socket = static_cast<void *>(*sock);
 		poll.events = ZMQ_POLLIN;
 
 		polls.push_back(poll);

@@ -29,6 +29,7 @@
 #include <functional>
 #include <algorithm>
 
+#define NDEBUG
 #include <assert.h>
 
 #include <wx/arrimpl.cpp>

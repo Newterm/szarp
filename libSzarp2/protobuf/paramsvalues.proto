@@ -1,14 +1,14 @@
-syntax = "proto3";
+syntax="proto2";
 package szarp;
 
 message ParamValue {
-	uint32 param_no = 1;
-	uint32 time = 2;
-	uint32 nanotime = 3;
+	required uint32 param_no = 1;
+	required uint32 time = 2;
+	optional uint32 nanotime = 3;
 
-	int32 int_value = 11;
-	float float_value = 12;
-	double double_value = 13;
+	optional int32 int_value = 11;
+	optional float float_value = 12;
+	optional double double_value = 13;
 }
 
 message ParamsValues {
