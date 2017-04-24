@@ -1640,7 +1640,7 @@ public:
 	}
 	/** @return name of param to send, empty string if constant value should be
 	 * sent */
-	const std::wstring& GetParamName()
+	const std::wstring& GetParamName() const
 	{
 		return paramName;
 	}

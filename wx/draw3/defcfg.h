@@ -79,6 +79,8 @@ public:
 
 	xmlNodePtr GenerateXML(xmlDocPtr doc);
 
+	bool IsValid() const override;
+
 	void SetPrec(int prec);
 
 	void SetFormula(wxString formula);
@@ -93,9 +95,9 @@ public:
 
 	wxString GetFormula();
 
-	virtual wxString GetParamName();
+	wxString GetParamName() const override;
 
-	virtual wxString GetBasePrefix();
+	wxString GetBasePrefix() const override;
 
 	TParam::FormulaType GetFormulaType();
 
@@ -127,7 +129,7 @@ public:
 	virtual wxString GetID();
 
 	/** Return configuration prefix*/
-	virtual wxString GetPrefix();
+	wxString GetPrefix() const override;
 
 	void LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params);
 
@@ -186,8 +188,10 @@ protected:
 	/** Set of draws. This is HashMap with set name keys. Contains sets present in this config as well as sets
 	 * that relate to these params from this config and are in 'User defined sets'*/
 	DrawSetsHash drawsSets;
+	std::vector<DefinedDrawSet*> importedInvalidDrawsSets = {};
 
 	std::vector<DefinedParam*> definedParams;
+	std::vector<DefinedParam*> importedInvalidDefinedParams = {};
 
 	/** Defined draws info*/
 	bool m_params_attached;
@@ -275,9 +279,9 @@ public:
 
 	void SetParamName(wxString param_name);
 
-	virtual wxString GetParamName();
+	wxString GetParamName() const override;
 
-	virtual wxString GetBasePrefix();
+	wxString GetBasePrefix() const override;
 
 	virtual wxString GetBaseDraw();
 

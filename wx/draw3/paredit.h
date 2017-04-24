@@ -65,7 +65,7 @@ public:
 	/**Starts new parameter*/
 	int StartNewParameter(bool network_param = false);
 
-	wxString GetBasePrefix();
+	wxString GetBasePrefix() const;
 
 	wxString GetParamName();
 

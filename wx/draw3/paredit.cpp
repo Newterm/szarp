@@ -712,7 +712,7 @@ void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
 	}
 }
 
-wxString ParamEdit::GetBasePrefix() {
+wxString ParamEdit::GetBasePrefix() const {
 	return m_base_prefix;
 }
 

@@ -59,6 +59,8 @@
 #include "defcfg.h"
 #include "errfrm.h"
 
+#include "defverifier.h"
+
 #define FREE(x) if (x != NULL) free(x)
 
 #define X (xmlChar*)
@@ -66,8 +68,6 @@
 const wxChar* const DefinedDrawsSets::DEF_PREFIX  = _T("userD");
 
 const wxChar* const DefinedDrawsSets::DEF_NAME = _("User defined");
-
-const wxRegEx DefinedParam::ParamMatchRegex(wxT("^[^:]*:[^:]*:[^:]*$"));
 
 DefinedDrawInfo::DefinedDrawInfo(DrawInfo *di, DefinedDrawsSets* ds)
 :  DrawInfo(di->GetDraw(), di->GetParam())
@@ -256,7 +256,7 @@ double DefinedDrawInfo::GetScaleMax() {
 		return 0;
 }
 
-wxString DefinedDrawInfo::GetParamName() {
+wxString DefinedDrawInfo::GetParamName() const {
 	return m_param_name;
 }
 
@@ -503,6 +503,10 @@ xmlNodePtr DefinedDrawInfo::GenerateXML(xmlDocPtr doc) {
 	return param;
 }
 
+bool DefinedParam::IsValid() const {
+	return DrawParam::IsValid();
+}
+
 bool DefinedDrawInfo::IsValid() const {
 	return m_valid;
 }
@@ -569,11 +573,11 @@ DefinedParam::DefinedParam(wxString base_prefix,
 
 }
 
-wxString DefinedParam::GetParamName() {
+wxString DefinedParam::GetParamName() const {
 	return m_param_name;
 }
 
-wxString DefinedDrawInfo::GetBasePrefix() {
+wxString DefinedDrawInfo::GetBasePrefix() const {
 	return m_base_prefix;
 }
 
@@ -599,6 +603,10 @@ wxString DefinedDrawInfo::GetValueStr(const double &val, const wxString& no_data
 
 void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 	xmlChar* _source = xmlGetProp(node, X "source");
+	if (_source == NULL) {
+		throw IllFormedParamException("Invalid source attribute");
+	}
+
 	m_base_prefix = SC::U2S(_source);
 	xmlFree(_source);
 
@@ -609,11 +617,12 @@ void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 	}
 
 	xmlChar* _name = xmlGetProp(node, X "name");
+	if (_name == NULL) {
+		throw IllFormedParamException("Invalid name attribute");
+	}
+
 	m_param_name = SC::U2S(_name);
 	xmlFree(_name);
-	if (!DefinedParam::ParamMatchRegex.Matches(m_param_name)) {
-		throw IllFormedParamException(wxString(_("Param ")+m_param_name+_(" is ill-formed.")));
-	}
 
 	xmlChar* _hoursum = xmlGetProp(node, X "hoursum");
 	if (_hoursum) {
@@ -708,20 +717,33 @@ void DefinedDrawInfo::ParseXMLRPCValue(XMLRPC_VALUE v) {
 
 void DefinedParam::ParseXML(xmlNodePtr d) {
 	xmlChar *_script = xmlNodeListGetString(d->doc, d->children, 1);
+	if (_script == NULL) {
+		throw IllFormedParamException("Invalid script");
+	}
+
 	m_formula = SC::U2S(_script);
 
 	xmlChar* _base_prefix = xmlGetProp(d, BAD_CAST "base");
+	if (_base_prefix == NULL) {
+		throw IllFormedParamException("Invalid base attribute");
+	}
+
 	m_base_prefix = SC::U2S(_base_prefix);
 	xmlFree(_base_prefix);
 
 	xmlChar* _param_name = xmlGetProp(d, BAD_CAST "name");
-	m_param_name = SC::U2S(_param_name);
-	xmlFree(_param_name);
-	if (!DefinedParam::ParamMatchRegex.Matches(m_param_name)) {
-		throw IllFormedParamException(wxString(_("Param ")+m_param_name+_(" is ill-formed.")));
+	if (_param_name == NULL) {
+		throw IllFormedParamException("Invalid name attribute");
 	}
 
+	m_param_name = SC::U2S(_param_name);
+	xmlFree(_param_name);
+
 	xmlChar *prec = xmlGetProp(d, BAD_CAST "prec");
+	if (prec == NULL) {
+		throw IllFormedParamException("Invalid precision attribute");
+	}
+
 	m_prec = wcstol(SC::U2S(prec).c_str(), NULL, 10);
 	xmlFree(prec);
 
@@ -948,7 +970,7 @@ wxString DefinedParam::GetUnit() {
 	return m_unit;
 }
 
-wxString DefinedParam::GetBasePrefix() {
+wxString DefinedParam::GetBasePrefix() const {
 	return m_base_prefix;
 }
 
@@ -1106,6 +1128,10 @@ void DefinedDrawSet::GetColor(DefinedDrawInfo *ddi) {
 void DefinedDrawSet::ParseXML(xmlNodePtr node)
 {
 	xmlChar *_title = xmlGetProp(node, X "title");
+	if (_title == NULL) {
+		throw IllFormedParamException("Invalid title attribute");
+	}
+
 	SetName(SC::U2S(_title));
 	xmlFree(_title);
 
@@ -1133,7 +1159,7 @@ void DefinedDrawSet::ParseXML(xmlNodePtr node)
 			continue;
 		
 		std::unique_ptr<DefinedDrawInfo> ddi(new DefinedDrawInfo(m_ds));
-		ddi->ParseXML(p); // throws IllFormedDrawParamException
+		ddi->ParseXML(p);
 		Add(ddi.release());
 	}
 
@@ -1495,7 +1521,7 @@ wxString DefinedDrawsSets::GetID() {
 	return wxGetTranslation(DEF_NAME);
 }
 
-wxString DefinedDrawsSets::GetPrefix() {
+wxString DefinedDrawsSets::GetPrefix() const {
 	return DEF_PREFIX;
 }
 
@@ -1526,26 +1552,57 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 	}
 }
 
-void DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
-	std::unique_ptr<szXmlDoc> root = szXmlDoc::getDoc(SC::S2A(path).c_str());
+/* As of C++11, in C++14 we can do this with a lambda in LoadSets function:
+auto parse = [this](const xmlChar *xpath_expr, std::function<*DType()> new_dp, std::vector<DType*>& ret_vec, std::vector<DType*>& err_vec) {...} */
+template <class DType = DefinedParam>
+void parse(const xmlChar *xpath_expr, std::function<DType*()> new_dp,
+           std::vector<DType*>& ret_vec, std::vector<DType*>& err_vec,
+           std::vector<DefinedParam*>& def_params,
+           const DefinedVerifier& verify, xmlXPathContextPtr xpath_ctx)
+{
+	auto node_set = uxmlXPathGetNodes(xpath_expr, xpath_ctx);
+	if (node_set == NULL) return;
 
-	xmlNodePtr cur = (**root).xmlChildrenNode;
-	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
-		if (!xmlStrcmp(cur->name, X "window")) {
-			std::unique_ptr<DefinedDrawSet> ds(new DefinedDrawSet(this, false));
-			ds->ParseXML(cur); // throws IllFormedDrawParamException and IllFormedDrawSetException
-			ds->SetPrior(m_prior--);
-			draw_sets.push_back(ds.release());
-		} else if (!xmlStrcmp(cur->name, X "param")) {
-			std::unique_ptr<DefinedParam> dp(new DefinedParam());	
-			dp->ParseXML(cur); // throws IllFormedDrawParamException
-			defined_params.push_back(dp.release());
+	for (int i = 0; i < node_set->nodeNr; ++i) {
+		xmlNodePtr node = node_set->nodeTab[i];
+		DType* dp = new_dp();
+
+		try {
+			dp->ParseXML(node);
+
+			verify(*dp, def_params);
+			ret_vec.push_back(dp);
+
+		} catch (const SzException& e) {
+			err_vec.push_back(dp);
+
+			wxString msg = _("Failed to import defined draw sets from configuration file.\n") + wxString::FromUTF8(e.what());
+			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
 		}
 	}
+}
 
-	if (draw_sets.size() == 0) {
+void DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& draw_sets, std::vector<DefinedParam*>& defined_params) {
+	DefinedVerifier verify{m_cfgmgr};
+	
+	std::unique_ptr<szXmlDoc> root = szXmlDoc::getDoc(SC::S2A(path).c_str());
+	xmlXPathContextPtr xpath_ctx = xmlXPathNewContext(&(**root));
+
+	xmlXPathRegisterNs(xpath_ctx, BAD_CAST "draw3", BAD_CAST "http://www.praterm.com.pl/SZARP/draw3");
+
+	parse<DefinedParam>(BAD_CAST "/draw3:windows/draw3:param", [](){return new DefinedParam();}, defined_params, importedInvalidDefinedParams, defined_params, verify, xpath_ctx);
+
+	auto create_defined_set = [this](){
+		auto defined_set = new DefinedDrawSet(this, false);
+		defined_set->SetPrior(this->m_prior--);
+		return defined_set;
+	};
+
+	parse<DefinedDrawSet>(BAD_CAST "/draw3:windows/draw3:window", create_defined_set, draw_sets, importedInvalidDrawsSets, defined_params, verify, xpath_ctx);
+
+	/* if (draw_sets.size() == 0) {
 		throw IllFormedSetException(wxString(_("Set is empty"))); // Is it really an error?
-	}
+	} */
 }
 
 bool DefinedDrawsSets::SaveSets(wxString path, const std::vector<DefinedDrawSet*>& ds, const std::vector<DefinedParam*>& dp) {
@@ -1571,7 +1628,7 @@ void DefinedDrawsSets::SaveSets(wxString path) {
 	if (m_modified == false)
 		return;
 
-	std::vector<DefinedDrawSet*> dsv;
+	std::vector<DefinedDrawSet*> dsv = importedInvalidDrawsSets;
 
 	SortedSetsArray ssa = GetSortedDrawSetsNames();
 	for (size_t i = 0; i < ssa.GetCount(); i++) {
@@ -1580,7 +1637,10 @@ void DefinedDrawsSets::SaveSets(wxString path) {
 		dsv.push_back(ds);
 	}
 
-	if (SaveSets(path, dsv, definedParams) == false)
+	std::vector<DefinedParam*> ddp = definedParams;
+	ddp.insert(ddp.end(), importedInvalidDefinedParams.begin(), importedInvalidDefinedParams.end());
+
+	if (SaveSets(path, dsv, ddp) == false)
 		wxMessageBox(_("Failed to save file with users sets."),
 			     _("Operation failed."), wxOK | wxICON_ERROR,
 			     wxGetApp().GetTopWindow());
