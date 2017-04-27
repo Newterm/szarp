@@ -80,7 +80,7 @@ szAppImpl::szAppImpl() : has_data_dir(false)
 	gtk_rc_add_default_file(rcpath);
 #endif /* __WXGTK__ */
 
-	m_releasedate = _T("2007 - 2016");
+	m_releasedate = _T("2007 - 2017");
 	m_version = _T(SZARP_VERSION);
 }
 
@@ -293,6 +293,9 @@ void szAppImpl::ShowAbout(wxWindow *parent) {
 	authors.Add(L"Marta Szawara");
 	authors.Add(L"Tomasz \u015Awiatowiec");
 	authors.Add(L"Maciej Zbi\u0144kowski");
+	authors.Add(L"Pawe\u0142 Ciechomski");
+	authors.Add(L"Micha\u0142 Glinka");
+	authors.Add(L"Grzegorz Wojciechowski");
 	authors.Add(wxString(L"Witold Kowalewski") + _(" (Ideas)"));
 	authors.Add(wxString(L"Jadwiga Ma\u0107kow") + _(" (French translations)"));
 	authors.Add(wxString(L"Violetta Rowicka") + _(" (French translations)"));
