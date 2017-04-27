@@ -39,6 +39,7 @@ REMOTE=
 USE_CURL=
 SSH_PORT=
 EXC=
+DRY_RUN=
 
 #dodatkowe opcje dla rsync'a
 RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
@@ -53,6 +54,7 @@ function log {
 
 function usage {
     echo "`basename $0` [-c] <ADDRESS> <BASE> <BASE2>"
+    echo "    -d dry run - print what would be executed"
     echo "    -c - user curl to get szbase_stamp"
     echo "    -b speed limit transfer speed to speed kbps"
     echo "    -t <time> ssh connection timeout"
@@ -63,7 +65,7 @@ function usage {
     echo
 }
 
-OPTS=`getopt -q -o 4cb:p:t:e: -n $ME -- "$@"`
+OPTS=`getopt -q -o d4cb:p:t:e: -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
     usage
@@ -73,13 +75,17 @@ fi
 eval set -- "$OPTS"
 
 BWLIMIT=0
-APPEND_VERIFY="--append-verify "
+USE_SZ4=
 
 while true; do
     case "$1" in
-    	-b)
+	-b)
 	    BWLIMIT=$2
 	    shift 2
+	    ;;
+	-d)
+	    DRY_RUN=1
+	    shift 1
 	    ;;
 	-p)
 	    SSH_OPTIONS="$SSH_OPTIONS -p $2"
@@ -90,7 +96,8 @@ while true; do
 	    shift
 	    ;;
 	-4)
-	    APPEND_VERIFY=""
+	    USE_SZ4=1
+	    EXC="$EXC --exclude='*.szb'"
 	    shift
 	    ;;
 	-t)
@@ -111,7 +118,6 @@ while true; do
 	    ;;
     esac
 done
-SZBASE_EXTRA=" $APPEND_VERIFY --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb --exclude=*.sz4"
 
 # sprawdza sposób wywo³ania i ustawia poziom gadatliwo¶ci wyj¶cia
 function get_verbose_level () {
@@ -158,20 +164,31 @@ function get_remote_stamp {
 	return 0;
 }
 
-function do_rsync {
-	LMT=`get_local_stamp $1`;
+function print_and_run {
+	echo "$@"
+	if [ "$DRY_RUN" != "1" ]; then
+		# run command
+		$@
+	fi
+}
 
+function do_rsync {
 	SE="";
 
-	if [ $LMT -ne -1 ]; then
-	    RMT=`get_remote_stamp $1`
-	    [ $? -eq 0 ] || return 1;
-	 
-	    log "do_rsync: LMT: $LMT, RMT: $RMT"
+	if [ "$USE_SZ4" != "1" ]; then
+		log "get_local_stamp $1";
+		LMT=`get_local_stamp $1`;
 
-	    if [ $RMT -eq $LMT ]; then
-		SE="yes"
-	    fi
+		if [ $LMT -ne -1 ]; then
+		    RMT=`get_remote_stamp $1`
+		    [ $? -eq 0 ] || return 1;
+	 
+		    log "do_rsync: LMT: $LMT, RMT: $RMT"
+
+		    if [ $RMT -eq $LMT ]; then
+			SE="yes"
+		    fi
+		fi
 	fi
 
 	export RSYNC_RSH="ssh $SSH_OPTIONS"
@@ -179,11 +196,11 @@ function do_rsync {
 	if [ -n "$SE" ]; then
 	    ROPTS="--bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS"
 	    # first synchronize all beside szbase
-	    /usr/bin/rsync $ROPTS $EXC --exclude=szbase $1 $REMOTE:/opt/szarp
+	    print_and_run /usr/bin/rsync $ROPTS $EXC --exclude=szbase $1 $REMOTE:/opt/szarp
 	    # then synchronize only szbase
-	    /usr/bin/rsync $ROPTS $EXC --include=szbase $SZBASE_EXTRA $1 $REMOTE:/opt/szarp
+	    print_and_run /usr/bin/rsync $ROPTS $EXC --include=szbase $SZBASE_EXTRA $1 $REMOTE:/opt/szarp
 	else
-	    /usr/bin/rsync $EXC --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+	    print_and_run /usr/bin/rsync $EXC --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
 	fi
 }
 
