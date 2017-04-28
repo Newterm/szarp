@@ -2,6 +2,7 @@
 *.substvars
 *.install
 *.debhelper
+*.service
 szarp-*
 build-*
 config-*
