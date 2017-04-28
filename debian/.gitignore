@@ -2,9 +2,9 @@
 *.substvars
 *.install
 *.debhelper
-*.service
 szarp-*
 build-*
 config-*
 files
 tmp
+!*.service
