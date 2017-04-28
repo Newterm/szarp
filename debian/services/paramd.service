@@ -1,0 +1,14 @@
+[Unit]
+Description=SZARP Scada Software Server Paramd
+After=parcook.service
+BindsTo=parcook.service
+PartOf=szarp-server.target parcook.service
+ConditionPathExists=/etc/szarp/units-enabled/paramd
+[Service]
+Type=forking
+ExecStart=/opt/szarp/bin/paramd
+StandardOutput=journal
+StandardError=journal
+RemainAfterExit=yes
+[Install]
+WantedBy=szarp-server.target

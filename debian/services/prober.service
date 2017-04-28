@@ -1,0 +1,13 @@
+[Unit]
+Description=SZARP Scada Software Server Prober
+After=parcook.service
+BindsTo=parcook.service
+PartOf=szarp-server.target parcook.service
+ConditionPathExists=/etc/szarp/units-enabled/prober
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/prober -n
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=szarp-server.target

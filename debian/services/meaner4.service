@@ -1,0 +1,11 @@
+[Unit]
+Description=SZARP Scada Software Server Meaner4
+After=parhub.service
+BindsTo=parhub.service
+PartOf=szarp-server.target parhub.service
+ConditionPathExists=/etc/szarp/units-enabled/meaner4
+[Service]
+Type=simple
+ExecStart=/usr/bin/python2 /opt/szarp/lib/python/meaner4/meaner4.py
+[Install]
+WantedBy=szarp-server.target
