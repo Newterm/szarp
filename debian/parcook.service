@@ -1,0 +1,12 @@
+[Unit]
+Description=SZARP Scada Software Server Parcook
+After=network.target
+BindsTo=szarp-server.service
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/parcook -n -d 10
+SuccessExitStatus=1
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=default.target

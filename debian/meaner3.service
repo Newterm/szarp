@@ -1,0 +1,10 @@
+[Unit]
+Description=SZARP Scada Software Server Parcook
+After=network.target parcook.service
+BindsTo=szarp-server.service
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/meaner3 -n
+SuccessExitStatus=1
+[Install]
+WantedBy=default.target

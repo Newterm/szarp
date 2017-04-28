@@ -1,0 +1,10 @@
+[Unit]
+Description=SZARP Scada Software Server Parhub
+After=network.target
+Wants=parcook.service meaner3.service
+Before=parcook.service meaner3.service
+[Service]
+ExecStart=/bin/bash
+RemainAfterExit=yes
+[Install]
+WantedBy=default.targett
