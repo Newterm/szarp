@@ -1,7 +1,7 @@
 [Unit]
-Description=SZARP Scada Software Server Prober
+Description=SZARP Scada Software Server Parhub
 After=parcook.service meaner3.service
-BindsTo=szarp-server.service
+BindsTo=szarp-server.target
 [Service]
 Type=simple
 ExecStart=/opt/szarp/bin/prober -n

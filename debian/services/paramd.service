@@ -1,7 +1,7 @@
 [Unit]
 Description=SZARP Scada Software Server Paramd
 After=network.target parcook.service meaner3.service
-BindsTo=szarp-server.service
+BindsTo=szarp-server.target
 [Service]
 Type=forking
 ExecStart=/opt/szarp/bin/paramd
