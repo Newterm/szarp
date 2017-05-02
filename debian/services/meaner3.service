@@ -1,5 +1,5 @@
 [Unit]
-Description=SZARP Scada Software Server Parcook
+Description=SZARP Scada Software Server Meaner3
 After=network.target parcook.service
 BindsTo=szarp-server.service
 [Service]
