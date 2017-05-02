@@ -7,4 +7,4 @@ Before=parcook.service meaner3.service parhub.service paramd.service prober.serv
 ExecStart=/bin/bash
 RemainAfterExit=yes
 [Install]
-WantedBy=default.targett
+WantedBy=default.target
