@@ -1,11 +1,10 @@
 [Unit]
-Description=SZARP Scada Software Server Parcook
-After=network.target
+Description=SZARP Scada Software Server Paramd
+After=network.target parcook.service meaner3.service
 BindsTo=szarp-server.service
 [Service]
 Type=forking
-ExecStart=/opt/szarp/bin/parcook -n
-SuccessExitStatus=1
+ExecStart=/opt/szarp/bin/paramd
 StandardOutput=journal
 StandardError=journal
 [Install]

@@ -1,8 +1,8 @@
 [Unit]
 Description=SZARP Scada Software Server Parhub
 After=network.target
-Wants=parcook.service meaner3.service
-Before=parcook.service meaner3.service
+Wants=parcook.service meaner3.service parhub.service paramd.service prober.service
+Before=parcook.service meaner3.service parhub.service paramd.service prober.service
 [Service]
 ExecStart=/bin/bash
 RemainAfterExit=yes

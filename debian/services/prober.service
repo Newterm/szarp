@@ -1,0 +1,11 @@
+[Unit]
+Description=SZARP Scada Software Server Parhub
+After=parcook.service meaner3.service
+BindsTo=szarp-server.service
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/prober -n
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=default.target
