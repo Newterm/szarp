@@ -51,6 +51,8 @@
 #include "convuri.h"
 #include "tokens.h"
 
+#include <stdexcept>
+
 /** Server version */
 #define SERVER_VERSION "$Revision: 6290 $ $Date: 2008-12-29 13:09:10 +0100 (pon, 29.12.2008) $"
 
@@ -222,16 +224,15 @@ int ConnectionHandler::handle(int sock_num, uint32_t addr)
 	conn = conf->new_connection(this, sock_num, addr);
 	if (conn == NULL) {
 		sz_log(1, "Cannot create connection");
-		goto error;
+		close(sock_num);
+		return -1;
+	} else {
+		/* handle connection */
+		sz_log(10, "ConnectionHandler::handle(): about to start new connection");
+		conn->ch->do_handle(conn);
+		close(sock_num);
+		return 0;
 	}
-	/* handle connection */
-	sz_log(10, "ConnectionHandler::handle(): about to start new connection");
-	conn->ch->do_handle(conn);
-	close(sock_num);
-	return 0;
-error:
-	close(sock_num);
-	return -1;
 }
 
 ConnectionFactory::ConnectionFactory()
@@ -797,17 +798,16 @@ ParsedURI::~ParsedURI(void)
 }
 
 
-int Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
+std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
 {
-	int ret;
+	std::vector<int> ret = {};
 	
 	char * sections = cloader->getString("servers", NULL);
 	char **toks = NULL;
 	int tokc = 0;
 	tokenize(sections, &toks, &tokc);
 	if (tokc < 0) {
-		sz_log(0, "0 servers found, exiting");
-		return 1;
+		throw std::runtime_error("No servers found");
 	}
 
 	for (int i = 0; i < tokc; i++) {
@@ -852,18 +852,19 @@ int Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
 				cloader->getIntSect(toks[i], "port", 8081 + i), 
 				ch); 
 		conh->configure(cloader, toks[i]);
-		switch (fork()) {
-//		switch (0) {
+		const int fork_status = fork();
+		switch (fork_status) {
 			case 0: // child, start server
 				tokenize(NULL, &toks, &tokc);
 				delete cloader;
-				ret = server->start(); // never returns
+				server->start(); // never returns
 				sz_log(0, "http server exiting on error");
-				return 1;
+				throw std::runtime_error("server exited");
 			case -1 : //error
 				sz_log(0, "fork() error");
-				return 1;
+				throw std::runtime_error("fork() failed");
 			default : // parent, free memory
+				ret.push_back(fork_status);
 				delete server;
 				delete ch;
 				delete access_manager;
@@ -871,5 +872,5 @@ int Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
 		}
 	}
 	tokenize(NULL, &toks, &tokc);
-	return 0;
+	return ret;
 }

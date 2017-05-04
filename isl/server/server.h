@@ -34,6 +34,8 @@
 #include "uri.h"
 #include "config_load.h"
 
+#include <vector>
+
 /** memory cleaning macro */
 #define CLEAR(a)	if (a) { \
 				xmlFree(a); \
@@ -181,9 +183,9 @@ class Server {
 		 * server started.
 		 * @param conf initialized configuration info object
 		 * @param conf object for creating content handler
-		 * @return 0 on success, 1 on error
+		 * @returns list of childrens' PIDs
 		 */
-		static int StartAll(ConfigLoader *conf, AbstractContentHandler *conh);
+		static std::vector<int> StartAll(ConfigLoader *conf, AbstractContentHandler *conh);
 		
 	protected:
 		int port;	/**< listen port */

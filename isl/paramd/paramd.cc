@@ -49,6 +49,11 @@
 #include "ipk2xml.h"
 #include "szbase/szbbase.h"
 
+#include <sys/wait.h>
+
+std::function<void()> onExit;
+
+
 /**
  * SIGINT handler - log and exit.
  * @param signum ignored
@@ -56,7 +61,7 @@
 void int_handler(int signum)
 {
 	sz_log(2, "paramd exiting on signal");
-	exit (0);
+	onExit();
 }
 
 /**
@@ -66,7 +71,6 @@ void int_handler(int signum)
  */
 int main(int argc, char **argv)
 {
-
 	char *logfile;
 	int log_level;
 
@@ -136,14 +140,53 @@ int main(int argc, char **argv)
 		sz_log(0, "0 servers found, exiting");
 		return 1;
 	}
+
 	// free memory
 	tokenize(NULL, &toks, &tokc);
 
-	// go into background
-	go_daemon();
+	char *no_daemon_par = libpar_getpar("paramd", "no_daemon", 0);
+	bool should_daemonize = true;
+	if (no_daemon_par != nullptr && boost::lexical_cast<bool>(no_daemon_par)) {
+		should_daemonize = false;
+	}
+
+
+	if (should_daemonize) {
+		// go into background
+		onExit = [](){ exit (0); };
+		go_daemon();
+	}
 	
 	signal(SIGINT, int_handler);
 
-	return Server::StartAll(cloader, &conh);
+	std::vector<int> children_started;
+
+	try {
+		children_started = Server::StartAll(cloader, &conh);
+	} catch (const std::exception& e) {
+		sz_log(0, e.what());
+		exit(1);
+	}
+
+	if (!should_daemonize) {
+
+		onExit = std::function<void()>([=children_started](){
+			for (auto c: children_started) {
+				kill(c, SIGINT);
+			}
+
+			exit(0);
+		});
+
+		signal(SIGTERM, int_handler);
+		signal(SIGQUIT, int_handler);
+		signal(SIGHUP,  int_handler);
+		signal(SIGCHLD, int_handler);
+
+		wait(NULL);
+		onExit();
+	}
+
+	return 0;
 }
 
