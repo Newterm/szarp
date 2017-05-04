@@ -7,5 +7,6 @@ Type=forking
 ExecStart=/opt/szarp/bin/paramd
 StandardOutput=journal
 StandardError=journal
+RemainAfterExit=yes
 [Install]
 WantedBy=default.target

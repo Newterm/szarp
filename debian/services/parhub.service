@@ -1,6 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server Parhub
-After=network.target
+After=network.target parcook.service meaner3.service
 BindsTo=szarp-server.target
 [Service]
 Type=simple
