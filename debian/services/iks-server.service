@@ -1,0 +1,11 @@
+[Unit]
+Description=SZARP Scada Software Server iks-server
+After=network.target parcook.service meaner3.service
+BindsTo=szarp-server.target
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/iks-server --no_daemon
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=default.target
