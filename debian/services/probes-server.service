@@ -2,6 +2,7 @@
 Description=SZARP Scada Software Server Probes Server
 After=network.target parcook.service meaner3.service prober.service
 BindsTo=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/probes-server
 [Service]
 Type=forking
 ExecStart=/usr/bin/python /usr/bin/twistd -y /opt/szarp/lib/python/probes_server.tac --logfile - --pidfile /var/run/probes_server.pid

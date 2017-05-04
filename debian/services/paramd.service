@@ -2,6 +2,7 @@
 Description=SZARP Scada Software Server Paramd
 After=network.target parcook.service meaner3.service
 BindsTo=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/paramd
 [Service]
 Type=forking
 ExecStart=/opt/szarp/bin/paramd

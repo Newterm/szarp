@@ -2,6 +2,7 @@
 Description=SZARP Scada Software Server Parhub
 After=network.target parcook.service meaner3.service
 BindsTo=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/parhub
 [Service]
 Type=simple
 ExecStart=/usr/bin/python /opt/szarp/lib/python/parhub.py start

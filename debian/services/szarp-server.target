@@ -1,7 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server
 After=network.target
-Wants=parcook.service meaner3.service parhub.service paramd.service prober.service probes-server.service iks-server.service
 Before=parcook.service meaner3.service parhub.service paramd.service prober.service probes-server.service iks-server.service
 [Install]
 WantedBy=multi-user.target

@@ -2,6 +2,7 @@
 Description=SZARP Scada Software Server Parhub
 After=parcook.service meaner3.service
 BindsTo=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/prober
 [Service]
 Type=simple
 ExecStart=/opt/szarp/bin/prober -n

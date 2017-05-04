@@ -2,6 +2,7 @@
 Description=SZARP Scada Software Server Parcook
 After=network.target
 BindsTo=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/parcook
 [Service]
 Type=simple
 ExecStart=/opt/szarp/bin/parcook -n
