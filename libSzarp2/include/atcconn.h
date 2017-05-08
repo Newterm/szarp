@@ -10,13 +10,16 @@
  */
 class AtcConnection final: public TcpConnection, public AtcHttpClientListener {
 public:
+	static const int DEFAULT_DATA_PORT = 23;
+	static const int DEFAULT_CONTROL_PORT = 80;
+
 	AtcConnection(struct event_base* base);
 	~AtcConnection() override;
 
-	void InitTcp(std::string address)
-	{
-		TcpConnection::InitTcp(address, 23);
-	}
+	void InitTcp(const std::string& address,
+		int data_port=DEFAULT_DATA_PORT,
+		int control_port=DEFAULT_CONTROL_PORT);
+
 	/* BaseConnection interface */
 	void Open() override;
 	void Close() override;
@@ -42,6 +45,7 @@ protected:
 	} m_action_queued;
 
 	bool m_open_finished_pending;
+	int m_control_port;
 };
 
 #endif // __ATCCONN_H__

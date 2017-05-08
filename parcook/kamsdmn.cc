@@ -88,7 +88,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	char *e;
 	int res = asprintf(&e, "./@%s", prop);
 	(void)res;
-	assert (e != NULL);
+	assert (e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -99,7 +99,7 @@ xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop)
 	char *e;
 	int res = asprintf(&e, "./@extra:%s", prop);
 	(void)res;
-	assert (e != NULL);
+	assert (e != nullptr);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -122,7 +122,7 @@ public:
 		SZ_INHERIT_CONSTR(NoDataException, KamsDmnException)
 	};
 
-	kams_daemon() : m_daemon_conf(NULL), m_ipc(NULL),
+	kams_daemon() : m_daemon_conf(nullptr), m_ipc(nullptr),
 			m_state(SET_COMM_WRITE),
 			m_read_mode(MODE_B1200_EVEN),
 			m_chars_written(0),
@@ -130,7 +130,7 @@ public:
 			m_path(""),
 			m_ip(""),
 			m_use_atc(false),
-			m_connection(NULL)
+			m_connection(nullptr)
 	{
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
@@ -140,13 +140,13 @@ public:
 
 	~kams_daemon()
 	{
-		if (m_daemon_conf != NULL) {
+		if (m_daemon_conf != nullptr) {
 			delete m_daemon_conf;
 		}
-		if (m_ipc != NULL) {
+		if (m_ipc != nullptr) {
 			delete m_ipc;
 		}
-		if (m_connection != NULL) {
+		if (m_connection != nullptr) {
 			delete m_connection;
 		}
 	}
@@ -158,6 +158,13 @@ public:
 	void StartDo();
 
 protected:
+	void ConfigureTcpDataPort(const xmlXPathContextPtr& xp_ctx, int default_value);
+	void ConfigureTcpCmdPort(const xmlXPathContextPtr& xp_ctx, int default_value);
+
+	/** Return attribute value or default value of XML elements. */
+	int get_int_attr_def(const xmlXPathContextPtr& xp_ctx,
+		const char* name, int default_value);
+
 	/** Schedule next state machine step */
 	void ScheduleNext(unsigned int wait_ms=0);
 
@@ -250,7 +257,7 @@ void kams_daemon::StartDo() {
 		if (m_ip.compare("") != 0) {
 			if (m_use_atc) {
 				AtcConnection *client = new AtcConnection(m_event_base);
-				client->InitTcp(m_ip);
+				client->InitTcp(m_ip, m_data_port, m_cmd_port);
 				m_connection = client;
 			} else {
 				SerialAdapter *client = new SerialAdapter(m_event_base);
@@ -556,7 +563,7 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xmlLineNumbersDefault(1);
 
 	m_daemon_conf = new DaemonConfig("kamsdmn");
-	assert(m_daemon_conf != NULL);
+	assert(m_daemon_conf != nullptr);
 	if (m_daemon_conf->Load(&argc, argv)) {
 		throw KamsDmnException("Cannot load configuration");
 	}
@@ -585,11 +592,11 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 
 	/* get config data */
 	doc = m_daemon_conf->GetXMLDoc();
-	assert (doc != NULL);
+	assert (doc != nullptr);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	assert (xp_ctx != nullptr);
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	assert (ret == 0);
@@ -601,11 +608,11 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	xp_ctx->node = m_daemon_conf->GetXMLDevice();
 
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
-	if (c == NULL) {
+	if (c == nullptr) {
 		xmlChar *atc_ip = get_device_node_extra_prop(xp_ctx, "atc-ip");
-		if (atc_ip == NULL) {
+		if (atc_ip == nullptr) {
 			xmlChar *path = get_device_node_prop(xp_ctx, "path");
-			if (path == NULL) {
+			if (path == nullptr) {
 				throw KamsDmnException("ERROR!: neither IP nor device path "
 						"has been specified");
 			}
@@ -615,49 +622,52 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 		} else {
 			m_ip.assign((const char*)atc_ip);
 			xmlFree(atc_ip);
-			m_id = m_ip;
+			ConfigureTcpDataPort(xp_ctx, AtcConnection::DEFAULT_DATA_PORT);
+			ConfigureTcpCmdPort(xp_ctx, AtcConnection::DEFAULT_CONTROL_PORT);
+			m_id = m_ip + ":" + std::to_string(m_data_port);
 			m_use_atc = true;
 		}
 	} else {
 		m_ip.assign((const char*)c);
 		xmlFree(c);
-
-		xmlChar* tcp_data_port = get_device_node_extra_prop(xp_ctx, "tcp-data-port");
-		if (tcp_data_port == NULL) {
-			m_data_port = SerialAdapter::DEFAULT_DATA_PORT;
-			dolog(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
-		} else {
-			std::istringstream istr((char*) tcp_data_port);
-			bool conversion_failed = (istr >> m_data_port).fail();
-			if (conversion_failed) {
-				throw KamsDmnException("ERROR!: Invalid data port value: "
-						+ std::string((char*) tcp_data_port));
-			}
-		}
-		xmlFree(tcp_data_port);
-
-		xmlChar* tcp_cmd_port = get_device_node_extra_prop(xp_ctx, "tcp-cmd-port");
-		if (tcp_cmd_port == NULL) {
-			m_cmd_port = SerialAdapter::DEFAULT_CMD_PORT;
-			dolog(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
-		} else {
-			std::istringstream istr((char*) tcp_cmd_port);
-			bool conversion_failed = (istr >> m_cmd_port).fail();
-			if (conversion_failed) {
-				throw KamsDmnException("ERROR!: Invalid cmd port value: "
-						+ std::string((char*) tcp_cmd_port));
-			}
-		}
-		xmlFree(tcp_cmd_port);
-
-		std::stringstream istr;
-		std::string data_port_str;
-		istr << m_data_port;
-		istr >> data_port_str;
-		m_id = m_ip + ":" + data_port_str;
+		ConfigureTcpDataPort(xp_ctx, SerialAdapter::DEFAULT_DATA_PORT);
+		ConfigureTcpCmdPort(xp_ctx, SerialAdapter::DEFAULT_CMD_PORT);
+		m_id = m_ip + ":" + std::to_string(m_data_port);
 	}
 	single = m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno();
 }
+
+void kams_daemon::ConfigureTcpDataPort(const xmlXPathContextPtr& xp_ctx, int default_value)
+{
+	m_data_port = get_int_attr_def(xp_ctx, "tcp-data-port", default_value);
+}
+
+void kams_daemon::ConfigureTcpCmdPort(const xmlXPathContextPtr& xp_ctx, int default_value)
+{
+	m_cmd_port = get_int_attr_def(xp_ctx, "tcp-cmd-port", default_value);
+}
+
+int kams_daemon::get_int_attr_def(const xmlXPathContextPtr& xp_ctx,
+	const char* name, int default_value)
+{
+	xmlChar* str_value = get_device_node_extra_prop(xp_ctx, name);
+	if (str_value == nullptr) {
+		dolog(2, "Unspecified '%s', assuming default: %hu", name, default_value);
+		return default_value;
+	}
+
+	int value = 0;
+	try {
+		value = std::stoi((char*)str_value);
+	} catch(const std::logic_error& e) {
+		xmlFree(str_value);
+		throw KamsDmnException("ERROR!: Invalid " + std::string(name) + " value: "
+			+ std::string((char*)str_value));
+	}
+	xmlFree(str_value);
+	return value;
+}
+
 
 int main(int argc, char *argv[])
 {

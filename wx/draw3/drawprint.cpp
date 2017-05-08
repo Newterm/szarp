@@ -516,12 +516,9 @@ DrawsPrintout::DrawsPrintout(std::vector<Draw*> draws, int count) : m_draws(draw
 {}
 
 std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
-
-	int count;
-	if (wxConfig::Get()->Read(_T("MaxPrintedAxesNumber"), &count) == false)
-		count = 3;
-	if (count < 1)
-		count = 1;
+	int max_ax_count;
+	if (wxConfig::Get()->Read(_T("MaxPrintedAxesNumber"), &max_ax_count) == false)
+		max_ax_count = m_draws_count;
 
 	Axis sr;
 	std::tr1::unordered_map<Axis, std::set<int>, AxisHasher> ranges;
@@ -541,16 +538,25 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 
 		for (auto it = ranges.begin(); it!=ranges.end(); ++it) // for each axis in ranges
 		{
-			if (it->first.min == r.min && it->first.max == r.max && it->first.unit == r.unit) // check, if they differ only by precision. If so, change the axis
+			if (it->first == r) break;
+			float eps = std::pow(0.1, std::max(r.prec, it->first.prec));
+			if (std::fabs(it->first.min - r.min) < eps && std::fabs(it->first.max - r.max) < eps && it->first.unit == r.unit) // check, if they differ only by precision. If so, change the axis
 			{
-				if (it->first.prec < r.prec) r.prec = it->first.prec;
-				else {
-					for (auto jt = ranges[it->first].begin(); jt != ranges[it->first].end(); ++jt)
-						ranges[r].insert(*jt);
-
-					if (sr == it->first)
-						sr = r;
+				if (it->first.prec < r.prec) {
+					r.prec = it->first.prec;
+				} else {
+					r = it->first;
+					break;
 				}
+
+				for (auto j: ranges[it->first])
+					ranges[r].insert(j);
+
+				if (sr == it->first)
+					sr = r;
+
+				it = ranges.erase(it);
+				break;
 			}
 		}
 
@@ -561,18 +567,17 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 
 	}
 
-	std::set<std::set<int> > ret;
-	std::tr1::unordered_map<Axis, std::set<int>, AxisHasher>::iterator it = ranges.begin();
-	for (int added = 0; added < count - 1 && it != ranges.end(); it++) {
-		if (it->first == sr)
-			continue;
-		added++;
-		ret.insert(it->second);
+	std::set<std::set<int> > ret = {ranges[sr]};
+	for (auto& it: ranges) {
+		if (ret.size() >= max_ax_count)
+			break;
+
+		if (it.first == sr) continue;
+
+		ret.insert(it.second);
 	}
-	ret.insert(ranges[sr]);
 
 	return ret;
-
 }
 
 bool DrawsPrintout::OnPrintPage(int page) {
