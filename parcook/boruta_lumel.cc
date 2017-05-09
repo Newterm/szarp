@@ -278,7 +278,10 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	TParam* param = unit->GetFirstParam();
 	for (size_t i = 0; i < m_read_count ; i++) {
 		char *expr;
-	        asprintf(&expr, ".//ipk:param[position()=%zu]",  i + 1);
+		if (asprintf(&expr, ".//ipk:param[position()=%zu]", i + 1) == -1) {
+			sz_log(0, "error occured reading param");
+			return 1;
+		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		ASSERT(pnode);
 		free(expr);

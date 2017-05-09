@@ -455,7 +455,7 @@ void UnitExaminator::ConfigExtraSpeed(DaemonConfig* cfg, int unit_num)
 
 	char *expr;
 	if (asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
-			unit_num + 1)) {
+			unit_num + 1) == -1) {
 		sz_log(0, "error occured reading extra:speed");
 		throw SerialException();
 	}
