@@ -965,7 +965,7 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
 		unsigned short v = (pdu.data.at(data_index) << 8) | pdu.data.at(data_index + 1);
-		dolog(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
+		dolog(7, "Setting register unit_id: %d, address: %zu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
 
@@ -1010,7 +1010,7 @@ bool modbus_daemon::perform_write_registers(RMAP &unit, PDU &pdu) {
 
 		unsigned short v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
-		dolog(7, "Setting register: %hu value: %hu", addr, v);
+		dolog(7, "Setting register: %zu value: %hu", addr, v);
 		j->second->set_val(v, m_current_time);	
 	}
 
@@ -1040,7 +1040,7 @@ bool modbus_daemon::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 		unsigned short v = j->second->get_val();
 		d.push_back(v >> 8);
 		d.push_back(v & 0xff);
-		dolog(7, "Sending register: %hu, value: %hu", addr, v);
+		dolog(7, "Sending register: %zu, value: %hu", addr, v);
 	}
 
 	dolog(7, "Request processed sucessfully.");
@@ -1483,7 +1483,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			m_adu.length = (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
-			dolog(8, "Data size: %hu", m_payload_size);
+			dolog(8, "Data size: %zu", m_payload_size);
 			break;
 		case U_ID:
 			m_state = FUNC;
@@ -1727,7 +1727,7 @@ void modbus_client::send_write_query() {
 		unsigned short v = m_registers[m_unit][m_start_addr + i]->get_val();
 		m_pdu.data.push_back(v >> 8);
 		m_pdu.data.push_back(v & 0xff);
-		dolog(7, "Sending register: %hu, value: %hu:", m_start_addr + i, v);
+		dolog(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
 	m_connection->send_pdu(m_unit, m_pdu);
