@@ -50,7 +50,6 @@ bin_PROGRAMS = \
 	      kamsdmn \
 	      kwmsdmn \
 	      lbdmn \
-	      linedmn \
 	      logdmn \
 	      mbdmn \
 	      borutadmn \
@@ -100,8 +99,6 @@ kamsdmn_SOURCES = kamsdmn.cc
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
-
-linedmn_SOURCES = linedmn.cc
 
 logdmn_SOURCES = logdmn.cc $(basedmn_SOURCES)
 

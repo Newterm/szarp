@@ -11,7 +11,7 @@ Files: var/log/szarp
 Package: szarp-daemons
 Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd}
 Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
-Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,linedmn,mbrtudmn,mbdmn}
+Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
 Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,logdmn,mbusdmn}
 Files: opt/szarp/bin/{nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn}
 Files: opt/szarp/bin/{tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn}
