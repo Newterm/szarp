@@ -1796,10 +1796,11 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	short* send = ipc->m_send;
 
 	for (; unit; unit = unit->GetNext()) {
-
-	        char *expr;
-	        asprintf(&expr, ".//ipk:unit[position()=%zu]",
-			unit_num + 1);
+	  char *expr;
+		if(asprintf(&expr, ".//ipk:unit[position()=%zu]", unit_num + 1) == -1) {
+			sz_log(0, "error occured reading unit");
+			return 1;
+		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		free(expr);
 
