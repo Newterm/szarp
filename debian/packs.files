@@ -9,7 +9,7 @@ Files: opt/szarp/logs
 Files: var/log/szarp
 
 Package: szarp-daemons
-Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd}
+Files: opt/szarp/bin/{parcook,sender,meaner3,sss,checker,psetd}
 Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
 Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
 Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,logdmn,mbusdmn}
@@ -26,7 +26,7 @@ Files: opt/szarp/bin/pserver-lite
 
 Package: szarp-utils
 Files: opt/szarp/bin/{szbedit,szbindex,szbwriter,szbreader,extrszb,modem_pooler.sh,isdn_pooler.sh,probes_client.py}
-Files: opt/szarp/bin/{vrsh,vrsh_d,ipk2szarp,ipkrep,i2smo,analiza2ipk,analiza_create,peakator}
+Files: opt/szarp/bin/{vrsh,vrsh_d,ipk2szarp,ipkrep,i2smo,peakator}
 Files: opt/szarp/bin/{agregator,precconv,szbnull,szbndremover,szbmod,raporter.py}
 Files: opt/szarp/bin/{conf-import.py,conf-get.sh,conf-put.sh}
 
