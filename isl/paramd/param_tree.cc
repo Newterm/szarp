@@ -877,7 +877,6 @@ void ContentHandler::handle_request_for_historical_data(HTTPRequest *req, HTTPRe
 	time_t time = strtoul(req->uri->getOption("time"), &eptr, 10);
 
 	SZARP_PROBE_TYPE probe_type = PT_MIN10;
-	int custom_length = 0;
 
 	const char* period_type_string = req->uri->getOption("period");
 	if (!strcmp(period_type_string, "month"))
@@ -894,7 +893,6 @@ void ContentHandler::handle_request_for_historical_data(HTTPRequest *req, HTTPRe
 		probe_type = PT_MIN10;
 	else if (!strcmp(period_type_string, "custom")) {
 		probe_type = PT_CUSTOM;
-		custom_length = atoi(req->uri->getOption("custom_length"));
 	}
 
 
