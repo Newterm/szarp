@@ -9,7 +9,7 @@ Files: opt/szarp/logs
 Files: var/log/szarp
 
 Package: szarp-daemons
-Files: opt/szarp/bin/{parcook,sender,meaner3,sss,checker,psetd}
+Files: opt/szarp/bin/{parcook,sender,meaner3,sss,checker}
 Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
 Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
 Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,logdmn,mbusdmn}
