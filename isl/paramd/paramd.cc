@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 
 	if (!should_daemonize) {
 
-		onExit = std::function<void()>([=children_started](){
+		onExit = std::function<void()>([children_started](){
 			for (auto c: children_started) {
 				kill(c, SIGINT);
 			}
