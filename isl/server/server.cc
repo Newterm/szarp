@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -58,10 +58,10 @@
 
 /**
  * Starts server. This method binds socket to all local address and port
- * given by class constructor. 
+ * given by class constructor.
  * @return 0 on success, -1 on error
  */
-int Server::start(void) 
+int Server::start(void)
 {
 	struct sockaddr_in sin;
 	struct sockaddr_in cin;
@@ -75,12 +75,12 @@ int Server::start(void)
 		return -1;
 	}
 	if (setsockopt(socknum, SOL_SOCKET, SO_REUSEADDR,
-          &on, sizeof(on)) < 0) { 
+          &on, sizeof(on)) < 0) {
 		close(socknum);
 		sz_log(0, "cannot set socket option, errno %d", errno);
 		return -1;
 	}
-                                                                
+
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(port);
@@ -90,7 +90,7 @@ int Server::start(void)
 		sz_log(0, "bind() error, errno %d", errno);
 		return -1;
 	}
-	
+
 	 snamelen = sizeof(sname);
 	 if (getsockname(socknum, (struct sockaddr *)&sname, &snamelen)) {
 		close(socknum);
@@ -99,7 +99,7 @@ int Server::start(void)
 	 }
 	 switch(sname.sin_family) {
 		 case AF_INET:
-			sz_log(2, "starting server on port %d", (int) 
+			sz_log(2, "starting server on port %d", (int)
 					ntohs(((struct sockaddr_in *)
 					&sname)->sin_port));
 			break;
@@ -127,7 +127,7 @@ int Server::start(void)
 	}
 }
 
-ConnectionHandler::~ConnectionHandler(void) 
+ConnectionHandler::~ConnectionHandler(void)
 {
 	if (allowed_ip)
 		free(allowed_ip);
@@ -151,7 +151,7 @@ int ConnectionHandler::is_allowed(uint32_t addr)
 #ifndef FNM_EXTMATCH
 	return !fnmatch(allowed_ip, inet_ntoa(*(struct in_addr *)&addr), 0);
 #else
-	return !fnmatch(allowed_ip, inet_ntoa(*(struct in_addr *)&addr), 
+	return !fnmatch(allowed_ip, inet_ntoa(*(struct in_addr *)&addr),
 			FNM_EXTMATCH);
 #endif
 }
@@ -163,7 +163,7 @@ int ConnectionHandler::is_allowed(uint32_t addr)
  * @param addr client's IP
  */
 Connection::Connection(ConnectionHandler *_ch, int socket_num,
-	uint32_t _addr) : 
+	uint32_t _addr) :
 		ch(_ch), sock_fd(socket_num), addr(_addr)
 {
 	bio = BIO_new_socket(sock_fd, BIO_CLOSE);
@@ -190,14 +190,14 @@ int Connection::write(void *buffer, int length)
 {
 	int ret;
 	ret = BIO_write(bio, buffer, length);
-	BIO_flush(bio);
+	(void)BIO_flush(bio);
 	return ret;
 }
 
 Connection::~Connection(void)
 {
 	if (bio) {
-		BIO_flush(bio);
+		(void)BIO_flush(bio);
 		BIO_free(bio);
 	}
 	if (sock_fd >= 0)
@@ -210,7 +210,7 @@ Connection::~Connection(void)
  * @param addr client's IP, for information purposes
  * @return -1 on error, 0 on success
  */
-int ConnectionHandler::handle(int sock_num, uint32_t addr) 
+int ConnectionHandler::handle(int sock_num, uint32_t addr)
 {
 	Connection *conn;
 
@@ -272,11 +272,11 @@ int ConnectionHandler::do_handle(Connection *conn)
 	HTTPResponse *res;
 	struct timeval t1, t2;
 	unsigned char *addrt;
-	
+
 	parser = new HTTPRequestParser(conn);
 	req = parser->parse(timeout);
 	gettimeofday(&t1, NULL);
-	if (req == NULL) 
+	if (req == NULL)
 		goto error;
 	res = new HTTPResponse(conn);
 	res->response(req, conh);
@@ -285,7 +285,7 @@ int ConnectionHandler::do_handle(Connection *conn)
 	sz_log(10, "%d.%d.%d.%d %s '%s' HTTP/1.%d %d %ld ms",
 		addrt[0], addrt[1], addrt[2], addrt[3], req->method,
 		req->unparsed_uri, (req->protocol_version == 11 ? 1 : 0),
-		res->code, ((t2.tv_sec - t1.tv_sec) * 1000) + 
+		res->code, ((t2.tv_sec - t1.tv_sec) * 1000) +
 		((t2.tv_usec - t1.tv_usec) / 1000));
 	delete req;
 	delete res;
@@ -345,7 +345,7 @@ HTTPRequest * HTTPRequestParser::parse(int timeout)
 		/* Wait up to timeout seconds. */
 
 		retval = select(fd+1, &rfds, NULL, NULL, tvptr);
-		
+
 		if (!retval) {
 			/* Timeout ! */
 			sz_log(10, "client timeout");
@@ -418,7 +418,7 @@ HTTPRequest * HTTPRequestParser::parse(int timeout)
 				delete req;
 				return NULL;
 			}
-			retval = conn->read(buffer+br, 
+			retval = conn->read(buffer+br,
 					req->content_length - content_read);
 			if (retval <= 0) {
 				delete req;
@@ -531,7 +531,7 @@ void HTTPRequest::parse_content(char *str)
 {
 	char *c;
 	int len;
-	
+
 	assert (suggested_code == 200);
 	assert (str != NULL);
 	assert (content == NULL);
@@ -568,14 +568,14 @@ HTTPResponse::~HTTPResponse(void)
  * constructor.
  * @param req HTTP request to reply to
  * @param conh content handler, responsible for creating response content
- * @param put 0 if setting param value is forbidden, otherwise 1 
+ * @param put 0 if setting param value is forbidden, otherwise 1
  * @return 0 on success, -1 on error
  */
 int HTTPResponse::response(HTTPRequest *req, AbstractContentHandler *conh, int put)
 {
 #define RES_BUFFER_SIZE	1024
 	char buffer[RES_BUFFER_SIZE];
-	
+
 	buffer[RES_BUFFER_SIZE-1] = 0;
 	if (req->suggested_code == 401) {
 		/* Authorization failed */
@@ -591,7 +591,7 @@ Connection: Close\r\n\
 		conn->write(buffer, strlen(buffer));
 		return 0;
 	}
-	
+
 	if (req->suggested_code != 200) {
 		snprintf(buffer, RES_BUFFER_SIZE-1, "\
 HTTP/1.%d %d Error\r\n\
@@ -604,7 +604,7 @@ Connection: Close\r\n\
 		conn->write(buffer, strlen(buffer));
 		return 0;
 	}
-	
+
 	if (put && (req->uri->getOption("put"))) {
 		if (conh->set(req)) {
 			snprintf(buffer, RES_BUFFER_SIZE-1, "\
@@ -616,12 +616,12 @@ Cannot set value",
 				1, SERVER_VERSION);
 		conn->write(buffer, strlen(buffer));
 		return 0;
-			
+
 		};
 	}
-	
+
 	conh->create(req, this);
-	
+
 	if ((code == 302) && (location != NULL)) {
 		/* Moved temporarly */
 		snprintf(buffer, RES_BUFFER_SIZE-1, "\
@@ -636,7 +636,7 @@ Connection: Close\r\n\
 		conn->write(buffer, strlen(buffer));
 		return 0;
 	}
-	
+
 	if (code != 200) {
 		if (content == NULL) {
 			snprintf(buffer, RES_BUFFER_SIZE-1, "\
@@ -659,7 +659,7 @@ Content-Length: %d\r\n\
 %s%s%s\
 \r\n\
 \r\n",
-				1, code, SERVER_VERSION, 
+				1, code, SERVER_VERSION,
 				content_type, content_length,
 				(content_coding ? "Content-Coding: " : ""),
 				(content_coding ? content_coding : ""),
@@ -679,7 +679,7 @@ Content-Type: %s\r\n\
 %s%s%s\
 \r\n\
 ",
-			1, 
+			1,
 			date,
 			exp_date,
 			SERVER_VERSION,
@@ -699,7 +699,7 @@ Content-Type: %s\r\n\
  * Parsed given URI from client's request.
  * @param uri request URI
  */
-ParsedURI::ParsedURI(char *uri) 
+ParsedURI::ParsedURI(char *uri)
 {
 	int tokc1, tokc2, tokc3, i;
 	char **toks1, **toks2, **toks3;
@@ -715,7 +715,7 @@ ParsedURI::ParsedURI(char *uri)
 	tokenize_d(toks1[0], &toks2, &tokc2, "@");
 	tokc3 = 0;
 	tokenize_d(toks2[0], &toks3, &tokc3, "/");
-	
+
 	for (i = 0; i < tokc3; i++) {
 		if (nodes == NULL) {
 			n = new NodeList();
@@ -728,7 +728,7 @@ ParsedURI::ParsedURI(char *uri)
 		n->name = strdup(toks3[i]);
 	}
 	tokenize_d(NULL, &toks3, &tokc3, "");
-	
+
 	if (tokc2 > 1)
 		attribute = strdup(toks2[1]);
 	else
@@ -736,7 +736,7 @@ ParsedURI::ParsedURI(char *uri)
 	if (tokc1 <= 1) {
 		tokenize_d(NULL, &toks2, &tokc2, "");
 		tokenize_d(NULL, &toks1, &tokc1, "");
-		
+
 		return;
 	}
 	tokenize_d(toks1[1], &toks2, &tokc2, "&");
@@ -768,10 +768,10 @@ ParsedURI::ParsedURI(char *uri)
  * @param name name of options
  * @return value of option, NULL if option doesn't exist of is empty
  */
-char *ParsedURI::getOption(const char *name) 
+char *ParsedURI::getOption(const char *name)
 {
 	OptionList *l;
-	
+
 	for (l = options; l; l = l->next)
 		if (!strcmp(l->name, name))
 			return l->value;
@@ -801,7 +801,7 @@ ParsedURI::~ParsedURI(void)
 std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
 {
 	std::vector<int> ret = {};
-	
+
 	char * sections = cloader->getString("servers", NULL);
 	char **toks = NULL;
 	int tokc = 0;
@@ -819,8 +819,8 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 			sz_log(2, "creating HTTPS server");
 			conf = new SSLServer(
 					strdup(cloader->getStringSect(toks[i], "cert","server.pem")),
-					strdup(cloader->getStringSect(toks[i], "key","server.pem")), 
-					NULL, 
+					strdup(cloader->getStringSect(toks[i], "key","server.pem")),
+					NULL,
 					strdup(cloader->getStringSect(toks[i], "keypass","paramd"))
 					);
 		} else {
@@ -834,13 +834,13 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 					cloader->getStringSect(toks[i], "access",
 						"access.conf")));
 			// initialize handler for connections
-			ch = new AuthConnectionHandler(conh, 
-					cloader->getIntSect(toks[i], "timeout", 30), 
+			ch = new AuthConnectionHandler(conh,
+					cloader->getIntSect(toks[i], "timeout", 30),
 					conf, access_manager);
-	
+
 		} else {
 			sz_log(2, "Authorization off");
-			ch = new ConnectionHandler(conh, conf, 
+			ch = new ConnectionHandler(conh, conf,
 					cloader->getIntSect(toks[i], "timeout", 30));
 		}
 		if (strcmp(cloader->getStringSect(toks[i], "allowed_ip", "*"),
@@ -849,8 +849,8 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 						"allowed_ip", NULL));
 		}
 		server = new Server(
-				cloader->getIntSect(toks[i], "port", 8081 + i), 
-				ch); 
+				cloader->getIntSect(toks[i], "port", 8081 + i),
+				ch);
 		conh->configure(cloader, toks[i]);
 		const int fork_status = fork();
 		switch (fork_status) {
