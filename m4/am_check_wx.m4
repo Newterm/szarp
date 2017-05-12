@@ -99,7 +99,7 @@ AC_DEFUN([AM_PATH_WXCONFIG],
     fi
 
     dnl use debug if enabled
-    AC_MSG_WARN(wx-enable-debug = x${wx_enable_debug}x)
+    AC_MSG_WARN(wx-enable-debug = ${wx_enable_debug})
     if test "$wx_enable_debug" == "yes" ; then
 	wx_config_args="$wx_config_args --debug=yes"
     fi
