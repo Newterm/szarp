@@ -441,7 +441,7 @@ std::string SzbaseWrapper::add_param( const std::string& param
 		_formula.replace( i , param.size() , new_name );
 	}
 
-	TParam::FormulaType formula_type;
+	TParam::FormulaType formula_type = TParam::NONE;
 	if( type == "av" )
 		formula_type = TParam::LUA_AV;
 	else if( type == "va" )
