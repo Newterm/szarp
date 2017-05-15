@@ -163,7 +163,7 @@ private:
 
 	bool ParamExists(const std::string &);
 
-	bool ValidateParamNames();
+	void ValidateParamNames();
 
 	CodeEditor *m_formula_input;
 
