@@ -38,6 +38,7 @@
 ADDRESS=
 DELETE="--delete --force"
 USE_SSH=
+USE_SZ4=
 BWLIMIT=0
 SSH_PORT=
 SYNC_ACTIVITY="--exclude=szbase/Activity"
@@ -76,6 +77,7 @@ function usage {
 	echo -e "\t-b speed limit transfer speed to speed kbps"
 	echo -e "\t-n do not delete files"
 	echo -e "\t-s use ssh for getting szbase_stamp date (default curl if -a not given)"
+	echo -e "\t-4 synchronize sz4 files"
 	echo -e "\t-A synchronize Activity parameters"
 	echo -e "\t-h print this usage info"
 	echo
@@ -83,7 +85,7 @@ function usage {
 
 
 # parse options
-OPTS=`getopt -q -o a:u:H:b:p:e:hnsA -n $ME -- "$@"`
+OPTS=`getopt -q -o a:u:H:b:p:e:hns4A -n $ME -- "$@"`
 
 if [ $? != 0 ]; then
 	usage
@@ -120,6 +122,10 @@ while true; do
 	    ;;
 	-s)
 	    USE_SSH=yes
+	    shift
+	    ;;
+	-4)
+	    USE_SZ4=yes
 	    shift
 	    ;;
 	-h)
@@ -218,35 +224,41 @@ function get_remote_stamp {
 	
 function get_include () {
 	INC=
+	RMT=-1
+	LMT=-1
 	[ -d "$1" ] || return 0
-	[ -d "$1/szbase" ] || return 0
-	[ -d "$1/szbase/Status/Meaner3/program_uruchomiony" ] || return 0
 
-	RMT=`get_remote_stamp $1`
-	[ $? -eq 0 ] || return 2;
+	if [ -z $USE_SZ4 ]; then
+		[ -d "$1/szbase" ] || return 0
+		[ -d "$1/szbase/Status/Meaner3/program_uruchomiony" ] || return 0
 
-	LMT=`get_local_stamp $1`
+		RMT=`get_remote_stamp $1`
+		[ $? -eq 0 ] || return 2 ;
+		LMT=`get_local_stamp $1`
+		log "get_include: RMT=$RMT LMT=$LMT"
 
-	log "get_include: RMT=$RMT LMT=$LMT"
+		if [ "$RMT" -ne -1 -a "$RMT" -ne "$LMT" ]; then
+			return 0;
+		fi	
 
-	if [ "$RMT" -ne -1 -a "$RMT" -ne "$LMT" ]; then
-		return 0;
-	fi	
-
-	LAST=`get_last $1`
-	[ -f "$LAST" ] || return 0
-	DATE=`date +%Y-%m-01 -r "$LAST"`
-	DATESTR=`date +%Y%m -d "$DATE"`
-	NOWSTR=`date +%Y%m`
-	OUT=""
-	while [ $DATESTR -le $NOWSTR ] ; do
-		OUT=`echo -n "$OUT --include=$DATESTR.szb"`
-		DATE=`date +%Y-%m-%d -d "$DATE + 1 month"`
+		LAST=`get_last $1`
+		[ -n $USE_SZ4 ] || [ -f "$LAST" ] || return 0
+		DATE=`date +%Y-%m-01 -r "$LAST"`
 		DATESTR=`date +%Y%m -d "$DATE"`
-	done
+		NOWSTR=`date +%Y%m`
+		OUT=""
+		while [ $DATESTR -le $NOWSTR ] ; do
+			OUT=`echo -n "$OUT --include=$DATESTR.szb"`
+			DATE=`date +%Y-%m-%d -d "$DATE + 1 month"`
+			DATESTR=`date +%Y%m -d "$DATE"`
+		done
 
-	EXC="$EXC --exclude=*.szb --exclude=szbase_stamp"
-	INC="$OUT"
+		EXC="$EXC --exclude=*.szb --exclude=*.sz4 --exclude=szbase_stamp"
+		INC="$OUT"
+	else
+		EXC="$EXC --exclude=*.szb --exclude=szbase_stamp"
+		INC="--include=*.sz4"
+	fi
 
 	return 0;
 }
