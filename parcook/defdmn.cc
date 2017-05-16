@@ -129,7 +129,7 @@ double Defdmn::getParamData(TParam* p, sz4::nanosecond_time_t t, SZARP_PROBE_TYP
 	double result;
 	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum;
 
-	m_base->get_weighted_sum(p, sz4::time_just_before<sz4::nanosecond_time_t>::get(t), t, pt, sum);
+	m_base->get_weighted_sum(p, sz4::time_just_before(t), t, pt, sum);
 
 	result = sz4::scale_value(sum.avg(), p);
 	return result;
