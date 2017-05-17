@@ -17,7 +17,7 @@
 */
 
 /*
- * Demon do wyliczania parametr√≥w ze skrypt√≥w LUA i formu≈Ç RPN
+ * Demon do wyliczania parametrÛw ze skryptÛw LUA i formu≥ RPN
  * 
  * Mateusz Morusiewicz <mmorusiewicz@newterm.pl>
  * 
@@ -32,7 +32,7 @@
  @class 4
 
  @devices Daemon processes LUA and RPN formulas
- @devices.pl Sterownik wylicza parametry ze skrypt√≥w LUA i formu≈Ç RPN
+ @devices.pl Sterownik wylicza parametry ze skryptÛw LUA i formu≥ RPN
 
  @config Daemon is configured in szarp.cfg.
 
