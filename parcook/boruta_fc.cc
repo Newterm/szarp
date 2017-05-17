@@ -10,13 +10,13 @@
  @class 4
 
  @devices This is a borutadmn subdriver for FC protocol, used by Danfoss Inverter VLT6000, Danfoss Inverter VLT5000
- @devices.pl Sterownik do demona borutadmn, obsÅ‚ugujÄ…cy protokÃ³Å‚ FC, uÅ¼ywany przez  Danfoss VLT6000, VLT5000.
+ @devices.pl Sterownik do demona borutadmn, obs³uguj±cy protokó³ FC, u¿ywany przez  Danfoss VLT6000, VLT5000.
 
  @protocol FC over RS485 (can be used over TCP/IP)
- @protocol.pl protokÃ³Å‚ FC poprzez port szeregowy RS485 (moÅ¼e byÄ‡Â symulowane przez TCP/IP)
+ @protocol.pl protokó³ FC poprzez port szeregowy RS485 (mo¿e byæ symulowane przez TCP/IP)
 
  @config Driver is configured as a unit subelement of device element in params.xml. See example for allowed attributes.
- @config.pl Sterownik jest konfigurowany w pliku params.xml, w podelemencie unit elementu device. Opis dodawnych atrybutÃ³w XML znajduje siÄ™ w przykÅ‚adzie poniÅ¼ej.
+ @config.pl Sterownik jest konfigurowany w pliku params.xml, w podelemencie unit elementu device. Opis dodawnych atrybutów XML znajduje siê w przyk³adzie poni¿ej.
 
  @config_example
 <device
@@ -58,7 +58,7 @@
 			optional delay time in ms between querying units under device
 		>
 		<param
-			name="Falowniki:WyciÄ…g Lewy:NapiÄ™cie Å‚Ä…cza DC"
+			name="Falowniki:Wyci±g Lewy:Napiêcie ³±cza DC"
 			...
 			extra:parameter-number="518"
 				number of parameter you want to poll
@@ -88,72 +88,72 @@
 <device
 	daemon="/opt/szarp/bin/borutadmn"
 	path="/dev/null"
-		ignorowany, zaleca siÄ™Â ustawienie /dev/null
+		ignorowany, zaleca siê ustawienie /dev/null
 	>
 	<unit
 		id="1"
-			ignorowany, zaleca siÄ™Â wpisacie znaku ASCI
+			ignorowany, zaleca siê wpisacie znaku ASCI
 		type="1"
-			ignorowany, zaleca siÄ™Â ustawienie 1
+			ignorowany, zaleca siê ustawienie 1
 		subtype="1"
-			ignorowany, zaleca siÄ™Â ustawienie 1
+			ignorowany, zaleca siê ustawienie 1
 		bufsize="1"
-			ignorowany, zaleca siÄ™Â ustawienie 1
+			ignorowany, zaleca siê ustawienie 1
 		extra:proto="fc"
-			nazwa protokoÅ‚u, uÅ¼ywana przez BorutÄ™ do ustalenia uÅ¼ywanego
-			sterownika, dla tego sterownika musi byÄ‡ fc
+			nazwa protoko³u, u¿ywana przez Borutê do ustalenia u¿ywanego
+			sterownika, dla tego sterownika musi byæ fc
 		extra:mode="client"
-			tryb pracy jednostki, ten sterownik dziaÅ‚a tylko jako client
+			tryb pracy jednostki, ten sterownik dzia³a tylko jako client
 		extra:medium="serial"
-			medium transmisyjne, moÅ¼e byÄ‡ serial albo tcp,
-			w celu uÅ¼ywania transmisji szeregowej naleÅ¼y dodaÄ‡Â atrybut:
+			medium transmisyjne, mo¿e byæ serial albo tcp,
+			w celu u¿ywania transmisji szeregowej nale¿y dodaæ atrybut:
 				extra:path="/dev/ttyS0"
-					Å›cieÅ¼ka do portu szeregowego
-			w celu uÅ¼ywania transmisji po ethernecie naleÅ¼y dodaÄ‡Â atrybuty:
+					¶cie¿ka do portu szeregowego
+			w celu u¿ywania transmisji po ethernecie nale¿y dodaæ atrybuty:
 				extra:use_tcp_2_serial_proxy="yes"
-					pozwolenie na komunikacjÄ™Â szeregowÄ… poprzez tcp
+					pozwolenie na komunikacjê szeregow± poprzez tcp
 				extra:tcp-ip="192.168.1.150"
-					adres IP do ktÃ³rego siÄ™ podÅ‚Ä…czamy
+					adres IP do którego siê pod³±czamy
 				extra:tcp-port="6969"
-					port IP na ktÃ³ry siÄ™ poÅ‚Ä…czymy
+					port IP na który siê po³±czymy
 		extra:id="13"
 			adres odpytywanego falownika (od 1 do 31), odczytywane z falownika
 		extra:speed="9600"
-			opcjonalna, prÄ™dkoÅ›Ä‡ portu szeregowego w bps (dla medium serial)
-			domyÅ›lna jest 9600, dopuszczalne wartoÅ›ci 300, 600, 1200, 2400, 4800
+			opcjonalna, prêdko¶æ portu szeregowego w bps (dla medium serial)
+			domy¶lna jest 9600, dopuszczalne warto¶ci 300, 600, 1200, 2400, 4800
 		extra:parity="even"
-			opcjonalna, parzystoÅ›Ä‡ portu (dla medium serial)
-			domyÅ›lne jest none, dopuszczalne wartoÅ›ci odd, even
+			opcjonalna, parzysto¶æ portu (dla medium serial)
+			domy¶lne jest none, dopuszczalne warto¶ci odd, even
 		extra:inter-unit-delay="100"
-			opcjonalna, czas opÃ³Åºnienia w ms miÄ™dzy odpytywaniem jednostek w
-			jednym urzÄ…dzeniu
+			opcjonalna, czas opó¼nienia w ms miêdzy odpytywaniem jednostek w
+			jednym urz±dzeniu
 		>
 		<param
-			name="Falowniki:WyciÄ…g Lewy:NapiÄ™cie Å‚Ä…cza DC"
+			name="Falowniki:Wyci±g Lewy:Napiêcie ³±cza DC"
 			...
 			extra:parameter-number="518"
-				numer parametru, ktÃ³ry chcesz odpytaÄ‡
+				numer parametru, który chcesz odpytaæ
 				numer uzyskasz z odpowiedniej dokumentacji falownika
 			extra:prec="0"
-				conversion index parametru, ktÃ³ry chcesz odpytaÄ‡
+				conversion index parametru, który chcesz odpytaæ
 				uzyskasz to z odpowiedniej dokumentacji falownika
-				jeÅ›li ujemny, podaj wartoÅ›Ä‡ bezwzglÄ™dnÄ…Â do atrybutu prec
-				np. jeÅ›li conversion index jest -2 podaj prec="2" (bez extra:!)
+				je¶li ujemny, podaj warto¶æ bezwzglêdn± do atrybutu prec
+				np. je¶li conversion index jest -2 podaj prec="2" (bez extra:!)
 			extra:val_op="lsw"
-				opcjolany operator pozwalajÄ…y na konwersjÄ™ wartoÅ›ci
-				typu float i long na wartoÅ›ci parametrÃ³w SZARP
-				domyÅ›lnie wartoÅ›ci te zamieniane sÄ… na 2 bajtowÄ… reprezentacjÄ™
-				wartoÅ›ci w systemie SZARP bezpoÅ›rednio, jedynie z uwzglÄ™dnieniem
-				precyzji parametru w SZARP moÅ¼liwe jest jednak przepisanie tych
-				wartoÅ›ci do dwÃ³ch parametrÃ³w SZARP (tak zwane parametry
+				opcjolany operator pozwalaj±y na konwersjê warto¶ci
+				typu float i long na warto¶ci parametrów SZARP
+				domy¶lnie warto¶ci te zamieniane s± na 2 bajtow± reprezentacjê
+				warto¶ci w systemie SZARP bezpo¶rednio, jedynie z uwzglêdnieniem
+				precyzji parametru w SZARP mo¿liwe jest jednak przepisanie tych
+				warto¶ci do dwóch parametrów SZARP (tak zwane parametry
 				'kombinowane') co pazwala na nietracenie precyzji i uwzglednianie
-				wiÄ™kszego zakresu
-				w tym celu naleÅ¼y skonfigurowaÄ‡ 2 parametry SZARP z takimi
-				samymi parametrami dotyczÄ…cymi numeru parametru i jego precyzji
-				przy czym jeden z nich powinien mieÄ‡ extra:val_op="lsw" a
+				wiêkszego zakresu
+				w tym celu nale¿y skonfigurowaæ 2 parametry SZARP z takimi
+				samymi parametrami dotycz±cymi numeru parametru i jego precyzji
+				przy czym jeden z nich powinien mieæ extra:val_op="lsw" a
 				drugi extra:val_op="msw"
-				przyjmÄ… wartoÅ›ci odpowiednio mniej i bardziej znaczÄ…cego sÅ‚owa
-				wartoÅ›ci parametru
+				przyjm± warto¶ci odpowiednio mniej i bardziej znacz±cego s³owa
+				warto¶ci parametru
 			>
 		</param>
 	</unit>
