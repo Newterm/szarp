@@ -51,6 +51,9 @@ public:
 
 	void publish();
 	void receive();
+
+	size_t GetSendsCount() { return m_send.size(); }
+	size_t GetParamsCount() { return m_pubs.param_values_size(); }
 };
 
 #endif

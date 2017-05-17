@@ -607,6 +607,11 @@ int DaemonConfig::GetAskDelay() {
 	return m_askdelay;
 }
 
+std::string DaemonConfig::GetName() const {
+	assert (m_load_called != 0);
+	return m_daemon_name;
+}
+
 void DaemonConfig::InitUnits() {
 	assert(m_ipk);
 

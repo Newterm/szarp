@@ -211,6 +211,9 @@ public:
 	/**Returns delay between querying units*/
 	int GetAskDelay();
 
+	/**Returns daemon name*/
+	std::string GetName() const;
+
 protected:
 	/** Parses command line parameters. Internal use.
 	 * @return 0 on success, 1 on error or if usage info was printed
