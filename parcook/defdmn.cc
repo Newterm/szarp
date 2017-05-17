@@ -154,7 +154,7 @@ void Defdmn::cycle_timer_callback(int fd, short event, void* arg) {
 }
 
 void Defdmn::configure(int* argc, char** argv) {
-	IPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
+	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	m_cfg.reset(new DaemonConfig("defdmn"));
 
 	configure_events();
