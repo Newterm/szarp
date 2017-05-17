@@ -46,48 +46,37 @@
 
 #include "base_daemon.h"
 
-class SampleDaemon : public BaseDaemon {
+class SampleDaemon {
 public:
-	SampleDaemon() : BaseDaemon("sampledmn")
-	{
+	using interface = interface_wrapper<IPCProvider, EventProvider, SignalProvider>;
+
+	SampleDaemon(interface* if_provider): m_if(if_provider) {
+		m_if->get<SignalProvider>()->InitSignals();
+
+		std::function<void()> poll_cycle =
+			[this](){ Read(); m_if->get<IPCProvider>()->Publish(); };
+
+		m_if->get<EventProvider>()->RegisterTimerCallback(poll_cycle);
+
+		m_if->get<EventProvider>()->PollForever();
 	}
 
-	virtual ~SampleDaemon()
+	void Read()
 	{
+		for( size_t i=0 ; i < m_if->get<IPCProvider>()->GetParamsCount() ; ++i )
+			m_if->get<IPCProvider>()->SetVal( i , static_cast<short>(i) );
 	}
 
-	virtual int Read()
-	{
-		for( unsigned int i=0 ; i<Count() ; ++i )
-			Set( i , 1 );
-		return 0;
-	}
+private:
+	interface *m_if;
 
-protected :
-	virtual int ParseConfig(DaemonConfig * cfg)
-	{
-		return 0;
-	}
 };
 
 int main(int argc, const char *argv[])
 {
-	SampleDaemon dmn;
-
-	if( dmn.Init( argc , argv ) ) {
-		sz_log(0,"Cannot start %s daemon",dmn.Name());
-		return 1;
-	}
-
-	sz_log(2, "Starting %s",dmn.Name());
-
-	for(;;)
-	{
-		dmn.Wait();
-		dmn.Read();
-		dmn.Transfer();
-	}
-
-	return 0;
+	DaemonConfig* cfg = new DaemonConfig("sampledmn");
+	if(cfg->Load(&argc, const_cast<char**>(argv))) throw std::runtime_error("Could not initialize configuration");
+	
+	SampleDaemon dmn(SampleDaemon::interface::create<IPCHandlerWrapper, LibeventWrapper, SignalProvider>(cfg));
 }
 
