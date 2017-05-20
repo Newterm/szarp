@@ -378,7 +378,7 @@ void TDevice::configureDeviceTimeval(long int rollback)
 {
 	if (deviceTimeval.tv_sec == 0 && deviceTimeval.tv_usec == 0) {
 		deviceTimeval.tv_sec = rollback;
-		sz_log(0, "Device timer configuration incorrect. Defaulting to (%lli s).", deviceTimeval.tv_sec);
+		sz_log(0, "Device timer configuration incorrect. Defaulting to (%li s).", deviceTimeval.tv_sec);
 	}
 }
 
