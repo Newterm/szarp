@@ -36,6 +36,7 @@ template<class return_type, class builder> struct factory {
 			default:
 				assert(false);
 		}
+		return NULL;
 	};
 private:
 	template<class _data, class ...Args> static return_type* op_1(TParam* param, Args... args) {
