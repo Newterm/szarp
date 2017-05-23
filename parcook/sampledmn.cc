@@ -51,20 +51,32 @@ public:
 	using interface = interface_wrapper<IPCProvider, EventProvider, SignalProvider>;
 
 	SampleDaemon(interface* if_provider): m_if(if_provider) {
-		m_if->get<SignalProvider>()->InitSignals();
+		m_if->call(&SignalProvider::InitSignals);
 
 		std::function<void()> poll_cycle =
-			[this](){ Read(); m_if->get<IPCProvider>()->Publish(); };
+		[this]() {
+			Read();
+			m_if->call(&IPCProvider::Publish);
+		};
 
-		m_if->get<EventProvider>()->RegisterTimerCallback(poll_cycle);
+		//m_if->call(&EventProvider::RegisterTimerCallback, poll_cycle, -1, -1); // Default arguments dont work :(((
+		(*m_if)[&EventProvider::RegisterTimerCallback](poll_cycle, 4, 500); // To use defaults we need to specify another function within the interface
 
-		m_if->get<EventProvider>()->PollForever();
+		m_if->call(&EventProvider::PollForever);
 	}
 
 	void Read()
 	{
-		for( size_t i=0 ; i < m_if->get<IPCProvider>()->GetParamsCount() ; ++i )
-			m_if->get<IPCProvider>()->SetVal( i , static_cast<short>(i) );
+		//for( size_t i=0 ; i < m_if->get<IPCProvider>()->GetParamsCount() ; ++i )
+		(*m_if)(&IPCProvider::SetVal<int16_t>, size_t(0), int16_t(1)); // this one needs casted arguments
+
+		// Make the interface a reference to remove the * or make the interface_wrapper a base class
+		(*m_if)[&IPCProvider::SetVal<int16_t>](1, 2);
+
+		// Or even
+		auto SetVal =(*m_if)[&IPCProvider::SetVal<int16_t>];
+		SetVal(2, 3);
+		SetVal(3, sz4::getTimeNow<sz4::second_time_t>());
 	}
 
 private:
@@ -77,6 +89,5 @@ int main(int argc, const char *argv[])
 	DaemonConfig* cfg = new DaemonConfig("sampledmn");
 	if(cfg->Load(&argc, const_cast<char**>(argv))) throw std::runtime_error("Could not initialize configuration");
 	
-	SampleDaemon dmn(SampleDaemon::interface::create<IPCHandlerWrapper, LibeventWrapper, SignalProvider>(cfg));
+	SampleDaemon dmn(SampleDaemon::interface::concrete_creator<IPCHandlerWrapper, LibeventWrapper, SignalProvider>::create(cfg));
 }
-

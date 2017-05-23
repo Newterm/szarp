@@ -85,10 +85,13 @@ struct IPCProvider {
 	virtual size_t GetParamsCount() const = 0;
 	virtual size_t GetSendsCount() const = 0;
 
-	virtual void SetVal( size_t i, int16_t val ) = 0;
-	virtual void SetVal( size_t i, int32_t val ) { SetVal(i, static_cast<short>(val)); }
-	virtual void SetVal( size_t i, float val ) { SetVal(i, static_cast<short>(val)); }
-	virtual void SetVal( size_t i, double val ) { SetVal(i, static_cast<short>(val)); }
+	template <typename VT>
+	void SetVal(size_t i, VT val) { _SetVal(i, val); }
+	
+	virtual void _SetVal( size_t i, int16_t val ) = 0;
+	virtual void _SetVal( size_t i, int32_t val ) { _SetVal(i, static_cast<int16_t>(val)); }
+	virtual void _SetVal( size_t i, float val ) { _SetVal(i, static_cast<int16_t>(val)); }
+	virtual void _SetVal( size_t i, double val ) { _SetVal(i, static_cast<int16_t>(val)); }
 
 	virtual int16_t GetSendShort( size_t i ) = 0;
 	virtual int32_t GetSendInt( size_t i ) { return GetSendShort(i); }
@@ -112,7 +115,7 @@ struct IPCHandlerWrapper: IPCProvider {
 		}
 	}
 
-	void SetVal(size_t p_no, short val) override { _ipc->m_read[p_no] = std::move(val); }
+	void _SetVal(size_t p_no, int16_t val) override { _ipc->m_read[p_no] = std::move(val); }
 	short GetVal(size_t p_no) const { return _ipc->m_read[p_no]; }
 	short GetSendShort(size_t p_no) override { return _ipc->m_send[p_no]; }
 	size_t GetSendsCount() const override { return _ipc->m_sends_count; }
@@ -139,10 +142,10 @@ struct ZMQWrapper: IPCProvider {
 
 	void Publish() override { _zmq->publish(); }
 
-	void SetVal( size_t i, int16_t val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
-	void SetVal( size_t i, int32_t val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
-	void SetVal( size_t i, float val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
-	void SetVal( size_t i, double val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
+	void _SetVal( size_t i, int16_t val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
+	void _SetVal( size_t i, int32_t val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
+	void _SetVal( size_t i, float val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
+	void _SetVal( size_t i, double val ) { _zmq->set_value(index, sz4::getTimeNow<time_type>(), val); }
 
 	// I don't think sends work ATM, if they are needed use sz4base or defdmn
 	void GetSend( size_t i, int16_t& val ) { val = _GetSend<int16_t>(i); }
