@@ -1,6 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server Parhub
-After=network.target parcook.service meaner3.service
+After=default.target
 BindsTo=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/parhub
 [Service]

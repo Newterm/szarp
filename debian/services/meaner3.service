@@ -1,6 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server Meaner3
-After=network.target parcook.service
+After=default.target parcook.service
 BindsTo=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/meaner3
 [Service]
