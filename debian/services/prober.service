@@ -1,5 +1,5 @@
 [Unit]
-Description=SZARP Scada Software Server Parhub
+Description=SZARP Scada Software Server Prober
 After=parcook.service meaner3.service
 BindsTo=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/prober
