@@ -934,53 +934,12 @@ void DrawFrame::OnLanguageChange(wxCommandEvent &e) {
 }
 
 void DrawFrame::OnGraphsView(wxCommandEvent &e) {
-
 	wxArrayString choices;
-
-#ifdef MINGW32
-
+	
 	wxString style = _T("GCDC");
 	choices.push_back(_("Antialiased"));
 	choices[0] = choices[0] + _T(" (") + _("currently selected") + _T(")");
 	wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
-
-#else
-
-	wxString style = wxConfig::Get()->Read(_T("GRAPHS_VIEW"), _T("GCDC"));
-	choices.push_back(_("Classic"));
-	choices.push_back(_("'3D'"));
-	choices.push_back(_("Antialiased"));
-
-	int selected;
-
-	if (style == _T("'3D'"))
-		selected = 1;
-	else if (style == _T("GCDC"))
-		selected = 2;
-	else
-		selected = 0;
-
-	choices[selected] = choices[selected] + _T(" (") + _("currently selected") + _T(")");
-
-	int ret = wxGetSingleChoiceIndex(_("Choose graphs window style"), style, choices, this);
-	if (ret == -1)
-		return;
-
-	if (ret == 2) {
-		if (style != _T("GCDC"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("GCDC");
-	} else if (ret == 1) {
-		if (style != _T("3D"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("3D");
-	} else {
-		if (style != _T("Classic"))
-			wxMessageBox(_("You need to restart application for this change to take effect."), _("Graphs view changed."), wxICON_INFORMATION, this);
-		style = _T("Classic");
-	}
-
-#endif
 
 	wxConfig::Get()->Write(_T("GRAPHS_VIEW"), style);
 	wxConfig::Get()->Flush();
