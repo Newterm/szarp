@@ -178,7 +178,7 @@ def check_for_daemons():
 						daemon_md5sum = 0
 					if md5sum_check != daemon_md5sum is not None:
 						add_note("custom daemon found in " + value)
-				if value == "dbdmn":
+				if os.path.basename(value).startswith("dbdmn"):
 					for unit in device:
 						for param in unit:
 							param_path = param.get(add_ns(namespace_extra, "param"))
