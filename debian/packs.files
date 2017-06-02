@@ -37,8 +37,9 @@ Files: opt/szarp/bin/{convert_names,get_sam,process_csv,sshkey,insum.sh}
 Package: szarp-server
 
 Package: szarp-wx
-Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh,setter}
+Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh}
 Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo,setter.mo}
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo}
 Files: opt/szarp/resources/locales/fr_FR/LC_MESSAGES
 Files: opt/szarp/resources/locales/de_DE/LC_MESSAGES
 Files: opt/szarp/resources/sounds
