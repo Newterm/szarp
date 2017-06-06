@@ -115,7 +115,7 @@ class XsltHandler:
 
 		doc = etree.parse(fname, parser)
 
-                r = 'dupa'
+                r = 'test'
                 try:
                     r = stylesheet(doc, uri = "'" + paramd_uri + "'")
                 except Exception, e:
