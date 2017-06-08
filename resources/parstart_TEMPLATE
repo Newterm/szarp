@@ -79,13 +79,6 @@ do_start () {
 			worklog $?
 	fi
 
-	if [ x$PSERVER_LITE = x1 ]; then
-			DAEMON=__INSTALL_DIR__/bin/pserver-lite
-			szlog
-			start_daemon $DAEMON
-			worklog $?
-	fi
-
 	if [ x$MEANER4 = x1 ]; then
 			DAEMON='meaner4'
 			szlog
@@ -99,6 +92,14 @@ do_start () {
 			start_daemon $DAEMON
 			worklog $?
 	fi
+
+	if [ x$PSERVER_LITE = x1 ]; then
+			DAEMON=__INSTALL_DIR__/bin/pserver-lite
+			szlog
+			start_daemon $DAEMON
+			worklog $?
+	fi
+
 
 	if [ x$MEANER3 = x1 ]; then
 			DAEMON=__INSTALL_DIR__/bin/meaner3

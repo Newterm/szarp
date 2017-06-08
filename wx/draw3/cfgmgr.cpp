@@ -61,12 +61,12 @@
 #include "xmlutils.h"
 
 
-wxString DrawParam::GetBasePrefix() {
+wxString DrawParam::GetBasePrefix() const {
 	assert (m_param != NULL);
 	return m_param->GetSzarpConfig()->GetPrefix().c_str();
 }
 
-wxString DrawParam::GetParamName() {
+wxString DrawParam::GetParamName() const {
 	assert (m_param != NULL);
 	return m_param->GetTranslatedName().c_str();
 }
@@ -97,6 +97,10 @@ const double& DrawParam::GetSumDivisor() {
 int DrawParam::GetPrec() {
 	assert (m_param != NULL);
 	return m_param->GetPrec();
+}
+
+bool DrawParam::IsValid() const {
+	return m_param != NULL;
 }
 
 TParam* DrawParam::GetIPKParam() {
@@ -163,7 +167,7 @@ DrawInfo::CompareDraws(DrawInfo *first, DrawInfo *second)
 }
 
 wxString
-DrawInfo::GetBasePrefix()
+DrawInfo::GetBasePrefix() const
 {
 	assert (p != NULL);
 	return p->GetBasePrefix();
@@ -194,7 +198,7 @@ DrawInfo::GetName()
 }
 
 wxString
-DrawInfo::GetParamName()
+DrawInfo::GetParamName() const
 {
 	assert (p != NULL);
 	return p->GetParamName();
@@ -207,7 +211,7 @@ DrawInfo::GetShortName() {
 }
 
 DrawParam*
-DrawInfo::GetParam()
+DrawInfo::GetParam() const
 {
 	return p;
 }
@@ -296,12 +300,16 @@ DrawInfo::GetSumDivisor() {
 }
 
 bool DrawInfo::IsValid() const {
-	return true;
+	if (p == NULL || d == NULL) return false;
+	return (p->IsValid());
 }
 
 wxString
 DrawInfo::GetValueStr(const double &val, const wxString& no_data_str, const int prec) {
-	assert (p != NULL);
+	if (p == NULL) {
+		return no_data_str;
+	}
+
 	return p->GetIPKParam()->PrintValue(val, no_data_str.c_str(), prec);
 }
 
@@ -514,7 +522,7 @@ DrawSet::GetDrawName(int index)
 }
 
 wxString
-DrawSet::GetParamName(int index)
+DrawSet::GetParamName(int index) const
 {
 	if (index < (int) m_draws->size())
 		return m_draws->at(index)->GetParamName();
@@ -569,7 +577,7 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, b
 {
 	if(splashscreen != NULL) {
 		wxString msg = _("Loading configuration: ");
-		msg += config_path;
+		msg += prefix;
 		splashscreen->PushStatusText(msg);
 	}
 
@@ -609,26 +617,6 @@ ConfigManager::GetSzarpDir() const
 	return folder_path + '/';
 }
 
-#if 0
-wxString
-ConfigManager::GetDrawName(const wxString prefix, const wxString set, int index)
-{
-	return config_hash[prefix]->GetDrawsSets()[set]->GetDrawName(index);
-}
-
-wxString
-ConfigManager::GetParamName(const wxString prefix, const wxString set, int index)
-{
-	return config_hash[prefix]->GetDrawsSets()[set]->GetParamName(index);
-}
-
-wxColour
-ConfigManager::GetDrawColor(const wxString prefix, const wxString set, int index)
-{
-	return config_hash[prefix]->GetDrawsSets()[set]->GetDrawColor(index);
-}
-#endif
-
 wxString
 IPKConfig::GetID()
 {
@@ -636,7 +624,7 @@ IPKConfig::GetID()
 }
 
 wxString
-IPKConfig::GetPrefix()
+IPKConfig::GetPrefix() const
 {
 	return m_sc->GetPrefix().c_str();
 }
@@ -1226,14 +1214,8 @@ void ConfigManager::LoadDefinedDrawsSets() {
 	wxFileName p(sd.GetPath(), _T("defined.xml"));
 
 	if (p.FileExists()) {
-		try {
-			m_defined_sets->LoadSets(p.GetFullPath());
-			config_hash[m_defined_sets->GetPrefix()] = m_defined_sets;
-		} catch (SzException& e) {
-			wxString msg = wxString::Format(_("Failed to import defined draw sets from configuration file %s\n"), sd.GetFullPath().c_str()) + wxString::FromUTF8(e.what());
-			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
-		}
-
+		m_defined_sets->LoadSets(p.GetFullPath());
+		config_hash[m_defined_sets->GetPrefix()] = m_defined_sets;
 	}
 
 }

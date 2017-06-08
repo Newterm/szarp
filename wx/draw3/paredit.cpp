@@ -286,74 +286,55 @@ void ParamEdit::CreateDefinedParam() {
 
 bool ParamEdit::ParamExists(const std::string &param)
 {
-	//param must be ***:***:***:*** if not it is not valid
-	size_t n = std::count(param.begin(), param.end(), ':');
-	if( n != 3 ) return false;
-
-	wxString confid(param.substr(0, param.find(std::string(":"))).c_str(), wxConvUTF8);
-	wxString pname(param.substr(param.find(std::string(":"))+1, std::string::npos).c_str(), wxConvUTF8);
-	
-	SortedSetsArray sorted(DrawSet::CompareSets);
-	DrawsSets* conf = m_cfg_mgr->GetConfigByPrefix(confid);
-	if (conf == NULL) return false;
-	sorted = conf->GetSortedDrawSetsNames(true);
-	
-	//check if param exists
-	int count = sorted.size();
-	for (int i = 0; i < count; i++) { 
-		DrawSet* set = sorted.Item(i);
-		for (size_t j = 0; j < set->GetDraws()->size(); j++) {
-			DrawInfo* info = m_cfg_mgr->GetDraw(confid, set->GetName(), j);
-			if (info == NULL) 
-				continue;
-			if (pname.Cmp(info->GetParam()->GetParamName()) == 0)
-			{
-				return true;
-			}
-		}
-	}
-	
-	//check user defined params
-	DefinedDrawsSets * defined = m_cfg_mgr->GetDefinedDrawsSets();
-	std::vector<DefinedParam*> definedParams = defined->GetDefinedParams();
-
-	for (std::vector<DefinedParam*>::iterator i = definedParams.begin();i != definedParams.end(); i++) {
-		if (confid.Cmp((*i)->GetBasePrefix())== 0 && pname.Cmp((*i)->GetParamName()) == 0 )
-			return true;
-	}
-
-	//no matching param was found, return false
-	return false;
+	return m_cfg_mgr->GetIPKs()->GetParam(SC::L2S(param), true) != NULL;
 }
 
-bool ParamEdit::ValidateParamNames()
+void ParamEdit::ValidateParamNames()
 {
 	std::vector<std::string> params;
 	std::string text = std::string(m_formula_input->GetText().mb_str());
-	int found = -1;
-	int pstart, pend;
+	size_t found = 0;
 
 	//find all param names in formula. Param lies between "p(" and ", t, pt)"
-	while( (found = text.find(std::string("p("), found+1)) != std::string::npos)
+	while( (found = text.find(std::string("p("), found)) != std::string::npos)
 	{
-		pstart = text.find(std::string("\""), found+1);
-		if(pstart == std::string::npos) return false;
+		// Find start quote of the param
+		unsigned const int pstart = text.find(std::string("\""), found+1);
+		if(pstart == std::string::npos)
+			throw IllFormedParamException(_("Could not find quote starting param name after function P at position ")
+			                              + wxString::Format(wxT("%i"), found));
 
-		pend = text.find(std::string("\""), pstart+1);
-		if(pend == std::string::npos) return false;
+		// Find end quote
+		unsigned const int pend = text.find(std::string("\""), pstart+1);
+		if(pend == std::string::npos)
+			throw IllFormedParamException(_("Could not find quote ending param name after position ")+wxString::Format(wxT("%i"), pstart));
 
-		found = text.find(std::string(", t, pt)"), found+1);
-		if(found == std::string::npos || found != pend+1) return false;
-		
+		// Find end bracket of p function
+		found = text.find(')', pend+1);
+		if(found == std::string::npos)
+			throw IllFormedParamException(_("Could not find closing bracket after position ")+wxString::Format(wxT(" %i"), pend));
+
+
+		// Count commas for arguments (2 commas for 3 arguments)
+		auto pend_it = text.begin();
+		std::advance(pend_it, pend);
+
+		auto found_it = text.begin();
+		std::advance(found_it, found);
+
+		if (std::count(pend_it, found_it, ',') != size_t{2})
+			throw IllFormedParamException(_("Function p is ill-formed, arguments missing between positions ")
+			                              + wxString::Format(wxT(" %i "), pend)
+			                              + _("and") +wxString::Format(wxT(" %i"), found));
+
+		// Everything was OK
 		params.push_back(text.substr(pstart+1, pend - pstart - 1));
-		found += 5;
 	}
 
 	for(unsigned int i = 0; i < params.size(); ++i)
 	{
-		if(!ParamExists(params[i])) return false;
+		if(!ParamExists(params[i])) throw IllFormedParamException(_("Could not find param ")+wxString(params[i].c_str(), wxConvUTF8));
 	}
-	return true;
 }
 
 void ParamEdit::OnOK(wxCommandEvent &e) {
@@ -364,8 +345,10 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 		return;
 	}
 	
-	if(!ValidateParamNames()){
-		wxMessageBox(_("One of the given parameters doesn't exist. Check them again."), _("Invalid param"),
+	try {
+		ValidateParamNames();
+	} catch (const SzException& e) {
+		wxMessageBox(_("Failed to add parameter, reason was: ") + wxString::FromUTF8(e.what()), _("Operation failed"),
 			wxOK | wxICON_ERROR, this);
 		return;
 	}
@@ -712,7 +695,7 @@ void ParamEdit::DatabaseResponse(DatabaseQuery *q) {
 	}
 }
 
-wxString ParamEdit::GetBasePrefix() {
+wxString ParamEdit::GetBasePrefix() const {
 	return m_base_prefix;
 }
 

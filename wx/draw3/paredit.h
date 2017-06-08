@@ -65,7 +65,7 @@ public:
 	/**Starts new parameter*/
 	int StartNewParameter(bool network_param = false);
 
-	wxString GetBasePrefix();
+	wxString GetBasePrefix() const;
 
 	wxString GetParamName();
 
@@ -163,7 +163,7 @@ private:
 
 	bool ParamExists(const std::string &);
 
-	bool ValidateParamNames();
+	void ValidateParamNames();
 
 	CodeEditor *m_formula_input;
 

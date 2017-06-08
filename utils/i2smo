@@ -178,7 +178,7 @@ def check_for_daemons():
 						daemon_md5sum = 0
 					if md5sum_check != daemon_md5sum is not None:
 						add_note("custom daemon found in " + value)
-				if value == "dbdmn":
+				if os.path.basename(value).startswith("dbdmn"):
 					for unit in device:
 						for param in unit:
 							param_path = param.get(add_ns(namespace_extra, "param"))
@@ -266,7 +266,9 @@ def check_params_xmlschema():
 
 def check_under_defined_elements():
 	"""
-	Testing define elements for: RPN as attribute type of define element
+	Testing define elements for:
+		RPN as attribute type of define element
+		lua_formula as forbidden attribute in defined parameter
 	"""
 	for defined in elements:
 		if defined.tag == add_ns(namespace, "defined"):
@@ -275,7 +277,9 @@ def check_under_defined_elements():
 					if define.tag == add_ns(namespace, "define"):
 						for attr, value in define.items():
 							if attr == "type" and value != "RPN":
-								printerr("found \"" + value + "\" as defined formula type, expected \"RPN\" (line " + str(define.sourceline) + ")")
+								printerr('found "' + value + '" as defined formula type, expected "RPN" (line ' + str(define.sourceline) + ')')
+							if attr == "lua_formula":
+								printerr('found "' + attr + '" in defined parameter, use "formula" only (line "' + str(define.sourceline) + ')')
 
 def check_under_device_elements():
 	"""
@@ -421,9 +425,11 @@ quiet = args.quiet
 process = Popen(command, stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 if stdout:
-	add_note(stdout.rstrip())
+	for note in stdout.strip().splitlines():
+		add_note(note)
 if stderr:
-	printerr(stderr.rstrip(), '')
+	for error in stderr.strip().splitlines():
+		printerr(error, '')
 
 if not quiet:
 	add_note("if configuration has changed: /etc/init.d/parstart restart")
@@ -442,6 +448,5 @@ if error_count == 0:
 	if not quiet:
 		printok("OK")
 else:
-	printerr("params.xml not wellformed, check previous logs!")
-	printerr("ERROR", '')
+	printerr("ERROR - params.xml not wellformed, check previous logs!", '')
 	sys.exit(1)

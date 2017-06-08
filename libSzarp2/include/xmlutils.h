@@ -27,8 +27,8 @@
 #include <memory>
 #include "exception.h"
 
-/** Returns pointer to XML node described by XPath expresion.
- * @param xpath_expr expresion describing node (exactly one!)
+/** Returns pointer to XML node described by XPath expression.
+ * @param xpath_expr expression describing node (exactly one!)
  * @param xpath_ctx libxml2 xpath context
  * @return pointer to node found, NULL if not found of more than 1 found
  */
@@ -36,8 +36,17 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
 		xmlXPathContextPtr xpath_ctx,
 		bool log_write = true);
 
-/** Get content of attribute described by XPath expresion.
- * @param xpath_expr expresion describing attribute
+/** Returns pointer to XML node set described by XPath expression.
+ * @param xpath_expr expression describing nodes
+ * @param xpath_ctx libxml2 xpath context
+ * @return pointer to set of found nodes, NULL if not found
+ */
+xmlNodeSetPtr uxmlXPathGetNodes(const xmlChar *xpath_expr, 
+		xmlXPathContextPtr xpath_ctx,
+		bool log_write = true);
+
+/** Get content of attribute described by XPath expression.
+ * @param xpath_expr expression describing attribute
  * @param xpath_ctx libxml2 xpath context
  * @return attribute content, NULL if not found
  */

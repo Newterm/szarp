@@ -92,7 +92,8 @@ bin_PROGRAMS = \
 	      @UNITEDMN@ \
 	      wlkdmn \
               zmddmn \
-	      pythondmn
+	      pythondmn \
+	      defdmn
 
 if WANT_SNAP7DMN
 bin_PROGRAMS += snap7dmn
@@ -235,3 +236,6 @@ pythondmn_LDADD = $(LDADD) -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_T
 
 snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
 snap7dmn_LDADD = $(LDADD) -lsnap7
+
+defdmn_SOURCES = defdmn.h defdmn.cc defdmn.tpp funtable.cc funtable.h
+defdmn_LDADD = $(LDADD)

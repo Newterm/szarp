@@ -413,7 +413,7 @@ bool DrawApp::OnInit() {
 		}
 	} else if (!m_base.IsEmpty()) {
 		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring(),m_show_logparams)) == NULL) {
-			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file."));
+			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file or use i2smo test."));
 			StopThreads();
 			return FALSE;
 		}

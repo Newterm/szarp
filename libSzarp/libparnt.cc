@@ -31,6 +31,8 @@
 #include "libpar_int.h"
 #include "liblog.h"
 
+#include <boost/filesystem.hpp>
+
 #ifndef MINGW32
 #include "msgerror.h"
 #include "execute.h"
@@ -228,8 +230,14 @@ void libpar_init_from_folder(std::string folder_path)
 		folder_path.push_back('/');
 	
 	//add config file name 'szarp.cfg'
-	libpar_init_with_filename((folder_path + config_name).c_str(), 1);
+	if(boost::filesystem::exists(folder_path + config_name))
+	{
+		libpar_init_with_filename((folder_path + config_name).c_str(), 1);
+	} else {
+		libpar_init_with_filename(("/etc/szarp/" + config_name).c_str(), 1);
+	}
 }
+
 #endif
 
 /* 

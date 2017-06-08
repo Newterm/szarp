@@ -1354,6 +1354,7 @@ void ParseFormulas(TSzarpConfig *ipk)
 	sz_log(10, "Parsing formulas");
 	Equations.len = 0;
 	for (TParam * p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+		if(!param_is_sent_to_meaner(p)) continue;
 		std::wstring formula = p->GetParcookFormula();
 		if (!formula.empty()) {
 			std::wstring::size_type idx = formula.rfind(L'#');
@@ -1900,10 +1901,11 @@ int main(int argc, char *argv[])
 	zmq::context_t zmq_context(1);
 	zmq::socket_t socket(zmq_context, ZMQ_PUB);
 
-	uint64_t hwm = 10; //max 100 sec worth of buffered msgs
 #ifdef ZMQ_SNDHWM
+	int hwm = 10;
 	socket.setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
 #else
+	uint64_t hwm = 10;
 	socket.setsockopt(ZMQ_HWM, &hwm, sizeof(hwm));
 #endif
 

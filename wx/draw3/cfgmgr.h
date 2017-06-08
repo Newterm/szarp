@@ -58,9 +58,11 @@ public:
 
 	DrawParam(TParam *p) : m_param(p) {}
 
-	virtual wxString GetBasePrefix();
+	virtual bool IsValid() const;
+
+	virtual wxString GetBasePrefix() const;
 	
-	virtual wxString GetParamName();
+	virtual wxString GetParamName() const;
 
 	TParam* GetIPKParam();
 	
@@ -91,12 +93,12 @@ class DrawInfo
 	virtual wxString GetName();
 	
 	/** @return name of parameter */
-	virtual wxString GetParamName();
+	virtual wxString GetParamName() const;
 
 	virtual wxString GetShortName();
 	
 	/** @return pointer to parameter object */
-	DrawParam *GetParam();
+	DrawParam *GetParam() const;
 	
 	/** @return pointer to draw object */
 	TDraw *GetDraw();
@@ -140,7 +142,7 @@ class DrawInfo
 	int GetNumber();
 	
 	/** @return prefix of base configuration */
-	virtual wxString GetBasePrefix();
+	virtual wxString GetBasePrefix() const;
 
 	/** @return name of the window this DrawInfo is part of*/
 	virtual wxString GetSetName();
@@ -265,7 +267,7 @@ class DrawSet
 	void SortDraws();
 
 	/** @return Draws in DrawSet */
-	DrawInfoArray* GetDraws() { return m_draws; }
+	DrawInfoArray* GetDraws() const { return m_draws; }
 
 	/** @return Draw with given index */
 	DrawInfo* GetDraw(int index);
@@ -274,7 +276,7 @@ class DrawSet
 	wxString GetDrawName(int index);
 	
 	/** @return ParamName of draw with given index */
-	wxString GetParamName(int index);
+	wxString GetParamName(int index) const;
 
 	/** @return sets this set is part of*/
 	DrawsSets* GetDrawsSets();
@@ -355,7 +357,7 @@ class DrawsSets
 	virtual wxString GetID() = 0;
 
 	/** Return configuration prefix*/
-	virtual wxString GetPrefix() = 0;
+	virtual wxString GetPrefix() const = 0;
 	
 	/** Set of draws. This is HashMap with set name keys. Contains sets present in this config as well as sets
 	 * that relate to these params from this config and are in 'User defined sets'*/
@@ -401,10 +403,10 @@ class IPKConfig : public DrawsSets
 	virtual ~IPKConfig();
 	
 	/** Return configuration ID (title) */
-	virtual wxString GetID();
+	wxString GetID() override;
 
 	/** Return configuration prefix*/
-	virtual wxString GetPrefix();
+	wxString GetPrefix() const override;
 	
 	/** @return @see TSzarpConfig associated with this draw*/
 	TSzarpConfig* GetTSzarpConfig() { return m_sc; }
@@ -487,6 +489,9 @@ class ConfigManager
 
 	/** @retrun path to main SZARP directory*/
 	wxString GetSzarpDir() const;
+
+	/** @return IPKs */
+	IPKContainer* GetIPKs() const { return m_ipks; }
 
 	/** Add object to a list of configrations' observers*/
 	void RegisterConfigObserver(ConfigObserver *obsrver);

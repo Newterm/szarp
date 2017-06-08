@@ -61,6 +61,35 @@ xmlNodePtr uxmlXPathGetNode(const xmlChar *xpath_expr,
 	xmlXPathFreeObject(xpath_obj);
 	return node;
 }
+
+xmlNodeSetPtr uxmlXPathGetNodes(const xmlChar *xpath_expr,
+		xmlXPathContextPtr xpath_ctx, bool log_write)
+{
+	xmlXPathObjectPtr xpath_obj;
+
+	assert (xpath_expr != nullptr);
+	assert (xpath_ctx != nullptr);
+	if (xpath_expr == nullptr || xpath_ctx == nullptr) return nullptr;
+	
+	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
+	assert (xpath_obj != nullptr);
+	if (xpath_obj == nullptr) return nullptr;
+
+	if (!xpath_obj->nodesetval) {
+		if(log_write)
+			sz_log(1, "Error parsing XML - one '%s' expected, found %d",
+					(char *)xpath_expr, 
+						xpath_obj->nodesetval ? 
+						xpath_obj->nodesetval->nodeNr :
+						0);
+		xmlXPathFreeObject(xpath_obj);
+		return nullptr;
+	}
+	
+	auto nodeset = xpath_obj->nodesetval;
+
+	return nodeset;
+}
 		
 
 xmlChar *uxmlXPathGetProp(const xmlChar *xpath_expr, 

@@ -319,6 +319,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					throw XMLWrapperException();
 				}
 
+				bool request_lua_formula = false;
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
 					try {
@@ -334,6 +335,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 							else
 							 if (!strcmp((char*)attr, "LUA")) {
 								_param_type = TParam::P_LUA;
+								request_lua_formula = true;
 							}
 						} else // end "type"
 						if (xw.IsAttr("lua_formula")) {
@@ -387,6 +389,11 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 						xw.XMLErrorWrongAttrValue();
 					}
 				} // end FORALLATTR
+#ifndef NO_LUA
+				if (request_lua_formula && !(_ftype == LUA_AV || _ftype == LUA_VA || _ftype == LUA_IPC)) {
+					xw.XMLErrorAttr((const xmlChar *)"define", "lua_formula");
+				}
+#endif
 			} // end "define"
 		} else
 		if (xw.IsTag("script")) {
@@ -491,6 +498,27 @@ TParam::parseXML(xmlNodePtr node)
 
 	xmlFree(c);
     }
+    
+	c = xmlGetNoNsProp(node, X "data_type"); 
+	if (!xmlStrcmp(c, BAD_CAST"float"))
+		_dataType = FLOAT;
+	else if (!xmlStrcmp(c, BAD_CAST "double"))
+		_dataType = DOUBLE;
+	else if (!xmlStrcmp(c, BAD_CAST "short"))
+		_dataType = SHORT;
+	else if (!xmlStrcmp(c, BAD_CAST "int"))
+		_dataType = INT;
+	else
+		_dataType = SHORT;
+	
+	c = xmlGetNoNsProp(node, X "time_type"); 
+	if (!xmlStrcmp(c, BAD_CAST "second"))
+		_timeType = SECOND;
+	else if (!xmlStrcmp(c, BAD_CAST "nanosecond"))
+		_timeType = NANOSECOND;
+	else
+		_timeType = SECOND;
+
 
     c = xmlGetNoNsProp(node, X "forbidden");
     if (c) {
@@ -1445,7 +1473,7 @@ TParam::PrepareDefinable() throw(TCheckException)
 }
 
 std::wstring
-TParam::GetParcookFormula() throw(TCheckException)
+TParam::GetParcookFormula(bool ignoreIndexes, std::vector<std::wstring>* ret_params_list) throw(TCheckException)
 {
 	if( _ftype != RPN )
 		return std::wstring();
@@ -1492,14 +1520,22 @@ TParam::GetParcookFormula() throw(TCheckException)
 	    case 2:
 		if (ch != L')')
 		    break;
+		
 		c = GetFormula().substr(e, b - e - 1);
 		c2 = GetSzarpConfig()->absoluteName(c, GetName());
 		p = GetSzarpConfig()->getParamByName(c2);
+		if (p == NULL && ignoreIndexes) 
+			p = IPKContainer::GetObject()->GetParam(c2);
 		if (p == NULL) {
 		   sz_log(0, "GetParcookFormula: parameter '%s' not found in formula for '%s'", SC::S2A(c2).c_str(), SC::S2A(GetName()).c_str());
 		   throw TCheckException();
 		}
+
+		if (ret_params_list)
+			ret_params_list->push_back(c2);
+
 		str << p->GetIpcInd();
+
 		st = 0;
 		break;
 

@@ -420,14 +420,7 @@ class TDevice {
 public:
 	TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring(),
 			int _speed = -1, int _stop = -1, int _protocol = -1,
-			const std::wstring& _options = std::wstring(), bool _parcookDevice = true) :
-		number(_number),
-		parentSzarpConfig(parent),
-		daemon(_daemon), path(_path), speed(_speed),
-		stop(_stop),
-		protocol(_protocol), special(0), special_value(0), options(_options),
-		radios(NULL), next(NULL), parcookDevice(_parcookDevice)
-	{ }
+			const std::wstring& _options = std::wstring(), bool _parcookDevice = true);
 	/** Destroy whole list. */
 	~TDevice();
 	/**
@@ -536,6 +529,9 @@ public:
 	/** Returns true if the device sends data to parcook via
          * shared memory */
 	bool isParcookDevice() const { return parcookDevice; }
+
+	void configureDeviceTimeval(long int);
+	struct timeval getDeviceTimeval() const { return deviceTimeval; }
 protected:
 	/**
 	 * Returns num'th param from device line.
@@ -570,6 +566,7 @@ protected:
 	TDevice *next;
 			/**< Next list element */
 	bool parcookDevice; /**< Do parcook need to send params from this device to meaner4. */
+	struct timeval deviceTimeval;
 };
 
 /**
@@ -947,7 +944,7 @@ public:
 	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
 	 * @return newly allocated string with formula in parcook format
 	 */
-	std::wstring GetParcookFormula() throw(TCheckException);
+	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr) throw(TCheckException);
 
 	/** @return type of formula (RPN, DEFINABLE or NONE) */
 	FormulaType GetFormulaType() { return _ftype; }
@@ -1640,7 +1637,7 @@ public:
 	}
 	/** @return name of param to send, empty string if constant value should be
 	 * sent */
-	const std::wstring& GetParamName()
+	const std::wstring& GetParamName() const
 	{
 		return paramName;
 	}

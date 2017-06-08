@@ -147,7 +147,12 @@ def read_socket():
 		for param_value in params_values.param_values:
 			index = param_value.param_no
 			if index in gb.sz4_params.indexes.keys():
-				gb.sz4_params.params[gb.sz4_params.indexes[index]].value = param_value.int_value;
+				prec = 1^gb.sz4_params.params[gb.sz4_params.indexes[index]].prec
+				try:
+					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = int(param_value.int_value) + int(param_value.double_value*prec) + int(param_value.float_value*prec)
+                                except:
+					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = 0
+					
 			else:
 				pass
 	except zmq.ZMQError as e:
@@ -169,18 +174,11 @@ def converseRaportName(arg1):
 	"""
 	Returns converse to raport name from unicode to ascii.
 	All spaces are replaced by underlined character.
-
-	For unknown reason unicodedata.normalize don't work with £ and ≥ letters.
-	This is quick fix for UTF-8 and ISO-8859-2 strings encoding by chaining 
-	£ and ≥ in both encodings to L and l respectively.
 	"""
 	from string import maketrans
 	arg2 = arg1.translate(maketrans(" ","_"))
-	arg2 = arg2.replace('≈Å','L')
-	arg2 = arg2.replace('≈Ç','l')
-	arg2 = arg2.replace('£','L')
-	arg2 = arg2.replace('≥','l')
-	return  unicodedata.normalize('NFKD', unicode(arg2,gb.fileencoding)).encode('ascii','ignore')
+	arg2 = unicodedata.normalize('NFKD', unicode(arg2, gb.fileencoding))
+	return arg2.replace(u'≈Ç', 'l').replace(u'≈Å', 'L').encode('ascii','ignore')
 	
 def readReportsFromParamd(hostname):
 	"""

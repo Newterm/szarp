@@ -347,7 +347,6 @@ TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
 	xmlLineNumbersDefault(1);
 	doc = xmlParseFile(SC::S2A(path).c_str());
 	if (doc == NULL) {
-		sz_log(1, "XML document not wellformed\n");
 		return 1;
 	}
 
@@ -375,12 +374,10 @@ TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix
 			ret = parseXML(reader);
 		}
 	       	catch (XMLWrapperException) {
-			sz_log(1, "XML document not wellformed, look at previous logs\n");
 			ret = 1;
 		}
 	}
 	else {
-		sz_log(1, "XML document not wellformed\n");
 		ret = 1;
 	}
 
