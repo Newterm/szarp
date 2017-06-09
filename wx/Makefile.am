@@ -6,7 +6,7 @@
 if MINGW32_OPT
 INCLUDE_SUBDIRS = ekstraktor3 szau
 else
-INCLUDE_SUBDIRS = ekstraktor3 confedit koper filler setter
+INCLUDE_SUBDIRS = ekstraktor3 confedit filler setter
 endif
 
 if HAVE_CURL
@@ -19,7 +19,7 @@ endif # CURL
 
 SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
 	wxhelp scc $(CURL_SUBDIRS) sync \
-	isledit szast $(WNCK_SUBDIRS)
+	isledit $(WNCK_SUBDIRS)
 
 winsetup:
 	@srcdir@/../script/nsis/winsetup.sh -c \
@@ -33,7 +33,6 @@ winsetup:
 		-f isledit.exe isledit/.libs/isledit.exe \
 		-f wxhelp.exe wxhelp/.libs/wxhelp.exe \
 		-f isledit.exe isledit/.libs/isledit.exe \
-		-f szast.exe szast/.libs/szast.exe \
 		-f kontroler3.exe kontroler3/.libs/kontroler3.exe \
 		-d resources \
 		@srcdir@/../resources/dictionary.xml \
@@ -55,7 +54,6 @@ winsetup:
 		-f scc.mo scc/pl/scc.mo \
 		-f ssc.mo sync/pl/ssc.mo \
 		-f szau.mo szau/pl/szau.mo \
-		-f szast.mo szast/pl/szast.mo \
 		-f kontroler3.mo kontroler3/pl/kontroler3.mo \
 		-f common.mo common/pl/common.mo \
 		-f wx.mo common/pl/wx.mo \

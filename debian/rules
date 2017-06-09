@@ -62,7 +62,6 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-daemons \
 		-pszarp-filler \
 		-pszarp-isledit \
-		-pszarp-koper \
 		-pszarp-nagios \
 		-pszarp-paramd \
 		-pszarp-pyipk \
@@ -162,7 +161,7 @@ binary-arch-common:
 	dh_installcron
 	dh_installlogrotate
 	dh_installdeb
-	dh_shlibdeps
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
 	dh_perl
 	dh_installdebconf
 	dh_gencontrol

@@ -60,7 +60,7 @@ GREP="grep"
 SED="sed"
 ICONV="iconv"
 SORT="sort"
-PROGS="draw3.exe scc.exe ssc.exe wxhelp.exe raporter3.exe ekstraktor3.exe isledit.exe szau.exe szast.exe kontroler3.exe"
+PROGS="draw3.exe scc.exe ssc.exe wxhelp.exe raporter3.exe ekstraktor3.exe isledit.exe szau.exe kontroler3.exe"
 COMMON=
 MULTI=
 
@@ -248,7 +248,6 @@ function PrepareMultiScript() {
 	$STRIP "$_DIR/bin/ekstraktor3.exe"
 	$STRIP "$_DIR/bin/raporter3.exe"
 	$STRIP "$_DIR/bin/isledit.exe"
-	$STRIP "$_DIR/bin/szast.exe"
 	$STRIP "$_DIR/bin/kontroler3.exe"
 
 	cp "$CURDIR"/*.nsh "`GetTmp`"
@@ -284,7 +283,6 @@ function PrepareCommonScript() {
 	$STRIP "$_DIR/bin/ekstraktor3.exe"
 	$STRIP "$_DIR/bin/raporter3.exe"
 	$STRIP "$_DIR/bin/isledit.exe"
-	$STRIP "$_DIR/bin/szast.exe"
 	$STRIP "$_DIR/bin/kontroler3.exe"
 
 	cat "$CURDIR"/common.nsi \
