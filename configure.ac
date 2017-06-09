@@ -1224,9 +1224,7 @@ AC_OUTPUT( \
 	wx/confedit/Makefile \
 	wx/wxhelp/Makefile \
 	wx/sync/Makefile \
-	wx/koper/Makefile \
 	wx/szau/Makefile \
-	wx/szast/Makefile \
 	)
 
 # Print configure raport
