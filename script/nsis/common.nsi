@@ -329,15 +329,6 @@ Section "SZARP (required)" MainSection
 	"" \
 	"Automatyczna aktualizacja SZARP"
     CreateShortCut \
-    	"$SMPROGRAMS\$STARTMENU_FOLDER\Konfigurator regulatora Z-Elektronik.lnk" \
-	"$INSTDIR\bin\SZAST.EXE" \
-	"" \
-	"$INSTDIR\resources\icons\szast.ico" \
-	0 \
-	"SW_SHOWNORMAL" \
-	"" \
-	"Ustawienia parametrów regulatorów"
-    CreateShortCut \
     	"$SMPROGRAMS\$STARTMENU_FOLDER\Kontroler.lnk" \
 	"$INSTDIR\bin\KONTROLER3.EXE" \
 	"" \
