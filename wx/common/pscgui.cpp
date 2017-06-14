@@ -403,8 +403,8 @@ void PscFrame::EnableEditingControls(bool enable) {
 	for (size_t i = 1; i < 3; i++) {
 		wxWindow* p = m_notebook->GetPage(i);
 		wxWindowList& children = p->GetChildren();
-	for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
-		wxWindow *current = (wxWindow *)it->GetData();
+		for (wxWindowList::compatibility_iterator it = children.GetFirst(); it; it = it->GetNext()) {
+			wxWindow *current = (wxWindow *)it->GetData();
 			current->Enable(enable);
 		}
 	}
