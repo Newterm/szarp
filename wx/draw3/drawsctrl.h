@@ -89,8 +89,8 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		 * is choosen if data is found on the left side, otherwise time neareset to proposed
 		 * time is set*/
 		SEARCH_BOTH_PREFER_LEFT,
-		/**Database is searched in both directions from proposed time, rithe search result
-		 * is choosen if data is found on the left side, otherwise time neareset to proposed
+		/**Database is searched in both directions from proposed time, right search result
+		 * is choosen if data is found on the right side, otherwise time neareset to proposed
 		 * time is set*/
 		SEARCH_BOTH_PREFER_RIGHT,
 
@@ -173,8 +173,6 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		void SetNumberOfUnits();
 	
 		void Reset();
-
-		void GoToLatestDate();
 
 		void NewValuesAdded(Draw *draw, bool non_fixed);
 

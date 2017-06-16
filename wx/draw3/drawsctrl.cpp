@@ -55,7 +55,15 @@ void DrawsController::State::MoveScreenLeft() {}
 
 void DrawsController::State::MoveScreenRight() {}
 
-void DrawsController::State::GoToLatestDate() {}
+void DrawsController::State::GoToLatestDate() {
+	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
+
+	///XXX:
+	wxDateTime t = wxDateTime(31, wxDateTime::Dec, 2036, 23, 59, 59)
+		- index.GetTimeRes()
+		- index.GetDateRes();
+	m_c->EnterState(SEARCH_LEFT, DTime(m_c->GetPeriod(), t));
+}
 
 void DrawsController::State::NewDataForSelectedDraw() {}
 
@@ -104,22 +112,12 @@ void DrawsController::DisplayState::MoveCursorRight(int n) {
 
 void DrawsController::DisplayState::MoveScreenLeft() {
 	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index - m_c->GetNumberOfValues(m_c->GetPeriod()));
-	m_c->EnterState(SEARCH_BOTH_PREFER_RIGHT, t);
+	m_c->EnterState(WAIT_DATA_RIGHT, t);
 }
 
 void DrawsController::DisplayState::MoveScreenRight() {
 	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index + m_c->GetNumberOfValues(m_c->GetPeriod()));
-	m_c->EnterState(SEARCH_BOTH_PREFER_LEFT, t);
-}
-
-void DrawsController::DisplayState::GoToLatestDate() {
-	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-
-	///XXX:
-	wxDateTime t = wxDateTime(31, wxDateTime::Dec, 2036, 23, 59, 59)
-		- index.GetTimeRes()
-		- index.GetDateRes();
-	m_c->EnterState(SEARCH_LEFT, DTime(m_c->GetPeriod(), t));
+	m_c->EnterState(WAIT_DATA_RIGHT, t);
 }
 
 void DrawsController::DisplayState::MoveCursorBegin() {
@@ -425,7 +423,7 @@ void DrawsController::SearchRight::HandleRightResponse(wxDateTime& time) {
 		m_c->MoveToTime(m_c->ChooseStartDate(draw_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, draw_time);
 	} else {
-		m_c->EnterState(DISPLAY, m_c->m_current_time);
+		GoToLatestDate();
 	}
 }
 
