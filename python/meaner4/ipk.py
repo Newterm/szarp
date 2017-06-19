@@ -1,5 +1,5 @@
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -46,13 +46,11 @@ class IPK:
 
 		param_map = {}
 		for p in self.params:
-			param_map[p.param_name] = p	
+			param_map[p.param_name] = p
 
 	def adjust_param_index(self, index):
 		if index < self.device_params_count:
-			return (False, index)
-		elif index < self.device_params_count + LOG_PARAM_COUNT:
-			return (True, None)
+			return index
 		else:
-			return (False, index - LOG_PARAM_COUNT)
+			return index - LOG_PARAM_COUNT
 

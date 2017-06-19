@@ -107,9 +107,6 @@ if $programname == 'linedmn' then /var/log/szarp/linedmn.log
 if $programname == 'lmldmn' then /var/log/szarp/lmldmn.log
 & DISCARD_ACTION
 
-if $programname == 'logdmn' then /var/log/szarp/logdmn.log
-& DISCARD_ACTION
-
 if $programname == 'mbdmn' then /var/log/szarp/mbdmn.log
 & DISCARD_ACTION
 

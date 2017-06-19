@@ -412,7 +412,7 @@ bool DrawApp::OnInit() {
 			return FALSE;
 		}
 	} else if (!m_base.IsEmpty()) {
-		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring(),m_show_logparams)) == NULL) {
+		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring())) == NULL) {
 			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file or use i2smo test."));
 			StopThreads();
 			return FALSE;
@@ -545,8 +545,6 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	parser.Found(_T("base"), &m_base);
 
 	parser.Found(_T("url"), &m_url);
-
-	m_show_logparams = parser.Found(_T("activity"));
 
 	m_url_open_in_existing = parser.Found(_T("e"));
 

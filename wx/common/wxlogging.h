@@ -67,69 +67,6 @@
  */
 void strset( std::string& out , const char* in );
 
-/** 
- * @brief fully static class to provide logging parameters to logdmn
- *
- * This class simply construct messages for logdmn and sends them to
- * specified target. At default address is localhost and port is 7777.
- *
- * Default appname is "szarp"
- * 
- * Class uses boost-asio library, cause wxWidgets are able to send UDPLogger
- * datagrams since version 2.9
- */
-class UDPLogger {
-public:
-	/** 
-	 * @brief Inner class for logging events. It just contains string
-	 * but is needed to recognize logged events basing on RTTI.
-	 */
-	class Data {
-	public:
-		Data( const char* str ) : str(str) {}
-		virtual ~Data() {}
-		const char* get() const { return str; }
-	private:
-		const char* str;
-	};
-	
-	static void SetAppName( const char* _appname )
-	{	strset(appname,_appname); }
-	static void SetAddress( const char* _address )
-	{	strset(address,_address); }
-	static void SetPort   ( const char* _port    )
-	{	strset(port   ,_port   ); }
-
-	/** 
-	 * @brief chooses events that should be logged and sends
-	 * datagram if needed.
-	 *
-	 * This method should be called in wxApp::HandleEvent 
-	 */
-	static void HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event);
-	/** 
-	 * @brief Sends specified parameter in UDP datagram to logdmn
-	 *
-	 * errors are logged
-	 * 
-	 * @param msg name of parameter
-	 */
-	static void LogEvent( const char * msg );
-	static int ResolveAdress();
-private:
-	enum states {
-		UNINIT ,
-		WORKING ,
-		BROKEN ,
-	};
-
-	static enum states state;
-
-	static std::string appname;
-	static std::string address;
-	static std::string port;
-};
-
 // Events macros copied from wx/event.h (wx-2.8)
 //
 // after update to newer wx there may be need to copy this

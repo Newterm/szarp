@@ -155,12 +155,11 @@ swap_draws(int a, int b, void *data)
 }
 
 
-TSzarpConfig::TSzarpConfig( bool logparams ) :
+TSzarpConfig::TSzarpConfig() :
 	read_freq(0), send_freq(0),
 	devices(NULL), defined(NULL),
 	drawdefinable(NULL), title(),
 	prefix(), seasons(NULL) ,
-	logparams(logparams),
        	device_counter(1),
        	radio_counter(1),
        	unit_counter(1),
@@ -381,8 +380,6 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 	int res = loadXMLDOM(path,prefix);
 #endif
 	if( res ) return res;
-
-	if( logparams ) CreateLogParams();
 
 	return 0;
 }
@@ -758,40 +755,6 @@ TSzarpConfig::GetMaxBaseInd()
 	    m = n;
     }
     return m;
-}
-
-void
-TSzarpConfig::CreateLogParams()
-{
-	TDevice* d = createDevice(L"/opt/szarp/bin/logdmn");
-	TRadio * r = createRadio ( d );
-	TUnit  * u = createUnit( r );
-	TParam * p;
-	TDraw  * w;
-
-	   AddDevice( d );
-	d->AddRadio ( r );
-	r->AddUnit  ( u );
-
-	std::wstringstream wss;
-	for( int i=0 ; i<LOG_PARAMS_NUMBER ; ++i )
-	{
-		p = new TParam ( u );
-		p->Configure( LOG_PARAMS[i][0] ,
-		              LOG_PARAMS[i][1] ,
-		              LOG_PARAMS[i][2] ,
-		              L"-" , NULL , 0 , -1 , 1 );
-
-		if( i % 12 == 0 ) {
-			wss.str(L"");
-			wss << LOG_PREFIX << " " << i/12 + 1;
-		}
-
-		w = new TDraw( L"" , wss.str() , -1 , i , 0 , 100 , 1 , .5 , 2 );
-
-		u->AddParam( p );
-		p->AddDraw ( w );
-	}
 }
 
 TParam *
