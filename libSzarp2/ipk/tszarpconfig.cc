@@ -60,11 +60,6 @@
 #include "szbbase.h"
 #include "loptcalculate.h"
 
-#include "log_params.h"
-#define LOG_PREFIX_LEN 8
-#define LOG_PREFIX L"Activity"
-
-
 using namespace std;
 
 #define FREE(x)	if (x != NULL) free(x)
