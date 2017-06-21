@@ -311,7 +311,8 @@ void SzbParamMonitorImpl::wait_for_changes() {
 	m_overlapped.hEvent = m_event[0];
 
 	auto ret = ReadDirectoryChangesW(m_dir_handle, m_buffer, sizeof(m_buffer), true,
-					FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE,
+					FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
+					FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_LAST_WRITE,
 					nullptr, &m_overlapped, nullptr);
 	if (!ret)
 		throw std::runtime_error("Failed to intiate listening for directory chagnes");
@@ -342,7 +343,9 @@ void SzbParamMonitorImpl::loop() {
 }
 
 void SzbParamMonitorImpl::process_file(PFILE_NOTIFY_INFORMATION info, std::vector<std::pair<SzbMonitorTokenType, std::string>>& tokens_and_paths) {
-	if (info->Action != FILE_ACTION_ADDED && info->Action != FILE_ACTION_RENAMED_NEW_NAME)
+	if (info->Action != FILE_ACTION_ADDED
+			&& info->Action != FILE_ACTION_MODIFIED
+			&& info->Action != FILE_ACTION_RENAMED_NEW_NAME)
 		return;
 
 	size_t length = info->FileNameLength / sizeof(info->FileName[0]);
