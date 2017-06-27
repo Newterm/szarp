@@ -1070,6 +1070,7 @@ void GCDCGraphs::ResetGraphs(DrawsController *controller) {
 
 	m_recalulate_margins = true;
 	Refresh();
+	SetFocus();
 }
 
 void GCDCGraphs::DrawsSorted(DrawsController* d) {

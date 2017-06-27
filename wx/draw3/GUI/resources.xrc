@@ -111,7 +111,7 @@
         </object>
     </object>
     <object class="wxDialog" name="dialog_picker">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxMAXIMIZE_BOX|wxMINIMIZE_BOX|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxMAXIMIZE_BOX|wxMINIMIZE_BOX</style>
         <title>Editing definable set </title>
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
@@ -719,7 +719,7 @@
         </object>
     </object>
     <object class="wxDialog" name="draw_edit">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <size>614, 493</size>
         <title>Edit graph</title>
         <object class="wxBoxSizer">
@@ -968,6 +968,8 @@
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
             <object class="sizeritem">
+                <option>1</option>
+                <flag>wxEXPAND</flag>
                 <object class="wxPanel" name="panel_3">
                     <style>wxTAB_TRAVERSAL</style>
                     <object class="wxBoxSizer">
