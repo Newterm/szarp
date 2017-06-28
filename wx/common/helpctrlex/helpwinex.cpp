@@ -897,7 +897,7 @@ void wxHtmlHelpWindowEx::DisplayIndexItem(const wxHtmlHelpMergedIndexItemEx *it)
         wxSingleChoiceDialog dlg(this,
                                  _("Please choose the page to display:"),
                                  _("Help Topics"),
-                                 arr, (void **)NULL, (long)wxCHOICEDLG_STYLE, wxDefaultPosition);
+                                 arr, (void **)nullptr, (long)wxCHOICEDLG_STYLE, wxDefaultPosition);
         if (dlg.ShowModal() == wxID_OK)
         {
             m_HtmlWin->LoadPage(it->items[dlg.GetSelection()]->GetFullPath());
