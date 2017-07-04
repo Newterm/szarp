@@ -28,14 +28,13 @@
 #include <regex.h>
 #include <librsync.h>
 #include <deque>
+#include <map>
 
 #include "liblog.h"
 #include "sspackexchange.h"
 #include "ssfsutil.h"
 #include "ssuserdb.h"
 #include "ssutil.h"
-
-using std::min;
 
 /**Class resposible for synchronizing files with client*/
 class SFileSyncer {
@@ -234,7 +233,7 @@ class Server {
 		~SynchronizationInfo();
 	};
 
-	char * m_client_addr;
+	std::string m_client_addr;
 
 	/**@see object for accessing network connection*/
 	PacketExchanger* m_exchanger;
@@ -292,7 +291,7 @@ class Server {
 	void SendBaseStamp(TPath &dir);
 
 public:
-	Server(int socket, SSL_CTX* ctx, UserDB* db);
+	Server(SSL* ssl, UserDB* db);
 
 	/**Handles connection with client*/
 	void Serve();
@@ -317,16 +316,51 @@ void LoadUserDatabase();
 /**handles SIGHUP signal*/
 RETSIGTYPE g_sighup_handler(int sig);
 
+struct Connection {
+	int socket;
+	SSL *ssl;
+	BIO *bio;
+	std::string addr;
+
+	enum STATUS { ACCEPTED, WANT_READ, WANT_WRITE, ERROR };
+	STATUS status;
+};
+
+
 /**listens for connection from clients*/
 class Listener {
 	/**port to listen at*/
 	int m_port;
+	/**socket used to accept connections*/
+	int m_accept_socket;
+
+	SSL_CTX* m_ctx;
+
+	struct passwd* m_pass;
+
+	/**Connections that are in state of being accepted */
+	std::map<int, Connection> m_accepting;
+
+	/** Tries to complete SSL_accept on a given socket. That can have one of the following outcomes:
+	 * 1. Failure, the socket (and associated SSL context) will be closed.
+	 * 2. Success, the process will fork, child will proceed to handle the connection,
+	      while parent will remove the socket and return from this method.
+         * 3. The (async) SSL_accept might not complete yet, the method will return and main loop
+	      will have to poll the socket for data readabliity/writeablity as indicated
+	      by connection status. */
+	void Accept(int socket);
+
+	/** Accepts new connection and creates a new connection object */
+	Connection StartConnection();
+
+	/** Main loop - accepts new connections */
+	void Loop();
+
 	public: 
-	Listener(int port);
+	Listener(int port, SSL_CTX *ctx, struct passwd* pass);
 	/*Starts listening for a connections.
 	 * Creates new process for each established connection
-	 * and return this connection socket (the newly created 
-	 * process returns from this function)
-	 * @return established connection socket*/
-	int Start();
+	 * and return this connection in a child process
+	 * @return never returns */
+	void Start();
 };

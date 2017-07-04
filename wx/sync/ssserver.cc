@@ -19,6 +19,7 @@
 #pragma implementation
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <time.h>
@@ -518,7 +519,7 @@ Server::SynchronizationInfo Server::Authenticate() {
 			key = rmsg.GetString();
 			ssserver = m_userdb->CheckUser(ver, user, password, key, &msg);
 			MessageSender smsg(m_exchanger);
-			sz_log(1,"HWKEY: %s USER: %s, IP: %s", key, user, m_client_addr);
+			sz_log(1,"HWKEY: %s USER: %s, IP: %s", key, user, m_client_addr.c_str());
 			
 			if (!auth_ok) {
 				smsg.PutUInt16(Message::AUTH_FAILURE);
@@ -727,7 +728,7 @@ char* Server::CreateScript(const char* a, const char *b) {
 	size_t result_size;
 	FILE* result_stream = open_memstream(&result, &result_size);
 
-	size_t l = min(strlen(a), strlen(b));
+	size_t l = std::min(strlen(a), strlen(b));
 	size_t i = 0;
 	uint16_t len = 0;
 
@@ -755,7 +756,7 @@ char* Server::CreateScript(const char* a, const char *b) {
 	} else if (d < 0) {
 		fprintf(result_stream, "%c", uint8_t(3));
 		d = -d;
-		PUTVAL(result_stream, d);
+		PUTVAL(result_stream, (int)d);
 	}
 
 	fclose(result_stream);
@@ -771,45 +772,137 @@ void Server::SynchronizeFiles(std::vector<TPath>& file_list, TPath path) {
 	m_exchanger->FlushOutput();
 }
 
-Server::Server(int socket, SSL_CTX* ctx, UserDB* db) 
-	: m_userdb(db) {
+Connection Listener::StartConnection() {
+	Connection conn;
+	conn.status = Connection::ERROR;
 
-	m_client_addr = (char *)malloc(INET_ADDRSTRLEN);
-	if (NULL == m_client_addr)
-	    throw AppException(ssstring(_("Cannot allocate memory for client address info")));
-
-	struct sockaddr_in addr_inet;
-	socklen_t addr_inet_len = sizeof(addr_inet);
-
-	if (-1 == getpeername(socket, (struct sockaddr *)&addr_inet, &addr_inet_len)) 
-	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
-	
-	if (NULL == inet_ntop(AF_INET, &addr_inet.sin_addr, m_client_addr, INET_ADDRSTRLEN))
-	    throw IOException(ssstring(_("Cannot get client address:")) + csconv(strerror(errno)));
-	
-	
-	BIO* bio = BIO_new_socket(socket, BIO_CLOSE);
-	SSL* ssl = SSL_new(ctx);
-	if (!ssl || !bio) 
-                	throw SSLException(ERR_get_error());
-
-	SSL_set_bio(ssl, bio, bio);
-	SSL_set_read_ahead(ssl, 1);
-
-
-	int ret = SSL_accept(ssl);
-	if (ret != 1)
-		throw SSLException(ERR_get_error());
-
-	int val;
-	if ((val = fcntl(socket, F_GETFL, 0)) == -1)
-               throw IOException(ssstring(_("Setting non-blocking mode on socket:")) + csconv(strerror(errno)));
-
-	if (!(val & O_NONBLOCK)) {
-		val |= O_NONBLOCK;
-		if (fcntl(socket, F_SETFL, val) == -1)
-			throw IOException(ssstring(_("Setting non-blocking mode on socket:")) + csconv(strerror(errno)));
+	struct sockaddr_in addr;
+	socklen_t addr_len = sizeof(addr);
+	conn.socket = accept(m_accept_socket, (struct sockaddr*) &addr, &addr_len);
+	if (conn.socket == -1) {
+		return conn;
 	}
+
+	char addr_str[16] = {0};
+        inet_ntop(AF_INET, &addr.sin_addr, addr_str, sizeof(addr_str));
+
+	conn.addr = std::string(addr_str) + ":" + std::to_string(htons(addr.sin_port));
+
+	sz_log(5, "Accepted connection from:%s", conn.addr.c_str());
+
+	int fl = fcntl(conn.socket, F_GETFL, 0);
+	if (fl == -1) {
+		sz_log(1, "Failed to get socket flags:%s, dropping connection", strerror(errno));
+		close(conn.socket);
+		return conn;
+	}
+
+	fl |= O_NONBLOCK;
+	if (fcntl(conn.socket, F_SETFL, fl) == -1) {
+		sz_log(1, "Failed to non-blocking mode on socket, error:%s, dropping connection", strerror(errno));
+		close(conn.socket);
+		return conn;
+	}
+
+	conn.bio = BIO_new_socket(conn.socket, BIO_NOCLOSE);
+	if (!conn.bio) {
+		sz_log(1, "Failed to create BIO for a socket, dropping connection");
+		close(conn.socket);
+		return conn;
+	}
+
+	conn.ssl = SSL_new(m_ctx);
+	if (!conn.ssl) {
+		sz_log(1, "Failed to create BIO for a socket, dropping connection");
+		BIO_free(conn.bio);
+		return conn;
+	}
+
+	SSL_set_bio(conn.ssl, conn.bio, conn.bio);
+
+	conn.status = Connection::ACCEPTED;
+	return conn;
+}
+
+void Listener::Accept(int fd) {
+	Connection& conn = m_accepting[fd];
+	while (true) {
+		int ret = SSL_accept(conn.ssl);
+		if (ret == 1)
+			break;
+
+		auto error = SSL_get_error(conn.ssl, ret);
+		switch (error) {
+			case SSL_ERROR_WANT_WRITE:
+				conn.status = Connection::WANT_WRITE;
+				return;
+			case SSL_ERROR_WANT_READ:
+				conn.status = Connection::WANT_READ;
+				return;
+			case SSL_ERROR_SYSCALL:
+				if (errno == EINTR)
+					continue;
+				//falltrough:
+			default:
+				sz_log(2, "Connection: %s error:%s", conn.addr.c_str(), ERR_error_string(error, NULL));
+
+				SSL_free(conn.ssl);
+				close(fd);
+				m_accepting.erase(fd);
+				return;
+		}
+	}
+
+	pid_t child = fork();
+	if (child < 0) {
+		sz_log(0, "fork error:%s, dropping connection to %s", strerror(errno), conn.addr.c_str());
+
+		SSL_free(conn.ssl);
+		close(fd);
+
+		m_accepting.erase(fd);
+		return;
+	}
+
+	sigset_t sigset;
+	sigemptyset(&sigset);
+	sigaddset(&sigset, SIGHUP);
+	sigaddset(&sigset, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &sigset, NULL);
+
+	if (child == 0) {
+		for (auto kv : m_accepting)
+			if (kv.first != fd) {
+				SSL_set_shutdown(kv.second.ssl, SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
+				SSL_free(kv.second.ssl);
+				close(kv.first);
+			}
+
+		close(m_accept_socket);
+
+		try {
+			Server serv(conn.ssl, g_userdatabase);
+			serv.Serve();
+			exit(0);
+		} catch (Exception& e) {
+			sz_log(0, "server error %s", e.What().c_str()); 
+			exit(1);
+		}
+
+	} else {
+		sigprocmask(SIG_UNBLOCK, &sigset, NULL);
+
+		SSL_set_shutdown(conn.ssl, SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);
+		SSL_free(conn.ssl);
+		close(fd);
+
+		m_accepting.erase(fd);
+	}
+
+}
+
+Server::Server(SSL* ssl, UserDB* db) 
+	: m_userdb(db) {
 
 	m_exchanger = new PacketExchanger(ssl, 1, NULL);
 
@@ -886,7 +979,7 @@ void Server::Serve() {
 				//and now we are syncing
 				SynchronizeFiles(files_list, TPath(info.GetBaseDir()));
 			} else {
-				sz_log(0, "Recevied unexpected message type: %zu", msg);
+				sz_log(0, "Recevied unexpected message type: %d", msg);
 				return;
 			}
 
@@ -923,10 +1016,59 @@ RETSIGTYPE g_sighup_handler(int sig) {
 	LoadUserDatabase();
 }
 
-Listener::Listener(int port) : m_port(port) {
+Listener::Listener(int port, SSL_CTX *ctx, struct passwd* pass) : m_port(port), m_ctx(ctx), m_pass(pass)
+{}
+
+
+void Listener::Loop() {
+
+	static const size_t max_accept_conns = 10 * 1024;
+	std::vector<struct pollfd> fds;
+
+	while (true) {
+		fds.clear();
+
+		for (auto kv : m_accepting) {
+			short event;
+			if (kv.second.status == Connection::WANT_READ)
+				event = POLLIN;
+			else
+				event = POLLOUT;
+			fds.push_back({kv.first, event});
+		}
+
+		bool accepting_new_connection = m_accepting.size() < max_accept_conns;
+		if (accepting_new_connection)
+			fds.push_back({m_accept_socket, POLLIN});
+
+		int ret = poll(&fds[0], fds.size(), -1);
+		if (ret == -1) {
+			if (errno == EINTR)
+				continue;
+			else {
+				sz_log(0, "poll error %d(%s), exiting", errno, strerror(errno));
+				exit(1);
+			}
+		}
+
+		if (accepting_new_connection) {
+			if (fds.back().revents & POLLIN) {
+				Connection conn = StartConnection();
+				m_accepting[conn.socket] = conn;
+				if (conn.status != Connection::ERROR)
+					Accept(conn.socket);
+			}
+
+			fds.pop_back();
+		}
+
+		for (auto fd : fds)
+			if (fd.revents)
+				Accept(fd.fd);
+	}
 }
 
-int Listener::Start() {
+void Listener::Start() {
 	sigset_t sigset;
 	sigemptyset(&sigset);
 
@@ -948,8 +1090,8 @@ int Listener::Start() {
 	sigaddset(&sigset, SIGHUP);
 	sigprocmask(SIG_UNBLOCK, &sigset, NULL);
 
-	int sock = socket(PF_INET, SOCK_STREAM, 0);
-	if (sock < 0) {
+	m_accept_socket = socket(PF_INET, SOCK_STREAM, 0);
+	if (m_accept_socket < 0) {
 		sz_log(0, "socket %s", strerror(errno));
 		exit(1);
 	}
@@ -960,51 +1102,28 @@ int Listener::Start() {
         sin.sin_port = htons(m_port);
 
 	int on = 1;
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	setsockopt(m_accept_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
-	if (bind(sock, (struct sockaddr*)&sin, sizeof(sin))) {
+	if (bind(m_accept_socket, (struct sockaddr*)&sin, sizeof(sin))) {
 		sz_log(0,"bind %s", strerror(errno));
 		exit(1);
 	}
 
 
-	if (listen(sock, 1) < 0) {
+	if (listen(m_accept_socket, 1) < 0) {
 		sz_log(0, "listen %s", strerror(errno));
 		exit(1);
 	}
 
-	while (true) {
-		struct sockaddr_in caddr;
-		socklen_t clen = sizeof(caddr);
-		int accepted = accept(sock, (struct sockaddr*) &caddr, &clen);
-		if (accepted < 0) {
-			if (errno == EINTR) {
-				continue;
-			} else {
-				sz_log(0, "%d accept %s", errno, strerror(errno));
-				exit(1);
-			}
-		}
-
-		sigemptyset(&sigset);
-		sigaddset(&sigset, SIGHUP);
-		sigaddset(&sigset, SIGCHLD);
-		sigprocmask(SIG_BLOCK, &sigset, NULL);
-
-		pid_t child = fork();
-
-		if (child < 0)
-			sz_log(0, "fork %s", strerror(errno));
-
-		if (child == 0) {
-			close(sock);
-			return accepted;
-		}
-
-		sigprocmask(SIG_UNBLOCK, &sigset, NULL);
-		close(accepted);
+	if (setegid(m_pass->pw_gid) != 0
+			|| setgid(m_pass->pw_gid) != 0
+			|| setuid(m_pass->pw_uid) != 0
+			|| seteuid(m_pass->pw_uid) != 0) {
+		sz_log(0, "Switch to privileges of user %s failed, exiting", m_pass->pw_name);
+		exit(1);
 	}
 
+	Loop();
 }
 
 int main(int argc, char *argv[]) {
@@ -1050,26 +1169,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	LoadUserDatabase();
-	Listener l(atoi(port));
-	int connected  = l.Start();
-	try {
-		if (setegid(pass->pw_gid) != 0
-			|| setgid(pass->pw_gid) != 0
-			|| setuid(pass->pw_uid) != 0
-			|| seteuid(pass->pw_uid) != 0) {
-			sz_log(0, "Switch to privileges of user %s failed, exiting", user);
-			exit(1);
-		}
-		Server serv(connected, ctx, g_userdatabase);
-		serv.Serve();
-	}
-	catch (Exception& e) {
-		sz_log(0, "error %s", e.What().c_str()); 
-		return 1;
-	}
-	catch (...) {
-		sz_log(0, "Uknown exception");
-	}
+	Listener l(atoi(port), ctx, pass);
+	l.Start();
 
 	return 0;
 }

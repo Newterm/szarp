@@ -835,6 +835,7 @@ void DrawPanel::DrawInfoChanged(Draw *d) {
 	if (d->GetSelected()) {
 		prefix = d->GetDrawsController()->GetSet()->GetDrawsSets()->GetPrefix();
 		tb->DoubleCursorToolUncheck();
+		d->StopDoubleCursor();
 		if (active) {
 			menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
 			menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
