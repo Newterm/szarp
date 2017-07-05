@@ -724,7 +724,7 @@
 
   <!--
 	Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
-	'define' oraz elementy 'value', 'raport', 'draw'. Mo¿e te¿ zawieraæ
+	'define' oraz elementy 'value', 'raport', 'draw'. MoÅ¼e teÅ¼ zawieraÄ‡
 	elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
 	Atrybuty:
 		name - wymagany, peÅ‚na tekstowa nazwa parametru, powinna
