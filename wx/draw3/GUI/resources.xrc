@@ -73,7 +73,7 @@
         </object>
     </object>
     <object class="wxDialog" name="RemarkTypeDialog">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <title>New remark</title>
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
@@ -213,7 +213,7 @@
         </object>
     </object>
     <object class="wxDialog" name="PARAM_LIST">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <title>User's params list</title>
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
@@ -396,7 +396,7 @@
         </object>
     </object>
     <object class="wxDialog" name="RemarksListDialog">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <title>Remarks</title>
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
@@ -1466,7 +1466,7 @@
         </object>
     </object>
     <object class="wxDialog" name="param_edit">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <title>Edit parameter</title>
         <object class="wxBoxSizer">
             <orient>wxVERTICAL</orient>
@@ -1878,7 +1878,7 @@
         </object>
     </object>
     <object class="wxDialog" name="ViewRemarkFrame" subclass="MyDialog">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <size>623, 473</size>
         <title>Remark</title>
         <object class="wxBoxSizer">
@@ -2106,7 +2106,7 @@
         </object>
     </object>
     <object class="wxDialog" name="ProbersAddressDialog">
-        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER|wxTHICK_FRAME</style>
+        <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
         <size>656, 314</size>
         <title>Probe servers addresses</title>
         <object class="wxBoxSizer">

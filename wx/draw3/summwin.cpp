@@ -372,6 +372,9 @@ void SummaryWindow::Detach(DrawsController *draws_controller) {
 }
 
 void SummaryWindow::StartDisplaying(int no) {
+	const int default_draw_width = 400;
+	const int default_draw_height = 20;
+
 	assert(m_active);
 	Draw* draw = m_draws[no]->draw;
 
@@ -380,17 +383,16 @@ void SummaryWindow::StartDisplaying(int no) {
 
 	m_summary_draws_count++;
 
-	m_labels[no] = new TTLabel(this, wxID_ANY);
+	m_labels[no] = new TTLabel(this, wxID_ANY, wxDefaultPosition, wxSize(default_draw_width,default_draw_height));
 	m_labels[no]->SetUnitText(draw->GetDrawInfo()->GetShortName() + _T(":"));
 	m_labels[no]->SetBackgroundColour(draw->GetDrawInfo()->GetDrawColor());
 	m_lines[no] = new wxStaticLine(this, wxID_ANY);
 
-	m_values_sizer->Add(m_labels[no], 0, wxEXPAND);
+	m_values_sizer->Add(m_labels[no], 1, wxEXPAND);
 	m_values_sizer->Add(m_lines[no], 0, wxEXPAND);
 
 	m_tooltip = true;
 	m_update = true;
-
 }
 
 void SummaryWindow::SetDraw(Draw *draw) {
