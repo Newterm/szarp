@@ -604,7 +604,7 @@ wxString DefinedDrawInfo::GetValueStr(const double &val, const wxString& no_data
 void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 	xmlChar* _source = xmlGetProp(node, X "source");
 	if (_source == NULL) {
-		throw IllFormedParamException("Invalid source attribute");
+		throw IllFormedParamException(_("Invalid source attribute"));
 	}
 
 	m_base_prefix = SC::U2S(_source);
@@ -618,7 +618,7 @@ void DefinedDrawInfo::ParseXML(xmlNodePtr node) {
 
 	xmlChar* _name = xmlGetProp(node, X "name");
 	if (_name == NULL) {
-		throw IllFormedParamException("Invalid name attribute");
+		throw IllFormedParamException(_("Invalid name attribute"));
 	}
 
 	m_param_name = SC::U2S(_name);
@@ -718,14 +718,14 @@ void DefinedDrawInfo::ParseXMLRPCValue(XMLRPC_VALUE v) {
 void DefinedParam::ParseXML(xmlNodePtr d) {
 	xmlChar *_script = xmlNodeListGetString(d->doc, d->children, 1);
 	if (_script == NULL) {
-		throw IllFormedParamException("Invalid script");
+		throw IllFormedParamException(_("Invalid script"));
 	}
 
 	m_formula = SC::U2S(_script);
 
 	xmlChar* _base_prefix = xmlGetProp(d, BAD_CAST "base");
 	if (_base_prefix == NULL) {
-		throw IllFormedParamException("Invalid base attribute");
+		throw IllFormedParamException(_("Invalid base attribute"));
 	}
 
 	m_base_prefix = SC::U2S(_base_prefix);
@@ -733,7 +733,7 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 
 	xmlChar* _param_name = xmlGetProp(d, BAD_CAST "name");
 	if (_param_name == NULL) {
-		throw IllFormedParamException("Invalid name attribute");
+		throw IllFormedParamException(_("Invalid name attribute"));
 	}
 
 	m_param_name = SC::U2S(_param_name);
@@ -741,7 +741,7 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 
 	xmlChar *prec = xmlGetProp(d, BAD_CAST "prec");
 	if (prec == NULL) {
-		throw IllFormedParamException("Invalid precision attribute");
+		throw IllFormedParamException(_("Invalid precision attribute"));
 	}
 
 	m_prec = wcstol(SC::U2S(prec).c_str(), NULL, 10);
@@ -1129,7 +1129,7 @@ void DefinedDrawSet::ParseXML(xmlNodePtr node)
 {
 	xmlChar *_title = xmlGetProp(node, X "title");
 	if (_title == NULL) {
-		throw IllFormedParamException("Invalid title attribute");
+		throw IllFormedParamException(_("Invalid title attribute"));
 	}
 
 	SetName(SC::U2S(_title));
