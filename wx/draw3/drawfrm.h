@@ -40,8 +40,6 @@
 
 #include <vector>
 
-#include "wxlogging.h"
-
 /**
  * Draw Frame class. It's responsible for remember frame size and positions.
  */

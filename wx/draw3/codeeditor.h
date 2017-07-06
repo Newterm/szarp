@@ -24,8 +24,6 @@
 
 #include <wx/wxscintilla.h>
 
-#include "wxlogging.h"
-
 class CodeEditor: public wxScintilla {
 
 public:

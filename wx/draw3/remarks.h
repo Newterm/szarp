@@ -52,8 +52,6 @@
 
 #include "biowxsock.h"
 
-#include "wxlogging.h"
-
 class Remark {
 public:
 
