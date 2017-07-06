@@ -76,10 +76,11 @@ RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
 
 	sizer->Add(text, 0, wxALIGN_CENTER | wxALL, default_border_width);
 	sizer->Add(line, 0, wxEXPAND, default_border_width);
-	sizer->Add(m_label, 0, wxALIGN_CENTER | wxALL, default_border_width);
+	sizer->Add(m_label, 1, wxALIGN_CENTER | wxALL, default_border_width);
 	sizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 	sizer->Add(new wxButton(this, wxID_HELP), 0, wxALIGN_CENTER);
 
+	sizer->Fit(this);
 	SetSizer(sizer);
 
 	m_draws_controller = NULL;

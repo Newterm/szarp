@@ -92,6 +92,7 @@ PieWindow::PieWindow(wxWindow *parent, DrawPanel *panel) :
 
 	SetBackgroundColour(DRAW3_BG_COLOR);
 
+	m_graph->SetBestSize(250,250);
 	SetSizer(sizer);
 
 }
@@ -239,7 +240,6 @@ void PieWindow::PaintGraphControl(wxDC &dc) {
 		dc.DrawText(text, textx, texty);
 
 		start = end;
-
 	}
 
 	int textw, texth;
@@ -251,19 +251,21 @@ void PieWindow::PaintGraphControl(wxDC &dc) {
 				|| (radius * 2 + 4 * texth + top_margin + 10 > height)) 
 			m_requested_size = wxSize(wxMax(width, dc.MaxX() - dc.MinX() + 20), 
 				wxMax(height, (radius * 2 + 4 * texth + top_margin + 10)));
+		this->SetSize(350,350);
 	} else {
 		wxString no;
-		if (m_proper_draws_count == 0)
+		int string_width;
+		if (m_proper_draws_count == 0){
 			no = _("There are no draws in this sets for which percentage distribution is calculated.");
-		else
+			string_width = static_cast<int>(no.size());
+			this->SetSize(string_width * 7,130);
+		}
+		else {
 			no = _("All values equal zero.");
+			this->SetSize(350,130);
+		}
 		dc.GetTextExtent(no, &textw, &texth);
 		dc.DrawText(no, (width - textw) / 2, dc.MaxY() + 5);
-		int w, h;
-		GetSize(&w, &h);
-		int dw = wxMax(textw + 40, 400);
-		if (w < dw || h < 100)
-			m_requested_size = wxSize(dw, 100);
 	}
 
 }
