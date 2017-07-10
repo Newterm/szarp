@@ -24,7 +24,7 @@
 
 namespace sz4 {
 
-template<class value_type, class time_type, class types, template<class types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
+template<class value_type, class time_type, class types, template<class calc_types> class calculation_method> class buffered_param_entry_in_buffer : public SzbParamObserver {
 protected:
 	typename types::base* m_base;
 	TParam* m_param;
