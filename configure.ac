@@ -1219,6 +1219,7 @@ AC_OUTPUT( \
 	wx/isledit/Makefile \
 	wx/scc/Makefile \
 	wx/raporter3/Makefile \
+	wx/raporter4/Makefile \
 	wx/kontroler3/Makefile \
 	wx/viszio/Makefile \
 	wx/confedit/Makefile \

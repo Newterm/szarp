@@ -1,6 +1,5 @@
 /* 
   SZARP: SCADA software 
-  
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,15 +17,15 @@
 */
 /* $Id$
  *
+ * reporter3 program
  * SZARP
 
- * ecto@praterm.com.pl
+ * pawel@praterm.com.pl
  */
 
-#ifndef _CCONV_H
-#define _CCONV_H
+#ifndef __RAP4_H__
+#define __RAP4_H__
 
-#include <wx/wxprec.h>
 #ifdef __BORLANDC__
 #pragma hdrstop
 #endif
@@ -34,15 +33,46 @@
 #include <wx/wx.h>
 #endif
 
-#include "conversion.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-namespace SC {
+#include "../common/szapp.h"
 
-std::basic_string<unsigned char> S2U(const wxString& c);
+#include <memory>
+#include "reporter_controller.h"
+#include "config_handler.h"
+#include "data_provider.h"
 
-std::string S2A(const wxString& c);
+/**
+ * Main app class
+ */
+class repApp: public szApp<> {
+	wxLocale locale;
+	using Reporter = ReportController<ReportsConfigHandler, IksReportDataProvider, ReporterWindow>;
 
-std::wstring W2S(const wxString& c);
-}
+private:
+	void InitializeReporter();
+	bool ParseCMDLineOptions();
 
-#endif //_CCONV_H
+	void SetImageHandler();
+	void SetTitle();
+	void SetIcon();
+	void SetLocale();
+
+	std::string m_server;
+	std::string m_port;
+	std::wstring m_base;
+	std::wstring initial_report;
+
+	std::shared_ptr<ReportControllerBase> reporter;
+
+protected:
+	virtual bool OnInit();
+	int OnExit();
+};
+
+
+DECLARE_APP(repApp);
+
+#endif
