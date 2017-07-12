@@ -1,6 +1,8 @@
 #ifndef IKS_CMD_ID_H
 #define IKS_CMD_ID_H
 
+#include <boost/system/error_code.hpp>
+
 typedef int IksCmdId;
 
 namespace iks_client_error {

@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <boost/signals2.hpp>
+#include <boost/asio.hpp>
 
 #include "iks_cmd_id.h"
 

@@ -1,4 +1,9 @@
+#ifndef __IKS_SZ4_IKS_H__
+#define __IKS_SZ4_IKS_H__
+
 #include <boost/system/error_code.hpp>
+
+#include "sz4_iks_param_info.h"
 
 #include "sz4/defs.h"
 #include "sz4/api.h"
@@ -7,7 +12,6 @@
 #include "sz4_connection_mgr.h"
 #include "sz4_location_connection.h"
 #include "sz4_iks_param_observer.h"
-#include "sz4_iks_param_info.h"
 
 namespace sz4 {
 
@@ -84,4 +88,5 @@ public:
 
 }
 
+#endif
 /* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */

@@ -59,6 +59,9 @@ void location_connection::add_param(const std::string& base, TParam* param, IksC
 }
 
 void location_connection::add_defined_params() {
+
+	if (m_container == nullptr) return;
+
 	auto defined = m_container->GetExtraParams();
 	auto self = shared_from_this();
 	
@@ -151,6 +154,8 @@ location_connection::location_connection(IPKContainer* container, boost::asio::i
 } 
 
 void location_connection::add_param(const param_info& param, IksCmdCallback callback) {
+	if (m_container == nullptr) return;
+
 	auto defined = m_container->GetExtraParams();
 	auto i = defined.find(param.prefix());
 	if (i != defined.end()) {
