@@ -189,9 +189,6 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 	case WXK_HOME:
 		panel->dw->SetKeyboardAction(CURSOR_HOME_KB);
 		break;
-	case WXK_END:
-		panel->dw->SetKeyboardAction(CURSOR_END_KB);
-		break;
 	case WXK_PAGEUP:
 		if (event.ControlDown())
 			panel->df->SelectPreviousTab();
@@ -1062,6 +1059,10 @@ void DrawPanel::ShowRemarks() {
 
 void DrawPanel::GoToLatestDate() {
 	dw->GetDrawsController()->GoToLatestDate();
+}
+
+void DrawPanel::MoveCursorEnd() {
+	dw->GetDrawsController()->MoveCursorEnd();
 }
 
 void DrawPanel::SetActive(bool _active) {

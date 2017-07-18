@@ -190,6 +190,8 @@ public:
 
 	void OnGoToLatestDate(wxCommandEvent &e);
 
+	void OnMoveCursorEnd(wxCommandEvent &e);
+
 	void OnSortGraph(wxCommandEvent &e);
 
 	void OnExportDataToFile(wxCommandEvent& e);
