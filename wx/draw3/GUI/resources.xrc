@@ -1345,6 +1345,9 @@
             <object class="wxMenuItem" name="GoToLatestDate">
                 <label>Jump to latest date\tCtrl+End</label>
             </object>
+            <object class="wxMenuItem" name="MoveCursorEnd">
+                <label>Move cursor to the end of screen\tEnd</label>
+            </object>
             <object class="wxMenuItem" name="Find">
                 <label>Find\tCtrl+F</label>
             </object>

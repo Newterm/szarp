@@ -1073,6 +1073,10 @@ void DrawFrame::OnGoToLatestDate(wxCommandEvent& event) {
 	draw_panel->GoToLatestDate();	
 }
 
+void DrawFrame::OnMoveCursorEnd(wxCommandEvent& event) {
+	draw_panel->MoveCursorEnd();
+}
+
 void DrawFrame::OnShowRemarks(wxCommandEvent &e) {
 	draw_panel->ShowRemarks();	
 }
@@ -1308,7 +1312,8 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(drawTB_FLORENCE, DrawFrame::OnShowKeyboard)
     EVT_MENU(drawTB_GOTOLATESTDATE, DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
-    EVT_MENU(XRCID("SearchDate"), DrawFrame::OnSearchDate)
+    EVT_MENU(XRCID("MoveCursorEnd"), DrawFrame::OnGoToLatestDate)
+	EVT_MENU(XRCID("SearchDate"), DrawFrame::OnSearchDate)
     EVT_CLOSE(DrawFrame::OnClose)
     EVT_IDLE(DrawFrame::OnIdle)
     EVT_ACTIVATE(DrawFrame::OnActivate)
