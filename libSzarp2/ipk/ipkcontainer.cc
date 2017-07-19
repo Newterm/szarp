@@ -135,7 +135,7 @@ template<class T> TParam* IPKContainer::GetParam(const std::basic_string<T>& glo
 template TParam* IPKContainer::GetParam<wchar_t>(const std::basic_string<wchar_t>& global_param_name, bool add_config_if_not_present);
 template TParam* IPKContainer::GetParam<unsigned char>(const std::basic_string<unsigned char>& global_param_name, bool add_config_if_not_present);
 
-bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams) { 
+bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) { 
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	if (configs_ready_for_load.find(prefix) != configs_ready_for_load.end())
 		return true;
@@ -143,7 +143,7 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix, bool lo
 	boost::filesystem::wpath _file;
 	_file = szarp_data_dir / prefix / L"config" / L"params.xml";
 
-	TSzarpConfig* ipk = new TSzarpConfig(logparams); 
+	TSzarpConfig* ipk = new TSzarpConfig(); 
 
 #if BOOST_FILESYSTEM_VERSION == 3
 	if (ipk->loadXML(_file.wstring(), prefix)) {
@@ -268,7 +268,7 @@ void IPKContainer::AddParamToHash(TParam* p) {
 	m_utf_params[SC::S2U(translated_global_param_name)] = p;
 }
 
-TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file, bool logparams ) {
+TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file) {
 	boost::filesystem::wpath _file;
 
 	TSzarpConfig* ipk; 
@@ -276,7 +276,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 		ipk = configs_ready_for_load[prefix];
 		configs_ready_for_load.erase(prefix);
 	} else {
-		ipk = new TSzarpConfig(logparams);
+		ipk = new TSzarpConfig();
 
 		if (file.empty())
 			_file = szarp_data_dir / prefix / L"config" / L"params.xml";
@@ -342,9 +342,9 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	return ipk;
 }
 
-TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file , bool logparams) {
+TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	return AddConfig(prefix, file, logparams);
+	return AddConfig(prefix, file);
 }
 
 std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() {

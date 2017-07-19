@@ -297,7 +297,6 @@
 #include "borutadmn.h"
 #include "daemonutils.h"
 
-
 const unsigned char MB_ERROR_CODE = 0x80;
 
 /** Modbus exception codes. */
@@ -1759,7 +1758,7 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 			return 1;
 		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(node);
+		ASSERT(node);
 		free(expr);
 
 		if (configure_param(node, u->GetSzarpConfig(), p, sp, send))
@@ -2030,7 +2029,7 @@ void modbus_client::send_next_query(bool previous_ok) {
 			schedule_send_query();
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 			break;
 	}
 }
@@ -2187,7 +2186,7 @@ void modbus_client::drain_buffer(struct bufferevent* bufev) {
 
 void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
-	assert(i != regs.end());
+	ASSERT(i != regs.end());
 
 	m_start_addr = current = i->second;
 	m_regs_count = 1;

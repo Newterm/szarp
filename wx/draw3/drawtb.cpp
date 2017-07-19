@@ -161,5 +161,5 @@ DrawToolBar::~DrawToolBar() {
 }
 
 BEGIN_EVENT_TABLE(DrawToolBar, wxToolBar)
-	LOG_EVT_MENU(drawTB_NEWDRAWVERSION, DrawToolBar , NewVersionToolClicked, "drawtb:newdrawversion" )
+	EVT_MENU(drawTB_NEWDRAWVERSION, DrawToolBar::NewVersionToolClicked)
 END_EVENT_TABLE()

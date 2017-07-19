@@ -569,7 +569,7 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 
 	std::set<std::set<int> > ret = {ranges[sr]};
 	for (auto& it: ranges) {
-		if (ret.size() >= max_ax_count)
+		if (ret.size() >= static_cast<unsigned int>(max_ax_count))
 			break;
 
 		if (it.first == sr) continue;

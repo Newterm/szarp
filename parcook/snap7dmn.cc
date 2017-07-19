@@ -48,7 +48,7 @@
 #include "conversion.h"
 #include "liblog.h"
 #include "xmlutils.h"
-
+#include "custom_assert.h"
 #include "base_daemon.h"
 
 class s7map_key
@@ -205,7 +205,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 			return 1;
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(pnode);
+		ASSERT(pnode);
 		free(expr);
 
 		if (ConfigureParam(i, pnode, u->GetSzarpConfig(), p))

@@ -1,5 +1,5 @@
 /* XPM */
-static char * flag_checkered_xpm[] = {
+static const char* flag_checkered_xpm[] = {
 "16 16 83 1",
 " 	c None",
 ".	c #B19072",

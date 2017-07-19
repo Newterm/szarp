@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-2"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  SZARP (C) 2002 Paweł Pałucha
+  SZARP (C) 2002 PaweĹ PaĹucha
   pawel@praterm.com.pl
 
   DTD for SZARP params configuration file.
@@ -12,21 +12,21 @@
 <grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
 
 <!--
-  Głównym elementem jest element 'param', zawiera on całą strukturę
-  konfiguracji parametrów dla danego obiektu.
-  Musi on zawierać co najmniej jeden element 'device' oraz może zawierać
+  GĹĂłwnym elementem jest element 'param', zawiera on caĹÄ strukturÄ
+  konfiguracji parametrĂłw dla danego obiektu.
+  Musi on zawieraÄ co najmniej jeden element 'device' oraz moĹźe zawieraÄ
   jeden element 'defined' oraz jeden element 'drawdefinable'.
   Atrybuty:
-  	version - wymagany, wersja formatu pliku, obecnie obsługiwana
+  	version - wymagany, wersja formatu pliku, obecnie obsĹugiwana
   	to "1.0",
-  	read_freq - domyślnie 10, częstotliwość odczytu danych ze
-  	sterowników w sekundach,
-  	write_freq - domyślnie 10, częstotliwość zapisu danych do
-  	sterowników (zadawania parametrów) w sekundach,
-  	title - wymagany, nazwa obiektu którego dotyczy konfiguracja,
-	ps_address - opcjonalny, adres serwera ustawiającego parametry
-	ps_port - opcjonalny, porst serwera ustawiającego parametry
-	documentation_base_url - opcjonalny, adres bazowy dokumentacji parametrów
+  	read_freq - domyĹlnie 10, czÄstotliwoĹÄ odczytu danych ze
+  	sterownikĂłw w sekundach,
+  	write_freq - domyĹlnie 10, czÄstotliwoĹÄ zapisu danych do
+  	sterownikĂłw (zadawania parametrĂłw) w sekundach,
+  	title - wymagany, nazwa obiektu ktĂłrego dotyczy konfiguracja,
+	ps_address - opcjonalny, adres serwera ustawiajÄcego parametry
+	ps_port - opcjonalny, porst serwera ustawiajÄcego parametry
+	documentation_base_url - opcjonalny, adres bazowy dokumentacji parametrĂłw
 -->
 
 	<define name="params">
@@ -86,22 +86,22 @@
 	</define>
 
   <!--
-	Element 'device' zawiera opis grupy parametrów obsługiwanej przez
-	jednego demona linii. Musi zawierać co najmniej jeden element 'radio'
-	albo co najmniej jeden element 'unit'. Może też zawierać elementy (na
-	początku) i atrybuty z innych przestrzeni nazw.
+	Element 'device' zawiera opis grupy parametrĂłw obsĹugiwanej przez
+	jednego demona linii. Musi zawieraÄ co najmniej jeden element 'radio'
+	albo co najmniej jeden element 'unit'. MoĹźe teĹź zawieraÄ elementy (na
+	poczÄtku) i atrybuty z innych przestrzeni nazw.
 	Atrybuty:
-		daemon - ścieżka do demona linii odpowiedzialnego za
-		obsługę opisywanej linii komunikacyjnej,
-		path - ścieżka do urządzenia związanego z linią
-		(najczęściej odpowiedniego portu szeregowego),
-		speed - prędkość portu szeregowego w bodach,
-		stop - ilość bitów stopu - 1 lub 2,
-		protocol - wersja protokołu (obecnie 0 lub 1), parametr ma
-		znaczenie dla niektórych demonów linii,
-		special - specjalna wartość dla niektórych linii (w starej
+		daemon - ĹcieĹźka do demona linii odpowiedzialnego za
+		obsĹugÄ opisywanej linii komunikacyjnej,
+		path - ĹcieĹźka do urzÄdzenia zwiÄzanego z liniÄ
+		(najczÄĹciej odpowiedniego portu szeregowego),
+		speed - prÄdkoĹÄ portu szeregowego w bodach,
+		stop - iloĹÄ bitĂłw stopu - 1 lub 2,
+		protocol - wersja protokoĹu (obecnie 0 lub 1), parametr ma
+		znaczenie dla niektĂłrych demonĂłw linii,
+		special - specjalna wartoĹÄ dla niektĂłrych linii (w starej
 		konfiguracji pierwsza linia w pliku line<x>.cfg), np. dla
-		uproszczonego protokołu RS232 bez adresowania linii (liczba).
+		uproszczonego protokoĹu RS232 bez adresowania linii (liczba).
   -->
 
 	<define name="device">
@@ -428,9 +428,9 @@
 
   <!--
 	Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
-	radiowego). Musi zawierać co najmniej jeden element 'unit'.
+	radiowego). Musi zawieraÄ co najmniej jeden element 'unit'.
 	Atrybuty:
-		id - wymagany, identyfikator używany przez modem radiowy.
+		id - wymagany, identyfikator uĹźywany przez modem radiowy.
   -->
 
 	<define name="radio">
@@ -446,16 +446,16 @@
 	</define>
 
   <!--
-	Element 'unit' opisuje jednostkę komunikacji. Zawiera co najmniej jeden
+	Element 'unit' opisuje jednostkÄ komunikacji. Zawiera co najmniej jeden
 	elemen 'param' lub 'send'.
 	Atrybuty:
 		id - wymagany, identyfikator jednostki - pojedynczy znak ASCII
-		unikalny w obrębie linii komunikacyjnej,
-		type - wymagany, typ raportu - wartość interpretowana przez
+		unikalny w obrÄbie linii komunikacyjnej,
+		type - wymagany, typ raportu - wartoĹÄ interpretowana przez
 		sterownik (liczba),
-		subtype - wymagany, podtyp raportu, wartość interpetowana przez
+		subtype - wymagany, podtyp raportu, wartoĹÄ interpetowana przez
 		sterownik (liczba),
-		bufsize - wielkość bufora uśredniania dla parametrów w bajtach.
+		bufsize - wielkoĹÄ bufora uĹredniania dla parametrĂłw w bajtach.
   -->
 
 	<define name="unit">
@@ -530,6 +530,7 @@
 					<value>fp210</value>
 					<value>wmtp</value>
 					<value>modbus</value>
+					<value>fc</value>
 				</choice>
 			</attribute>
 		</optional>
@@ -723,25 +724,25 @@
 
   <!--
 	Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
-	'define' oraz elementy 'value', 'raport', 'draw', 'analysis'. Może też zawierać
+	'define' oraz elementy 'value', 'raport', 'draw'. MoĹźe teĹź zawieraÄ
 	elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
 	Atrybuty:
-		name - wymagany, pełna tekstowa nazwa parametru, powinna
-		zawierać trzy człony oddzielone dwukropkami, poza dwukropkami
-		może zawierać dowolne znaki, zaleca się jednak ograniczyć do
-		liter (mogą być polskie) i cyfr, nazwa MUSI być unikalna w
-		obrębie całej konfiguracji,
-		short_name - wymagany, nazwa skrócona (do 4 znaków), dowolna
-		draw_name - nazwa krótka używana jako nazwa wykresu, powinna
-		mieć do 20 znaków, jeżeli jest pusta będzie używana nazwa
-		pełna,
-		unit - wymagana, nazwa jednostki, domyślnie '-' (brak jednostki),
+		name - wymagany, peĹna tekstowa nazwa parametru, powinna
+		zawieraÄ trzy czĹony oddzielone dwukropkami, poza dwukropkami
+		moĹźe zawieraÄ dowolne znaki, zaleca siÄ jednak ograniczyÄ do
+		liter (mogÄ byÄ polskie) i cyfr, nazwa MUSI byÄ unikalna w
+		obrÄbie caĹej konfiguracji,
+		short_name - wymagany, nazwa skrĂłcona (do 4 znakĂłw), dowolna
+		draw_name - nazwa krĂłtka uĹźywana jako nazwa wykresu, powinna
+		mieÄ do 20 znakĂłw, jeĹźeli jest pusta bÄdzie uĹźywana nazwa
+		peĹna,
+		unit - wymagana, nazwa jednostki, domyĹlnie '-' (brak jednostki),
 		base_ind - indeks w bazie, liczba nieujemna dla starego formatu
-		bazy, "auto" dla nowego formatu bazy, jeśli nie występuje,
-		oznacza to że parametr nie jest zapisywany do bazy,
-		prec - dla parametrów liczbowych - ilość miejsc po przecinku,
-		tobase - atrybut nie powinien występować w konfiguracjach, ale
-	jest obecny w szablonach, więc został uwzględniony w DTD
+		bazy, "auto" dla nowego formatu bazy, jeĹli nie wystÄpuje,
+		oznacza to Ĺźe parametr nie jest zapisywany do bazy,
+		prec - dla parametrĂłw liczbowych - iloĹÄ miejsc po przecinku,
+		tobase - atrybut nie powinien wystÄpowaÄ w konfiguracjach, ale
+	jest obecny w szablonach, wiÄc zostaĹ uwzglÄdniony w DTD
   -->
 
 	<define name="param">
@@ -765,9 +766,6 @@
 				</zeroOrMore>
 				<zeroOrMore>
 					<ref name="draw"/>
-				</zeroOrMore>
-				<zeroOrMore>
-					<ref name="analysis"/>
 				</zeroOrMore>
 				<zeroOrMore>
 					<ref name="doc"/>
@@ -835,6 +833,11 @@
 		<!-- ipk-extra -->
 		<optional>
 			<attribute name="export" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer"/>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="parameter-number" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
 				<data type="integer"/>
 			</attribute>
 		</optional>
@@ -1030,13 +1033,13 @@
 	</define>
 
   <!--
-	Element 'value' opisuje dostępne wartości dla parametrów
-	nieliczbowych i odpowiadające im wartości liczbowe (np "Tak" - 1, "Nie
-	- 0). Pojedyczny element opisuje jedną wartość.
+	Element 'value' opisuje dostÄpne wartoĹci dla parametrĂłw
+	nieliczbowych i odpowiadajÄce im wartoĹci liczbowe (np "Tak" - 1, "Nie
+	- 0). Pojedyczny element opisuje jednÄ wartoĹÄ.
 	Atrybuty:
-		int - wymagany, wartość liczbowa (w bazie lub pamięci
+		int - wymagany, wartoĹÄ liczbowa (w bazie lub pamiÄci
 		dzielonej),
-		name - opis wartości widoczny np. w raportach.
+		name - opis wartoĹci widoczny np. w raportach.
   -->
 
 	<define name="value">
@@ -1055,41 +1058,41 @@
 	</define>
 
   <!--
-	Element 'define' występujący w parametrze oznacza, że dany parametr
+	Element 'define' wystÄpujÄcy w parametrze oznacza, Ĺźe dany parametr
 	jest parametrem definiowalnym, wyliczanym na podstawie innych.
 	Atrybuty:
-		type - wymagany, określa typ formuły, obecnie dostępne są
+		type - wymagany, okreĹla typ formuĹy, obecnie dostÄpne sÄ
 		dwa typy:
-		"RPN" - standardowa formuła SZARP'a 2.1 w odwrotnej notacji
-		polskiej, z liczbami zapisywanymi normalnie, a odwołania do
-		wartości parametrów mają postać pełnej nazwy parametru w
-		nawiasie, przy czym zamiast członu nazwy może wystąpić '*',
-		oznaczająca skopiowanie członu nazwy z parametru macierzystego,
-		jest wyliczany przez parcook'a i dostępny z pamięci dzielonej,
-		"DRAWDEFINABLE" - parametr wyliczany przez przeglądającego,
-		nieobecny w pamięci dzielonej ani w bazie, formula także w
-		postaci ONP, ale z trochę innym zestawem operatorów, w SZARP
-		2.1 opisany w pliku definable.cfg, parametry tego typu mogą
-		występować tylko wewnątrz elementu 'drawdefinable'
-		formula - domyślnie "null" - formuła do wyliczania wartości
+		"RPN" - standardowa formuĹa SZARP'a 2.1 w odwrotnej notacji
+		polskiej, z liczbami zapisywanymi normalnie, a odwoĹania do
+		wartoĹci parametrĂłw majÄ postaÄ peĹnej nazwy parametru w
+		nawiasie, przy czym zamiast czĹonu nazwy moĹźe wystÄpiÄ '*',
+		oznaczajÄca skopiowanie czĹonu nazwy z parametru macierzystego,
+		jest wyliczany przez parcook'a i dostÄpny z pamiÄci dzielonej,
+		"DRAWDEFINABLE" - parametr wyliczany przez przeglÄdajÄcego,
+		nieobecny w pamiÄci dzielonej ani w bazie, formula takĹźe w
+		postaci ONP, ale z trochÄ innym zestawem operatorĂłw, w SZARP
+		2.1 opisany w pliku definable.cfg, parametry tego typu mogÄ
+		wystÄpowaÄ tylko wewnÄtrz elementu 'drawdefinable'
+		formula - domyĹlnie "null" - formuĹa do wyliczania wartoĹci
 		parametru.
-	lua_formula - określa sposób w jaki ma być liczona wartość średnia
+	lua_formula - okreĹla sposĂłb w jaki ma byÄ liczona wartoĹÄ Ĺrednia
 		parametru zapisnego w LUA:
-		"va" - oznacza ze wartość średnia jest liczona na podstaiwe
-		wartości średnich parametrów od których formuła zeleży
-		(tak zachowywały się tzw. 'stare definiowalne')
-		"av" - oznacza że wartośc średnia jest liczona jako
-		uśrednie wartości formuły dla wszystkich
-		próbek z zadanego przedziału czasu ('nowe definiowalne')
+		"va" - oznacza ze wartoĹÄ Ĺrednia jest liczona na podstaiwe
+		wartoĹci Ĺrednich parametrĂłw od ktĂłrych formuĹa zeleĹźy
+		(tak zachowywaĹy siÄ tzw. 'stare definiowalne')
+		"av" - oznacza Ĺźe wartoĹc Ĺrednia jest liczona jako
+		uĹrednie wartoĹci formuĹy dla wszystkich
+		prĂłbek z zadanego przedziaĹu czasu ('nowe definiowalne')
 	new_def - opcjonalny, jesli ustawiony na 'yes' parametr DRAWDEFINABLE
-		powinien być liczony w nowy sposób, brak atrubutu odczytywane
+		powinien byÄ liczony w nowy sposĂłb, brak atrubutu odczytywane
 		jest jako 'no'
-	Przykład parametru definiowalnego:
+	PrzykĹad parametru definiowalnego:
 
-	<param name="Kocioł 1:Waga:stosunek energia / masa"
+	<param name="KocioĹ 1:Waga:stosunek energia / masa"
 		short_name="Km" draw_name="Stos. energia/masa" unit="MWh/t" prec="3"
 		base_ind="40">
-		<define type="RPN" formula="(*:*:stosunek energia /objętość;) 1000 * (*:*:masa nasypowa
+		<define type="RPN" formula="(*:*:stosunek energia /objÄtoĹÄ;) 1000 * (*:*:masa nasypowa
 		   w&#x119;gla) / "/>
 	</param>
 
@@ -1167,21 +1170,21 @@
 	</define>
 
   <!--
-	Element 'raport' opisuje wystąpienie parametru w raporcie. Jeden
-	parametr może mieć wiele elementów 'raport', będzie więc widoczny w
+	Element 'raport' opisuje wystÄpienie parametru w raporcie. Jeden
+	parametr moĹźe mieÄ wiele elementĂłw 'raport', bÄdzie wiÄc widoczny w
 	wielu raportach.
 	Atrybuty:
-		title - wymagany, tytuł raportu, jest jednocześnie
-		identyfikatorem raportu, więc różne raporty muszą mieć różne
-		tytuły,
-		descr - opis parametru w raporcie, jeżeli nie występuje, to
-		jako opis używana jest ostatnia część nazwy parametru,
-		order - liczba rzeczywista, określa kolejność parametru w
-		raporcie, im mniejsza tym wyżej w raporcie znajdzie się
-		parametr, parametry bez tego atrybutu są ustawiane za tymi
+		title - wymagany, tytuĹ raportu, jest jednoczeĹnie
+		identyfikatorem raportu, wiÄc rĂłĹźne raporty muszÄ mieÄ rĂłĹźne
+		tytuĹy,
+		descr - opis parametru w raporcie, jeĹźeli nie wystÄpuje, to
+		jako opis uĹźywana jest ostatnia czÄĹÄ nazwy parametru,
+		order - liczba rzeczywista, okreĹla kolejnoĹÄ parametru w
+		raporcie, im mniejsza tym wyĹźej w raporcie znajdzie siÄ
+		parametr, parametry bez tego atrybutu sÄ ustawiane za tymi
 		z priorytetem,
-		filename - nazwa pliku z raportem, jeżeli jej nie ma, to użyty
-		będzie tytuł, atrybut ten w przyszłości może zostać usunięty.
+		filename - nazwa pliku z raportem, jeĹźeli jej nie ma, to uĹźyty
+		bÄdzie tytuĹ, atrybut ten w przyszĹoĹci moĹźe zostaÄ usuniÄty.
   -->
 
 	<define name="raport">
@@ -1204,39 +1207,39 @@
 	</define>
 
   <!--
-	Opis wykresu. Podobnie jak z raportami parametr może występować w wielu
+	Opis wykresu. Podobnie jak z raportami parametr moĹźe wystÄpowaÄ w wielu
 	wykresach.
 	Atrybuty:
-		title - wymagany, nazwa okna z wykresami (grupy wykresów),
-		max - maksymalna wartość parametru (górny zakres osi), liczba
+		title - wymagany, nazwa okna z wykresami (grupy wykresĂłw),
+		max - maksymalna wartoĹÄ parametru (gĂłrny zakres osi), liczba
 		rzeczywista, obecnie wymagana,
-		min - minimalna wartość parametru (dolny zakres osi), liczba
+		min - minimalna wartoĹÄ parametru (dolny zakres osi), liczba
 		rzeczywista, obecnie wymagana,
-		scale - parametr określający jaka część wykresu ma być
-		przeskalowana do zakresu podanego przez następne atrybuty,
-		jeżeli jest równy 0 lub nieobecny, przeskalowanie nie
-		występuje, podawany w procentach,
-		minscale, maxscale - dolny i górny zakres wartości ulegających
+		scale - parametr okreĹlajÄcy jaka czÄĹÄ wykresu ma byÄ
+		przeskalowana do zakresu podanego przez nastÄpne atrybuty,
+		jeĹźeli jest rĂłwny 0 lub nieobecny, przeskalowanie nie
+		wystÄpuje, podawany w procentach,
+		minscale, maxscale - dolny i gĂłrny zakres wartoĹci ulegajÄcych
 		przeskalowaniu (liczby rzeczywiste),
-		color - kolor wykresu, podany jako stała tekstowa lub wartość
-		RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', jeżeli
+		color - kolor wykresu, podany jako staĹa tekstowa lub wartoĹÄ
+		RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', jeĹźeli
 		jest nieobecny kolor zostanie dobrany automatycznie
-		special - atrybut specjalny, domyślnie 'none', inne to:
-			piedraw - parametr jest liczony do wykresu kołowego
+		special - atrybut specjalny, domyĹlnie 'none', inne to:
+			piedraw - parametr jest liczony do wykresu koĹowego
 			hoursum - parametr jest liczony do sumowania
 			godzinowego
-			valve - zawory, atrybut dla kompatybilności wstecz
-			rel - jeśli w oknie są dwa wykresy, to w oknie
-			dodatkowym pojawi się wyliczenie stosunku wartości
-			parametrów z wykresów
-			diff - w oknie dodatkowym pojawia się różnica wartości
-			końcowej i początkowej dla wykresu.
-		Dokładny opis znaczenia atrybutów specjalnych znajduje się w
+			valve - zawory, atrybut dla kompatybilnoĹci wstecz
+			rel - jeĹli w oknie sÄ dwa wykresy, to w oknie
+			dodatkowym pojawi siÄ wyliczenie stosunku wartoĹci
+			parametrĂłw z wykresĂłw
+			diff - w oknie dodatkowym pojawia siÄ rĂłĹźnica wartoĹci
+			koĹcowej i poczÄtkowej dla wykresu.
+		DokĹadny opis znaczenia atrybutĂłw specjalnych znajduje siÄ w
 		pliku resources/dcoumentation/draw.ekran.README.html.
-		prior - priorytet okna zawierającego wykres - liczba
-		zmiennoprzecinkowa dodatnia, im mniejsza tym wyżej będzie okno
-		na liście w programie przeglądającym
-		order - jak prior, ale dotyczy kolejności wykresu w oknie
+		prior - priorytet okna zawierajÄcego wykres - liczba
+		zmiennoprzecinkowa dodatnia, im mniejsza tym wyĹźej bÄdzie okno
+		na liĹcie w programie przeglÄdajÄcym
+		order - jak prior, ale dotyczy kolejnoĹci wykresu w oknie
   -->
 
 	<define name="draw">
@@ -1310,13 +1313,13 @@
 	</define>
 
   <!--
-	Element 'treenode' jest to podelement elementu draw lub treenode, służy do umieszczenia
-	zestawu wykresów w drzewie.
+	Element 'treenode' jest to podelement elementu draw lub treenode, sĹuĹźy do umieszczenia
+	zestawu wykresĂłw w drzewie.
 	Atrybuty:
-	  prior - określa priorytet tego węzła wśród jego braci, funkcjonuje to identycznie
+	  prior - okreĹla priorytet tego wÄzĹa wĹrĂłd jego braci, funkcjonuje to identycznie
 	  jak element prior w elementach draw
-	  draw_prior - określa priorytet zestawu ojca w węźle definiowanym przez ten element,
-	  ma tylko sens w przypadku elementów których bezpośrednim ojcem jest element draw
+	  draw_prior - okreĹla priorytet zestawu ojca w wÄĹşle definiowanym przez ten element,
+	  ma tylko sens w przypadku elementĂłw ktĂłrych bezpoĹrednim ojcem jest element draw
   -->
 	<define name="treenode">
 		<element name="treenode" ns="http://www.praterm.com.pl/SZARP/ipk">
@@ -1341,56 +1344,6 @@
 		</optional>
 	</define>
 
-  <!-- Konfiguracja programu analiza -->
-
-  <!-- Obecnosc elementu 'analysis' w elemencie 'param' oznacza,
-	ze dane zawarte w tym paramaterze podlegaja analizie.
-	Zawiera dwa obowiazkowe atrybuty:
-	boiler_no - numer kotła
-	param_type - typ parametru
-  	analisys_enable	- zezwolenie od regularora kotła na analize
-	regulator_work_time - czas pracy regulatora kotła w pracy automatycznej
-	coal_volume aktualna - objętość wchodzącego do kotła węgla
-	energy_coal_volume_ratio - aktualna wartosc stosunku energia / objetosc wegla
-	air_stream - strumień powietrza
-	left_grate_speed - prędkość posuwu lewego rusztu
-	right_grate_speed - prędkość posuwu prawego rusztu
-	max_air_stream - gorna granica powietrza w analizie
-	min_air_stream - dolna granica powietrza w analizia
-		left_coal_gate_height - wysokość lewej warstwownicy
-		right_coal_gate_height - wysokość pracwej warstwownicy
-	analisys_status - status analizy
-	air_stream_coal_volume_ratio_result  - rezultat analizy - wartość strumienia powietrza
-  -->
-
-	<define name="analysis" combine="interleave">
-		<element name="analysis" ns="http://www.praterm.com.pl/SZARP/ipk">
-			<ref name="attlist.analysis"/>
-			<empty/>
-		</element>
-	</define>
-
-	<define name="attlist.analysis">
-			<attribute name="boiler_no"/>
-			<attribute name="param_type">
-			<choice>
-				<value>analysis_enable</value>
-				<value>regulator_work_time</value>
-				<value>coal_volume</value>
-				<value>energy_coal_volume_ratio</value>
-				<value>air_stream</value>
-				<value>left_grate_speed</value>
-				<value>right_grate_speed</value>
-				<value>max_air_stream</value>
-				<value>min_air_stream</value>
-				<value>left_coal_gate_height</value>
-				<value>right_coal_gate_height</value>
-				<value>analysis_status</value>
-				<value>air_stream_result</value>
-			</choice>
-		</attribute>
-	</define>
-
   <!-- Dokumentacja -->
 
 	<define name="doc">
@@ -1411,18 +1364,18 @@
 	</define>
 
   <!--
-	Element 'send' opisuje parametr wysyłany do sterownika. Może zawierać
+	Element 'send' opisuje parametr wysyĹany do sterownika. MoĹźe zawieraÄ
 	elementy i atrybuty z przestrzeni innych przestrzeni nazw.
 	Atrybuty:
-		param - nazwa parametru, którego wartość ma być wysyłana, musi
-		istnieć parametr o takie nazwie, wymagany,
-		type - rodzaj wysyłanych danych - próbka (domyślnie) lub
-		średnia podanego rodzaju,
-		repeat - ilość powtórzeń jeżeli sterownik nie potwierdził
-		przyjęcia parametru.
-		send_no_data - jeśli atrybut jest obecny, to sender wysyła do
-		sterownika NO_DATA, jeśli nie, to w przypadku braku danych nic
-		nie wysyła
+		param - nazwa parametru, ktĂłrego wartoĹÄ ma byÄ wysyĹana, musi
+		istnieÄ parametr o takie nazwie, wymagany,
+		type - rodzaj wysyĹanych danych - prĂłbka (domyĹlnie) lub
+		Ĺrednia podanego rodzaju,
+		repeat - iloĹÄ powtĂłrzeĹ jeĹźeli sterownik nie potwierdziĹ
+		przyjÄcia parametru.
+		send_no_data - jeĹli atrybut jest obecny, to sender wysyĹa do
+		sterownika NO_DATA, jeĹli nie, to w przypadku braku danych nic
+		nie wysyĹa
   -->
 
 	<define name="send">
@@ -1534,7 +1487,7 @@
 		</optional>
 	</define>
 
-  <!-- element defined zawiera definicje parametrów definiowalnych parcooka -->
+  <!-- element defined zawiera definicje parametrĂłw definiowalnych parcooka -->
 
 	<define name="defined">
 		<element name="defined" ns="http://www.praterm.com.pl/SZARP/ipk">
@@ -1548,8 +1501,8 @@
 		<empty/>
 	</define>
 
-  <!-- element drawdefinable zawiera definicje parametrów definiowalnych
-  przeglądającego -->
+  <!-- element drawdefinable zawiera definicje parametrĂłw definiowalnych
+  przeglÄdajÄcego -->
 
 	<define name="drawdefinable" ns="http://www.praterm.com.pl/SZARP/ipk">
 		<element name="drawdefinable">
@@ -1615,7 +1568,7 @@
 		<attribute name="name" ns="http://www.praterm.com.pl/SZARP/ipk-checker"/>
 	</define>
 
-  <!-- Główny tag dokumentu -->
+  <!-- GĹĂłwny tag dokumentu -->
 
 	<start>
 		<choice>

@@ -44,8 +44,6 @@
 #include "singleinstance.h"
 #include "szhlpctrl.h"
 
-#include "wxlogging.h"
-
 class DrawGLApp : public wxGLApp, private szAppImpl {
 public:
 	DrawGLApp();
@@ -124,7 +122,6 @@ public:
 	virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
 	virtual void OnInitCmdLine(wxCmdLineParser &parser);
 
-	void HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event) const;
 protected:
 	/**
 	 * Method called on application start.
@@ -156,7 +153,6 @@ protected:
 	wxString m_url; /**< Draw url, describing base, set, period and time to sart with*/
 
 	bool m_url_open_in_existing;
-	bool m_show_logparams;
 
 			/** Addresses of probers servers retrived from szarp.cfg*/
 	std::map<wxString, std::pair<wxString, wxString> > m_probers_from_szarp_cfg;

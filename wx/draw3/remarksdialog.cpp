@@ -130,9 +130,9 @@ void RemarksListDialog::OnHelpButton(wxCommandEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(RemarksListDialog, wxDialog)
-	LOG_EVT_BUTTON(wxID_OPEN, RemarksListDialog , OnOpenButton, "remarks:open" )
-	LOG_EVT_BUTTON(wxID_CLOSE, RemarksListDialog , OnCloseButton, "remarks:close" )
-	LOG_EVT_BUTTON(wxID_HELP, RemarksListDialog , OnHelpButton, "remarks:help" )
-	LOG_EVT_CLOSE(RemarksListDialog , OnClose , "remarks:close")
+	EVT_BUTTON(wxID_OPEN, RemarksListDialog::OnOpenButton)
+	EVT_BUTTON(wxID_CLOSE, RemarksListDialog::OnCloseButton)
+	EVT_BUTTON(wxID_HELP, RemarksListDialog::OnHelpButton)
+	EVT_CLOSE(RemarksListDialog::OnClose)
 	EVT_LIST_ITEM_ACTIVATED(XRCID("RemarksListCtrl"), RemarksListDialog::OnRemarkItemActivated)
 END_EVENT_TABLE()

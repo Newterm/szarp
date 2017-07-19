@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-/* 
- * draw3 
+/*
+ * draw3
  * SZARP
 
  *
@@ -42,7 +42,6 @@
 #include <wx/datetime.h>
 #include <wx/colour.h>
 #include <wx/dynarray.h>
-#include <wx/arrimpl.cpp>
 #include <wx/dc.h>
 
 /** MUST BE ODD!! */
@@ -67,7 +66,7 @@ class WxGraphs : public wxWindow, public DrawGraphs, public SetInfoDropReceiver 
 	bool m_draw_current_draw_name;
 
 	ConfigManager *m_cfg_mgr;
-       
+
 	struct {
 		int leftmargin;
 		int rightmargin;
@@ -173,4 +172,4 @@ public:
 };
 
 
-#endif 
+#endif

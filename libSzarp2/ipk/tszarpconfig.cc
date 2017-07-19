@@ -60,10 +60,6 @@
 #include "szbbase.h"
 #include "loptcalculate.h"
 
-#include "log_params.h"
-#define LOG_PREFIX_LEN 8
-#define LOG_PREFIX L"Activity"
-
 
 using namespace std;
 
@@ -155,15 +151,14 @@ swap_draws(int a, int b, void *data)
 }
 
 
-TSzarpConfig::TSzarpConfig( bool logparams ) :
+TSzarpConfig::TSzarpConfig() :
 	read_freq(0), send_freq(0),
 	devices(NULL), defined(NULL),
 	drawdefinable(NULL), title(),
-	prefix(), boilers(NULL), seasons(NULL) ,
-	logparams(logparams),
-       	device_counter(1),
-       	radio_counter(1),
-       	unit_counter(1),
+	prefix(), seasons(NULL),
+	device_counter(1),
+	radio_counter(1),
+	unit_counter(1),
 	use_names_cache(false)
 {
 }
@@ -174,7 +169,6 @@ TSzarpConfig::~TSzarpConfig(void)
 	if( defined )       delete defined      ;
 	if( drawdefinable ) delete drawdefinable;
 	if( seasons )       delete seasons      ;
-	if( boilers )       delete boilers      ;
 }
 
 
@@ -299,14 +293,6 @@ TSzarpConfig::generateXML(void)
 	for (TParam * p = drawdefinable; p; p = p->GetNext())
 	    xmlAddChild(node, p->generateXMLNode());
     }
-    if (boilers) {
-	node = xmlNewChild(doc->children, NULL, X"boilers", NULL);
-	for (TBoiler* boiler = GetFirstBoiler(); boiler; boiler = boiler->GetNext()) {
-	    xmlNodePtr boiler_node = boiler->generateXMLNode();	
-	    if (boiler_node)
-		xmlAddChild(node,boiler_node);
-        }
-    }
     if (seasons) {
 	node = seasons->generateXMLNode();
 	xmlAddChild(doc->children, node);
@@ -316,11 +302,6 @@ TSzarpConfig::generateXML(void)
 #undef ITOA
 #undef BUF
 }
-
-TBoiler* 
-TSzarpConfig::GetFirstBoiler() {
-	return boilers;
-}	
 
 int
 TSzarpConfig::saveXML(const std::wstring &path)
@@ -395,8 +376,6 @@ TSzarpConfig::loadXML(const std::wstring &path, const std::wstring &prefix)
 	int res = loadXMLDOM(path,prefix);
 #endif
 	if( res ) return res;
-
-	if( logparams ) CreateLogParams();
 
 	return 0;
 }
@@ -498,19 +477,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 					xw.XMLError("'<seasons>' parse problem");
 				}
 			}
-		} else
-		if (xw.IsTag("boilers")) {
-			if (xw.IsBeginTag()) {
-				TBoiler * _b = TBoilers::parseXML(reader, this);
-				if (_b)
-					AddBoiler(_b);
-				else {
-					delete boilers;
-					boilers = NULL;
-					xw.XMLError("'<boilers>' parser problem");
-				}
-			}
-		} else {
+		} 	else {
 			xw.XMLErrorNotKnownTag("params");
 		}
 		if (!xw.NextTag())
@@ -654,17 +621,6 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
 			goto at_end;
 		}
 	}
-	else if (!strcmp((char *)ch->name, "boilers")) {
-	    for (xmlNodePtr ch2 = ch->children; ch2; ch2 = ch2->next) 
-		if (!strcmp((char *)ch2->name,"boiler")) {
-		    TBoiler* boiler = TBoiler::parseXML(ch2);
-			if (!boiler) 
-			    goto at_end;
-			boiler->SetParent(this);
-			AddBoiler(boiler);
-
-		}
-	}
 	else if (!strcmp((char *)ch->name, "seasons")) {
 		seasons = new TSSeason();
 		if (seasons->parseXML(ch)) {
@@ -795,40 +751,6 @@ TSzarpConfig::GetMaxBaseInd()
 	    m = n;
     }
     return m;
-}
-
-void
-TSzarpConfig::CreateLogParams()
-{
-	TDevice* d = createDevice(L"/opt/szarp/bin/logdmn");
-	TRadio * r = createRadio ( d );
-	TUnit  * u = createUnit( r );
-	TParam * p;
-	TDraw  * w;
-
-	   AddDevice( d );
-	d->AddRadio ( r );
-	r->AddUnit  ( u );
-
-	std::wstringstream wss;
-	for( int i=0 ; i<LOG_PARAMS_NUMBER ; ++i )
-	{
-		p = new TParam ( u );
-		p->Configure( LOG_PARAMS[i][0] ,
-		              LOG_PARAMS[i][1] ,
-		              LOG_PARAMS[i][2] ,
-		              L"-" , NULL , 0 , -1 , 1 );
-
-		if( i % 12 == 0 ) {
-			wss.str(L"");
-			wss << LOG_PREFIX << " " << i/12 + 1;
-		}
-
-		w = new TDraw( L"" , wss.str() , -1 , i , 0 , 100 , 1 , .5 , 2 );
-
-		u->AddParam( p );
-		p->AddDraw ( w );
-	}
 }
 
 TParam *
@@ -971,13 +893,6 @@ TSzarpConfig::GetNextRaportItem(TRaport * cur)
 	    if (title == r->GetTitle())
 		return r;
     return NULL;
-}
-
-TBoiler* TSzarpConfig::AddBoiler(TBoiler *boiler) {
-	if (!boilers)
-		return boilers = boiler;
-	else
-		return boilers->Append(boiler);
 }
 
 bool TSzarpConfig::checkConfiguration()

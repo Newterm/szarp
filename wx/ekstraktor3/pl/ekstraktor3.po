@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ekstraktor 3.00\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-08 15:27+0200\n"
+"POT-Creation-Date: 2017-07-01 15:28+0200\n"
 "PO-Revision-Date: 2008-09-15 15:42+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -71,7 +71,7 @@ msgstr "Ekstraktor: Nie mogê otworzyæ konfiguracji"
 msgid "Checking parameters in base"
 msgstr "Analizowanie bazy danych"
 
-#: EkstraktorWidget.cpp:101
+#: EkstraktorWidget.cpp:100
 #, c-format
 msgid ""
 "Corrupted config %s\n"
@@ -80,11 +80,11 @@ msgstr ""
 "Uszkodzona konfiugracja %s\n"
 "Nie znaleziono parametrów"
 
-#: EkstraktorWidget.cpp:103 EkstraktorWidget.cpp:146
+#: EkstraktorWidget.cpp:102 EkstraktorWidget.cpp:145
 msgid "Extractor: Cannot load parameters"
 msgstr "Ekstraktor: Nie mo¿na za³adowaæ parametrów."
 
-#: EkstraktorWidget.cpp:144
+#: EkstraktorWidget.cpp:143
 msgid ""
 "Database empty or missing.\n"
 "No params found."
@@ -92,203 +92,203 @@ msgstr ""
 "Baza nie istnieje lub jest pusta.\n"
 "Brak parametrów."
 
-#: EkstraktorWidget.cpp:172
+#: EkstraktorWidget.cpp:171
 msgid " parameters loaded"
 msgstr " parametrów zosta³o za³adowanych"
 
-#: EkstraktorMainWindow.cpp:134
+#: EkstraktorMainWindow.cpp:130
 msgid "Change start date"
 msgstr "Zmiana daty pocz±tkowej"
 
-#: EkstraktorMainWindow.cpp:137
+#: EkstraktorMainWindow.cpp:133
 msgid "Set beginning of result data period"
 msgstr "Ustala datê pocz±tku danych zapisywanych do pliku"
 
-#: EkstraktorMainWindow.cpp:139
+#: EkstraktorMainWindow.cpp:135
 msgid "Change stop date"
 msgstr "Zmiana daty koñcowej"
 
-#: EkstraktorMainWindow.cpp:142
+#: EkstraktorMainWindow.cpp:138
 msgid "Set end of result data period"
 msgstr "Ustala datê koñca danych zapisywanych do pliku"
 
-#: EkstraktorMainWindow.cpp:154
+#: EkstraktorMainWindow.cpp:140
 msgid "Decimal Separator:"
 msgstr "Separator dziesiêtny:"
 
-#: EkstraktorMainWindow.cpp:156
+#: EkstraktorMainWindow.cpp:142
 msgid "Toggles between dot/comma and comma/semicolon decimal/field separator"
 msgstr ""
 "Prze³±cza separator dziesiêtny i warto¶ci miêdzy kropka i przecinek a "
 "przecinek i ¶rednik."
 
-#: EkstraktorMainWindow.cpp:158
+#: EkstraktorMainWindow.cpp:144
 msgid ", (colon)"
 msgstr ", (przecinek)"
 
-#: EkstraktorMainWindow.cpp:159
+#: EkstraktorMainWindow.cpp:145
 msgid ". (dot)"
 msgstr ". (kropka)"
 
-#: EkstraktorMainWindow.cpp:164
+#: EkstraktorMainWindow.cpp:150
 msgid "Minimize output"
 msgstr "Minimalizacja"
 
-#: EkstraktorMainWindow.cpp:165
+#: EkstraktorMainWindow.cpp:151
 msgid "Turns off printing of empty result lines"
 msgstr "Wy³±cz zapisywanie do pliku pustych linii"
 
-#: EkstraktorMainWindow.cpp:169
+#: EkstraktorMainWindow.cpp:155
 msgid "Period:"
 msgstr "Okres:"
 
-#: EkstraktorMainWindow.cpp:171
+#: EkstraktorMainWindow.cpp:157
 msgid "Sets type of result data"
 msgstr "Ustal rodzaj zapisywanych do pliku ¶rednich"
 
-#: EkstraktorMainWindow.cpp:174
+#: EkstraktorMainWindow.cpp:160
 msgid "10 SECONDS"
 msgstr "10 SEKUND"
 
-#: EkstraktorMainWindow.cpp:176 EkstraktorMainWindow.cpp:179
+#: EkstraktorMainWindow.cpp:162 EkstraktorMainWindow.cpp:165
 msgid "10 MINUTES"
 msgstr "10 MINUT"
 
-#: EkstraktorMainWindow.cpp:181
+#: EkstraktorMainWindow.cpp:167
 msgid "HOUR"
 msgstr "GODZINA"
 
-#: EkstraktorMainWindow.cpp:182
+#: EkstraktorMainWindow.cpp:168
 msgid "8 HOURS"
 msgstr "8 GODZIN"
 
-#: EkstraktorMainWindow.cpp:183
+#: EkstraktorMainWindow.cpp:169
 msgid "DAY"
 msgstr "DZIEÑ"
 
-#: EkstraktorMainWindow.cpp:185
+#: EkstraktorMainWindow.cpp:171
 msgid "WEEK"
 msgstr "TYDZIEÑ"
 
-#: EkstraktorMainWindow.cpp:186
+#: EkstraktorMainWindow.cpp:172
 msgid "MONTH"
 msgstr "MIESI¡C"
 
-#: EkstraktorMainWindow.cpp:188
+#: EkstraktorMainWindow.cpp:174
 msgid "Values type:"
 msgstr "Typ próbek:"
 
-#: EkstraktorMainWindow.cpp:189
+#: EkstraktorMainWindow.cpp:175
 msgid "Average"
 msgstr "¦rednia"
 
-#: EkstraktorMainWindow.cpp:191
+#: EkstraktorMainWindow.cpp:177
 msgid "Counter"
 msgstr "Licznik"
 
-#: EkstraktorMainWindow.cpp:193
+#: EkstraktorMainWindow.cpp:179
 msgid "Hour"
 msgstr "Godzina"
 
-#: EkstraktorMainWindow.cpp:234
+#: EkstraktorMainWindow.cpp:214
 msgid "Parameters to be extracted:"
 msgstr "Wybrane parametry:"
 
-#: EkstraktorMainWindow.cpp:239
+#: EkstraktorMainWindow.cpp:219
 msgid "Add parameter"
 msgstr " Dodaj parametr "
 
-#: EkstraktorMainWindow.cpp:240
+#: EkstraktorMainWindow.cpp:220
 msgid "Shows dialog to select parameters"
 msgstr "Otwiera okienko wyboru parametrów"
 
-#: EkstraktorMainWindow.cpp:242
+#: EkstraktorMainWindow.cpp:222
 msgid "Delete parameter"
 msgstr " Usuñ parametr "
 
-#: EkstraktorMainWindow.cpp:243
+#: EkstraktorMainWindow.cpp:223
 msgid "Removes currently selected parameter from list"
 msgstr "Usuwa z listy aktualnie pod¶wietlony parametr"
 
-#: EkstraktorMainWindow.cpp:245
+#: EkstraktorMainWindow.cpp:225
 msgid "Write results to file"
 msgstr "Zapisz dane"
 
-#: EkstraktorMainWindow.cpp:246
+#: EkstraktorMainWindow.cpp:226
 msgid "Opens dialog for selecting result file"
 msgstr "Otwiera okienko wyboru pliku wynikowego"
 
-#: EkstraktorMainWindow.cpp:277
+#: EkstraktorMainWindow.cpp:257
 msgid "Choose parameter"
 msgstr "Wybór parametrów"
 
-#: EkstraktorMainWindow.cpp:294
+#: EkstraktorMainWindow.cpp:274
 msgid "Write results to file...\tCtrl-W"
 msgstr "Zapisz dane...\tCtrl-W"
 
-#: EkstraktorMainWindow.cpp:297
+#: EkstraktorMainWindow.cpp:277
 msgid "Read parameters from file...\tCtrl-O"
 msgstr "Wczytaj listê parametrów...\tCtrl-O"
 
-#: EkstraktorMainWindow.cpp:298
+#: EkstraktorMainWindow.cpp:278
 msgid "Write parameters to file\tCtrl-S"
 msgstr "Zapisz listê parametrów\tCtrl-S"
 
-#: EkstraktorMainWindow.cpp:301
+#: EkstraktorMainWindow.cpp:281
 msgid "Print parameters list...\tCtrl-P"
 msgstr "Drukuj listê parametrów...\tCtrl-P"
 
-#: EkstraktorMainWindow.cpp:303
+#: EkstraktorMainWindow.cpp:283
 msgid "Printing preview"
 msgstr "Podgl±d wydruku"
 
-#: EkstraktorMainWindow.cpp:306
+#: EkstraktorMainWindow.cpp:286
 msgid "Quit\tCtrl-Q"
 msgstr "Zakoñcz\tCtrl-Q"
 
-#: EkstraktorMainWindow.cpp:310
+#: EkstraktorMainWindow.cpp:290
 msgid "&Fonts"
 msgstr "&Czcionki"
 
-#: EkstraktorMainWindow.cpp:315
+#: EkstraktorMainWindow.cpp:295
 msgid "Table of contents\tF1"
 msgstr "Spis tre¶ci\tF1"
 
-#: EkstraktorMainWindow.cpp:316
+#: EkstraktorMainWindow.cpp:296
 msgid "Context help\tShift-F1"
 msgstr "Pomoc kontekstowa\tShift-F1"
 
-#: EkstraktorMainWindow.cpp:317
+#: EkstraktorMainWindow.cpp:297
 msgid "About..."
 msgstr "O programie..."
 
-#: EkstraktorMainWindow.cpp:320
+#: EkstraktorMainWindow.cpp:300
 msgid "&File"
 msgstr "&Plik"
 
-#: EkstraktorMainWindow.cpp:322
+#: EkstraktorMainWindow.cpp:302
 msgid "&Options"
 msgstr "&Opcje"
 
-#: EkstraktorMainWindow.cpp:324
+#: EkstraktorMainWindow.cpp:304
 msgid "Hel&p"
 msgstr "Po&moc"
 
-#: EkstraktorMainWindow.cpp:367 EkstraktorMainWindow.cpp:372
-#: EkstraktorMainWindow.cpp:377 EkstraktorMainWindow.cpp:382
+#: EkstraktorMainWindow.cpp:347 EkstraktorMainWindow.cpp:352
+#: EkstraktorMainWindow.cpp:357 EkstraktorMainWindow.cpp:362
 msgid "undefined"
 msgstr "nieokre¶lone"
 
-#: EkstraktorMainWindow.cpp:413
+#: EkstraktorMainWindow.cpp:393
 msgid "Added parameter: "
 msgstr "Dodany parametr: "
 
-#: EkstraktorMainWindow.cpp:416
+#: EkstraktorMainWindow.cpp:396
 #, c-format
 msgid "Added parameters: %d"
 msgstr "Dodane parametry: %d"
 
-#: EkstraktorMainWindow.cpp:443
+#: EkstraktorMainWindow.cpp:423
 msgid ""
 "Loaded list contains parameters from other configuration.\n"
 "Select Ok to remove these parameters from list\n"
@@ -298,20 +298,20 @@ msgstr ""
 "Wybierz Ok, aby usun±æ te parametru z listy\n"
 "lub Anuluj, aby zrezygnowaæ z wczytywania pliku."
 
-#: EkstraktorMainWindow.cpp:444 EkstraktorMainWindow.cpp:465
+#: EkstraktorMainWindow.cpp:424 EkstraktorMainWindow.cpp:445
 msgid "Incorrect parameters"
 msgstr "Nieprawid³owe parametry"
 
-#: EkstraktorMainWindow.cpp:447
+#: EkstraktorMainWindow.cpp:427
 #, c-format
 msgid "Loaded %d parameters"
 msgstr "Za³adowano parametrów: %d"
 
-#: EkstraktorMainWindow.cpp:453
+#: EkstraktorMainWindow.cpp:433
 msgid "Loading of parameters list canceled"
 msgstr "Wczytywanie listy przerwane"
 
-#: EkstraktorMainWindow.cpp:464
+#: EkstraktorMainWindow.cpp:444
 msgid ""
 "Loaded list contains parameters not existing in base.\n"
 "These parameters will be removed from list."
@@ -319,23 +319,23 @@ msgstr ""
 "Wczytana lista zawiera parametry niezapisywane do bazy.\n"
 "Parametry te zostan± usuniête z listy."
 
-#: EkstraktorMainWindow.cpp:476
+#: EkstraktorMainWindow.cpp:456
 msgid "Parameters list saved"
 msgstr "Lista parametrów zapisana"
 
-#: EkstraktorMainWindow.cpp:485
+#: EkstraktorMainWindow.cpp:465
 msgid "You have chosen no parameters to extraction"
 msgstr "Nie wybrano ¿adnych parametrów do ekstrakcji"
 
-#: EkstraktorMainWindow.cpp:486
+#: EkstraktorMainWindow.cpp:466 EkstraktorMainWindow.cpp:486
 msgid "Cannot make operation"
 msgstr "Operacja nie mog³a byæ wykonana"
 
-#: EkstraktorMainWindow.cpp:492
+#: EkstraktorMainWindow.cpp:472
 msgid "Choose file to extract data to"
 msgstr "Zapis danych"
 
-#: EkstraktorMainWindow.cpp:496
+#: EkstraktorMainWindow.cpp:476
 msgid ""
 "Comma Separated Values (*.csv)|*.csv|OpenOffice format (*.ods)|*.ods|XML "
 "format (*.xml)|*.xml|All files (*.*)|*.*"
@@ -343,47 +343,51 @@ msgstr ""
 "Warto¶ci oddzielone przecinkami (*.csv)|*.csv|OpenOffice arkusz (*.ods)|*."
 "ods|Format XML (*.xml)|*.xml|Wszystkie pliki (*.*)|(*.*)"
 
-#: EkstraktorMainWindow.cpp:570
+#: EkstraktorMainWindow.cpp:487 extraction.cpp:97
+msgid "Couldn't open file "
+msgstr "Nie mo¿na otworzyæ pliku "
+
+#: EkstraktorMainWindow.cpp:558
 msgid "Please wait"
 msgstr "Proszê czekaæ"
 
-#: EkstraktorMainWindow.cpp:571
+#: EkstraktorMainWindow.cpp:559
 msgid "Extraction in progress..."
 msgstr "Ekstrakcja w toku..."
 
-#: EkstraktorMainWindow.cpp:595
+#: EkstraktorMainWindow.cpp:583
 msgid "Parameters successfully extracted to "
 msgstr "Dane zapisane do pliku: "
 
-#: EkstraktorMainWindow.cpp:597
+#: EkstraktorMainWindow.cpp:585
 msgid "Extraction completed"
 msgstr "Ekstrakcja zakoñczona"
 
-#: EkstraktorMainWindow.cpp:598 EkstraktorMainWindow.cpp:765
+#: EkstraktorMainWindow.cpp:586 EkstraktorMainWindow.cpp:753
 msgid "Completed"
 msgstr "Zapis zakoñczony"
 
-#: EkstraktorMainWindow.cpp:602
+#: EkstraktorMainWindow.cpp:590
 msgid "Couldn't extract data"
 msgstr "B³±d podczas ekstrakcji"
 
-#: EkstraktorMainWindow.cpp:605
+#: EkstraktorMainWindow.cpp:593
 msgid "Error: function not implemented"
 msgstr "B³±d: funkcja niezaimplementowana"
 
-#: EkstraktorMainWindow.cpp:608
+#: EkstraktorMainWindow.cpp:596
 msgid "Error: extraction canceled by user"
 msgstr "Ekstrakcja przerwana przez u¿ytkownika"
 
-#: EkstraktorMainWindow.cpp:611
+#: EkstraktorMainWindow.cpp:599
 msgid "Error: XMLWriter error, program or libxml2 bug"
 msgstr "B³±d XMLWriter - b³±d w programie lub bibliotece libxml2"
 
-#: EkstraktorMainWindow.cpp:614
+#: EkstraktorMainWindow.cpp:602
 msgid "Error: system error"
 msgstr "B³±d systemowy"
 
-#: EkstraktorMainWindow.cpp:617
+#: EkstraktorMainWindow.cpp:605
 msgid ""
 "Error: cannot create file.\n"
 "Check permissions."
@@ -391,7 +395,7 @@ msgstr ""
 "B³±d: nie mo¿na utworzyæ pliku.\n"
 "Sprawd¼ czy masz odpowiednie uprawnienia do zapisu."
 
-#: EkstraktorMainWindow.cpp:620
+#: EkstraktorMainWindow.cpp:608
 msgid ""
 "Error: cannot add content to file.\n"
 "Program bug?."
@@ -399,23 +403,23 @@ msgstr ""
 "B³±d: nie mo¿na dodaæ zawarto¶ci do pliku.\n"
 "Zg³o¶ b³±d w programie."
 
-#: EkstraktorMainWindow.cpp:623
+#: EkstraktorMainWindow.cpp:611
 msgid "Error: error loading XSLT stylesheet"
 msgstr "B³±d: b³±d ³adowania szablonu XSLT"
 
-#: EkstraktorMainWindow.cpp:626
+#: EkstraktorMainWindow.cpp:614
 msgid "Error: error applying XSL stylesheet"
 msgstr "B³±d transformacji XSL"
 
-#: EkstraktorMainWindow.cpp:629
+#: EkstraktorMainWindow.cpp:617
 msgid "Error: other error (file access, parameters problems)"
 msgstr "Nieznany b³±d (brak dostêpu do pliku lub z³a lista parametrów)"
 
-#: EkstraktorMainWindow.cpp:634 extraction.cpp:99
+#: EkstraktorMainWindow.cpp:622 extraction.cpp:99
 msgid "Error"
 msgstr "B³±d"
 
-#: EkstraktorMainWindow.cpp:663
+#: EkstraktorMainWindow.cpp:651
 msgid ""
 "Current parameters list is not saved.\n"
 "Exit anyway?"
@@ -423,35 +427,35 @@ msgstr ""
 "Lista parametrów nie zosta³a zapisana.\n"
 "Zakoñczyæ bez zapisywania?"
 
-#: EkstraktorMainWindow.cpp:664
+#: EkstraktorMainWindow.cpp:652
 msgid "Parameters list modified"
 msgstr "Zmodyfikowano listê parametrów"
 
-#: EkstraktorMainWindow.cpp:709
+#: EkstraktorMainWindow.cpp:697
 msgid "Select start date"
 msgstr "Data pocz±tkowa"
 
-#: EkstraktorMainWindow.cpp:732
+#: EkstraktorMainWindow.cpp:720
 msgid "Select stop date"
 msgstr "Data koñcowa"
 
-#: EkstraktorMainWindow.cpp:756
+#: EkstraktorMainWindow.cpp:744
 msgid "Applying XSL transformation"
 msgstr "Przygotowywanie danych wynikowych"
 
-#: EkstraktorMainWindow.cpp:759
+#: EkstraktorMainWindow.cpp:747
 msgid "Compressing output file"
 msgstr "Kompresja pliku wynikowego"
 
-#: EkstraktorMainWindow.cpp:762
+#: EkstraktorMainWindow.cpp:750
 msgid "Dumping data to output"
 msgstr "Trwa zapis danych"
 
-#: EkstraktorMainWindow.cpp:935
+#: EkstraktorMainWindow.cpp:866
 msgid "Cancel extraction?"
 msgstr "Przerwaæ ekstrakcjê?"
 
-#: EkstraktorMainWindow.cpp:935
+#: EkstraktorMainWindow.cpp:866
 msgid "Abort"
 msgstr "Przerwanie"
 
@@ -470,10 +474,6 @@ msgstr "Pierwsza data w bazie: "
 #: EkstraktorMainWindow.h:42
 msgid "Last date in database: "
 msgstr "Ostatnia data w bazie: "
-
-#: extraction.cpp:97
-msgid "Couldn't open file "
-msgstr "Nie mo¿na otworzyæ pliku "
 
 #: extraction.cpp:97
 msgid "\n"

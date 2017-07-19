@@ -244,7 +244,7 @@ bool szParamFetcher::Fetch()
 		return false;
 	}
 	
-	xmlDocPtr xml = m_http->GetXML((char *)SC::S2U(SC::W2S(wxString::FromUTF8(m_url.c_str()))).c_str(), NULL, NULL);
+	xmlDocPtr xml = m_http->GetXML((char *)SC::S2U(SC::W2S(wxString::FromUTF8(m_url.c_str()))).c_str(), NULL, 0);
 	if (xml == NULL) {
 		if (m_custom && m_http->GetError() == 0) /**register raport again (only if ti isn't a network failuer*/
 			SetSource(m_cust_list);

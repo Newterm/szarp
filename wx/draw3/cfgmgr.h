@@ -446,7 +446,7 @@ class ConfigManager
 	 * @param prefix prefix of configration to load
 	 * @param config_path optional path to a file with a configuration to load
 	 * @return loaded configuration*/
-	DrawsSets *LoadConfig(const wxString& prefix, const wxString& config_path = wxEmptyString, bool logparams = false );
+	DrawsSets *LoadConfig(const wxString& prefix, const wxString& config_path = wxEmptyString);
 	
 	/** @return configuration object for given prefix, NULL if configuration cannot be laoded*/
 	DrawsSets *GetConfigByPrefix(const wxString& prefix, bool load = true);
@@ -592,8 +592,6 @@ protected:
 	wxCriticalSection m_reload_config_CS;
 
 	DrawPsc *psc;
-
-	bool m_logparams;
 
 	//prefix of base given(either default one or given with argument -base)
 	wxString m_base_prefix;

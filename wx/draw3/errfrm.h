@@ -31,8 +31,6 @@
 #include <wx/wx.h>
 #endif
 
-#include "wxlogging.h"
-
 class ErrorFrame : public wxFrame {
 	void OnHide(wxCommandEvent &event);
 	void OnClear(wxCommandEvent &event);

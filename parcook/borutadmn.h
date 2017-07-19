@@ -1,5 +1,5 @@
-/* 
-  SZARP: SCADA software 
+/*
+  SZARP: SCADA software
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
 /*
- * 
+ *
  * Darek Marcinkiewicz <reksio@newterm.pl>
- * 
+ *
  */
 
 #ifndef __BORUTADMN_H_
@@ -28,19 +28,19 @@
  * Instead it relies on its modules - drivers to implement particular protocols.
  * Boruta is able to run any number of drivers within one process. Boruta's
  * drivers can be either clients or servers that can communicate over one of two
- * mediums: serial line or tcp protocol. 
+ * mediums: serial line or tcp protocol.
  * Boruta itself performs following tasks:
- *  1. Manages connections 
+ *  1. Manages connections
  *  2. Schedules client drivers.
  *
  * Connections management boils down to estalibshing tcp connections (in case of
- * tcp client drivers), accepting new connections (for tcp server drivers), 
+ * tcp client drivers), accepting new connections (for tcp server drivers),
  * opening/configuring serial port (for serial connections).
  *
  * Scheduling is performed for client drivers that use the same connection (the
  * same serial line or tcp address-port pair). Client drivers are scheduled in
- * turn and each deliver is supposed to notify boruta when it's done with 
- * enquiring its peer, so that boruta can pass connection to next driver - this is 
+ * turn and each deliver is supposed to notify boruta when it's done with
+ * enquiring its peer, so that boruta can pass connection to next driver - this is
  * kind of cooperative multitasking with respect to connections utilization.
  *
  * All drivers are supposed to perform no blocking calls, I/O
@@ -52,6 +52,7 @@
 #include <event.h>
 #include <evdns.h>
 #include "ipchandler.h"
+#include "custom_assert.h"
 
 /**self-descriptive struct holding all aspects of serial port conifguration in one place*/
 struct serial_port_configuration {
@@ -214,7 +215,7 @@ public:
 	 * @param bufev bufferevent associated with connection
 	 * @param socket connection socket
 	 * @param addr address of a peer establishing connection
-	 * @return 0 if connection should be accepted, non zero status if daemon should terminate 
+	 * @return 0 if connection should be accepted, non zero status if daemon should terminate
 	 * (refuse) connection*/
 	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in* addr) = 0;
 	/** notifies driver that new cycle was started*/
@@ -257,7 +258,7 @@ public:
 class serial_connection;
 
 /**boruta interface for clasess dealing with @see serial_connection*/
-class serial_connection_manager { 
+class serial_connection_manager {
 public:
 	/** connection read ready callback*/
 	virtual void connection_read_cb(serial_connection* connection) = 0;
@@ -283,9 +284,9 @@ class boruta_daemon;
 enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING, RESOLVING_ADDR };
 
 /** a client manager class performing client drivers scheduling, it's
- * an abstract class requiring from its subclasses to implement 
+ * an abstract class requiring from its subclasses to implement
  * methods resposinble for connections handling*/
-class client_manager { 
+class client_manager {
 protected:
 	boruta_daemon *m_boruta;
 	/**maps client drivers to connections*/
@@ -346,7 +347,7 @@ class tcp_client_manager : public client_manager {
 		tcp_connection(tcp_client_manager *manager, size_t conn_no, const std::pair<std::string, short> & address);
 		void schedule_timer(int secs, int nsecs);
 		void close();
-		CONNECTION_STATE state;	
+		CONNECTION_STATE state;
 		int fd;
 		struct bufferevent *bufev;
 		size_t conn_no;
@@ -494,8 +495,8 @@ class boruta_daemon {
 	int configure_units();
 public:
 	boruta_daemon();
-	struct event_base* get_event_base();	
-	struct evdns_base* get_evdns_base();	
+	struct event_base* get_event_base();
+	struct evdns_base* get_evdns_base();
 	int configure(int *argc, char *argv[]);
 	void go();
 	static void cycle_timer_callback(int fd, short event, void* daemon);
@@ -515,6 +516,8 @@ serial_client_driver* create_fp210_serial_client();
 serial_client_driver* create_lumel_serial_client();
 
 tcp_client_driver* create_wmtp_tcp_client();
+
+serial_client_driver *create_fc_serial_client();
 
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
@@ -542,7 +545,7 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 		else
 			dolog(0, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
 	}
-	xmlFree(prop);	
+	xmlFree(prop);
 	return ok ? 0 : 1;
 }
 

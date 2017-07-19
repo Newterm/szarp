@@ -28,12 +28,6 @@
     </unit>
   </device>
   <defined>
-    <param name="Kocio³ 5:Analiza:Strumieñ powietrza" short_name="SP" draw_name="Strum. pow. w analizie" unit="%" prec="1" base_ind="auto">
-	    <define type="RPN" formula="1000 (*:*:Stan wej¶æ) 7 2 7 $ * "/>
-      <raport title="Kocio³ 5" order="24"/>
-      <draw title="Kocio³ nr 5" color="cyan" min="50" max="150" order="3"/>
-      <analysis boiler_no="5" param_type="air_stream_result"/>
-    </param>
     <param name="Wentylatory:Kana³ 5:Kasowanie awarii" short_name="Ks" draw_name="-" unit="-">
 	    <value int="0" name="Nie"/>
 	    <value int="1" name="Tak"/>
@@ -75,11 +69,4 @@
    <season year="2007" day_start="26" month_start="4" day_end="15" month_end="10"/>
    <season year="2008" day_start="15" month_start="4" day_end="18" month_end="9"/>
   </seasons>
-  <boilers>
-    <boiler boiler_no="5" grate_speed="15.00" coal_gate_height="4.00" boiler_type="WR-5">
-      <interval duration="10800" grate_speed_lower="1000" grate_speed_upper="5000"/>
-      <interval duration="8040" grate_speed_lower="4000" grate_speed_upper="6000"/>
-      <interval duration="7200" grate_speed_lower="5000" grate_speed_upper="9000"/>
-    </boiler>
-  </boilers>
 </params>

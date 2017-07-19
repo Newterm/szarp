@@ -41,8 +41,6 @@
 
 #include "cfgmgr.h"
 
-#include "wxlogging.h"
-
 /**class responsible for creating and managing @see DrawFrame objects*/
 class FrameManager : public wxEvtHandler {
 	WX_DEFINE_ARRAY(DrawFrame*, DrawFramePtrArray);

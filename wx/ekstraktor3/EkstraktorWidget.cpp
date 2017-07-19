@@ -80,8 +80,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	prog->Update(0, _("Loading configuration"));
 	prog->Fit();
 
-	// don't load activity params
-	IPKContainer::GetObject()->LoadConfig(ipk_prefix,std::wstring(),false);
+	IPKContainer::GetObject()->LoadConfig(ipk_prefix,std::wstring());
 	ipk = IPKContainer::GetObject()->GetConfig(ipk_prefix);
 
 	xml_loaded = ipk != NULL;
@@ -102,7 +101,6 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	prog->Fit();
 
 	number_of_params = 0;
-	int i = 0;
 	TParam *prm = ipk->GetFirstParam();
 	if (NULL == prm) {
 		delete prog;

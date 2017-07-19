@@ -1283,7 +1283,8 @@ void Client::Connect() {
 	BIO_set_conn_ip(sock_bio, &address);
 	BIO_set_conn_int_port(sock_bio, &m_port);
 	//we are closing socket on our own
-	BIO_set_close(sock_bio, 0);
+	if(!BIO_set_close(sock_bio, 0))
+		throw Exception(_("unable to set close flag"));
 
 	BIO_set_nbio(sock_bio, 1);
 
@@ -1550,7 +1551,6 @@ void Client::GetExInEpxression(TPath& dir, uint32_t dir_no, std::string& exclude
 	std::ostringstream ss;
 	const int loop_guard = 12;
 	int i = 0;
-	char *_include = NULL;
 	bool found = false;
 	wxDateTime now = wxDateTime::Now();
 	long year = now.GetYear();

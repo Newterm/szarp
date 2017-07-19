@@ -31,7 +31,6 @@
 
 #include <assert.h>
 
-#include <wx/arrimpl.cpp>
 #include <wx/settings.h>
 #include <wx/log.h>
 #include <wx/filename.h>
@@ -118,7 +117,7 @@ DrawInfo::DrawInfo() {
 	d = NULL;
 	p = NULL;
 	c = wxNullColour;
-	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;
 }
 
 DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
@@ -129,7 +128,7 @@ DrawInfo::DrawInfo(TDraw *d, DrawParam *p)
 	this->d = d;
 	this->p = p;
 	c = wxNullColour;
-	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;	
+	avm = AVERAGE_VALUE_CALCULATION_AVERAGE;
 
 	if (d->GetColor().empty())
 		return;
@@ -401,7 +400,7 @@ DrawSet::SortDraws()
 	std::stable_sort(ordered.begin(), ordered.end(), DrawInfo::CompareDraws);
 	m_draws->clear();
 	m_draws->insert(m_draws->end(), ordered.begin(), ordered.end());
-	m_draws->insert(m_draws->end(), nonordered.begin(), nonordered.end());	
+	m_draws->insert(m_draws->end(), nonordered.begin(), nonordered.end());
 }
 
 int
@@ -573,7 +572,7 @@ DefinedDrawsSets* ConfigManager::GetDefinedDrawsSets() {
 }
 
 DrawsSets *
-ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, bool logparams )
+ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 {
 	if(splashscreen != NULL) {
 		wxString msg = _("Loading configuration: ");
@@ -581,11 +580,9 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, b
 		splashscreen->PushStatusText(msg);
 	}
 
-	m_logparams = logparams;
-
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
-		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring(),logparams);
+		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
 
 
 	DrawsSets* ret;
@@ -612,7 +609,7 @@ ConfigManager::GetDraw(const wxString prefix, const wxString set, int index)
 
 wxString
 ConfigManager::GetSzarpDir() const
-{ 
+{
 	wxString folder_path = m_szarp_data_dir + m_base_prefix;
 	return folder_path + '/';
 }
@@ -1026,7 +1023,7 @@ ConfigManager::GetConfigByPrefix(const wxString& prefix, bool load)
 			return NULL;
 	else
 		return i->second;
-	
+
 }
 
 DrawsSets*
@@ -1164,7 +1161,7 @@ void ConfigManager::SetDatabaseManager(DatabaseManager *db_mgr) {
 bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
 	std::wstring wprefix = prefix.wc_str();
-	if (m_ipks->ReadyConfigurationForLoad(wprefix,m_logparams) == false)
+	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
 

@@ -48,6 +48,7 @@
 
 #include "ipchandler.h"
 #include "liblog.h"
+#include "custom_assert.h"
 
 
 #define SND_NKE_LENGTH 5
@@ -199,8 +200,8 @@ class           DaemonClass {
 	 */
 	DaemonClass(int params, int sends) 
 	{
-		assert(params >= 0);
-		assert(sends >= 0);
+		ASSERT(params >= 0);
+		ASSERT(sends >= 0);
 
 		m_params_count = params;
 		m_sends_count = sends;
@@ -225,7 +226,7 @@ class           DaemonClass {
 
 int DaemonClass::parseDevice(xmlNodePtr node)
 {
-	assert(node != NULL);
+	ASSERT(node != NULL);
 	char           *str;
 	char           *tmp;
 	

@@ -27,7 +27,7 @@ AM_CPPFLAGS = \
 		-DPREFIX=\"@prefix@\" \
 		-DINSTALL_PREFIX='"/opt/szarp"'
 
-LIBSZARP=../libSzarp/libSzarp.la 
+LIBSZARP=../libSzarp/libSzarp.la
 LIBSZARP2=../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la @BOOST_DATE_TIME_LIB@  @BOOST_THREAD_LIB@	@LUA_LIBS@
 
 LDADD = @XML_LIBS@ $(LIBSZARP) @LUA_LIBS@
@@ -36,7 +36,6 @@ LDADD = @XML_LIBS@ $(LIBSZARP) @LUA_LIBS@
 if !MINGW32_OPT
 bin_PROGRAMS = \
 		@AGREGATOR@ \
-		@ANALIZA2IPK@ \
 		crypt \
 		@IPK2SZARP@ \
 		@IPKREP@ \
@@ -46,29 +45,26 @@ bin_PROGRAMS = \
 		sproxy \
 		vrsh \
 		vrsh_d \
-		analiza_create \
 		@STAMPD@
-	      
-               
+
+
 EXTRA_PROGRAMS = \
-		analiza2ipk \
 		agregator \
 		ipk2szarp \
 		ipkrep \
 		ipkmax \
 		precconv \
-		analiza_create \
 		stampd
 
 
 EXTRA_DIST = \
               $(bin_SCRIPTS) \
-              $(noinst_SCRIPTS) 
+              $(noinst_SCRIPTS)
 
 noinst_SCRIPTS = \
               isdn-up-in.sh \
-              isdn-up-out.sh 
-                 
+              isdn-up-out.sh
+
 bin_SCRIPTS = \
 	      conf-get.sh \
 	      conf-import.py \
@@ -129,9 +125,6 @@ ipkrep_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ @BOOST_SYSTEM_LIB@ $(LIBSZARP2) @BOOS
 precconv_SOURCES = precconv.cc
 precconv_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @XML_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
 
-analiza2ipk_SOURCES = analiza2ipk.cc
-analiza2ipk_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP) @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
-
 ipkmax_SOURCES = ipkmax.cc
 ipkmax_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP) $(LIBSZARP2) @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
 
@@ -142,10 +135,6 @@ vrsh_LDADD = $(LIBSZARP2) $(LIBSZARP) -lstdc++
 vrsh_d_SOURCES = vrsh.c
 vrsh_d_CPPFLAGS = -DDEBUG $(AM_CPPFLAGS)
 vrsh_d_LDADD = $(LIBSZARP2) $(LIBSZARP) -lstdc++
-
-analiza_create_SOURCES = analiza_create.c
-analiza_create_CPPFLAGS = 
-analiza_create_LDADD = 
 
 stampd_SOURCES = stampd.c
 stampd_LDADD = @EVENT_LIBS@ $(LIBSZARP)

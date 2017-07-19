@@ -84,7 +84,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -456,6 +455,7 @@ protocols::protocols() {
 	m_serial_client_factories["fp210"] = create_fp210_serial_client;
 	m_serial_client_factories["lumel"] = create_lumel_serial_client;
 	m_tcp_client_factories["wmtp"] = create_wmtp_tcp_client;
+	m_serial_client_factories["fc"] = create_fc_serial_client;
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {
@@ -721,7 +721,7 @@ void tcp_client_manager::close_connection(tcp_connection &c) {
 void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
 	dolog(2, "tcp_client_manager::open_connection %s", c.address.first.c_str());
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
-	assert(c.fd >= 0);
+	ASSERT(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
 		dolog(0, "Failed to set non blocking mode on socket");
 		close_connection(c);
@@ -1074,7 +1074,7 @@ void serial_server_manager::finished_cycle() {
 
 void serial_server_manager::restart_connection_of_driver(serial_server_driver* driver) {
 	std::vector<serial_server_driver*>::iterator i = std::find(m_drivers.begin(), m_drivers.end(), driver);		
-	assert(i != m_drivers.end());
+	ASSERT(i != m_drivers.end());
 	m_connections.at(std::distance(i, m_drivers.end())).close_connection();
 }
 
@@ -1261,10 +1261,10 @@ int boruta_daemon::configure_units() {
 	xp_ctx->node = m_cfg->GetXMLDevice();
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 		SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "boruta",
 		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert(ret == 0);
+	ASSERT(ret == 0);
 	short *read = m_ipc->m_read;
 	short *send = m_ipc->m_send;
 	protocols _protocols;

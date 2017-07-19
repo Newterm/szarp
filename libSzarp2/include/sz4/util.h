@@ -66,6 +66,8 @@ template<class T> T scale_value(const T& v, TParam::DataType dt, int prec) {
 		default:
 			assert(false);
 	}
+
+	return SZARP_NO_DATA;
 }
 
 template<class T> T scale_value(const T& v, TParam* p) {
