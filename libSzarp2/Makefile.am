@@ -66,6 +66,7 @@ noinst_HEADERS = \
 	@srcdir@/include/ppset.h \
 	@srcdir@/include/xmlutils.h \
 	@srcdir@/include/custom_assert.h \
+	@srcdir@/include/base_daemon.h \
 	$(INCLUDE_PROTOBUF)
 
 if MINGW32_OPT
@@ -80,6 +81,7 @@ else
 BASECONN = \
 	@srcdir@/linedmn/daemonutils.cc \
 	@srcdir@/linedmn/baseconn.cc \
+	@srcdir@/linedmn/base_daemon.cc \
 	@srcdir@/linedmn/bserialport.cc \
 	@srcdir@/linedmn/serialport.cc \
 	@srcdir@/linedmn/serialadapter.cc \
@@ -246,11 +248,9 @@ libSzarpLuaParser_la_SOURCES = \
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
 	$(EXTRA_HEADERS) \
-	tools/ipk_config \
 	$(PROTOBUF_ALL)
 
 bin_SCRIPTS= \
-	@srcdir@/tools/ipk_config \
 	@srcdir@/tools/ipk_add_template \
 	@srcdir@/tools/ipk_base_max \
 	@srcdir@/tools/ipk_check_dtd \

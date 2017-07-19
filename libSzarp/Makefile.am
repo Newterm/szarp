@@ -70,6 +70,6 @@ EXTRA_DIST = \
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = \
                  Makefile.in \
-                 libparnt.yy.c 
+                 libparnt.yy.c
                       
 

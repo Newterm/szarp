@@ -120,14 +120,6 @@ Description: SZARP packages updater
  Also allows to specify which SZARP distribution should 
  be installed.
 
-Package: szarp-koper
-Section: misc
-Architecture: any
-Depends: szarp-base, szarp-wx, msttcorefonts
-Description: SZARP premium calulator.
- Package installs program for premium calculation. Currently
- KOPER only displays average value of 'Financial loss' parametr.
-
 Package: szarp-doc-pdf
 Section: doc
 Architecture: all
@@ -221,3 +213,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, libsnap71
 Description: This package contains s7dmn daemon program for communication with Siemens controllers.
  Reading and writing data is available for all Step7 compatibile controllers.
 
+Package: szarp-tests
+Architecture: all
+Section: misc
+Description: This package contains szarp self tests
+ This package contains szarp tests.

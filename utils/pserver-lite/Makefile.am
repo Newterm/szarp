@@ -1,7 +1,7 @@
 # Makefile.am for pserverLITE program.
+#
 
-# No subdirectories
-SUBDIRS = unit_tests
+SUBDIRS = 
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in
@@ -26,7 +26,14 @@ LDADD = \
 	@BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ \
 	@PTHREAD_CFLAGS@
 
-bin_PROGRAMS = pserver-lite szcache_test
+bin_PROGRAMS = pserver-lite szcache_test command-handlers-unit-tests
+
+command_handlers_unit_tests_LDADD = \
+	$(LIBSZARP) $(LIBSZARP2) \
+	@CPPUNIT_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ \
+	@BOOST_LOCALE_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @CURL_LIBS@ \
+	@XSLT_LIBS@ @ZIP_LIBS@ @PROTOBUF_LIBS@ @ZMQ_LIBS@
 
 pserver_lite_SOURCES = \
 	main.cc pserver_service.cpp commands.cc szcache.cpp \
@@ -34,3 +41,11 @@ pserver_lite_SOURCES = \
 
 szcache_test_SOURCES = \
 	szcache.cpp szcache_test.cpp shm_connection.cc
+
+command_handlers_unit_tests_SOURCES = \
+		unit_tests.cpp \
+		command_handlers_unit_test.cpp \
+		commands.cc \
+		szcache.cpp \
+		shm_connection.cc
+

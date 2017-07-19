@@ -80,8 +80,6 @@ endif
 EXTRA_PROGRAMS = ddedmn
 
 
-basedmn_SOURCES = base_daemon.cc base_daemon.h
-
 dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
@@ -140,7 +138,7 @@ borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE
 borutadmn_z_SOURCES = borutadmn_z.cc borutadmn_z.h  boruta_modbus_z.cc
 borutadmn_z_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)
+sampledmn_SOURCES = sampledmn.cc
 
 sbusdmn_SOURCES = sbusdmn.cc
 
@@ -156,7 +154,7 @@ prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TI
 pythondmn_SOURCES = pythondmn.cc
 pythondmn_LDADD = $(LDADD) -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS)
 
-snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
+snap7dmn_SOURCES = snap7dmn.cc
 snap7dmn_LDADD = $(LDADD) -lsnap7
 
 defdmn_SOURCES = defdmn.h defdmn.cc defdmn.tpp funtable.cc funtable.h

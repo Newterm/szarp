@@ -76,7 +76,8 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
 		-pszarp-filler2 \
-		-pszarp-s7dmn
+		-pszarp-s7dmn \
+		-pszarp-tests
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 
