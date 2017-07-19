@@ -383,7 +383,8 @@ void SummaryWindow::StartDisplaying(int no) {
 
 	m_summary_draws_count++;
 
-	m_labels[no] = new TTLabel(this, wxID_ANY, wxDefaultPosition, wxSize(default_draw_width,default_draw_height));
+	m_labels[no] = new TTLabel(this, wxID_ANY, wxDefaultPosition,
+		   	wxSize(default_draw_width,default_draw_height));
 	m_labels[no]->SetUnitText(draw->GetDrawInfo()->GetShortName() + _T(":"));
 	m_labels[no]->SetBackgroundColour(draw->GetDrawInfo()->GetDrawColor());
 	m_lines[no] = new wxStaticLine(this, wxID_ANY);
