@@ -116,7 +116,7 @@ debian/config-status-no-cb: configure
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
-	$(MAKE)
+	$(MAKE) -j`nproc`
 	@touch $@
 
 clean: sanity_check
