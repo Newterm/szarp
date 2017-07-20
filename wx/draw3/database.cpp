@@ -40,7 +40,6 @@
 #include <iostream>
 #include <limits>
 
-
 Draw3Base::Draw3Base(wxEvtHandler *response_receiver) : m_response_receiver(response_receiver)
 {}
 
@@ -448,7 +447,7 @@ template<> struct pair_to_sz4_type<sz4::second_time_t> {
 		return second;
 	}
 };
-	
+
 }
 
 
@@ -779,7 +778,6 @@ void dummy_prepare_sz4_param(TParam* param) {
 
 }
 
-
 template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 	auto query_ptr = std::shared_ptr<DatabaseQuery>(query);
 
@@ -791,22 +789,35 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 	TParam::DataType dt = query->param->GetDataType();
 	int prec = query->param->GetPrec();
 
-	for (auto v : *vd.vv) {
-		time_type time = pair_to_sz4_type<time_type>()(v.time_second, v.time_nanosecond);
-		base->get_weighted_sum<double, time_type>(
-			ParamInfoFromParam(query->param),
-			time, szb_move_time(time, 1, pt), pt,
-			[query_ptr, time, this, v, dt, prec]
-			(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
-				auto& vd = query_ptr->value_data;
+	using V = DatabaseQuery::ValueData::V;
+	auto minmax = std::minmax_element(vd.vv->begin(), vd.vv->end(),
+		[](const V& a, const V& b){
+			return a.time_second < b.time_second || (a.time_second == b.time_second && a.time_nanosecond < b.time_nanosecond);
+		}
+	);
+
+	const auto& v = *minmax.first;
+	auto t_start = sz4::nanosecond_time_t(v.time_second, v.time_nanosecond);
+	auto t_end = szb_move_time(sz4::nanosecond_time_t(minmax.second->time_second, minmax.second->time_nanosecond), 1, pt);
+
+	base->get_weighted_sum<double, time_type>(
+		ParamInfoFromParam(query->param),
+		t_start, t_end, pt,
+		[query_ptr, t_start, pt, this, v, dt, prec]
+		(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
+
+			sz4::nanosecond_time_t s_time = t_start;
+			for (const auto& sum: sums) {
 				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
-							vd.period_type, query_ptr->draw_no);
+							query_ptr->value_data.period_type, query_ptr->draw_no);
 				rq->inquirer_id = query_ptr->inquirer_id;
 				rq->value_data.vv->push_back(v);
 				auto &nv = rq->value_data.vv->back();
+				rq->value_data.vv->back().time_second = s_time.second;
+				rq->value_data.vv->back().time_nanosecond = s_time.nanosecond;
 
 				if (!ec) {
-					wsum_to_value(nv, sums.at(0),
+					wsum_to_value(nv, sum,
 							PeriodToProbeType(query_ptr->value_data.period_type),
 							dt, prec);
 					nv.ok = true;
@@ -818,10 +829,13 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 					nv.ok = false;
 				}
 
+				s_time = szb_move_time(s_time, 1, pt);
+
 				DatabaseResponse r(rq);
 				wxPostEvent(m_response_receiver, r);
-		});
-	}
+			} // for each sum
+		} // callback
+	); // get_weighted_sum
 }
 
 void Sz4ApiBase::GetData(DatabaseQuery* query) {
