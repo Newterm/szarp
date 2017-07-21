@@ -31,6 +31,7 @@
 #include "cframe.h"
 #include "szarp_config.h"
 #include "htmlview.h"
+#include "validate.h"
 #include "cconv.h"
 #include <string>
 
@@ -92,20 +93,20 @@ enum {
 
 BEGIN_EVENT_TABLE(ConfFrame, szFrame)
 	EVT_CLOSE(ConfFrame::OnClose)
-        EVT_MENU(ID_Exit, ConfFrame::OnExit)
-        EVT_TOOL(ID_tbExit, ConfFrame::OnExit)
-        EVT_MENU(ID_Open, ConfFrame::OnOpen)
-        EVT_TOOL(ID_tbOpen, ConfFrame::OnOpen)
-        EVT_MENU(ID_Reload, ConfFrame::OnReload)
-        EVT_TOOL(ID_tbReload, ConfFrame::OnReload)
-        EVT_MENU(ID_Save, ConfFrame::OnSave)
-        EVT_MENU(ID_tbSave, ConfFrame::OnSave)
-        EVT_MENU(ID_SaveAs, ConfFrame::OnSaveAs)
-        EVT_MENU(ID_tbHelp, ConfFrame::OnHelp)
-        EVT_TOOL(ID_tbUp, ConfFrame::UpPressed)
-        EVT_TOOL(ID_MenuUp, ConfFrame::UpPressed)
-        EVT_MENU(ID_tbDown, ConfFrame::DownPressed)
-        EVT_MENU(ID_MenuDown, ConfFrame::DownPressed)
+	EVT_MENU(ID_Exit, ConfFrame::OnExit)
+	EVT_TOOL(ID_tbExit, ConfFrame::OnExit)
+	EVT_MENU(ID_Open, ConfFrame::OnOpen)
+	EVT_TOOL(ID_tbOpen, ConfFrame::OnOpen)
+	EVT_MENU(ID_Reload, ConfFrame::OnReload)
+	EVT_TOOL(ID_tbReload, ConfFrame::OnReload)
+	EVT_MENU(ID_Save, ConfFrame::OnSave)
+	EVT_MENU(ID_tbSave, ConfFrame::OnSave)
+	EVT_MENU(ID_SaveAs, ConfFrame::OnSaveAs)
+	EVT_MENU(ID_tbHelp, ConfFrame::OnHelp)
+	EVT_TOOL(ID_tbUp, ConfFrame::UpPressed)
+	EVT_TOOL(ID_MenuUp, ConfFrame::UpPressed)
+	EVT_MENU(ID_tbDown, ConfFrame::DownPressed)
+	EVT_MENU(ID_MenuDown, ConfFrame::DownPressed)
 	EVT_MENU(ID_Clear, ConfFrame::OnClear)
 	EVT_MENU(ID_Help, ConfFrame::OnHelp)
 	EVT_MENU(ID_About, ConfFrame::OnAbout)
@@ -123,14 +124,11 @@ ConfFrame::ConfFrame(wxString _filename, const wxPoint& pos, const wxSize& size)
         /* Minimal program window size */
 	SetSizeHints(300, 500);
 
-        /* Load IPK DTD */
-        if (LoadSchema() != 0)
-                Close();
         /* Menu */
 	wxMenu *menuFile = new wxMenu;
 	menuFile->Append(ID_Open, _("&Open\tCtrl-O"),
 		_("Load configuration from file."));
-	menuFile->Append(ID_Open, _("&Reload\tCtrl-R"),
+	menuFile->Append(ID_Reload, _("&Reload\tCtrl-R"),
 		_("Reload last opened file."));
 	menuFile->Append(ID_Save, _("&Save\tCtrl-S"),
 		_("Save changes to file."));	
@@ -338,31 +336,24 @@ void ConfFrame::OnReload(wxCommandEvent& WXUNUSED(event))
 
 void ConfFrame::LoadFile(wxString path)
 {
-        xmlDocPtr newdoc = xmlParseFile((const char*)path.mb_str());
-        if (newdoc == NULL) {
-                wxLogError(_("XML document not well-formed"));
-                return ;
-        }
+	xmlDocPtr newdoc = xmlParseFile((const char*)path.mb_str());
+	if (newdoc == NULL) {
+		wxLogError(_("XML document not well-formed"));
+		return ;
+	}
        
 	/* validate file */
-	xmlRelaxNGValidCtxtPtr ctxt;
 	int ret;
+	ret = ValidateConfig(path);
 	
-	ctxt = xmlRelaxNGNewValidCtxt(ipk_rng);
-	ret = xmlRelaxNGValidateDoc(ctxt, newdoc);
-	xmlRelaxNGFreeValidCtxt(ctxt);	
-	
-        if (ret < 0) {
-		wxLogError(_("Failed to compile IPK schema!"));
+	if (ret > 0) {
+		wxLogError(_("XML document doesn't validate against IPK schema!"));
 		return;
-	} else if (ret > 0) {
-                wxLogError(_("XML document doesn't validate against IPK schema!"));
-                return;
-        }
-        if (params != NULL)
-                xmlFreeDoc(params);
-        params = newdoc;
-        ReloadParams();
+	}
+	if (params != NULL)
+		xmlFreeDoc(params);
+	params = newdoc;
+	ReloadParams();
 	ResetAll();
 	SetTitle(wxString(_("SZARP ")) + path);
 	modified = FALSE;
@@ -419,21 +410,6 @@ int ConfFrame::AskForSave(void)
 	if (ret == wxNO)
 		return 0;
 	return SaveFile(filename);
-}
-
-int ConfFrame::LoadSchema(void)
-{
-	xmlRelaxNGParserCtxtPtr ctxt;
-	
-	ctxt = xmlRelaxNGNewParserCtxt(
-                "file:///" INSTALL_PREFIX "/resources/dtd/ipk-params.rng");
-	ipk_rng = xmlRelaxNGParse(ctxt);
-        if (ipk_rng == NULL) {
-                wxLogError(_("Could not load IPK RelaxNG schema from file %s"),
-                        INSTALL_PREFIX "/resources/dtd/ipk-params.rng");
-                return 1;
-        }
-        return 0;
 }
 
 void ConfFrame::ReloadParams(void)
