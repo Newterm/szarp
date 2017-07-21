@@ -88,8 +88,13 @@ DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
 		-pszarp-doc-html
 
-CFLAGS = -ggdb -w
-CXXFLAGS = -ggdb -w
+CFLAGS =
+CXXFLAGS =
+
+ifneq (,$(findstring nodebug,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -ggdb -w
+	CXXFLAGS == -ggdb -w
+endif
 		 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 	CFLAGS += -O0
@@ -98,8 +103,6 @@ else
 	CFLAGS += -O2
 	CXXFLAGS += -O2
 endif
-
-
 
 configure: 
 	./autogen.sh
@@ -110,12 +113,13 @@ debian/config-status-no-cb: configure
 		$(MAKE) clean; \
 		rm debian/config-status-cb; \
 	fi;
-	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
+	./configure AM_CXXFLAGS="" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-deb-build $(CFG_ARGS) $(EXTRA_CFG_ARGS)
 	@touch $@
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
+	echo nproc:`nproc`
 	$(MAKE) -j`nproc`
 	@touch $@
 
