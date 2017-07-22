@@ -42,7 +42,7 @@ std::basic_string<unsigned char> S2U(const wxString& c);
 
 std::string S2A(const wxString& c);
 
-//std::wstring W2S(const wxString& c);
+std::wstring W2S(const wxString& c);
 }
 
 #endif //_CCONV_H

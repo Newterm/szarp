@@ -33,7 +33,6 @@
 #include "defcfg.h"
 #include "errfrm.h"
 #include "dbmgr.h"
-#include "../common/parlist.cpp"
 
 using namespace SC;
 

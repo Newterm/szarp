@@ -91,9 +91,9 @@ DOC_PACKAGES ?= \
 CFLAGS =
 CXXFLAGS =
 
-ifneq (,$(findstring nodebug,$(DEB_BUILD_OPTIONS)))
+ifeq (,$(findstring nodebug,$(DEB_BUILD_OPTIONS)))
 	CFLAGS += -ggdb -w
-	CXXFLAGS == -ggdb -w
+	CXXFLAGS += -ggdb -w
 endif
 		 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))

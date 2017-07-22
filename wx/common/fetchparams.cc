@@ -44,7 +44,7 @@
 
 #include "conversion.h"
 #include "fetchparams.h"
-#include "parlist.cpp"
+#include "cconv.h"
 #ifndef NO_CURL
 
 using namespace SC;

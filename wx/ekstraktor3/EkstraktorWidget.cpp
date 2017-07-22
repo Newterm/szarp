@@ -33,7 +33,7 @@
 #include "cconv.h"
 
 #include "../../resources/wx/icons/extr64.xpm"
-#include "../common/parlist.cpp"
+#include "cconv.h"
 
 void* progress_update(int progress, void* prog) {
 	((wxProgressDialog*) prog)->Update(progress);
