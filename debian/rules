@@ -57,27 +57,34 @@ PREFIX = opt/szarp/
 
 INSTALL_DIR = debian/tmp
 
+TEST_ONLY_BUILD = 0
+
+ifeq (,$(findstring testonly,$(DEB_BUILD_OPTIONS)))
+	TEST_ONLY_BUILD = 1
+endif
+
+ifneq ($(TEST_ONLY_BUILD), 1)
+
 NO_CB_PACK_OPTS ?= \
-		-pszarp-base \
-		-pszarp-daemons \
-		-pszarp-filler \
-		-pszarp-isledit \
-		-pszarp-nagios \
-		-pszarp-paramd \
-		-pszarp-pyipk \
-		-pszarp-scripts \
-		-pszarp-server \
-		-pszarp-server-complete \
-		-pszarp-terminal \
-		-pszarp-updater \
-		-pszarp-utils \
-		-pszarp-wx \
-		-pszarp-viewer \
-		-pszarp-xsltd \
-		-pszarp-dbg-symbols \
-		-pszarp-filler2 \
-		-pszarp-s7dmn \
-		-pszarp-tests
+	-pszarp-base \
+	-pszarp-daemons \
+	-pszarp-filler \
+	-pszarp-isledit \
+	-pszarp-nagios \
+	-pszarp-paramd \
+	-pszarp-pyipk \
+	-pszarp-scripts \
+	-pszarp-server \
+	-pszarp-server-complete \
+	-pszarp-terminal \
+	-pszarp-updater \
+	-pszarp-utils \
+	-pszarp-wx \
+	-pszarp-viewer \
+	-pszarp-xsltd \
+	-pszarp-dbg-symbols \
+	-pszarp-filler2 \
+	-pszarp-s7dmn
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 
@@ -87,6 +94,13 @@ endif
 DOC_PACKAGES ?= \
 		-pszarp-doc-pdf \
 		-pszarp-doc-html
+
+else
+
+NO_CB_PACK_OPTS = -pszarp-tests
+DOC_PACKAGES =
+
+endif
 
 CFLAGS =
 CXXFLAGS =
@@ -139,7 +153,11 @@ build:
 
 install: 
 	dh_testroot
+ifneq ($(TEST_ONLY_BUILD), 1)
 	$(MAKE) install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
+else
+	$(MAKE) install -C unit_tests DESTDIR=$(CURDIR)/$(INSTALL_DIR)
+endif
 	dh_installdirs
 	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
 	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
@@ -209,7 +227,11 @@ binary-sssweb: sanity_check configure debian/build-sssweb install-sssweb create-
 
 binary-arch: binary-no-cb
 
+ifneq ($(TEST_ONLY_BUILD), 1)
 build-indep: debian/build-doc-pdf debian/build-doc-html
+else
+build-indep:
+endif
 
 install-doc-pdf:
 	dh_install -p szarp-doc-pdf resources/documentation/new/_pdf/* \
