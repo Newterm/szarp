@@ -134,8 +134,6 @@ resources.o: resources.rc $(ICON_ICO)
 	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
-all: draw3$(EXEEXT) fr/draw3.mo pl/draw3.mo de/draw3.po
-
 # Install locales and GUIs
 install-data-local: fr/draw3.mo pl/draw3.mo de/draw3.mo
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES

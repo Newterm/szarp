@@ -78,8 +78,6 @@ resources.o: resources.rc $(ICON_ICO)
 	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
-all: scc$(EXEEXT) $(scc_LOCALES)
-
 if !DEB_BUILD
 # Automatyczne odpalanie scc przy starcie X-ów.
 autostart:

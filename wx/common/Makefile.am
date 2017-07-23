@@ -77,7 +77,7 @@ EXTRA_DIST = pl/common.po fr/common.po de/common.po pl/wx.po fr/wx.po de/wx.po
 	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
-all: @srcdir@/version.h $(noinst_LIBRARIES) $(common_LOCALES) $(wx_LOCALES) pl/common.mo fr/common.mo de/common.mo pl/wx.mo fr/wx.mo de/wx.mo
+#all: @srcdir@/version.h $(noinst_LIBRARIES) $(common_LOCALES) $(wx_LOCALES) pl/common.mo fr/common.mo de/common.mo pl/wx.mo fr/wx.mo de/wx.mo
 
 # Install locales
 install-data-local: fr/common.mo pl/common.mo pl/wx.mo fr/wx.mo de/wx.mo de/common.mo

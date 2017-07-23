@@ -66,8 +66,6 @@ resources.o: resources.rc $(ICON_ICO)
 	@MSGFMT@ -o $@ $<
 
 
-all: kontroler3$(EXEEXT) $(kontroler3_LOCALES)
-
 # Install locales
 install-data-local: $(kontroler3_LOCALES)
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES

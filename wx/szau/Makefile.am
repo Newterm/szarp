@@ -72,8 +72,6 @@ resources.o: resources.rc $(ICON_ICO)
 	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
-all: szau$(EXEEXT) $(szau_LOCALES)
-
 
 # Install locales
 install-data-local: $(szau_LOCALES)

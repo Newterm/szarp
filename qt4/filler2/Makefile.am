@@ -55,7 +55,7 @@ $(filler2_LOCALES): $(filler2_LOCALES_SRC)
 %.py: %.ui
 	pyuic4 $< > $@
 
-all: $(filler2_GENPYTHON) $(filler2_LOCALES)
+all-local: $(filler2_GENPYTHON) $(filler2_LOCALES)
 
 # Install locales and scripts
 install-data-local: $(filler2_LOCALES)

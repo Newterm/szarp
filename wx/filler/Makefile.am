@@ -31,8 +31,6 @@ EXTRA_DIST = $(filler_LOCALES_SRC) $(filler_LOCALES)
 $(filler_LOCALES): $(filler_LOCALES_SRC)
 	@MSGFMT@ -o $@ $<
 
-all: $(filler_LOCALES)
-
 # Install locales and luncher
 install-data-local: $(filler_LOCALES)
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES

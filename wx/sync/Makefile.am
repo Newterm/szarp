@@ -106,8 +106,6 @@ sss_SOURCES = \
 	hwkey.h
 
 
-all: $(SSC_rule) $(SSS_rule) $(ssc_LOCALES)
-
 if !DEB_BUILD
 install-data-local: install-locales
 else

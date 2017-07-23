@@ -72,8 +72,6 @@ resources.o: resources.rc $(ICON_ICO)
 	mkdir -p `dirname $@`
 	@MSGFMT@ -o $@ $<
 
-all: ekstraktor3$(EXEEXT) $(ekstraktor3_LOCALES)
-
 # Install locales
 install-data-local: $(ekstraktor3_LOCALES)
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES

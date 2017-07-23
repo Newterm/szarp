@@ -26,11 +26,10 @@ noinst_LTLIBRARIES = libSzarp2.la libSzarpLuaParser.la
 EXTRA_PROGRAMS = szbtest lua_parser_test xmlreader_test
 szbtest_SOURCES = @srcdir@/szbase/szbtest.cc
 
-@srcdir@/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.proto
+@srcdir@/protobuf/paramsvalues.pb.cc @srcdir@/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.proto
 	$(PROTOC) --cpp_out=@srcdir@/protobuf -I@srcdir@/protobuf @srcdir@/protobuf/paramsvalues.proto
 
-@srcdir@/protobuf/paramsvalues.pb.cc: @srcdir@/protobuf/paramsvalues.proto
-	$(PROTOC) --cpp_out=@srcdir@/protobuf -I@srcdir@/protobuf @srcdir@/protobuf/paramsvalues.proto
+@srcdir@/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.pb.cc
 
 @srcdir@/include/protobuf/paramsvalues.pb.h: @srcdir@/protobuf/paramsvalues.pb.h
 	mkdir -p @srcdir@/include/protobuf
@@ -53,6 +52,11 @@ if MINGW32_OPT
 INCLUDE_PROTOBUF =
 else
 INCLUDE_PROTOBUF = @srcdir@/include/protobuf/paramsvalues.pb.h
+
+BUILT_SOURCES = \
+	@srcdir@/include/protobuf/paramsvalues.pb.h \
+	@srcdir@/protobuf/paramsvalues.pb.h \
+	@srcdir@/protobuf/paramsvalues.pb.cc
 endif
 
 noinst_HEADERS = \

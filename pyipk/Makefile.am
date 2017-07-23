@@ -10,7 +10,7 @@ MAINTAINERCLEANFILES = Makefile.in
 PACKAGE=pyipk
 EGG=pyipk
 
-all:
+all-local:
 if PYTHON_26
 	python setup.py build
 else
@@ -19,7 +19,7 @@ endif
 
 noinst_PYTHON=`find build -name '*.py'`
 
-clean:
+clean-local:
 if PYTHON_26
 	rm -rf build
 	rm -f build-*
@@ -30,7 +30,7 @@ else
 endif
 
 
-install:
+install-data-local:
 if PYTHON_26
 
 if DEB_BUILD

@@ -59,7 +59,7 @@ INSTALL_DIR = debian/tmp
 
 TEST_ONLY_BUILD = 0
 
-ifeq (,$(findstring testonly,$(DEB_BUILD_OPTIONS)))
+ifneq (,$(findstring testonly,$(DEB_BUILD_OPTIONS)))
 	TEST_ONLY_BUILD = 1
 endif
 
@@ -134,7 +134,7 @@ debian/config-status-no-cb: configure
 
 debian/build-no-cb-stamp: debian/config-status-no-cb
 	echo nproc:`nproc`
-	$(MAKE) -j`nproc`
+	$(MAKE) -j`nproc` all
 	@touch $@
 
 clean: sanity_check
