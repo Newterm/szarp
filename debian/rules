@@ -164,7 +164,9 @@ endif
 
 binary-no-cb: debian/build-no-cb-stamp 
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" install
+ifneq ($(TEST_ONLY_BUILD), 1)
 	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-server.parstart.init
+endif
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" binary-arch-common
 
 
