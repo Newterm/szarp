@@ -248,7 +248,11 @@ install-doc-html:
 	dh_install -p szarp-doc-html resources/documentation/new/style.css \
 		$(PREFIX)/resources/documentation/new
 
+ifneq ($(TEST_ONLY_BUILD), 1)
 install-indep: install-doc-pdf install-doc-html
+else
+install-indep:
+endif
 
 create-indep: DH_OPTIONS=$(DOC_PACKAGES)
 create-indep: 
