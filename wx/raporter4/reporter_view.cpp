@@ -157,7 +157,7 @@ ReporterWindow::ReporterWindow(): wxFrame(NULL, wxID_ANY, _("Reporter")) {
 	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->SetBitmapDisabled(
 			wxBitmap(bmp_grey_xpm));
 
-	m_report_menu->Enable(ID_M_REPORT_START, false);
+	m_report_menu->Enable(ID_M_REPORT_STARTSTOP, false);
 	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(false);
 	
 	params_listc->InsertColumn(0, _("Param"), wxLIST_FORMAT_LEFT, -2);
@@ -170,7 +170,7 @@ ReporterWindow::ReporterWindow(): wxFrame(NULL, wxID_ANY, _("Reporter")) {
 
 	m_help = new szHelpController();
 	m_help->AddBook(wxGetApp().GetSzarpDir() + 
-			_T("resources/documentation/new/reporter/html/reporter.hhp"));
+			_T("resources/documentation/new/raporter/html/raporter.hhp"));
 
 #ifdef MINGW32
 	m_skip_onsize = false;
@@ -278,7 +278,7 @@ void ReporterWindow::onSubscriptionStarted()
 const wxString ReporterWindow::GetFilePath() const {
 	wxFileDialog dlg(NULL, _("Choose a file"), _T(""), _T(""),
 		_("SZARP parameters list (*.xpl)|*.xpl|All files (*.*)|*.*"),
-		wxSAVE | wxCHANGE_DIR); 
+		wxFD_SAVE | wxFD_CHANGE_DIR); 
 
 	if (dlg.ShowModal() != wxID_OK)
 		return wxEmptyString;
@@ -314,7 +314,7 @@ void ReporterWindow::OnReportNew(wxCommandEvent &ev)
 	reporter->NewReport();
 	
 	wxStaticCast(FindWindowById(ID_B_STARTSTOP), wxBitmapButton)->Enable(true);
-	m_report_menu->Enable(ID_M_REPORT_START, true);
+	m_report_menu->Enable(ID_M_REPORT_STARTSTOP, true);
 }
 
 void ReporterWindow::OnReportEdit(wxCommandEvent &ev) 

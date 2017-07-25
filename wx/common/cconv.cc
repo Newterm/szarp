@@ -10,8 +10,8 @@ std::string S2A(const wxString& c) {
 	return S2A(std::wstring(c.c_str()));
 }
 
-std::wstring W2S(const wxString& c){
-	return (std::wstring(c.ToStdWstring()));
+std::wstring W2S(const wxString& c) {
+	return c.ToStdWstring();
 }
 
 }

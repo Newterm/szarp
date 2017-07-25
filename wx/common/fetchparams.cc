@@ -42,7 +42,7 @@
 
 #include <assert.h>
 
-#include "conversion.h"
+#include "cconv.h"
 #include "fetchparams.h"
 
 szParamFetcher::szParamFetcher()

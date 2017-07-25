@@ -40,7 +40,7 @@
 #include "parlist.h"
 #include "fonts.h"
 #include "szapp.h"
-#include "conversion.h"
+#include "cconv.h"
 
 szParList::szParList()
 {
