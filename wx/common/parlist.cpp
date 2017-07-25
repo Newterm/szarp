@@ -40,14 +40,7 @@
 #include "parlist.h"
 #include "fonts.h"
 #include "szapp.h"
-#include "conversion.h"
-
-namespace SC
-{
-	std::wstring W2S(const wxString& c){
-		return (std::wstring(c.ToStdWstring()));
-	}
-}
+#include "cconv.h"
 
 szParList::szParList()
 {

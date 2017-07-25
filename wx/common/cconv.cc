@@ -11,7 +11,7 @@ std::string S2A(const wxString& c) {
 }
 
 std::wstring W2S(const wxString& c) {
-	return std::wstring(static_cast<const wchar_t*>(c.wc_str()));
+	return c.ToStdWstring();
 }
 
 }

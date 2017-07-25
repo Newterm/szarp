@@ -332,9 +332,9 @@ bool DrawApp::OnInit() {
 		_lang = DEFAULT_LANGUAGE;
 
 	splash->PushStatusText(_("Initializing IPKContainer..."));
-	IPKContainer::Init(GetSzarpDataDir().c_str(),
-			GetSzarpDir().c_str(),
-			_lang.c_str());
+	IPKContainer::Init(SC::W2S(GetSzarpDataDir()),
+			SC::W2S(GetSzarpDir()),
+			SC::W2S(_lang));
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject(), m_base);
 
 	m_cfg_mgr->SetSplashScreen(splash);

@@ -112,9 +112,16 @@ bool repApp::ParseCMDLineOptions() {
 
 	libpar_init();
 
-	try { 
+	const char ** normal_argv;
 
-		po::store(po::parse_command_line(wxGetApp().argc, wxGetApp().argv, desc), vm);
+	try { 
+		normal_argv = new const char*[argc];
+		for (int i = 0; i < argc; ++i) {
+			std::wstring warg(static_cast<wchar_t**>(argv)[i]);
+			normal_argv[i] = SC::S2A(warg).c_str();
+		}
+
+		po::store(po::parse_command_line(argc, normal_argv, desc), vm);
 
 		if ( vm.count("help")  ) { 
 			std::cout << desc << std::endl; 
@@ -165,6 +172,8 @@ bool repApp::ParseCMDLineOptions() {
 		return false; 
 	} 
 
+	if (normal_argv) delete normal_argv;
+
 	libpar_done();
 	return true;
 }
@@ -181,7 +190,7 @@ void repApp::SetTitle() {
 }
 
 void repApp::SetIcon() {
-	wxIcon icon(wxICON(rap16));
+	wxIcon icon(rap16_xpm);
 	if (icon.IsOk()) {
 		szFrame::setDefaultIcon(icon);
 	}
