@@ -61,7 +61,7 @@ Section: x11
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont
 Description: SZARP utilities based on wxWidgets library
- SZARP raporter3, kontroler3, scc, ekstraktor3, wxhelp, draw3,
+ SZARP raporter3, reporter4, kontroler3, scc, ekstraktor3, wxhelp, draw3,
  confedit, pipes applications.
 
 Package: szarp-terminal
