@@ -1,13 +1,12 @@
 [Unit]
 Description=SZARP Scada Software Server Parhub
-After=default.target
+After=network.target
 BindsTo=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/parhub
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /opt/szarp/lib/python/parhub.py start
-ExecStop=/usr/bin/python /opt/szarp/lib/python/parhub.py stop
-SuccessExitStatus=1
+ExecStart=/usr/bin/python2 /opt/szarp/lib/python/parhub.py
+#SuccessExitStatus=1
 StandardOutput=journal
 StandardError=journal
 [Install]

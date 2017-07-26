@@ -1,6 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server iks-server
-After=default.target parhub.service
+After=network.target parhub.service
 BindsTo=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/iks-server
 [Service]
