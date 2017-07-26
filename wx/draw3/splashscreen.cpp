@@ -50,13 +50,12 @@ SplashScreen::SplashScreen(wxBitmap *bitmap) : wxDialog(NULL, ID_SplashScreen, w
 	status_bar->GetClientSize(&w, &h);
 
 	if(bitmap) {
-		SetClientSize(bitmap->GetWidth(), bitmap->GetHeight() + h);
+		SetClientSize(bitmap->GetWidth(), bitmap->GetHeight());
 		status_bar->SetSize(bitmap->GetWidth(), h);
 	} else
 		SetClientSize(w, h);
-	
 
-	SetSizer(sizer);
+
 
 	Centre();
 
