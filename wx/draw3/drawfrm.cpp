@@ -268,6 +268,10 @@ void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
 	dp->Destroy();
 }
 
+void DrawFrame::OnStartSetSearch(wxCommandEvent &e) {
+	draw_panel->StartSetSearch();
+}
+
 void DrawFrame::OnImportSet(wxCommandEvent &event) {
 	config_manager->ImportSet();
 }
@@ -1240,6 +1244,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("EditSet"), DrawFrame::OnEdit)
     EVT_MENU(XRCID("EditAsNew"), DrawFrame::OnEditSetAsNew)
     EVT_MENU(XRCID("EditAsNewNetwork"), DrawFrame::OnEditSetAsNew)
+    EVT_MENU(XRCID("StartSetSearch"), DrawFrame::OnStartSetSearch)
     EVT_MENU(XRCID("ImportSet"), DrawFrame::OnImportSet)
     EVT_MENU(XRCID("ExportSet"), DrawFrame::OnExportSet)
     EVT_MENU(XRCID("DelSet"), DrawFrame::OnDel)

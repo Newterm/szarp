@@ -127,6 +127,8 @@ public:
 
 	void OnEditSetAsNew(wxCommandEvent &evt);
 
+	void OnStartSetSearch(wxCommandEvent &evt);
+	
 	void OnImportSet(wxCommandEvent &event);
 
 	void OnExportSet(wxCommandEvent &event);
