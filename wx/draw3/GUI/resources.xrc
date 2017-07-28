@@ -1215,6 +1215,9 @@
             <object class="wxMenuItem" name="EditAsNewNetwork">
                 <label>Edit as new network defined\tCtrl+Shift+Alt+W</label>
             </object>
+            <object class="wxMenuItem" name="StartSetSearch">
+                <label>Search Set\tAlt+Z</label>
+            </object>
             <object class="separator"/>
             <object class="wxMenuItem" name="ImportSet">
                 <label>Import Set\tCtrl+Shift+I</label>

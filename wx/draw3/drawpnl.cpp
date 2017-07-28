@@ -207,10 +207,6 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 		panel->ToggleSplitCursor(e);
 		break;
 	}
-	case 'Z':
-		if(event.AltDown())
-			panel->StartSetSearch();
-		break;
 	case 'C':
 		if (event.ControlDown())
 			panel->dw->CopyToClipboard();
