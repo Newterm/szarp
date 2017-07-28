@@ -600,7 +600,7 @@ void DrawFrame::OnRemarks(wxCommandEvent &event) {
 }
 
 void DrawFrame::OnFullScreen(wxCommandEvent &event) {
-	ShowFullScreen(event.IsChecked(), wxFULLSCREEN_NOBORDER | wxFULLSCREEN_NOCAPTION | wxFULLSCREEN_NOSTATUSBAR);
+	SwitchFullScreen();
 }
 
 void DrawFrame::OnSplitCursor(wxCommandEvent &event) {
