@@ -132,9 +132,26 @@ public:
 				return draw_set->GetName();
 			else
 				return draw_info->GetName()
-					 + wxT(" [") + draw_info->GetShortName() + wxT("] ")
+					 + wxT(" [") + draw_info->GetShortName() + wxT("]")
 					 + wxT(" (") + draw_info->GetParamName() + wxT(") ")
 					 + _(" - Window ") + draw_set->GetName();
+		}
+
+		std::wstring GetStdWName()
+		{
+			std::wstring name;
+
+			if(draw_info != NULL) {
+				name += draw_info->GetName().wc_str();
+				name += L" [";
+				name += draw_info->GetParam()->GetIPKParam()->GetShortName();
+				name += L"] (";
+				name += draw_info->GetParam()->GetIPKParam()->GetName();
+				name += L") - Window ";
+			}
+
+			name += std::wstring(draw_set->GetName().wc_str());
+			return name;
 		}
 	};
 

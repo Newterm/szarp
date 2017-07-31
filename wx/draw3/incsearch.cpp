@@ -30,7 +30,7 @@
 #include <wx/wx.h>
 #endif
 
-#include <wx/regex.h>
+#include <regex>
 
 #include <algorithm>
 
@@ -227,38 +227,35 @@ void IncSearch::OnSearch(wxCommandEvent & event) {
 }
 
 void IncSearch::Search() {
-	wxString match = input_text->GetValue().Lower();
-
-	wxRegEx* re = new wxRegEx(match, wxRE_ICASE);
-	if (!re->IsValid()) {
-		delete re;
-		re = NULL;
-	}
+	wxString match = input_text->GetValue();
 
 	if (m_cur_items != NULL && m_cur_items != &items_array)
 		delete m_cur_items;
 
-	if (match == wxEmptyString)
+	if (match == wxEmptyString) {
 		m_cur_items = &items_array;
-	else {
+		UpdateItemList();
+		return;
+	}
 
-		m_cur_items = new ItemsArray();
+	m_cur_items = new ItemsArray();
+
+	try {
+
+		std::wregex re = std::wregex(std::wstring(match.wc_str()), std::regex_constants::icase);
 
 		for (size_t i = 0; i < items_array.GetCount(); ++i) {
-			const wxString& name = items_array[i]->GetName().Lower();
-			if (re) {
-				if (re->Matches(name))
-					m_cur_items->Add(items_array[i]);
-			} else {
-				if (name.Find(match) != wxNOT_FOUND)
-					m_cur_items->Add(items_array[i]);
+			const std::wstring& name = items_array[i]->GetStdWName();
+			if (std::regex_search(name, re)) {
+				m_cur_items->Add(items_array[i]);
 			}
 		}
 
+	} catch(const std::regex_error& e) {
+		// ignore (m_cur_items is empty so we show nothing)
 	}
-	delete re;
-	UpdateItemList();
 
+	UpdateItemList();
 };
 
 void IncSearch::OnOk(wxCommandEvent & eventt)
@@ -548,16 +545,17 @@ void IncSearch::OnWindowCreate(wxWindowCreateEvent &event) {
 }
 
 void IncSearch::SelectEntry(wxString string_to_select) {
+	const wxString& match = input_text->GetValue();
+	bool matches = false;
 
-	wxString match = input_text->GetValue().Lower();
-	wxRegEx* re = new wxRegEx(match, wxRE_ICASE);
-
-	bool matches;
-	if (re->IsValid()) 
-		matches = re->Matches(string_to_select);
-	else
-		matches = string_to_select.Find(match) != wxNOT_FOUND;
-	delete re;
+	if (match != wxEmptyString) {
+		try {
+			std::wregex re(std::wstring(std::wstring(match.wc_str()), std::regex_constants::icase));
+			matches = std::regex_search(std::wstring(string_to_select.wc_str()), re);
+		} catch(const std::regex_error& e) {
+			matches = false;
+		}
+	}
 
 	if (!matches) {
 		input_text->Clear();
@@ -577,7 +575,6 @@ void IncSearch::SelectEntry(wxString string_to_select) {
 		item_list->Select(selected, false);
 	item_list->Select(i, true);
 	item_list->EnsureVisible(i);
-
 }
 
 void IncSearch::SyncToStartDraw() {
