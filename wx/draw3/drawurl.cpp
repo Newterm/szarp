@@ -135,14 +135,24 @@ bool decode_url(wxString surl, wxString& prefix, wxString &window, PeriodType& p
 	/* draw://<prefix>/<window>/<period>/time */
 	wxStringTokenizer tok(url, _T("/"));
 
-	if (tok.CountTokens() != 6 && tok.CountTokens() != 7)
+	const unsigned int no_of_tokenizers = 6;
+	const unsigned int no_of_slashes_in_window_name = tok.CountTokens() - no_of_tokenizers;
+	if (tok.CountTokens() < no_of_tokenizers) {
+		// throw?
 		return false;
+	}
 
 	tok.GetNextToken();
 	tok.GetNextToken();
 
 	prefix = tok.GetNextToken();
+
+	// Any slash that is not a tokenizer belongs to window name. Ignore the first occurence (hence the i = 1).
 	window = tok.GetNextToken();
+	for (unsigned int i = 1; i < no_of_slashes_in_window_name; ++i) {
+		window += wxT("/");
+		window += tok.GetNextToken();
+	}
 
 	wxString pstr = tok.GetNextToken();
 	if (pstr == _T("E")) 
