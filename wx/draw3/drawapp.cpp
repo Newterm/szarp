@@ -502,7 +502,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 }
 
 bool DrawApp::OnCmdLineError(wxCmdLineParser &parser) {
-	return true;
+	return false;
 }
 
 bool DrawApp::OnCmdLineHelp(wxCmdLineParser &parser) {
