@@ -243,6 +243,7 @@ function get_include () {
 
 		LAST=`get_last $1`
 		[ -n $USE_SZ4 ] || [ -f "$LAST" ] || return 0
+		export TZ='UTC'
 		DATE=`date +%Y-%m-01 -r "$LAST"`
 		DATESTR=`date +%Y%m -d "$DATE"`
 		NOWSTR=`date +%Y%m`
