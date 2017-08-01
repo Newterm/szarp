@@ -65,8 +65,6 @@ public:
 	}
 	;
 
-	static const wxRegEx ParamMatchRegex;
-
 
 	DefinedParam(wxString base_prefix, wxString name, wxString unit, wxString formula, int prec,
 			TParam::FormulaType type, time_t start_time, bool network_param = false);

@@ -242,7 +242,7 @@ void IncSearch::Search() {
 
 	try {
 
-		std::wregex re = std::wregex(std::wstring(match.wc_str()), std::regex_constants::icase);
+		std::wregex re = std::wregex(match.wc_str(), std::regex_constants::icase);
 
 		for (size_t i = 0; i < items_array.GetCount(); ++i) {
 			const std::wstring& name = items_array[i]->GetStdWName();
@@ -550,8 +550,8 @@ void IncSearch::SelectEntry(wxString string_to_select) {
 
 	if (match != wxEmptyString) {
 		try {
-			std::wregex re(std::wstring(std::wstring(match.wc_str()), std::regex_constants::icase));
-			matches = std::regex_search(std::wstring(string_to_select.wc_str()), re);
+			std::wregex re(match.wc_str(), std::regex_constants::icase);
+			matches = std::regex_search(string_to_select.wc_str(), re);
 		} catch(const std::regex_error& e) {
 			matches = false;
 		}

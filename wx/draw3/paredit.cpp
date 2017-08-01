@@ -25,7 +25,7 @@
 #include <wx/filesys.h>
 #include <wx/file.h>
 #include <wx/xrc/xmlres.h>
-#include <wx/regex.h>
+#include <regex>
 
 #include <libxml/tree.h>
 #include <sys/types.h>
@@ -406,7 +406,8 @@ void ParamEdit::OnCancel(wxCommandEvent & event) {
 
 
 bool ParamEdit::ValidateComma(const wxString &s){
-	return !wxRegEx(wxString(",[0-9]", wxConvUTF8)).Matches(s);
+	std::wregex re(L",[0-9]", std::regex_constants::icase);
+	return !std::regex_search(s.wc_str(), re);
 }
 
 void ParamEdit::TransferToWindow(DefinedParam *param) {

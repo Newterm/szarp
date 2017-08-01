@@ -415,8 +415,10 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 			if (find(draws.begin(),draws.end(),d_iter->prefix) != draws.end())
 				continue;
 			//check if not a backup
-			if (wxRegEx(wxString(std::string(".*[-._]bak").c_str(), wxConvUTF8), wxRE_ICASE + wxRE_ADVANCED).Matches(d_iter->prefix, 0))
+			std::wregex re(L".*[-._]bak", std::regex_constants::icase);
+			if (std::search_regex(d_iter->prefix.wc_str(), re))
 				continue;
+
 			submenu->Add(CreateDrawItem(
 						d_iter->title,
 						d_iter->prefix,
