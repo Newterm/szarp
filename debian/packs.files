@@ -9,10 +9,16 @@ Files: opt/szarp/logs
 Files: var/log/szarp
 
 Package: szarp-daemons
-Files: opt/szarp/bin/{parcook,sender,analiza,meaner3,sss,checker,psetd,stampd,ssconf.py,remarks_server.py,prober}
-Files: opt/szarp/bin/{calcdmn,dbdmn,endmn,execdmn,fp2kdmn,ifcl5dmn,lecmdmn,linedmn,mbrtudmn,mbtcpdmn,mbdmn,defdmn}
-Files: opt/szarp/bin/{kamsdmn,eapnetdmn,aqtdmn,alstdmn,dpafdmn,iecdmn,lecdmn,lmldmn,logdmn,mbusdmn,muksdmn,nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn,tcpdmn,testdmn,dlmsdmn,sbusdmn,kwmsdmn,ddedmn,zmddmn,lbdmn,k601dmn,sre2dmn,melsdmn,pozytondmn,npozytondmn,setdmn,borutadmn,pythondmn}
-Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py,probes_server.tac,meaner4,paramsvalues_pb2.py,parhub.py,test_ipc.py*}
+Files: opt/szarp/bin/{parcook,sender,meaner3,sss,checker}
+Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
+Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
+Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,mbusdmn}
+Files: opt/szarp/bin/{nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn}
+Files: opt/szarp/bin/{tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn}
+Files: opt/szarp/bin/{k601dmn,borutadmn,pythondmn,defdmn}
+Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py}
+Files: opt/szarp/lib/python/{probes_server.tac,meaner4,paramsvalues_pb2.py
+Files: opt/szarp/lib/python/{parhub.py,test_ipc.py*}
 Files: opt/szarp/lib/libpysz*
 Files: opt/szarp/bin/wlkdmn
 Files: etc/szarp/ssconf.cfg
@@ -20,7 +26,7 @@ Files: opt/szarp/bin/pserver-lite
 
 Package: szarp-utils
 Files: opt/szarp/bin/{szbedit,szbindex,szbwriter,szbreader,extrszb,modem_pooler.sh,isdn_pooler.sh,probes_client.py}
-Files: opt/szarp/bin/{vrsh,vrsh_d,ipk2szarp,ipkrep,i2smo,analiza2ipk,analiza_create,peakator}
+Files: opt/szarp/bin/{vrsh,vrsh_d,ipk2szarp,ipkrep,i2smo,peakator}
 Files: opt/szarp/bin/{agregator,precconv,szbnull,szbndremover,szbmod,raporter.py}
 Files: opt/szarp/bin/{conf-import.py,conf-get.sh,conf-put.sh}
 
@@ -31,8 +37,8 @@ Files: opt/szarp/bin/{convert_names,get_sam,process_csv,sshkey,insum.sh}
 Package: szarp-server
 
 Package: szarp-wx
-Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh,szast,setter}
-Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,koper.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo,szast.mo,setter.mo}
+Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh,szast}
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,koper.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo,szast.mo}
 Files: opt/szarp/resources/locales/fr_FR/LC_MESSAGES
 Files: opt/szarp/resources/locales/de_DE/LC_MESSAGES
 Files: opt/szarp/resources/sounds
@@ -49,11 +55,11 @@ Files: usr/share/autostart/scc.desktop
 Files: usr/share/applications/scc.desktop
 
 Package: szarp-paramd
-Files: etc/pam.d/paramd 
+Files: etc/pam.d/paramd
 Files: opt/szarp/bin/paramd
 Files: opt/szarp/resources/paramd_access.conf
 
-# if you want to add something to this section, please go to 
+# if you want to add something to this section, please go to
 # pyipk/Makefile.am and update it according to instructions
 Package: szarp-pyipk
 Files: opt/szarp/bin/ipkcmd

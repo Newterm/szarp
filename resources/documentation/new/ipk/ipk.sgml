@@ -234,8 +234,7 @@ po³±czeñ ppp, aktualizacji pakietów deb, <emphasis>szrsync</emphasis>, skrypty
 xslt.<para></listitem>
 
 <listitem><para><emphasis>szarp-daemons</emphasis> - zawiera demony systemu
-SZARP: <emphasis>parcook</emphasis>, <emphasis>meaner3</emphasis>,
-<emphasis>analiza</emphasis>, <emphasis>netpard</emphasis> oraz demony
+SZARP: <emphasis>parcook</emphasis>, <emphasis>meaner3</emphasis>, <emphasis>netpard</emphasis> oraz demony
 linii.</para></listitem>
 
 <listitem><para><emphasis>szarp-utils</emphasis> - w tym pakiecie znajduj± siê
@@ -2368,8 +2367,7 @@ systemu. Oddzielne pliki opisuj± sposób komunikacji ze sterownikami,
 przyporz±dkowanie danym ze sterowników konkretnych parametrów, parametry
 wyliczane na podstawie innych (dwóch rodzajów), strukturê bazy danych do
 zapisu parametrów, generowane raporty i wykresy. 
-Dodatkowo ka¿dy program (np. <emphasis>analiza</emphasis>
-czy <emphasis>sender</emphasis>) wprowadza zwykle w³asny plik konfiguracyjny.
+Dodatkowo ka¿dy program (np. <emphasis>sender</emphasis>) wprowadza zwykle w³asny plik konfiguracyjny.
 </para>
 
 <para>
@@ -2643,10 +2641,6 @@ nastêpuj±co:
     	Opis parametrów definiowalnych (przegl±daj±cego)
 	...
     &lt;/drawdefinable&gt;
-    &lt;boilers&gt;
-    	Opis konfiguracji kot³ów dla programu analiza
-	...
-    &lt;/boilers&gt;
 &lt;/params&gt;
 </programlisting>
 
@@ -3027,8 +3021,8 @@ precyzji 3 - 0.118. Dla parametrów o warto¶ciach dyskretnych (np. "Tak" /
 <para>
 Opis parametru uzupe³niaj± elementy wchodz±ce w sk³ad elementu
 <emphasis>param</emphasis>. S± to elementy <emphasis>value</emphasis>,
-<emphasis>define</emphasis>, <emphasis>raport</emphasis>,
-<emphasis>draw</emphasis> i <emphasis>analysis</emphasis>(wystêpuj± w³a¶nie w tej kolejno¶ci).
+<emphasis>define</emphasis>, <emphasis>raport</emphasis> i
+<emphasis>draw</emphasis>(wystêpuj± w³a¶nie w tej kolejno¶ci).
 </para>
 <para>
 	Dodatkowo parametr mo¿e zawieraæ element <emphasis>doc</emphasis> z przestrzeni nazw 
@@ -3479,99 +3473,6 @@ W tym wypadku li¶æ "Kocio³ WR 5 - ci¶nienia" bêdzie umiejscowiony przed li¶ciem 
 </para>
 </section> <!-- form-el-treenode -->
 
-
-
-<section id="form-el-analysis">
-<title>Element analysis</title>
-
-<para>
-Element <emphasis>analysis</emphasis> obecny w elemencie <emphasis>param</emphasis> oznacza,
-¿e warto¶ci tego parametru stanowi± dane, na których operuje program analiza.
-</para>
-
-<para>
-Element <emphasis>analysis</emphasis> zawiera dwa atrybuty:
-
-<itemizedlist>
-
-<listitem><para>
-<emphasis>boiler_no</emphasis> - dodatnia liczba ca³kowita - numer kot³a
-</para></listitem>
-
-<listitem><para>
-<emphasis>param_type</emphasis> - opisuje typ danych przechowywany przez parametr
-</para></listitem>
-
-</itemizedlist>
-
-</para>
-
-<para>
-Atrybut <emphasis>param_type</emphasis> przyjmuje jedn± z nastêpuj±cych warto¶ci:
-
-<itemizedlist>
-
-<listitem><para>
-<emphasis>analysis_enable</emphasis> - ustawione dwa najmniej znacz±ce bity warto¶ci parametru
-oznaczaj±, ¿e regulator kot³a zezwala na wykonywanie analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>regulator_work_time</emphasis> - warto¶æ parametru zawiera czas pracy regulatora kot³a
-w pracy automatycznej
-</para></listitem>
-
-<listitem><para>
-<emphasis>coal_volume</emphasis> - aktualna objêto¶æ wchodz±cego do kot³a wêgla
-</para></listitem>
-
-<listitem><para>
-<emphasis>energy_coal_volume_ratio</emphasis> - aktualna objêto¶æ stosunku energia/objêto¶æ wêgla
-</para></listitem>
-
-<listitem><para>
-<emphasis>air_stream</emphasis> - wzglêdna ilo¶æ powietrza dla okre¶lonej (zale¿nej od typu kot³a) objêto¶ci wêgla
-</para></listitem>
-
-<listitem><para>
-<emphasis>max_air_stream</emphasis> - maksymalna dopuszczalna warto¶æ strumienia powietrza podczas analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>min_air_stream</emphasis> - minimalna dopuszczalna warto¶æ strumienia powietrza podczas analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>left_grate_speed</emphasis> - prêdko¶æ lewego rusztu
-</para></listitem>
-
-<listitem><para>
-<emphasis>right_grate_speed</emphasis> - prêdko¶æ prawego rusztu
-</para></listitem>
-
-<listitem><para>
-<emphasis>left_coal_gate_height</emphasis> - wysoko¶æ lewej warstwownicy
-</para></listitem>
-
-<listitem><para>
-<emphasis>right_coal_gate_height</emphasis> - wysoko¶æ prawej warstwownicy
-</para></listitem>
-
-<listitem><para>
-<emphasis>analysis_status</emphasis> - program umieszcza w parametrze warto¶æ 1 gdy analiza jest wykonywana,
-0 w przeciwnym wypadku
-</para></listitem>
-
-<listitem><para>
-<emphasis>air_stream_result</emphasis> - w tym parametrze analiza umieszcza wyliczon± warto¶æ strumienia powietrza
-</para></listitem>
-
-</itemizedlist>
-
-</para>
-
-</section>
-
 <section id="form-ex-param">
 <title>Przyk³ady elementów param</title>
 
@@ -3611,14 +3512,12 @@ Na zakoñczenie trzy przyk³ady opisów parametrów:
 	draw_name="Obj. wêgla kot³a 3" unit="m3/h" prec="3">
         <raport title="Waga 3" filename="Waga_3.rap" order="6"/>
         <draw title="Waga 3 - dostarczony wêgiel" min="0" max="1.5" special="hoursum" order="2"/>
-        <analysis boiler_no="3" param_type="coal_volume"/>
     </param>
 ]]>
 </programlisting>
 
 </para>
 </section> <!-- form-ex-param -->
-
 
 <section id="form-el-defined">
 <title>Elementy defined i drawdefinable</title>
@@ -3636,132 +3535,6 @@ wiêc z typem formu³y "DRAWDEFINABLE", nie mog± te¿ one wchodziæ w sk³ad
 raportów ani mieæ indeksu w bazie.
 </para>
 </section> <!-- form-el-defined -->
-
-<section id="form-el-boilers">
-<title>Elementy boilers oraz boiler</title>
-
-<para>
-W elemencie <emphasis>params</emphasis> mo¿e znajdowaæ siê element <emphasis>boilers</emphasis> 
-zawieraj±cy konfiguracje kot³ów, których praca podlega analizie.  Element <emphasis>boilers</emphasis> 
-zawiera co najmniej jeden element <emphasis>boiler</emphasis>, opisuj±cy konfiguracjê pojedynczego kot³a.
-</para>
-
-<para>
-W ramach elementu <emphasis>boiler</emphasis> dopuszczalne i wymagane s± nastêpuj±ce atrybuty:
-
-<itemizedlist>
-
-<listitem><para>
-<emphasis>boiler_no</emphasis> - numer kot³a, dodatnia liczba ca³kowita
-</para></listitem>
-
-<listitem><para>
-<emphasis>grate_speed</emphasis> - maksymalna procentowa zmiana prêdko¶ci rusztu podczas 
-jednego cyklu analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>coal_gate_height</emphasis> - maksymalna procentowa zmiana wysoko¶ci warstwownicy
-podczas jednego cyklu analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>boiler_type</emphasis> - typ kot³a, parametr ten mo¿e przyjmowaæ nastêpuj±ce warto¶ci:
-<itemizedlist>
-	<listitem><para>WR-25</para></listitem>
-	<listitem><para>WR-10</para></listitem>
-	<listitem><para>WR-5</para></listitem>
-	<listitem><para>WR-2,5</para></listitem>
-	<listitem><para>WR-1,25</para></listitem>
-</itemizedlist>
-</para></listitem>
-
-</itemizedlist>
-</para>
-
-<para>
-Element <emphasis>boiler</emphasis> obowi±zkowo musi zawieraæ trzy elementy <emphasis>interval</emphasis>. 
-</para>
-</section>
-
-<section id="form-el-interval">
-<title>Element interval</title>
-<para>
-Element <emphasis>interval</emphasis> opisuje cykl pracy programu analiza. Stanowi obowi±zkowy sk³adnik elementu <emphasis>boiler</emphasis>.Zawiera nastêpuj±ce atrybuty, których warto¶ci stanowi± dodatnie liczby ca³kowite:
-
-<itemizedlist>
-
-<listitem><para>
-<emphasis>grate_speed_lower</emphasis> - dolne ograniczenie prêdko¶ci rusztu podczas cyklu (mm/h) 
-</para></listitem>
-
-<listitem><para>
-<emphasis>grate_speed_upper</emphasis> - górne ograniczenie prêdko¶ci rusztu podczas cyklu (mm/h)
-</para></listitem>
-
-<listitem><para>
-<emphasis>duration</emphasis> - d³ugo¶æ cyklu (w sekundach)
-</para></listitem>
-
-</itemizedlist>
-
-<para>
-Poni¿ej przedstawiono przyk³adow± konfiguracjê kot³ów:
-<programlisting>
-<![CDATA[
-  <boilers>
-    <boiler boiler_no="3" grate_speed="15.00" coal_gate_height="4.00" boiler_type="WR-5">
-      <interval duration="10800" grate_speed_lower="1000" grate_speed_upper="5000"/>
-      <interval duration="8040" grate_speed_lower="4000" grate_speed_upper="6000"/>
-      <interval duration="7200" grate_speed_lower="5000" grate_speed_upper="9000"/>
-    </boiler>
-    <boiler boiler_no="4" grate_speed="15.00" coal_gate_height="4.00" boiler_type="WR-5">
-      <interval duration="10800" grate_speed_lower="1000" grate_speed_upper="5000"/>
-      <interval duration="8040" grate_speed_lower="4000" grate_speed_upper="6000"/>
-      <interval duration="7200" grate_speed_lower="5000" grate_speed_upper="9000"/>
-    </boiler>
-  </boilers>
-]]>
-</programlisting>
-</para>
-
-<para>
-W ramach elementu <emphasis>boiler</emphasis> dopuszczalne i wymagane s± nastêpuj±ce atrybuty:
-
-<itemizedlist>
-
-<listitem><para>
-<emphasis>boiler_no</emphasis> - numer kot³a, dodatnia liczba ca³kowita
-</para></listitem>
-
-<listitem><para>
-<emphasis>grate_speed</emphasis> - maksymalna procentowa zmiana prêdko¶ci rusztu podczas 
-jednego cyklu analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>coal_gate_height</emphasis> - maksymalna procentowa zmiana wysoko¶ci warstwownicy
-podczas jednego cyklu analizy
-</para></listitem>
-
-<listitem><para>
-<emphasis>boiler_type</emphasis> - typ kot³a, parametr ten mo¿e przyjmowaæ nastêpuj±ce warto¶ci:
-<itemizedlist>
-	<listitem><para>WR-25</para></listitem>
-	<listitem><para>WR-10</para></listitem>
-	<listitem><para>WR-5</para></listitem>
-	<listitem><para>WR-2,5</para></listitem>
-	<listitem><para>WR-1,25</para></listitem>
-</itemizedlist>
-</para></listitem>
-
-</itemizedlist>
-</para>
-
-<para>
-Element <emphasis>boiler</emphasis> obowi±zkowo musi zawieraæ trzy elementy <emphasis>interval</emphasis>. 
-</para>
-</section>
 
 <section id="form-el-season">
 <title>Elementy seasons oraz season</title>

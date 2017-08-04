@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: raporter3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-17 18:29+0100\n"
+"POT-Creation-Date: 2017-07-01 15:28+0200\n"
 "PO-Revision-Date: 2008-09-15 15:43+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,7 +21,15 @@ msgstr ""
 msgid "Szarp Raporter v 3.1"
 msgstr ""
 
-#: rap.cc:87
+#: rap.cc:73
+msgid "help"
+msgstr ""
+
+#: rap.cc:73
+msgid "show help"
+msgstr ""
+
+#: rap.cc:88
 msgid "Raporter 3"
 msgstr "Raporter 3"
 
@@ -108,15 +117,15 @@ msgstr "&Opcje"
 msgid "&Help"
 msgstr "&Pomoc"
 
-#: raporter.cc:200 raporter.cc:800
+#: raporter.cc:200 raporter.cc:815
 msgid "Param"
 msgstr "Parametr"
 
-#: raporter.cc:201 raporter.cc:805
+#: raporter.cc:201 raporter.cc:820
 msgid "Value"
 msgstr "Warto¶æ"
 
-#: raporter.cc:202 raporteredit.cc:79
+#: raporter.cc:202 raporteredit.cc:80
 msgid "Description"
 msgstr "Opis"
 
@@ -160,43 +169,43 @@ msgstr ""
 msgid "Incorrect report template"
 msgstr "Niepoprawny wzorzec raportu"
 
-#: raporter.cc:476 raporter.cc:525
+#: raporter.cc:477 raporter.cc:526
 msgid "Raporter->Editor"
 msgstr "Raporter->Edytor"
 
-#: raporter.cc:563
+#: raporter.cc:564
 msgid "Are you sure you want to remove current report?"
 msgstr "Na pewno chcesz usun±æ bie¿±cy raport?"
 
-#: raporter.cc:564
+#: raporter.cc:565
 msgid "Delete user report"
 msgstr "Usuñ raport u¿ytkownika"
 
-#: raporter.cc:619
+#: raporter.cc:620
 msgid "Raporter->Period"
 msgstr "Raporter->Okres"
 
-#: raporter.cc:639
+#: raporter.cc:640
 msgid "Raporter->Buffer"
 msgstr "Raporter->Bufor"
 
-#: raporter.cc:698
+#: raporter.cc:699
 msgid "Start\tSpace"
 msgstr "Start\tSpace"
 
-#: raporter.cc:720
+#: raporter.cc:721
 msgid "Stop\tSpace"
 msgstr "Stop\tSpace"
 
-#: raporter.cc:726
+#: raporter.cc:727
 msgid "System"
 msgstr "System"
 
-#: raporter.cc:726
+#: raporter.cc:727
 msgid "Custom"
 msgstr "U¿ytkownika"
 
-#: raporter.cc:758 raporter.cc:766
+#: raporter.cc:765 raporter.cc:773
 msgid "no data"
 msgstr "brak danych"
 
@@ -212,31 +221,31 @@ msgstr "Sekundy:"
 msgid "Raporter - help"
 msgstr "Raporter - pomoc"
 
-#: raporteredit.cc:62
+#: raporteredit.cc:63
 msgid "Title"
 msgstr "Tytu³"
 
-#: raporteredit.cc:65
+#: raporteredit.cc:66
 msgid "User report"
 msgstr "Raport u¿ytkownika"
 
-#: raporteredit.cc:71
+#: raporteredit.cc:72
 msgid "Parameters list"
 msgstr "Lista parametrów"
 
-#: raporteredit.cc:78
+#: raporteredit.cc:79
 msgid "Shortcut"
 msgstr "Skrót"
 
-#: raporteredit.cc:88
+#: raporteredit.cc:89
 msgid "Add"
 msgstr "Dodaj"
 
-#: raporteredit.cc:90
+#: raporteredit.cc:91
 msgid "Delete"
 msgstr "Usuñ"
 
-#: raporteredit.cc:114
+#: raporteredit.cc:115
 msgid "Raporter->Editor->Add"
 msgstr "Raporter->Edytor->Dodaj"
 
@@ -244,31 +253,31 @@ msgstr "Raporter->Edytor->Dodaj"
 msgid "File dump options"
 msgstr "Zrzut do pliku"
 
-#: filedump.cc:45
+#: filedump.cc:43
 msgid "Destination dir:"
 msgstr "Katalog docelowy:"
 
-#: filedump.cc:50
+#: filedump.cc:48
 msgid "Select a folder"
 msgstr "Wybierz katalog"
 
-#: filedump.cc:58
+#: filedump.cc:56
 msgid "Maximum file size (in MB):"
 msgstr "Maksymalny rozmiar pliku (w MB):"
 
-#: filedump.cc:71
+#: filedump.cc:69
 msgid "Enable dump to a file"
 msgstr "W³±cz zrzut warto¶ci do pliku"
 
-#: filedump.cc:89
+#: filedump.cc:87
 msgid "Ok"
 msgstr ""
 
-#: filedump.cc:95
+#: filedump.cc:93
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: filedump.cc:157
+#: filedump.cc:155
 msgid "No report name"
 msgstr "Brak nazwy raportu"
 
@@ -280,7 +289,6 @@ msgstr "Nie masz uprawnieñ do zapisu w katalogu: "
 msgid "Cannot create directory: "
 msgstr "Nie mo¿na utworzyæ katalogu: "
 
-#: userreports.cc:69
+#: userreports.cc:76
 msgid "Error saving file: "
 msgstr "B³±d przy zapisywaniu pliku: "
-

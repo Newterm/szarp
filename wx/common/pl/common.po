@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WX-Common\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-14 15:41+0200\n"
+"POT-Creation-Date: 2017-07-01 15:28+0200\n"
 "PO-Revision-Date: 2009-04-22 11:43+0100\n"
 "Last-Translator: Paweł Pałucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -77,7 +77,7 @@ msgstr ""
 "Aby uwzględnić zmiany czcionek,\n"
 "musisz ponownie uruchomić program."
 
-#: fonts.cpp:202 parselect.cpp:200 GUI/psc.xrc:17
+#: fonts.cpp:202 parselect.cpp:201 GUI/psc.xrc:17
 msgid "Close"
 msgstr "Zamknij"
 
@@ -194,23 +194,23 @@ msgstr "Parametr"
 msgid "Show like in draw program"
 msgstr "Pokazuj według nazw okien programu przeglądającego"
 
-#: parselect.cpp:152
+#: parselect.cpp:153
 msgid "Reset"
 msgstr ""
 
-#: parselect.cpp:164
+#: parselect.cpp:165
 msgid "Shortcut"
 msgstr "Skrót"
 
-#: parselect.cpp:181 pscgui.cpp:128 pscgui.cpp:140
+#: parselect.cpp:182 pscgui.cpp:128 pscgui.cpp:140
 msgid "Description"
 msgstr "Opis"
 
-#: parselect.cpp:197 GUI/pack_edit_menu.xrc:9
+#: parselect.cpp:198 GUI/pack_edit_menu.xrc:9
 msgid "Add"
 msgstr "Dodaj"
 
-#: parselect.cpp:228 helpctrlex/helpdlgex.cpp:81 helpctrlex/helpfrmex.cpp:81
+#: parselect.cpp:229 helpctrlex/helpdlgex.cpp:81 helpctrlex/helpfrmex.cpp:81
 #: helpctrlex/helpfrmex.cpp:107
 msgid "Help"
 msgstr "Pomoc"
@@ -351,15 +351,15 @@ msgstr ""
 msgid "."
 msgstr "."
 
-#: szapp.cpp:296
+#: szapp.cpp:299
 msgid " (Ideas)"
 msgstr " (koncepcja)"
 
-#: szapp.cpp:297 szapp.cpp:298
+#: szapp.cpp:300 szapp.cpp:301
 msgid " (French translations)"
 msgstr " (tłumaczenie na francuski)"
 
-#: szapp.cpp:299
+#: szapp.cpp:302
 msgid " (logo)"
 msgstr " (logo)"
 

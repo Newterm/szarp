@@ -27,7 +27,6 @@ $(LOCALES): $(LOCALES_SRC)
 all: $(LOCALES)
 
 sswebdir=/usr/lib/python$(PYTHON_VERSION)/site-packages/sssweb
-noinst_PYTHON=$(shell find build -name '*.py')
 
 clean:
 	rm -rf build

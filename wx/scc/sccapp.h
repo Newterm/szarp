@@ -1,6 +1,6 @@
-/* 
-  SZARP: SCADA software 
-  
+/*
+  SZARP: SCADA software
+
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /*
  * scc - Szarp Control Center
  * SZARP
- 
+
  * Pawe³ Pa³ucha pawel@praterm.com.pl
  *
  * $Id$
@@ -84,12 +84,12 @@ protected:
 	int x, y;	/**< Program's window position. */
 	/** object resposible for handling locale */
 	wxLocale locale;
-	/** 
+	/**
 	 * Used to verify if other scc instance is running.
 	 */
 	szSingleInstanceChecker* app_instance;
 #ifndef MINGW32
-	/** 
+	/**
 	 * Used to verify if other scc instance is running
 	 * on the same display. We need to check this so we don't
 	 * show "user is logged more than once" message if he or she,

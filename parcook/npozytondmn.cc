@@ -82,6 +82,7 @@
 #include "ipchandler.h"
 #include "liblog.h"
 #include "conversion.h"
+#include "custom_assert.h"
 
 /* Usage Header */
 #define USAGE_HEADER \
@@ -104,7 +105,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 	/* interface =opto|rs485|currloop - typ interfejsu komunikacyjnego */
 	/* codes= - kody funkcji jakie maj± byæ odczytywane */
 
-	assert(node != NULL);
+	ASSERT(node != NULL);
 	char *str;
 	char *tmp;
 

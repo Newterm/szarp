@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-24 10:14+0200\n"
+"POT-Creation-Date: 2017-07-01 15:28+0200\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -17,107 +17,107 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: cfgmgr.cpp:579
+#: cfgmgr.cpp:578
 msgid "Loading configuration: "
 msgstr "Wczytywanie konfiguracji: "
 
-#: cfgmgr.cpp:840
+#: cfgmgr.cpp:839
 msgid "Users' sets"
 msgstr "Zestawy użytkowników"
 
-#: cfgmgr.cpp:852 cfgmgr.cpp:887 cfgmgr.cpp:911 cfgmgr.cpp:935
+#: cfgmgr.cpp:851 cfgmgr.cpp:886 cfgmgr.cpp:910 cfgmgr.cpp:934
 msgid "Local sets"
 msgstr "Zestawy lokalne"
 
-#: cfgmgr.cpp:1231
+#: cfgmgr.cpp:1230
 #, c-format
 msgid "Failed to create directory %s. Defined draws cannot be saved"
 msgstr ""
 "Nie udało się stworzyć katalogu %s. Zestawy definiowane nie mogą zostać "
 "zapisane."
 
-#: cfgmgr.cpp:1232 drawfrm.cpp:716 drawpsc.cpp:426 drawpsc.cpp:439
+#: cfgmgr.cpp:1231 drawfrm.cpp:716 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
 #: paramslist.cpp:322 paredit.cpp:219 remarks.cpp:1350 remarks.cpp:1451
 #: remarks.cpp:1497 remarks.cpp:1545 seldraw.cpp:569
 msgid "Error"
 msgstr "Błąd"
 
-#: cfgmgr.cpp:1408 database.cpp:632 paredit.cpp:720 GUI/resources.xrc:1503
+#: cfgmgr.cpp:1407 database.cpp:632 paredit.cpp:720 GUI/resources.xrc:1503
 msgid "User:Param:"
 msgstr "Parametr:Użytkownika:"
 
-#: cfgmgr.cpp:1426 cfgmgr.cpp:1489
+#: cfgmgr.cpp:1425 cfgmgr.cpp:1488
 msgid "Choose a file"
 msgstr "Wybierz plik"
 
-#: cfgmgr.cpp:1427 cfgmgr.cpp:1490
+#: cfgmgr.cpp:1426 cfgmgr.cpp:1489
 msgid "SZARP draw set (*.xds)|*.xds|All files (*.*)|*.*"
 msgstr "SZARP plik z definicją zestawu (*.xds)|*.xds|All files (*.*)|*.*"
 
-#: cfgmgr.cpp:1457
+#: cfgmgr.cpp:1456
 #, c-format
 msgid "Export of set to file: %s failed"
 msgstr "Eksport zestawu do pliku %s nie powiódł się"
 
-#: cfgmgr.cpp:1457 defcfg.cpp:2081 defcfg.cpp:2088 paramslist.cpp:243
+#: cfgmgr.cpp:1456 defcfg.cpp:2081 defcfg.cpp:2088 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
 msgid "Error!"
 msgstr "Błąd"
 
-#: cfgmgr.cpp:1471
+#: cfgmgr.cpp:1470
 #, c-format
 msgid "%s (%s)"
 msgstr ""
 
-#: cfgmgr.cpp:1471 cfgmgr.cpp:1473 cfgmgr.cpp:1554
+#: cfgmgr.cpp:1470 cfgmgr.cpp:1472 cfgmgr.cpp:1553
 msgid "imported"
 msgstr "zaimportowany"
 
-#: cfgmgr.cpp:1473
+#: cfgmgr.cpp:1472
 #, c-format
 msgid "%s (%s <%d>)"
 msgstr ""
 
-#: cfgmgr.cpp:1477
+#: cfgmgr.cpp:1476
 #, c-format
 msgid "Set with name %s already exists. Give a name for a set:"
 msgstr "Zestaw o nazwie %s już istnieje. Podaj inną nazwę dla zestawu:"
 
-#: cfgmgr.cpp:1478
+#: cfgmgr.cpp:1477
 msgid "Set already exists"
 msgstr "Zestaw już istnieje."
 
-#: cfgmgr.cpp:1512
+#: cfgmgr.cpp:1511
 #, c-format
 msgid "Failed to load configuration: %s"
 msgstr "Nie udało się załadować konfiguracji: %s"
 
-#: cfgmgr.cpp:1515
+#: cfgmgr.cpp:1514
 #, fuzzy, c-format
 msgid "Configuration for prefix: %s loaded"
 msgstr "Muszę załadować konfigurację o prefiksie: %s"
 
-#: cfgmgr.cpp:1523
+#: cfgmgr.cpp:1522
 #, fuzzy, c-format
 msgid "Failed to load set: %s"
 msgstr "Nie udało się załadować konfiguracji: %s"
 
-#: cfgmgr.cpp:1534
+#: cfgmgr.cpp:1533
 #, fuzzy, c-format
 msgid "Operation completed successfully imported %d set(s): "
 msgstr "Zestaw %s został zaimportowany"
 
-#: cfgmgr.cpp:1534
+#: cfgmgr.cpp:1533
 msgid "Operation successful."
 msgstr "Operacja zakończona."
 
-#: cfgmgr.cpp:1538
+#: cfgmgr.cpp:1537
 #, fuzzy, c-format
 msgid "Failed to import set from file: %s\n"
 msgstr "Nie udało się zaimportować zestawu z pliku :%s"
 
-#: cfgmgr.cpp:1539 defcfg.cpp:1580 defcfg.cpp:1645
+#: cfgmgr.cpp:1538 defcfg.cpp:1580 defcfg.cpp:1645
 msgid "Operation failed."
 msgstr "Operacja się nie powiodła."
 
@@ -1125,11 +1125,13 @@ msgstr "Informacja"
 
 #: paredit.cpp:304
 msgid "Could not find quote starting param name after function P at position "
-msgstr "Nie udało się znaleźć cudzysłowu obejmującego nazwę parametru po pozycji "
+msgstr ""
+"Nie udało się znaleźć cudzysłowu obejmującego nazwę parametru po pozycji "
 
 #: paredit.cpp:310
 msgid "Could not find quote ending param name after position "
-msgstr "Nie udało się znaleźć cudzysłowu zamykającego nazwę parametru po pozycji"
+msgstr ""
+"Nie udało się znaleźć cudzysłowu zamykającego nazwę parametru po pozycji"
 
 #: paredit.cpp:315
 msgid "Could not find closing bracket after position "

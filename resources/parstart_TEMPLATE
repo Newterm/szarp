@@ -128,22 +128,8 @@ do_start () {
 			worklog $?
 	fi
 
-	if [ x$ANALIZA = x1 ]; then
-			DAEMON=__INSTALL_DIR__/bin/analiza
-			szlog
-			start_daemon $DAEMON
-			worklog $?
-	fi
-
 	if [ x$SSS = x1 ]; then
 			DAEMON=__INSTALL_DIR__/bin/sss
-			szlog
-			start_daemon $DAEMON
-			worklog $?
-	fi
-
-	if [ x$PSETD = x1 ]; then
-			DAEMON=__INSTALL_DIR__/bin/psetd
 			szlog
 			start_daemon $DAEMON
 			worklog $?
@@ -221,13 +207,6 @@ do_stop() {
 	    worklog $?
 	fi
 
-	if [ x$PSETD = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/psetd
-	    stlog
-	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
-	    worklog $?
-	fi
-
 	if [ x$STAMPD = x1 ]; then
 	    DAEMON=__INSTALL_DIR__/bin/stampd
 	    stlog
@@ -242,13 +221,6 @@ do_stop() {
 	    PIDFILE=/var/run/ssconf.pid
 	    pidof -x $DAEMON > $PIDFILE
 	    /sbin/start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
-	    worklog $?
-	fi
-
-	if [ x$ANALIZA = x1 ]; then
-	    DAEMON=__INSTALL_DIR__/bin/analiza
-	    stlog
-	    /sbin/start-stop-daemon --stop --quiet --oknodo --exec $DAEMON
 	    worklog $?
 	fi
 

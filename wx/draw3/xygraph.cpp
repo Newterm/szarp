@@ -166,14 +166,14 @@ void XYFrame::OnHelp(wxCommandEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(XYFrame, szFrame)
-	LOG_EVT_MENU(XY_CHANGE_GRAPH, XYFrame , OnGraphChange, "xygraph:change_graph" )
-	LOG_EVT_MENU(wxID_CLOSE, XYFrame , OnCloseMenu, "xygraph:close_menu" )
-	LOG_EVT_MENU(XY_PRINT_PREVIEW, XYFrame , OnPrintPreview, "xygraph:print_preview" )
-	LOG_EVT_MENU(XY_PRINT_PAGE_SETUP, XYFrame , OnPrintPageSetup, "xygraph:print_page_setup" )
-	LOG_EVT_MENU(XY_PRINT, XYFrame , OnPrint, "xygraph:print" )
-	LOG_EVT_MENU(XY_ZOOM_OUT, XYFrame , OnZoomOut, "xygraph:zoom_out" )
-	LOG_EVT_MENU(wxID_HELP, XYFrame , OnHelp, "xygraph:help" )
-	LOG_EVT_CLOSE(XYFrame , OnClose, "xygraph:close" )
+	EVT_MENU(XY_CHANGE_GRAPH, XYFrame::OnGraphChange)
+	EVT_MENU(wxID_CLOSE, XYFrame::OnCloseMenu)
+	EVT_MENU(XY_PRINT_PREVIEW, XYFrame::OnPrintPreview)
+	EVT_MENU(XY_PRINT_PAGE_SETUP, XYFrame::OnPrintPageSetup)
+	EVT_MENU(XY_PRINT, XYFrame::OnPrint)
+	EVT_MENU(XY_ZOOM_OUT, XYFrame::OnZoomOut)
+	EVT_MENU(wxID_HELP, XYFrame::OnHelp)
+	EVT_CLOSE(XYFrame::OnClose)
 END_EVENT_TABLE()
 
 class XYKeyboardHandler : public wxEvtHandler {
@@ -226,8 +226,8 @@ void XYKeyboardHandler::OnKeyUp(wxKeyEvent & event) {
 }
 
 BEGIN_EVENT_TABLE(XYKeyboardHandler, wxEvtHandler)
-	LOG_EVT_KEY_DOWN(XYKeyboardHandler , OnKeyDown, "xygraph:key_down" )
-	LOG_EVT_KEY_UP(XYKeyboardHandler , OnKeyUp, "xygraph:key_up" )
+	EVT_KEY_DOWN(XYKeyboardHandler::OnKeyDown)
+	EVT_KEY_UP(XYKeyboardHandler::OnKeyUp)
 END_EVENT_TABLE()
 
 
@@ -1215,7 +1215,7 @@ void XYPointInfo::OnGoToGraph(wxCommandEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(XYPointInfo, wxPanel)
-	LOG_EVT_BUTTON(XY_GOTO_GRAPH_BUTTON, XYPointInfo , OnGoToGraph, "xygraph:goto_graph" )
+	EVT_BUTTON(XY_GOTO_GRAPH_BUTTON, XYPointInfo::OnGoToGraph)
 END_EVENT_TABLE()
 
 KDTree::KDTree(const KDTreeEntry &entry, KDTree *left, KDTree *right, const Range &range, Pivot pivot) :

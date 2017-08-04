@@ -138,7 +138,6 @@
 #include <stdlib.h>
 #endif
 
-#include <assert.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -169,6 +168,7 @@
 #include "liblog.h"
 #include "xmlutils.h"
 #include "tokens.h"
+#include "custom_assert.h"
 
 const unsigned short int MB_DEFAULT_PORT = 502;
 const unsigned char MB_ERROR_CODE = 0x80;
@@ -637,7 +637,7 @@ xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
 	char *e;
 	const int ret = asprintf(&e, "./@modbus:%s", prop);
 	(void)ret;
-	assert (e != NULL);
+	ASSERT(e != NULL);
 	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
 	free(e);
 	return c;
@@ -957,7 +957,7 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 	} 
 
 	URMAP::iterator i = m_registers.find(uid);
-	assert(i != m_registers.end());
+	ASSERT(i != m_registers.end());
 	RMAP& unit = i->second;
 
 	size_t data_index = 1;
@@ -965,7 +965,7 @@ void modbus_daemon::consume_read_regs_response(unsigned char& uid, unsigned shor
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
 		RMAP::iterator j = unit.find(addr);
 		unsigned short v = (pdu.data.at(data_index) << 8) | pdu.data.at(data_index + 1);
-		dolog(7, "Setting register unit_id: %d, address: %hu, value: %hu", (int) uid, addr, v);
+		dolog(7, "Setting register unit_id: %d, address: %zu, value: %hu", (int) uid, addr, v);
 		j->second->set_val(v, m_current_time);
 	}
 
@@ -1010,7 +1010,7 @@ bool modbus_daemon::perform_write_registers(RMAP &unit, PDU &pdu) {
 
 		unsigned short v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
-		dolog(7, "Setting register: %hu value: %hu", addr, v);
+		dolog(7, "Setting register: %zu value: %hu", addr, v);
 		j->second->set_val(v, m_current_time);	
 	}
 
@@ -1040,7 +1040,7 @@ bool modbus_daemon::perform_read_holding_regs(RMAP &unit, PDU &pdu) {
 		unsigned short v = j->second->get_val();
 		d.push_back(v >> 8);
 		d.push_back(v & 0xff);
-		dolog(7, "Sending register: %hu, value: %hu", addr, v);
+		dolog(7, "Sending register: %zu, value: %hu", addr, v);
 	}
 
 	dolog(7, "Request processed sucessfully.");
@@ -1099,7 +1099,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		const int ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
 		(void)ret;
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		assert(node);
+		ASSERT(node);
 		free(expr);
 
 		c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
@@ -1381,7 +1381,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
 		free(expr);
 
-		assert(node);
+		ASSERT(node);
 		xp_ctx->node = node;
 		if (configure_unit(u, xp_ctx))
 			return 1;
@@ -1483,7 +1483,7 @@ void tcp_parser::read_data(struct bufferevent *bufev) {
 			m_adu.length = (c << 8);
 			m_adu.length = ntohs(m_adu.length);
 			m_payload_size = m_adu.length - 2;
-			dolog(8, "Data size: %hu", m_payload_size);
+			dolog(8, "Data size: %zu", m_payload_size);
 			break;
 		case U_ID:
 			m_state = FUNC;
@@ -1727,7 +1727,7 @@ void modbus_client::send_write_query() {
 		unsigned short v = m_registers[m_unit][m_start_addr + i]->get_val();
 		m_pdu.data.push_back(v >> 8);
 		m_pdu.data.push_back(v & 0xff);
-		dolog(7, "Sending register: %hu, value: %hu:", m_start_addr + i, v);
+		dolog(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
 	m_connection->send_pdu(m_unit, m_pdu);
@@ -1759,7 +1759,7 @@ void modbus_client::reset_cycle() {
 
 void modbus_client::find_continous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
-	assert(i != regs.end());
+	ASSERT(i != regs.end());
 
 	m_unit = i->first;
 	m_start_addr = current = i->second.second;
@@ -1848,7 +1848,7 @@ void modbus_client::send_next_query() {
 			send_query();
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 			break;
 	}
 }
@@ -2615,21 +2615,21 @@ int configure_daemon(modbus_daemon **dmn, DaemonConfig *cfg) {
 	xmlDocPtr doc;
 
 	/* get config data */
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	doc = cfg->GetXMLDoc();
-	assert (doc != NULL);
+	ASSERT(doc != NULL);
 
 	/* prepare xpath */
 	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	assert (xp_ctx != NULL);
+	ASSERT(xp_ctx != NULL);
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
 			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus",
 			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	assert (ret == 0);
+	ASSERT(ret == 0);
 	(void)ret;
 
 	xp_ctx->node = cfg->GetXMLDevice();
@@ -2646,7 +2646,7 @@ int main(int argc, char *argv[]) {
 	xmlLineNumbersDefault(1);
 
 	cfg = new DaemonConfig("mbdmn");
-	assert (cfg != NULL);
+	ASSERT(cfg != NULL);
 	
 	if (cfg->Load(&argc, argv))
 		return 1;

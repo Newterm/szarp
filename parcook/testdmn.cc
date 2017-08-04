@@ -143,7 +143,11 @@ void Initialize(unsigned char linenum)
 		}
 	}
 	else {
-		fscanf(linedef, "%c%d\n", &ch, &val);
+		int ret = fscanf(linedef, "%c%d\n", &ch, &val);
+		if ( ret != 2 ) {
+			sz_log(0, "testdmn: fscanf error, could not read given values");
+			exit(1);
+		}
 		if (ch != 'R')
 			exit(-1);
 		else
@@ -163,11 +167,19 @@ void Initialize(unsigned char linenum)
 	}
 	for (j = 0; j < maxj; j++) {
 		if (RadiosOnLine) {
-			fgets(RadioInfo[j].RadioName, 40, linedef);
+			if (fgets(RadioInfo[j].RadioName, 40, linedef) == NULL) {
+				sz_log(0, "testdmn: fgets error, could not copy given linedef");
+				exit(1);
+			}
+
 			if ((chptr =
 			     strrchr(RadioInfo[j].RadioName, '\n')) != NULL)
 				*chptr = 0;
-			fscanf(linedef, "%d\n", &val);
+			int ret = fscanf(linedef, "%d\n", &val);
+			if ( ret != 1 ) {
+				sz_log(0, "testdmn: fscanf error, could not read given values");
+				exit(1);
+			}
 			RadioInfo[j].NumberOfUnits = UnitsOnLine =
 				(unsigned char) val;
 			sz_log(2, "testdmn: radio <%s> drives %d units\n",
@@ -179,9 +191,13 @@ void Initialize(unsigned char linenum)
 			exit(1);
 		}
 		for (i = 0; i < UnitsOnLine; i++) {
-			fscanf(linedef, "%c %u %u %u %u %u\n",
+			int ret = fscanf(linedef, "%c %u %u %u %u %u\n",
 			       &UnitsInfo[i].UnitCode, &val, &val1, &val2,
 			       &val3, &val4);
+			if (ret != 6) {
+				sz_log(0, "testdmn: fscanf error, could not read given values");
+				exit(1);
+			}
 			UnitsInfo[i].RapId = (unsigned char) val;
 			UnitsInfo[i].SubId = (unsigned char) val1;
 			UnitsInfo[i].ParIn = (unsigned char) val2;

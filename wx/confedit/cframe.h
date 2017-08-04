@@ -117,10 +117,6 @@ private:
 	 * on error. On success set modified flag to FALSE.
 	 * @return 0 on success, 1 on error */
         int SaveFile(wxString path);
-        /** Loads IPK schema, display message box on error. Loaded schema is stored
-         * in ipk_rng attribute.
-         * @return 0 on success, 1 on error. */
-        int LoadSchema(void);
         /** Called when file data is (re)loaded. Fills the listboxes with
          * new values. */
         void ReloadParams();
@@ -190,8 +186,6 @@ private:
 	wxIcon m_icon;
 	/* Was document modified ? */
 	bool modified;
-        /** IPK RelaxNG schema, used for validating loaded documents. */
-        xmlRelaxNGPtr ipk_rng;
         /** Name of file loaded. */
         wxString filename;
         /** Data loaded, may be NULL if no document loaded. */

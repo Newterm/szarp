@@ -15,10 +15,10 @@ extern "C" void gtk_window_set_accept_focus(void *window, int setting);
 ErrorFrame *ErrorFrame::_error_frame = NULL;
 
 BEGIN_EVENT_TABLE(ErrorFrame, wxFrame)
-	LOG_EVT_CLOSE(ErrorFrame , OnClose, "errfrm:close" )
-	LOG_EVT_BUTTON(XRCID("HIDE_BUTTON"), ErrorFrame , OnHide, "errfrm:hide" )
-	LOG_EVT_BUTTON(XRCID("CLEAR_BUTTON"), ErrorFrame , OnClear, "errfrm:clear" )
-	LOG_EVT_BUTTON(wxID_HELP, ErrorFrame , OnHelpButton, "errfrm:help" )
+	EVT_CLOSE(ErrorFrame::OnClose)
+	EVT_BUTTON(XRCID("HIDE_BUTTON"), ErrorFrame::OnHide)
+	EVT_BUTTON(XRCID("CLEAR_BUTTON"), ErrorFrame::OnClear)
+	EVT_BUTTON(wxID_HELP, ErrorFrame::OnHelpButton)
 END_EVENT_TABLE()
 
 void ErrorFrame::Create() {
