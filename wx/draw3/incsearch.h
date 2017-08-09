@@ -114,7 +114,7 @@ public:
 	 * Gets DrawInfo about selected draw.
 	 * @param prev_draw pointer to index of previous draw (-1 to start)
 	 */
-	DrawInfo* GetDrawInfo(long* prev_draw, DrawSet** set = NULL);
+	DrawInfo* GetDrawInfo(long* prev_draw, DrawSet** set = NULL) const;
 
 	/**Displayed item*/
 	struct Item {

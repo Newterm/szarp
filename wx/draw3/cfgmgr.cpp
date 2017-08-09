@@ -62,7 +62,7 @@
 
 wxString DrawParam::GetBasePrefix() const {
 	assert (m_param != NULL);
-	return m_param->GetSzarpConfig()->GetPrefix().c_str();
+	return m_param->GetSzarpConfig()->GetPrefix();
 }
 
 wxString DrawParam::GetParamName() const {
@@ -952,8 +952,8 @@ DrawsSets::GetSortedDrawSetsNames(bool all)
 	AttachDefined();
 	SortedSetsArray sorted(DrawSet::CompareSets);
 
-	for (DrawSetsHash::iterator it = GetDrawsSets(all).begin(); it != GetDrawsSets(all).end(); it++) {
-		sorted.Add(it->second);
+	for (const auto& set: GetDrawsSets(all)) {
+		sorted.Add(set.second);
 	}
 
 	return sorted;

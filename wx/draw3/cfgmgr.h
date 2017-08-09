@@ -560,6 +560,8 @@ class ConfigManager
 	void SubstiuteDefinedParams(const std::vector<DefinedParam*>& to_rem, const std::vector<DefinedParam*>& to_add);
 
 	void DrawInfoAverageValueCalculationChanged(DrawInfo *d);
+
+	const wxString& GetPrefix() const { return m_base_prefix; }
 	
 	~ConfigManager();
 protected:

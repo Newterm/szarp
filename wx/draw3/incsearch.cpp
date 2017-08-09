@@ -301,7 +301,7 @@ wxString IncSearch::GetConfPrefix(wxString name)
 	assert(false);
 }
 
-DrawInfo *IncSearch::GetDrawInfo(long *prev_draw, DrawSet **set)
+DrawInfo *IncSearch::GetDrawInfo(long *prev_draw, DrawSet **set) const
 {
 	*prev_draw =
 	    item_list->GetNextItem(*prev_draw, wxLIST_NEXT_ALL,

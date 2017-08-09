@@ -267,6 +267,10 @@ private:
 	/** Select draw (do not use SetSelection) */
 	void Select(int i);
 
+	bool validateFirstParamPrefix(const wxString&);
+	bool validateAddedDraws(const IncSearch*);
+	bool validateAddedParam(const DefinedParam*);
+
 	/**Flag indicating if any changes has been made to defined sets*/
 	bool m_modified;
 

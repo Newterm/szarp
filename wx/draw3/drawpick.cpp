@@ -638,23 +638,58 @@ void DrawPicker::OnAddDraw(wxCommandEvent & event)
 	if (m_inc_search->ShowModal() != wxID_OK)
 		return;
 
-	long prev = -1;
+	if (validateAddedDraws(m_inc_search) == false) return;
 
-	int number = m_list->GetItemCount();
+	long prev = -1;
 	DrawInfo *draw = m_inc_search->GetDrawInfo(&prev);
+
 	std::vector<DrawInfo*> to_add;
 	while (draw != NULL) {	// adding all selected draws
 		to_add.push_back(draw);
 		draw = m_inc_search->GetDrawInfo(&prev);
 	}
+
 	m_defined_set->Add(to_add, true);
-	number += to_add.size();
 	m_modified = true;
 
 #ifdef MINGW32
 	Raise();
 #endif
 	RefreshData();
+}
+
+bool DrawPicker::validateFirstParamPrefix(const wxString& prefix) {
+	// first draw has to be from original config
+
+	if (m_defined_set->GetDraws()->size() == 0) {
+		if (m_prefix != prefix) {
+			// on further messages, switch to throwing
+			wxString msg = _("First defined draw has to be from original configuraion.\n");
+			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, this);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool DrawPicker::validateAddedDraws(const IncSearch* inc) {
+	long first = -1;
+	DrawInfo *di = inc->GetDrawInfo(&first);
+
+	if (di == nullptr) return false;
+
+	if (!validateFirstParamPrefix(di->GetBasePrefix())) return false;
+
+	return true;
+}
+
+bool DrawPicker::validateAddedParam(const DefinedParam* dp) {
+	if (dp == nullptr) return false;
+
+	if (!validateFirstParamPrefix(dp->GetBasePrefix())) return false;
+
+	return true;
 }
 
 void DrawPicker::OnAddParameter(wxCommandEvent& event) {
@@ -668,8 +703,7 @@ void DrawPicker::OnAddParameter(wxCommandEvent& event) {
 	}
 
 	DefinedParam *dp = m_paramslist->GetSelectedParam();
-	if (dp == NULL)
-		return;
+	if (!validateAddedParam(dp)) return;
 
 	int ret = m_draw_edit->CreateFromScratch(dp->GetParamName().AfterLast(L':'), dp->GetUnit());
 	if (ret != wxID_OK)
