@@ -280,23 +280,28 @@ TSzarpConfig::generateXML(void)
     ITOA(send_freq);
     xmlSetProp(doc->children, X "send_freq", BUF);
     if (!title.empty())
-	xmlSetProp(doc->children, X "title", S2U(title).c_str());
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	xmlAddChild(doc->children, d->generateXMLNode());
-    if (defined > 0) {
-	node = xmlNewChild(doc->children, NULL, X "defined", NULL);
-	for (TParam * p = defined; p; p = p->GetNext())
-	    xmlAddChild(node, p->generateXMLNode());
-    }
+		xmlSetProp(doc->children, X "title", S2U(title).c_str());
+
+    for (auto d = GetFirstDevice(); d; d = GetNextDevice(d))
+		xmlAddChild(doc->children, d->generateXMLNode());
+
+	if (defined > 0) {
+		node = xmlNewChild(doc->children, NULL, X "defined", NULL);
+		for (TParam * p = defined; p; p = p->GetNext())
+			xmlAddChild(node, p->generateXMLNode());
+	}
+
     if (drawdefinable) {
-	node = xmlNewChild(doc->children, NULL, X "drawdefinable", NULL);
-	for (TParam * p = drawdefinable; p; p = p->GetNext())
-	    xmlAddChild(node, p->generateXMLNode());
+		node = xmlNewChild(doc->children, NULL, X "drawdefinable", NULL);
+		for (TParam * p = drawdefinable; p; p = p->GetNext())
+			xmlAddChild(node, p->generateXMLNode());
     }
+
     if (seasons) {
-	node = seasons->generateXMLNode();
-	xmlAddChild(doc->children, node);
+		node = seasons->generateXMLNode();
+		xmlAddChild(doc->children, node);
     }
+
     return doc;
 #undef X
 #undef ITOA
@@ -665,11 +670,11 @@ TSzarpConfig::PrepareDrawDefinable()
 }
 
 TParam *
-TSzarpConfig::getParamByName(const std::wstring& name)
+TSzarpConfig::getParamByName(const std::wstring& name) const
 {
 
     if (use_names_cache) {
-	std::map<std::wstring, TParam *>::iterator it = params_map.find(name);
+	auto it = params_map.find(name);
 	if (it == params_map.end())
 	    return NULL;
 	return it->second;
@@ -753,10 +758,9 @@ TSzarpConfig::GetMaxBaseInd()
     return m;
 }
 
-TParam *
-TSzarpConfig::GetFirstParam()
+TParam * TSzarpConfig::GetFirstParam() const
 {
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
+    for (auto d = GetFirstDevice(); d; d = GetNextDevice(d))
 	for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
 	    for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u)) {
 		TParam *p = u->GetFirstParam();
@@ -770,8 +774,7 @@ TSzarpConfig::GetFirstParam()
     return NULL;
 }
 
-TParam *
-TSzarpConfig::GetNextParam(TParam * p)
+TParam * TSzarpConfig::GetNextParam(TParam * p) const
 {
     return (NULL == p ? NULL : p->GetNext(true));
 }
@@ -787,8 +790,7 @@ TSzarpConfig::AddDevice(TDevice * d)
     return d;
 }
 
-TDevice *
-TSzarpConfig::GetNextDevice(TDevice * d)
+TDevice * TSzarpConfig::GetNextDevice(const TDevice * d) const
 {
     if (d == NULL)
 	return NULL;
@@ -799,7 +801,7 @@ int
 TSzarpConfig::GetParamsCount()
 {
     int i = 0;
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
+    for (auto d = GetFirstDevice(); d; d = GetNextDevice(d))
 	i += d->GetParamsCount();
     return i;
 }
@@ -808,7 +810,7 @@ int
 TSzarpConfig::GetDevicesCount()
 {
     int i = 0;
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
+    for (auto d = GetFirstDevice(); d; d = GetNextDevice(d))
 	i++;
     return i;
 }
@@ -844,8 +846,8 @@ TSzarpConfig::GetAllDefinedCount()
 TDevice *
 TSzarpConfig::DeviceById(int id)
 {
-    TDevice *d;
-    for (d = GetFirstDevice(); d && (id > 1); d = GetNextDevice(d), id--);
+    auto d = GetFirstDevice();
+    for (; d && (id > 1); d = GetNextDevice(d), id--);
     return d;
 }
 
@@ -1040,7 +1042,7 @@ bool TSzarpConfig::checkRepetitions(int quiet)
 bool TSzarpConfig::checkSend()
 {
 	bool ret = true;
-	for( TDevice* d = GetFirstDevice(); d; d = GetNextDevice(d) )
+	for( auto d = GetFirstDevice(); d; d = GetNextDevice(d) )
 		for( TRadio* r = d->GetFirstRadio(); r; r = d->GetNextRadio(r) )
 			for( TUnit* u = r->GetFirstUnit(); u; u = r->GetNextUnit(u) )
 				for( TSendParam* sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp) )
@@ -1081,5 +1083,33 @@ void TSzarpConfig::AddParamToNamesCache(TParam * _param)
 		return;
 
 	params_map[_param->GetName()] = _param;
+}
+
+size_t TSzarpConfig::GetFirstParamIpcInd(const TDevice &d) const {
+	return d.GetFirstRadio()->GetFirstUnit()->GetFirstParam()->GetIpcInd();
+}
+
+const std::vector<size_t> TSzarpConfig::GetSendIpcInds(const TDevice &d) const {
+	std::vector<size_t> ret;
+
+	size_t no_sends = 0;
+	for (TUnit* u = d.GetFirstRadio()->GetFirstUnit(); u != nullptr; u = u->GetNext()) {
+		no_sends += u->GetSendParamsCount();
+	}
+
+	ret.reserve(no_sends);
+
+	for (TUnit* u = d.GetFirstRadio()->GetFirstUnit(); u != nullptr; u = u->GetNext()) {
+		for (TSendParam *s = u->GetFirstSendParam(); s; s = u->GetNextSendParam(s)) {
+			const std::wstring& param_name = s->GetParamName();
+			if (param_name.empty())
+				continue;
+
+			TParam* param = getParamByName(param_name);
+			ret.push_back(param->GetIpcInd());
+		}
+	}
+
+	return std::move(ret);
 }
 

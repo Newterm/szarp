@@ -733,11 +733,11 @@ Unique registers (read params): %d\n\
 
 	}
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init()) {
-			throw K601Exception("ERROR!: IPC init failed");
-		}
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		exit(1);
 	}
 
 	dolog(2, "starting main loop");

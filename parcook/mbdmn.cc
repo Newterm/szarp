@@ -906,13 +906,11 @@ void modbus_daemon::timer_callback(int fd, short event, void* daemon) {
 
 int modbus_daemon::initialize() {
 
-	m_ipc = new IPCHandler(m_cfg);
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init())
-			return 1;
-		dolog(10, "IPC initialized successfully");
-	} else {
-		dolog(10, "Single mode, ipc not intialized!!!");
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	evtimer_set(&m_timer, timer_callback, this);

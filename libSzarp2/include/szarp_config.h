@@ -139,7 +139,7 @@ public:
 	 * @param name name of param to find
 	 * @return pointer to param, NULL if not found
 	 */
-	TParam *getParamByName(const std::wstring& name);
+	TParam *getParamByName(const std::wstring& name) const;
 	/**
 	 * Return param with given base index (searches in all params, including
 	 * defined and 'draw definable').
@@ -201,14 +201,14 @@ public:
 	 * Returns pointer to first param in config.
 	 * @return pointer to first param, NULL if there are no params
 	 */
-	TParam* GetFirstParam();
+	TParam * GetFirstParam() const;
 	/**
 	 * Return pointer to next param after given. Iterates all params in all
 	 * devices and also defined.
 	 * @param p current param
 	 * @return pointer to param after current, NULL if current is last
 	 */
-	TParam* GetNextParam(TParam* p);
+	TParam * GetNextParam(TParam* p) const;
 
 	/** @return pointer to first defined param, NULL if no one exists */
 	TParam* GetFirstDefined() { return defined; }
@@ -246,13 +246,13 @@ public:
 	int GetDrawDefinableCount();
 
 	/** @return first element of devices list, NULL if no one exists */
-	TDevice* GetFirstDevice() { return devices; }
+	TDevice* GetFirstDevice() const { return devices; }
 
 	/** adds new device at the end of devices list */
 	TDevice* AddDevice(TDevice *d);
 	/** @return next list element after given, NULL if 'd' is last on list
 	 */
-	TDevice* GetNextDevice(TDevice* d);
+	TDevice* GetNextDevice(const TDevice* d) const;
 	/** @return title of first raport */
 	std::wstring GetFirstRaportTitle();
 	/** @return title of next raport */
@@ -337,6 +337,10 @@ public:
 	void UseNamesCache();
 
 	void AddParamToNamesCache(TParam* _param);
+
+	size_t GetFirstParamIpcInd(const TDevice &d) const;
+
+	const std::vector<size_t> GetSendIpcInds(const TDevice &d) const;
 
 protected:
 	/**
@@ -440,14 +444,14 @@ public:
 	}
 	/** @return pointer to first radio object, after proper initialization
 	 * should not be NULL */
-	TRadio* GetFirstRadio()
+	TRadio * const GetFirstRadio() const
 	{
 		return radios;
 	}
 	/** Add radio to device */
 	TRadio* AddRadio(TRadio* r);
 	/** @return next list element, NULL if current is last */
-	TDevice* GetNext() {
+	TDevice* GetNext() const {
 		return next;
 	}
 	/**
@@ -657,9 +661,9 @@ public:
 		return next;
 	}
 	/** @return number of params in unit */
-	int GetParamsCount();
+	int GetParamsCount() const;
 	/** @return number of send params in unit */
-	int GetSendParamsCount();
+	int GetSendParamsCount() const;
 	/** @return size of av. buffer */
 	int GetBufSize()
 	{
@@ -724,7 +728,7 @@ public:
 
 	void SetTranslatedUnitName(const std::wstring& s);
 
-	long GetSenderMsgType()
+	long GetSenderMsgType() const
 	{
 		return number + 256L;
 	}

@@ -1122,10 +1122,11 @@ void SBUSDaemon::TimerCallback(int fd, short event, void* thisptr)
 }
 
 bool SBUSDaemon::Configure(DaemonConfig *cfg) {
-	m_ipc = new IPCHandler(cfg);
-	if (m_ipc->Init()) {
-		dolog(0, "Initialization of IPCHandler failed");
-		return false;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	TDevice* dev = cfg->GetDevice();

@@ -197,9 +197,10 @@ public:
 };
 
 int DDEDaemon::Configure(DaemonConfig *cfg) {
-	m_ipc = new IPCHandler(cfg);
-	if (m_ipc->Init()) {
-		dolog(0, "Intialization of IPCHandler failed");
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
 		return 1;
 	}
 

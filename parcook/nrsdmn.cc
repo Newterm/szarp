@@ -922,9 +922,10 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 			sz_log(0, "Cannot act as daemon if no configuration is loaded");
 			exit(1);
 		}
-		m_ipc = new IPCHandler(cfg);
-		if (m_ipc->Init()) {
-			sz_log(0, "Intialization of IPCHandler failed");
+		try {
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+			m_ipc = ipc_.release();
+		} catch(...) {
 			exit(1);
 		}
 

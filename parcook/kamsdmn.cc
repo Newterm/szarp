@@ -577,12 +577,13 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
-	m_ipc = new IPCHandler(m_daemon_conf);
-	if (!m_daemon_conf->GetSingle()) {
-		if (m_ipc->Init()) {
-			throw KamsDmnException("Cannot initialize IPCHandler");
-		}
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_daemon_conf));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		throw KamsDmnException("ERROR!: Could not initialize IPC");
 	}
+
 	if (m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno())
 		m_query_interval_ms = 3000;
 	else

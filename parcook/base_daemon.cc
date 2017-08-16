@@ -77,11 +77,11 @@ int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TS
 
 int BaseDaemon::InitIPC()
 {
-	ipc = new IPCHandler(m_cfg);
-	ASSERT(ipc);
-
-	if( !m_cfg->GetSingle() && ipc->Init() ) {
-		sz_log(1,"Cannot init ipc");
+	try {
+		auto _ipc = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg)); 
+		ipc = _ipc.release();
+	} catch (const std::exception& e) {
+		sz_log(1,"Cannot init ipc %s", e.what());
 		return 1;
 	}
 

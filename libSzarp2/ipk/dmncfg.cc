@@ -66,8 +66,6 @@ DaemonConfig::DaemonConfig(const char *name)
 	m_dumphex = 0;
 	m_noconf = 0;
 	m_sniff = 0;
-
-	m_units = NULL;
 }
 
 DaemonConfig::~DaemonConfig()
@@ -81,8 +79,6 @@ DaemonConfig::~DaemonConfig()
 		delete m_ipk;
 #undef FREE
 	xmlCleanupParser();
-
-	delete m_units;
 }
 	
 void DaemonConfig::SetUsageHeader(const char *header)
@@ -141,15 +137,17 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 
 	loginit(l, c);
 	free(c);
+	
+	ipc_info = basedmn::IPCInfo{
+		std::move(libpar_getpar(m_daemon_name.c_str(), "IPK", 0)),
+		std::move(libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 0))
+	};
 
 	/* other libpar params */
-	m_ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 1);
 	m_parcook_path = libpar_getpar(m_daemon_name.c_str(), "parcook_path", 1);
-	m_linex_path = libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 1);
 
 	if (libpardone)
 		libpar_done();
-
 		
 	/* do not load params.xml */
 	if( sz_cfg ) {
@@ -436,27 +434,32 @@ int DaemonConfig::LoadNotXML( TSzarpConfig* cfg , int device_id )
 	return 0;
 }
 
-int DaemonConfig::GetLineNumber()
+int DaemonConfig::GetLineNumber() const
 {
 	assert (m_load_called != 0);
 	return m_device;
 }
 
+bool DaemonConfig::GetSingle() const
+{
+	assert (m_load_called != 0);
+	return m_single;
+}
 
 
-TSzarpConfig* DaemonConfig::GetIPK()
+TSzarpConfig* DaemonConfig::GetIPK() const
 {
 	assert (m_load_called != 0);
 	return m_ipk;
 }
 
-TDevice* DaemonConfig::GetDevice()
+TDevice* DaemonConfig::GetDevice() const
 {
 	assert (m_load_called != 0);
 	return m_device_obj;
 }
 
-xmlDocPtr DaemonConfig::GetDeviceXMLDoc()
+xmlDocPtr DaemonConfig::GetDeviceXMLDoc() const
 {
 	xmlDocPtr doc = GetXMLDoc();
 
@@ -471,7 +474,7 @@ xmlDocPtr DaemonConfig::GetDeviceXMLDoc()
 	return device_doc;
 }
 
-std::string DaemonConfig::GetDeviceXMLString()
+std::string DaemonConfig::GetDeviceXMLString() const
 {
 	xmlDocPtr device_doc = GetDeviceXMLDoc();
 	std::string xml_str = xmlToString(device_doc);
@@ -479,18 +482,18 @@ std::string DaemonConfig::GetDeviceXMLString()
 	return xml_str;
 }
 
-std::string DaemonConfig::GetPrintableDeviceXMLString()
+std::string DaemonConfig::GetPrintableDeviceXMLString() const
 {
 	return SC::printable_string(GetDeviceXMLString());
 }
 
-xmlDocPtr DaemonConfig::GetXMLDoc()
+xmlDocPtr DaemonConfig::GetXMLDoc() const
 {
 	assert (m_load_xml_called != 0);
 	return m_ipk_doc;
 }
 
-xmlNodePtr DaemonConfig::GetXMLDevice()
+xmlNodePtr DaemonConfig::GetXMLDevice() const
 {
 	assert (m_load_xml_called != 0);
 	return m_ipk_device;
@@ -506,28 +509,10 @@ void DaemonConfig::CloseXML(int clean_parser)
 	}
 }
 
-std::string& DaemonConfig::GetIPKPath()
+const std::string& DaemonConfig::GetIPKPath() const
 {
 	assert (m_load_xml_called != 0);
 	return m_ipk_path;
-}
-
-const char* DaemonConfig::GetParcookPath()
-{
-	assert (m_load_called != 0);
-	return m_parcook_path.c_str();
-}
-
-const char* DaemonConfig::GetLinexPath()
-{
-	assert (m_load_called != 0);
-	return m_linex_path.c_str();
-}
-
-int DaemonConfig::GetSingle()
-{
-	assert (m_load_called != 0);
-	return m_single;
 }
 
 int DaemonConfig::GetDiagno()
@@ -536,13 +521,14 @@ int DaemonConfig::GetDiagno()
 	return m_diagno;
 }
 
-const char* DaemonConfig::GetDevicePath() 
+const char* DaemonConfig::GetDevicePath() const
 {
 	assert (m_load_called != 0);
 	if (!m_device_path.empty())
 		return m_device_path.c_str();
 	if (m_device_obj) { 
-		m_device_path = SC::S2A(m_device_obj->GetPath());
+		auto path = m_device_obj->GetPath();
+		m_device_path = SC::S2A(path);
 		return m_device_path.c_str();
 	}
 	return "/dev/INVALID";
@@ -595,23 +581,30 @@ int DaemonConfig::GetAskDelay() {
 void DaemonConfig::InitUnits() {
 	assert(m_ipk);
 
-	UnitInfo *cu = NULL;
-
 	for (TUnit* unit = GetDevice()->GetFirstRadio()->GetFirstUnit();
 			unit;
 			unit = unit->GetNext()) {
-		
-		UnitInfo* ui = new UnitInfo(unit);
 
-		if (cu) 
-			cu->SetNext(ui);
-		else
-			m_units = ui;	
-
-		cu = ui;
+		m_units.push_back(std::move(basedmn::UnitInfo{unit}));
 	}
 
 }
+
+size_t DaemonConfig::GetParamsCount() const {
+	return m_device_obj->GetParamsCount();
+}
+
+size_t DaemonConfig::GetSendsCount() const {
+	size_t no_sends = 0;
+	
+	TRadio* radio = GetDevice()->GetFirstRadio();
+	for (auto unit = radio->GetFirstUnit(); unit != nullptr; unit = radio->GetNextUnit(unit)) {
+		no_sends += unit->GetSendParamsCount();
+	}
+
+	return no_sends;
+}
+
 
 void DaemonConfig::CloseIPK() {
 
@@ -627,41 +620,6 @@ void DaemonConfig::CloseIPK() {
 	m_device_obj = NULL;
 }
 
-DaemonConfig::UnitInfo* DaemonConfig::GetFirstUnitInfo() {
-	return m_units;
-}
-
-DaemonConfig::UnitInfo::UnitInfo(TUnit * unit) :  m_next(NULL)
-{
-	m_id = unit->GetId();
-	m_send_count = unit->GetSendParamsCount();
-	m_sender_msg_type = unit->GetSenderMsgType();
-}
-
-char DaemonConfig::UnitInfo::GetId() {
-	return m_id;
-}
-
-int DaemonConfig::UnitInfo::GetSendParamsCount() {
-	return m_send_count;
-}
-
-DaemonConfig::UnitInfo* DaemonConfig::UnitInfo::GetNext() {
-	return m_next;
-}
-
-
-void DaemonConfig::UnitInfo::SetNext(UnitInfo* next) {
-	m_next = next;
-}
-
-long DaemonConfig::UnitInfo::GetSenderMsgType() {
-	return m_sender_msg_type;
-}
-
-DaemonConfig::UnitInfo::~UnitInfo() {
-	delete m_next;
-}
 
 #endif 
 

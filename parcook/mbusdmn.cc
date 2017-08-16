@@ -1449,10 +1449,14 @@ When in SZARP line daemon mode, the following options are available:\n");
         }
 
         sz_log(2, "Connecting to IPC...");
-        IPCHandler *ipc = new IPCHandler(config);
+		IPCHandler* ipc;
 
-        if (!(config->GetSingle()) && (ipc->Init() != 0))
-            return 1;
+		try {
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*config));
+			ipc = ipc_.release();
+		} catch(...) {
+			return 1;
+		}
 
         if (config->GetSingle())
             sz_log(2, "Skipping the IPC connection in single mode.");

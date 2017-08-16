@@ -72,47 +72,8 @@ void zmqhandler::process_msg(szarp::ParamsValues& values) {
 	}
 }
 
-zmqhandler::zmqhandler(
-		TSzarpConfig* config,
-		TDevice *device,
-		zmq::context_t& context,
-		const std::string& sub_address,
-		const std::string& pub_address)
-		:
-		m_sub_sock(context, ZMQ_SUB),
-		m_pub_sock(context, ZMQ_PUB) {
-
-	TUnit* first_unit = device->GetFirstRadio()->GetFirstUnit();
-	for (TUnit* u = first_unit; u; u = u->GetNext()) {
-		if (u == first_unit)
-			if (TParam* p = u->GetFirstParam())
-				m_pubs_idx = p->GetIpcInd();
-
-		size_t send_param_count = 0;
-		for (TSendParam *s = u->GetFirstSendParam(); s; s = u->GetNextSendParam(s), send_param_count++) {
-			const std::wstring& param_name = s->GetParamName();
-			if (param_name.empty())
-				continue;
-
-			TParam* param = config->getParamByName(param_name);
-			assert(param);
-
-			m_send_map[param->GetIpcInd()] = send_param_count;
-		}
-
-		m_send.resize(send_param_count);
-	}
-
-	m_pub_sock.connect(pub_address.c_str());
-	if (m_send.size())
-		m_sub_sock.connect(sub_address.c_str());
-
-	int zero = 0;
-	m_pub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
-	m_sub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
-
-	m_sub_sock.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-}
+// template zmqhandler::zmqhandler(TSzarpConfig const &, TDevice const &, zmq::context_t&, const std::string&, const std::string&);
+// template zmqhandler::zmqhandler(class ConfigDealerHandler const &, size_t const &, zmq::context_t&, const std::string&, const std::string&);
 
 template<class T, class V> void zmqhandler::set_value(size_t index, const T& t, const V& value) {
 	szarp::ParamValue* param = m_pubs.add_param_values();

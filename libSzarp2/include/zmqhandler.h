@@ -37,12 +37,42 @@ class zmqhandler {
 	std::unordered_map<size_t, size_t> m_send_map;
 
 	void process_msg(szarp::ParamsValues& values);
+
 public:
-	zmqhandler(TSzarpConfig* cfg,
-			TDevice *device,
-			zmq::context_t& context,
-			const std::string& sub_address,
-			const std::string& pub_address);
+	template <typename Config, typename Device>
+	zmqhandler(
+		const Config& config,
+		const Device& device,
+		zmq::context_t& context,
+		const std::string& sub_address,
+		const std::string& pub_address)
+		:
+		m_sub_sock(context, ZMQ_SUB),
+		m_pub_sock(context, ZMQ_PUB) {
+
+		m_pubs_idx = config.GetFirstParamIpcInd(device);
+
+		// Ignore units for sends
+		auto param_sent_no = 0;
+		for (const auto send_ipc_ind: config.GetSendIpcInds(device)) {
+			m_send_map[send_ipc_ind] = param_sent_no++;
+		}
+
+		m_send.resize(param_sent_no);
+
+		m_pub_sock.connect(pub_address.c_str());
+		if (m_send.size())
+			m_sub_sock.connect(sub_address.c_str());
+
+		int zero = 0;
+		m_pub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+		m_sub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+
+		m_sub_sock.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+	}
+
+	template <typename Config, typename Device, typename... Ts>
+	zmqhandler(const Config* config, const Device* device, Ts&&... args): zmqhandler(*config, *device, std::forward<Ts>(args)...) {}
 
 	template<class T, class V> void set_value(size_t i, const T& t, const V& value);
 	szarp::ParamValue& get_value(size_t i);

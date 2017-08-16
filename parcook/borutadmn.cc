@@ -1230,13 +1230,11 @@ do_accept:
 }
 
 int boruta_daemon::configure_ipc() {
-	m_ipc = new IPCHandler(m_cfg);
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init())
-			return 1;
-		dolog(10, "IPC initialized successfully");
-	} else {
-		dolog(10, "Single mode, ipc not intialized!!!");
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 	return 0;
 }

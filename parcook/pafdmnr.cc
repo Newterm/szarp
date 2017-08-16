@@ -578,10 +578,11 @@ device: %ls\n\
 params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), pafdmninfo->m_paramscount);
 	}
 	
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	for (i=0;i<pafdmninfo->m_paramscount;i++){

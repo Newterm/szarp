@@ -842,10 +842,11 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqt
 
 	
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 	if (ipc->m_params_count!=N_OF_PARAMS){
 		sz_log(2, "Error in configuration. Check Params.xml");

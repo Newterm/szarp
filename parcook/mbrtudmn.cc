@@ -1985,9 +1985,10 @@ int main(int argc, char *argv[])
 
 	ModbusLine modbus;
 
-	ipc = new IPCHandler(cfg);
-	if (ipc->Init()) {
-		sz_log(0, "Initialization of IPC failed");
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		ipc = ipc_.release();
+	} catch(...) {
 		return 1;
 	}
 

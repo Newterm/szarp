@@ -671,10 +671,11 @@ device: %ls\n\
 params in: %d\n\
 params out %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), rateinfo->m_params_count, rateinfo->m_sends_count);
 	}	
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	

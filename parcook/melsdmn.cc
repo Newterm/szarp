@@ -196,9 +196,10 @@ int main(int argc, char *argv[]) {
 	if (cfg->Load(&argc, argv))
 		return 1;
 
-	IPCHandler* ipc = new IPCHandler(cfg);
-	if (ipc->Init()) {
-		sz_log(0, "Intialization of IPCHandler failed");
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		ipc = ipc_.release();
+	} catch(...) {
 		return 1;
 	}
 

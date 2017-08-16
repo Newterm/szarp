@@ -306,10 +306,11 @@ int main(int argc, char *argv[])
 		dpozyton->PrintInfo(stderr);
 	}
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	sz_log(2, "starting main loop");

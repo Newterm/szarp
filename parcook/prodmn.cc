@@ -186,14 +186,16 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	int ret, i;
 	char *c;
 	m_cfg = cfg;
-	m_ipc = new IPCHandler(m_cfg);
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init())
-			return 1;
-		dolog(10, "IPC initialized successfully");
-	} else {
-		dolog(10, "Single mode, ipc not intialized!!!");
+
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
+
+	dolog(10, "IPC initialized successfully");
+
 	m_fd = -1;
 	m_bufev = NULL;
 	m_state = IDLE;

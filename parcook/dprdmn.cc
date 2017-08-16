@@ -390,9 +390,13 @@ class Daemon {
 						tu = tr->GetNextUnit(tu);
 					}
 
-				ul->ipc = new IPCHandler(cfg);
-				if (ul->ipc->Init())
+				try {
+					auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+					ul->ipc = ipc_.release();
+				} catch(...) {
 					throw Exception("Error connecting to parcook");
+				}
+
 				ul->param_buf = ul->ipc->m_read;
 				
 				/*Assign part of a buffer for each unit*/

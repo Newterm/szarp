@@ -164,17 +164,12 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	m_cfg->GetIPK()->SetConfigId(0);
 
-	m_ipc.reset(new IPCHandler(m_cfg.get()));
-
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init()) {
-			sz_log(0, "Could not initialize IPC");
-		} else {
-			connectToParcook = true;
-			sz_log(2, "IPC initialized successfully");
-		}
-	} else {
-		sz_log(2, "Single mode, ipc not intialized!!!");
+	try {
+		m_ipc.reset(new IPCHandler(*m_cfg.get()));
+		sz_log(2, "IPC initialized successfully");
+		connectToParcook = true;
+	} catch(...) {
+		sz_log(0, "Could not initialize IPC");
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
@@ -190,7 +185,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 
 	Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
-	m_zmq.reset(new zmqhandler(m_cfg->GetIPK(), dev, *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
+	m_zmq.reset(new zmqhandler(*m_cfg->GetIPK(), *dev, *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
 	sz_log(2, "ZMQ initialized successfully");
 
 	registerLuaFunctions();

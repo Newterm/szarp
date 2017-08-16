@@ -513,10 +513,12 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 
 bool IECDaemon::Configure(DaemonConfig* cfg) {
 	m_speed = cfg->GetSpeed();
-	m_ipc = new IPCHandler(cfg);
-	if (m_ipc->Init()) {
-		dolog(0, "Intialization of IPCHandler failed");
-		return false;
+
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		m_ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	m_port = new SerialPort(cfg->GetDevicePath());

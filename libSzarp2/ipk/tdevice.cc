@@ -243,9 +243,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 TUnit* TDevice::searchUnitById(const wchar_t id, int uniq)
 {
 	TUnit *u = NULL;
-	TRadio *r;
 	
-	for (r = GetFirstRadio(); r; r = GetNextRadio(r)) {
+	for (auto r = GetFirstRadio(); r; r = GetNextRadio(r)) {
 		for (u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
 			if (u->GetId() == id)
 				goto out;
@@ -255,7 +254,7 @@ out:
 		return NULL;
 	if (uniq == 0)
 		return u;
-	for (; r; r = GetNextRadio(r))
+	for (auto r = GetFirstRadio(); r; r = GetNextRadio(r))
 		for (TUnit* u2 = r->GetNextUnit(u); u2; u2 = r->GetNextUnit(u2))
 			if (u2->GetId() == id)
 				return NULL;
@@ -307,10 +306,10 @@ xmlNodePtr TDevice::generateXMLNode(void)
 	if (!options.empty()) 
 		xmlSetProp(r, X"options", SC::S2U(options).c_str());
 	if (GetFirstRadio()->GetId())
-		for (TRadio* rd = GetFirstRadio(); rd; rd = GetNextRadio(rd)) 
+		for (auto rd = GetFirstRadio(); rd; rd = GetNextRadio(rd)) 
 			xmlAddChild(r, rd->generateXMLNode());
 	else
-		for (TUnit* u = GetFirstRadio()->GetFirstUnit(); u;
+		for (auto u = GetFirstRadio()->GetFirstUnit(); u;
 				u = GetFirstRadio()->GetNextUnit(u))
 			xmlAddChild(r, u->generateXMLNode());
 	return r;
@@ -360,7 +359,7 @@ int TDevice::GetNum()
 int TDevice::GetParamsCount()
 {
 	int i = 0;
-	for (TRadio* r = GetFirstRadio(); r; r = GetNextRadio(r))
+	for (auto r = GetFirstRadio(); r; r = GetNextRadio(r))
 	for (TUnit* u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
 		i += u->GetParamsCount();
 	return i;
@@ -369,7 +368,7 @@ int TDevice::GetParamsCount()
 int TDevice::GetRadiosCount()
 {
 	int i = 0;
-	for (TRadio* r = GetFirstRadio(); r; r = GetNextRadio(r))
+	for (auto r = GetFirstRadio(); r; r = GetNextRadio(r))
 		i++;
 	return i;
 }

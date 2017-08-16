@@ -258,7 +258,7 @@ TUnit* TUnit::Append(TUnit* u)
 	return u;
 }
 
-int TUnit::GetParamsCount()
+int TUnit::GetParamsCount() const
 {
 	int i;
 	TParam* p;
@@ -266,7 +266,7 @@ int TUnit::GetParamsCount()
 	return i;
 }
 
-int TUnit::GetSendParamsCount()
+int TUnit::GetSendParamsCount() const
 {
 	int i;
 	TSendParam* s;

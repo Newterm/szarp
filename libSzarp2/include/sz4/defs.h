@@ -35,8 +35,7 @@
 #ifdef __arm__
 	typedef double float_sum_type;
 #else
-	#include <boost/multiprecision/float128.hpp>
-	typedef boost::multiprecision::float128 float_sum_type;
+	typedef double float_sum_type;
 #endif
 
 
