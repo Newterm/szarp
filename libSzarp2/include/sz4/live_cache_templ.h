@@ -106,8 +106,6 @@ void live_block<value_type, time_type>::get_first_time(time_type &t) {
 
 	if (m_block.size())
 		t = m_start_time;
-	else
-		t = m_block.back().time;
 }
 
 template<class value_type, class time_type>

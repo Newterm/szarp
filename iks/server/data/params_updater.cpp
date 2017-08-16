@@ -116,10 +116,22 @@ void ParamsUpdater::SubPar::update_param() {
 	if( pt ) {
 		time_t t = parent->data_feeder->get_latest( pname, *pt );
 		time_t ptime = SzbaseWrapper::round( t , *pt );
+		ProbeType ptype = *pt;
+		if (t == ptime || ptype == ProbeType::Type::LIVE) {
+			//special case, account for the fact that in this case we
+			//need to ask for one second (because currently IKS operates
+			//with resolution of up to 1 sec) starting just before
+			//latest time
+			ptime = sz4::time_just_before( sz4::second_time_t( t ) );
+			ptype = ProbeType(ProbeType::Type::S);
+		}
 
 		parent->params.param_value_changed(
 				pname ,
-				parent->data_feeder->get_avg( pname , ptime , *pt ) ,
+				parent->data_feeder->get_avg(
+					pname ,
+					ptime ,
+					ptype ) ,
 				*pt );
 	} else {
 		parent->params.param_changed( pname );
