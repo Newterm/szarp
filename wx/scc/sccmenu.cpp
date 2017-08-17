@@ -35,6 +35,7 @@
 #include "libpar.h"
 #include <vector>
 #include <algorithm>
+#include <regex>
 
 #define DRAW_ICON_PATH	_T("resources/wx/icons/draw16.xpm")
 #define RAP_ICON_PATH	_T("resources/wx/icons/rap16.xpm")
@@ -416,7 +417,7 @@ void SCCMenu::ExplodeDraws(SCCMenu* draws_item, int pos)
 				continue;
 			//check if not a backup
 			std::wregex re(L".*[-._]bak", std::regex_constants::icase);
-			if (std::search_regex(d_iter->prefix.wc_str(), re))
+			if (std::regex_search(d_iter->prefix.wc_str(), re))
 				continue;
 
 			submenu->Add(CreateDrawItem(
