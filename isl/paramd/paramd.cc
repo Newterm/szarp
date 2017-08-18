@@ -51,9 +51,6 @@
 
 #include <sys/wait.h>
 
-std::function<void()> onExit;
-
-
 /**
  * SIGINT handler - log and exit.
  * @param signum ignored
@@ -61,7 +58,7 @@ std::function<void()> onExit;
 void int_handler(int signum)
 {
 	sz_log(2, "paramd exiting on signal");
-	onExit();
+	exit(0);
 }
 
 /**
@@ -153,38 +150,25 @@ int main(int argc, char **argv)
 
 	if (should_daemonize) {
 		// go into background
-		onExit = [](){ exit (0); };
 		go_daemon();
 	}
 	
 	signal(SIGINT, int_handler);
 
-	std::vector<int> children_started;
-
 	try {
-		children_started = Server::StartAll(cloader, &conh);
+		Server::StartAll(cloader, &conh, !should_daemonize);
 	} catch (const std::exception& e) {
 		sz_log(0, e.what());
 		exit(1);
 	}
 
 	if (!should_daemonize) {
-
-		onExit = std::function<void()>([children_started](){
-			for (auto c: children_started) {
-				kill(c, SIGINT);
-			}
-
-			exit(0);
-		});
-
 		signal(SIGTERM, int_handler);
 		signal(SIGQUIT, int_handler);
 		signal(SIGHUP,  int_handler);
 		signal(SIGCHLD, int_handler);
 
 		wait(NULL);
-		onExit();
 	}
 
 	return 0;

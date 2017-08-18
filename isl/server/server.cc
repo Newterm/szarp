@@ -52,6 +52,7 @@
 #include "tokens.h"
 
 #include <stdexcept>
+#include <sys/prctl.h>
 
 /** Server version */
 #define SERVER_VERSION "$Revision: 6290 $ $Date: 2008-12-29 13:09:10 +0100 (pon, 29.12.2008) $"
@@ -798,10 +799,8 @@ ParsedURI::~ParsedURI(void)
 }
 
 
-std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
+void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh, bool should_die_with_parent)
 {
-	std::vector<int> ret = {};
-
 	char * sections = cloader->getString("servers", NULL);
 	char **toks = NULL;
 	int tokc = 0;
@@ -857,6 +856,12 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 			case 0: // child, start server
 				tokenize(NULL, &toks, &tokc);
 				delete cloader;
+
+				if (should_die_with_parent) {
+					auto pr_ok = prctl(PR_SET_PDEATHSIG, SIGINT);
+					if (pr_ok != 0) throw std::runtime_error("Could not register singnal on parent death");
+				}
+
 				server->start(); // never returns
 				sz_log(0, "http server exiting on error");
 				throw std::runtime_error("server exited");
@@ -864,7 +869,6 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 				sz_log(0, "fork() error");
 				throw std::runtime_error("fork() failed");
 			default : // parent, free memory
-				ret.push_back(fork_status);
 				delete server;
 				delete ch;
 				delete access_manager;
@@ -872,5 +876,4 @@ std::vector<int> Server::StartAll(ConfigLoader *cloader, AbstractContentHandler 
 		}
 	}
 	tokenize(NULL, &toks, &tokc);
-	return ret;
 }

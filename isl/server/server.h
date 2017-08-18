@@ -185,7 +185,7 @@ class Server {
 		 * @param conf object for creating content handler
 		 * @returns list of childrens' PIDs
 		 */
-		static std::vector<int> StartAll(ConfigLoader *conf, AbstractContentHandler *conh);
+		static void StartAll(ConfigLoader *conf, AbstractContentHandler *conh, bool should_die_with_parent);
 		
 	protected:
 		int port;	/**< listen port */
