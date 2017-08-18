@@ -17,7 +17,7 @@ endif # WNCK
 endif # CURL
 
 
-SUBDIRS = common draw3 raporter4 $(INCLUDE_SUBDIRS) \
+SUBDIRS = common draw3 reporter4 $(INCLUDE_SUBDIRS) \
 	wxhelp scc $(CURL_SUBDIRS) sync \
 	isledit $(WNCK_SUBDIRS)
 
@@ -30,7 +30,7 @@ winsetup:
 		-f szau.exe szau/.libs/szau.exe \
 		-f ekstraktor3.exe ekstraktor3/.libs/ekstraktor3.exe \
 		-f raporter3.exe raporter3/.libs/raporter3.exe \
-		-f raporter4.exe raporter4/.libs/raporter4.exe \
+		-f reporter4.exe reporter4/.libs/reporter4.exe \
 		-f isledit.exe isledit/.libs/isledit.exe \
 		-f wxhelp.exe wxhelp/.libs/wxhelp.exe \
 		-f isledit.exe isledit/.libs/isledit.exe \
@@ -52,7 +52,7 @@ winsetup:
 		-f draw3.mo draw3/pl/draw3.mo \
 		-f ekstraktor3.mo ekstraktor3/pl/ekstraktor3.mo \
 		-f raporter3.mo raporter3/pl/raporter3.mo \
-		-f raporter4.mo raporter4/pl/raporter4.mo \
+		-f reporter4.mo reporter4/pl/reporter4.mo \
 		-f scc.mo scc/pl/scc.mo \
 		-f ssc.mo sync/pl/ssc.mo \
 		-f szau.mo szau/pl/szau.mo \

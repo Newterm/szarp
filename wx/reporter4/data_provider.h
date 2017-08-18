@@ -2,7 +2,6 @@
 #define __R4_DATA_PROV_H__
 
 #include <thread>
-#include <atomic>
 #include <mutex>
 
 #include <memory>
@@ -16,7 +15,6 @@
 
 class ReportControllerBase;
 class SubscriberThread;
-class atomic_bool;
 
 class IksReportDataProvider {
 	ServerInfoHolder srv_info;
@@ -38,39 +36,6 @@ public:
 	void Unsubscribe();
 	void SubscribeOnReport(const ReportInfo& report, ReportControllerBase* subscriber);
 
-};
-
-
-class atomic_bool {
-	std::atomic<bool> flag;
-public:
-	atomic_bool(bool _flag = false) { flag.store(_flag); }
-	atomic_bool(const atomic_bool& other) {
-		flag.store(other.flag.load());
-	}
-
-	~atomic_bool() = default;
-
-	atomic_bool(atomic_bool&& other) {
-		flag.store(other.flag.load());
-	}
-
-	atomic_bool& operator=(const atomic_bool& other) {
-		flag.store(other.flag.load());
-		return *this;
-	}
-
-	atomic_bool& operator=(atomic_bool&& other) {
-		flag.store(other.flag.load());
-		return *this;
-	}
-
-	atomic_bool& operator=(bool _flag) {
-		flag.store(_flag);
-		return *this;
-	}
-
-	operator bool() const { return flag.load(); }
 };
 
 class ParamObserver: public sz4::param_observer_, public std::enable_shared_from_this<ParamObserver> {
