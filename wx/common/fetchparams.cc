@@ -45,6 +45,8 @@
 #include "cconv.h"
 #include "fetchparams.h"
 
+#ifndef NO_CURL
+
 szParamFetcher::szParamFetcher()
 	: wxThread()
 {
