@@ -38,11 +38,11 @@ Package: szarp-server
 
 Package: szarp-wx
 Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,wxhelp,scc,ssc,ssc_sudowrap.sh}
-Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,koper.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo}
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo}
 Files: opt/szarp/resources/locales/fr_FR/LC_MESSAGES
 Files: opt/szarp/resources/locales/de_DE/LC_MESSAGES
 Files: opt/szarp/resources/sounds
-Files: opt/szarp/resources/wx/{anim,html,koper}
+Files: opt/szarp/resources/wx/{anim,html}
 Files: opt/szarp/resources/wx/icons/{draw16.xpm,extr16.xpm,lock_icon16.xpm,scc.ico,back.xpm,draw3.ico,forward.xpm,szarp16.png,ssc.ico,conf_icon16.xpm,dysp_icon16.xpm,greenexit.xpm,szarp16.xpm,up.xpm,conf_icon32.xpm,dysp_icon32.xpm,help.xpm,rap16.xpm,dyspwx_icon.png,reload.xpm,down.xpm,exit.xpm,load.xpm,save.xpm}
 Files: opt/szarp/resources/wx/images/szarp-logo.png
 Files: opt/szarp/resources/wx/images/star.png
@@ -74,12 +74,6 @@ Files: usr/lib*/python*/dist-packages/miscipk*
 Package: szarp-xsltd
 Files: opt/szarp/resources/xsltd
 Files: opt/szarp/bin/xslt_handler.py
-
-Package: szarp-koper
-Files: opt/szarp/bin/koper
-Files: opt/szarp/resources/koper.desktop
-Files: usr/share/autostart/koper.desktop
-Files: etc/xdg/autostart/koper.desktop
 
 Package: szarp-updater
 Files: opt/szarp/bin/update_debs
