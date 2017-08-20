@@ -246,11 +246,9 @@ libSzarpLuaParser_la_SOURCES = \
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
 	$(EXTRA_HEADERS) \
-	tools/ipk_config \
 	$(PROTOBUF_ALL)
 
 bin_SCRIPTS= \
-	@srcdir@/tools/ipk_config \
 	@srcdir@/tools/ipk_add_template \
 	@srcdir@/tools/ipk_base_max \
 	@srcdir@/tools/ipk_check_dtd \

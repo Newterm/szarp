@@ -5,45 +5,48 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <sys/file.h>
+#include <bzlib.h>
 
 #include "conversion.h"
-#include "sz4/filelock.h"
 
 namespace sz4 {
 
-class read_file_locker {
-	int m_file_fd;
-public:
-	read_file_locker(const boost::filesystem::wpath& path);
-	~read_file_locker();
-};
-
-read_file_locker::read_file_locker(const boost::filesystem::wpath& path) : m_file_fd(-1) {
+bool load_file_locked(const boost::filesystem::wpath& path, std::vector<unsigned char>& data) {
+	std::string path_string;
 #if BOOST_FILESYSTEM_VERSION == 3
-	m_file_fd = open_readlock(path.string().c_str(), O_RDONLY);
+	path_string = path.string().c_str();
 #else
-	m_file_fd = open_readlock(path.external_file_string().c_str(), O_RDONLY);
+	path_string = path.external_file_string();
 #endif
-}
+	bool ret = false;
 
-read_file_locker::~read_file_locker() {
-	if (m_file_fd != -1)
-		close_unlock(m_file_fd);
-}
+	BZFILE* bz2 = BZ2_bzopen(path_string.c_str(), "r+b");
+	if (!bz2)
+		return false;
 
-bool load_file_locked(const boost::filesystem::wpath& path, void *data, size_t size) {
-	try {
-		read_file_locker file_lock(path);
-#if BOOST_FILESYSTEM_VERSION == 3
-		std::ifstream ifs(path.string().c_str(), std::ios::binary | std::ios::in);
-#else
-		std::ifstream ifs(path.external_file_string().c_str(), std::ios::binary | std::ios::in);
-#endif
-		ifs.read((char*) data, size);
-		return size_t(ifs.gcount()) == size;
-	} catch (read_file_locker&) {
-		return false;	
+	size_t read = 0;
+	data.resize(1024);
+	while (true) {
+		int r, error;
+
+		r = BZ2_bzRead(&error, bz2, &data[read], data.size() - read);
+		if (error != BZ_STREAM_END && error != BZ_OK)
+			break;
+
+		read += r;
+		if (error == BZ_STREAM_END) {
+			ret = true;
+			break;
+		}
+
+		data.resize(data.size() * 2);
 	}
+
+	data.resize(read);
+
+	BZ2_bzclose(bz2);
+
+	return ret;
 }
 
 }

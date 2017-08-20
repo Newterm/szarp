@@ -119,14 +119,8 @@ void sz4_file_block_entry<V, T, base>::refresh_if_needed() {
 	if (!this->m_needs_refresh)
 		return;
 
-	boost::system::error_code ec;
-	size_t size = boost::filesystem::file_size(this->m_block_path, ec);
-	if (ec)
-		return;
-
-	std::vector<unsigned char> buffer(size);
-
-	if (load_file_locked(this->m_block_path, &buffer[0], buffer.size())) {
+	std::vector<unsigned char> buffer;
+	if (load_file_locked(this->m_block_path, buffer)) {
 		std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->start_time());
 		this->m_block->set_data(values);
 	}

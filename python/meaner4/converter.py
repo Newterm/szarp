@@ -127,7 +127,7 @@ class Converter:
 		lastentry.LastEntry.get_time_delta = get_time_delta_cached
 
 		for p in self.ipk.params:
-			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory(), False)
+			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory())
 			self.s_params[p.param_name] = sp
 	
 		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), self.szbase_dir, FileFactory())
@@ -198,6 +198,8 @@ class Converter:
 
 		szbase_files = self.get_szbase_files(param_path)
 
+		values_count = 0
+
 		for j, path in enumerate(szbase_files):
 			self.queue.put((self.offset, param_path, pno + 1,
 					len(self.s_params), path , j + 1,
@@ -206,12 +208,12 @@ class Converter:
 			time, ntime = self.file_start_end_time(path)
 			if sz4_time is not None and sz4_time <= time:
 				if value is not None:
-					sp.update_last_time_unlocked(prev_time, 0)
+					sp.update_last_time(prev_time, 0)
 				sp.close()
 				return
 			
 			if prev_time is not None and value is not None and time > prev_time and not sp.param.isnan(value):
-				sp.update_last_time_unlocked(prev_time, 0)
+				sp.update_last_time(prev_time, 0)
 				value = sp.param.nan()
 				sp.write_value(value, prev_time, 0)
 
@@ -225,9 +227,14 @@ class Converter:
 						sp.process_value(v, time, 0)
 						value = v
 				elif value != v:
-					sp.update_last_time_unlocked(time, 0)
+					values_count += 1
+					sp.update_last_time(time, 0)
 					sp.write_value(v, time, 0)
 					value = v
+
+					if values_count > 500:
+						sp.commit()
+						values_count = 0
 
 
 				time += delta
@@ -236,14 +243,14 @@ class Converter:
 
  				if sz4_time is not None and sz4_time <= time:
 					if value is not None:
-						sp.update_last_time_unlocked(time, 0)
+						sp.update_last_time(time, 0)
 					sp.close()
 					return
 				
 			prev_time = time
 
 		if value is not None:
-			sp.update_last_time_unlocked(time, 0)
+			sp.update_last_time(time, 0)
 
 		sp.close()
 

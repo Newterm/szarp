@@ -32,6 +32,7 @@ class LastEntry:
 	def __init__(self, param):
 		self.param = param
 		self.delta_cache = {}
+		self.value = None
 
 	def time_to_int(self, time, nanotime):
 		if self.param.time_prec == 8:
@@ -39,6 +40,12 @@ class LastEntry:
 			time += nanotime
 
 		return time
+
+	def last_time(self):
+		if self.param.time_prec == 8:
+			return self.time / 1000000000, self.time % 1000000000
+		else:
+			return self.time, None
 
 	def reset(self, time, nanotime, value = None):
 		self.time_size = 0

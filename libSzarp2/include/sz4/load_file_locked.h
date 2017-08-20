@@ -19,9 +19,11 @@
 #ifndef __SZ4_LOAD_FILE_LOCKED_H__
 #define __SZ4_LOAD_FILE_LOCKED_H__
 
+#include <vector>
+
 namespace sz4 {
 
-bool load_file_locked(const boost::filesystem::wpath& path, void *data, size_t size);
+bool load_file_locked(const boost::filesystem::wpath& path, std::vector<unsigned char> &data);
 
 };
 #endif
