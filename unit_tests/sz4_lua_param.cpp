@@ -9,8 +9,11 @@ class Sz4LuaParam : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( test1 );
 	CPPUNIT_TEST( test2 );
 	CPPUNIT_TEST_SUITE_END();
+
+	boost::filesystem::wpath m_base_dir;
 public:
-	void setUp();
+	void setUp() override;
+	void tearDown() override;
 };
 
 namespace {
@@ -40,6 +43,13 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4LuaParam );
 
 void Sz4LuaParam::setUp() {
+	m_base_dir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
+	boost::filesystem::create_directories(m_base_dir);
+}
+
+void Sz4LuaParam::tearDown() {
+	boost::filesystem::remove_all(m_base_dir);
+
 }
 
 namespace {
@@ -108,16 +118,13 @@ struct test_types {
 void Sz4LuaParam::test2() {
 	unit_test::IPKContainerMock2 mock;
 
-	std::wstringstream base_dir_name;
-	base_dir_name << L"/tmp/sz4_definable_param" << getpid() << L"." << time(NULL) << L".tmp";
-	boost::filesystem::wpath base_path(base_dir_name.str());
-	boost::filesystem::wpath param_dir(base_path / L"BASE/szbase/A/B/C");
+	boost::filesystem::wpath param_dir(m_base_dir / L"BASE/szbase/A/B/C");
 	boost::filesystem::create_directories(param_dir);
 
 #if BOOST_FILESYSTEM_VERSION == 3
-	sz4::base_templ<unit_test::test_types> base(base_path.wstring(), &mock);
+	sz4::base_templ<unit_test::test_types> base(m_base_dir.wstring(), &mock);
 #else
-	sz4::base_templ<unit_test::test_types> base(base_path.file_string(), &mock);
+	sz4::base_templ<unit_test::test_types> base(m_base_dir.file_string(), &mock);
 #endif
 	auto buff = base.buffer_for_param(mock.GetParam(L"BASE:A:B:D"));
 
@@ -138,17 +145,6 @@ void Sz4LuaParam::test2() {
 		std::wstringstream file_name;
 		file_name << std::setfill(L'0') << std::setw(10) << 100 << L".sz4";
 
-		boost::filesystem::wpath file_path = param_dir / file_name.str();
-
-		std::string file_path_str;
-#if BOOST_FILESYSTEM_VERSION == 3
-		file_path_str = file_path.native();
-#else
-		file_path_str = file_path.external_file_string();
-#endif
-		int fd = 0;
-		CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock(file_path_str.c_str(), O_WRONLY | O_CREAT));
-
 		char buf[3];
 		short v = 10;
 		unsigned char t = 0x32;
@@ -156,9 +152,8 @@ void Sz4LuaParam::test2() {
 		memcpy(buf, &v, 2);
 		memcpy(buf + 2, &t, 1);
 
-		write(fd, buf, sizeof(buf));
+		save_bz2_file({ buf, buf + 3 }, param_dir / file_name.str());
 
-		sz4::close_unlock(fd);
 	}
 
 	CPPUNIT_ASSERT(o.wait_for(1, 3));

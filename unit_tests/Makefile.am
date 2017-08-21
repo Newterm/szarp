@@ -20,6 +20,7 @@ bin_PROGRAMS = unit_tests sz4_extr_simple
 
 unit_tests_SOURCES = \
 	unit_tests.cpp \
+	unit_test_common.cpp \
 	sz4_block_unit_test.cpp \
 	szb_param_monitor_unit_test.cpp \
 	sz4_file_search.cpp \

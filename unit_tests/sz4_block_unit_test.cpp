@@ -6,19 +6,13 @@
 #include <iostream>
 #include <fstream>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "conversion.h"
 
-#include "sz4/time.h"
-#include "sz4/block.h"
-#include "sz4/block_cache.h"
-#include "sz4/defs.h"
-#include "sz4/path.h"
-#include "sz4/block_cache.h"
-#include "sz4/load_file_locked.h"
-
-#include "test_serach_condition.h"
+#include "unit_test_common.h"
 
 class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 {
@@ -41,8 +35,11 @@ class Sz4BlockTestCase : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST( searchDataTest );
 	CPPUNIT_TEST( testBigNum );
 	CPPUNIT_TEST_SUITE_END();
+
+	boost::filesystem::wpath m_temp_dir;
 public:
-	void setUp();
+	void setUp() override;
+	void tearDown() override;
 };
 
 
@@ -55,7 +52,15 @@ void Sz4BlockTestCase::setUp() {
 	m_v.push_back(sz4::make_value_time_pair<pair_type>(5, 5u));
 	m_v.push_back(sz4::make_value_time_pair<pair_type>(7, 7u));
 	m_v.push_back(sz4::make_value_time_pair<pair_type>(9, 9u));
+
+	m_temp_dir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
+	boost::filesystem::create_directories(m_temp_dir);
 }
+
+void Sz4BlockTestCase::tearDown() {
+	boost::filesystem::remove_all(m_temp_dir);
+}
+
 
 void Sz4BlockTestCase::searchTest() {
 	CPPUNIT_ASSERT(search_entry_for_time(m_v.begin(), m_v.end(), 0u)->value == 1);
@@ -166,26 +171,21 @@ void Sz4BlockTestCase::pathTest() {
 
 void Sz4BlockTestCase::blockLoadTest() {
 	unsigned char file_content[] = {
-		 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
-		 0x02, 0x00, 0x02, 0x00, 0x00, 0x00,
-		 0x03, 0x00, 0x03, 0x00, 0x00, 0x00,
-		 0x04, 0x00, 0x04, 0x00, 0x00, 0x00,
-		 0x05, 0x00, 0x05, 0x00, 0x00, 0x00,
-		 0x00, 0x80, 0x06, 0x00, 0x00, 0x00,
-		 0x07, 0x00, 0x07, 0x00, 0x00, 0x00,
+		 0x01, 0x00, 0x01,
+		 0x02, 0x00, 0x01,
+		 0x03, 0x00, 0x01,
+		 0x04, 0x00, 0x01,
+		 0x05, 0x00, 0x01,
+		 0x00, 0x80, 0x01,
+		 0x07, 0x00, 0x01,
 		};
 
-	std::wstringstream file_name;
-	file_name << L"/tmp/sz4block_unit_test." << getpid() << "." << time(NULL) << L".tmp";
+	auto path = m_temp_dir / boost::filesystem::unique_path();
+	save_bz2_file({ file_content, file_content + sizeof(file_content) }, path);
 
-	{
-		std::ofstream ofs(SC::S2A(file_name.str()).c_str(), std::ios_base::binary);
-		ofs.write(reinterpret_cast<const char*>(file_content), sizeof(file_content));
-	}
-
-	std::vector<sz4::value_time_pair<short, unsigned> > v;
-	v.resize(7);
-	CPPUNIT_ASSERT(sz4::load_file_locked(file_name.str(), reinterpret_cast<char*>(&v[0]), sizeof(file_content)));
+	std::vector<unsigned char> bytes;
+	CPPUNIT_ASSERT(sz4::load_file_locked(path, bytes));
+	auto v = sz4::decode_file<short, unsigned>(&bytes[0], bytes.size(), 0);
 	for (size_t i = 0; i < 7; i++) {
 		if (i != 5)
 			CPPUNIT_ASSERT(v.at(i).value == short(i + 1));
@@ -203,8 +203,6 @@ void Sz4BlockTestCase::blockLoadTest() {
 	block.get_weighted_sum(0u, 7u, wsum);
 	CPPUNIT_ASSERT_EQUAL(decltype(wsum)::sum_type(1 + 2 + 3 + 4 + 5 + 7), wsum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(6l, weight);
-
-	unlink(SC::S2A(file_name.str()).c_str());
 }
 
 void Sz4BlockTestCase::testBigNum() {
