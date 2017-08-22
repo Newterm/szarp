@@ -859,7 +859,7 @@ void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh, bool 
 
 				if (should_die_with_parent) {
 					auto pr_ok = prctl(PR_SET_PDEATHSIG, SIGINT);
-					if (pr_ok != 0) throw std::runtime_error("Could not register singnal on parent death");
+					if (pr_ok != 0) throw std::runtime_error("Could not register signal on parent death");
 				}
 
 				server->start(); // never returns
