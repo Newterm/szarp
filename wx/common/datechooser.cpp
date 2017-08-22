@@ -175,6 +175,9 @@ bool DateChooserWidget::GetDate(wxDateTime &date)
 		if (min_date == -1 && max_date == -1)
 			return true;
 
+		if (min_date == -1)
+			min_date = 0;
+
 		if(date.GetTicks() >= min_date && date.GetTicks() <= max_date)
 			return true;
 		else {
