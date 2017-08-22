@@ -32,8 +32,9 @@ import shutil
 import param
 import paramsvalues_pb2
 import parampath
-import saveparam
 import config
+import saveparam
+import bz2
 
 class SaveParamTest(unittest.TestCase):
 	def setUp(self):
@@ -53,28 +54,30 @@ class SaveParamTest(unittest.TestCase):
 
 		return msg
 
+	def _unpack(self, path):
+		with open(path) as f:
+			return bz2.decompress(f.read())
+
 	def _check_size(self, path, size):
-		st = os.stat(path)
-		self.assertEqual(st.st_size, size)
+		self.assertEqual(len(self._unpack(path)), size)
 
 	def _check_file(self, path, fmt, expected):
-		with open(path) as f:
-			self.assertEqual(struct.unpack(fmt, f.read()), expected)
+		self.assertEqual(struct.unpack(fmt, self._unpack(path)), expected)
 
 	def test_basictest(self):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		sp.process_msg(self._msg(123456, 4))
+		sp.process_msg_batch([self._msg(123456, 4)])
 		self._check_size(path, 4)
 		self._check_file(path, "<i", (4, ))
 
-		sp.process_msg(self._msg(123457, 4))
+		sp.process_msg_batch([self._msg(123457, 4)])
 		self._check_size(path, 9)
 		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
 
-		sp.process_msg(self._msg(123458, 5))
+		sp.process_msg_batch([self._msg(123458, 5)])
 		self._check_size(path, 4 + 5 + 4)
 		self._check_file(path, "<iBBBBBi", (4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5))
 
@@ -88,40 +91,49 @@ class SaveParamTest(unittest.TestCase):
 		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		sp.process_msg(self._msg(123456, 4))
+		sp.process_msg_batch([self._msg(123456, 4)])
 		self._check_size(path, 4)
 		self._check_file(path, "<i", (4, ))
 
-		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 9)
-		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
+		sp.process_msg_batch([self._msg(123457, 5)])
+		self._check_size(path, 13)
+		self._check_file(path, "<iBBBBBi", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00, 5))
 
 		del sp
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 
-		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 22)
-		self._check_file(path, "<iBBBBBiBBBBBi",
+		sp.process_msg_batch([ self._msg(123458, 5) ])
+		self._check_size(path, 27)
+		self._check_file(path, "<iBBBBBiBiBBBBBi",
 					(4, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
-					-2**31, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
+					5, 0x01,
+					-2**31, 0xf0, 0x3b, 0x9a, 0xc9, 0xff,
 					5, ))
 
 		shutil.rmtree(temp_dir)
 
-	def test_basictest3(self):
+	def test_newfiletest(self):
+		"""Test if the proper switching to new file occurs"""
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
 
-		item_size = 4 + 5
-		items_per_file = config.DATA_FILE_SIZE / item_size
-
+		i = 0
+		prev_size = 0	
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		for i in range(items_per_file):
-			sp.process_msg(self._msg(i, i))
+		sp.data_file_size = 100
 
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000000000000000.sz4")
-		self._check_size(path, (items_per_file - 1) * item_size)
+		while True:
+			sp.process_msg_batch([self._msg(i, i)])
 
-		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file - 1))
-		self._check_size(path2, 4)
+			size = len(sp.file.getvalue())
+			if prev_size > size:
+				break
+
+			prev_size = size
+			i += 1
+
+		sp.commit()
+			
+		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (i-1))
+		self._check_file(path2, "<iBBBBBi", (i - 1, 0xf0, 0x3b, 0x9a, 0xca, 0x00, i))
 
 		shutil.rmtree(temp_dir)

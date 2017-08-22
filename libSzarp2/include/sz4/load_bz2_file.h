@@ -16,14 +16,14 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 */
-#ifndef __SZ4_LOAD_FILE_LOCKED_H__
-#define __SZ4_LOAD_FILE_LOCKED_H__
+#ifndef __SZ4_LOAD_BZ2_FILE_H__
+#define __SZ4_LOAD_BZ2_FILE_H__
 
 #include <vector>
 
 namespace sz4 {
 
-bool load_file_locked(const boost::filesystem::wpath& path, std::vector<unsigned char> &data);
+bool load_bz2_file(const boost::filesystem::wpath& path, std::vector<unsigned char> &data);
 
 };
 #endif

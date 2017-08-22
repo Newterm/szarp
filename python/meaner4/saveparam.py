@@ -45,8 +45,8 @@ class FileFactory:
 		def write(self, data):
 			self.file.write(data)
 
-		def read(self, len):
-			return self.file.read(len)
+		def read(self):
+			return self.file.read()
 
 		def lock(self):
 			fcntl.lockf(self.file, fcntl.LOCK_EX)
@@ -73,6 +73,7 @@ class SaveParam:
 		self.last = lastentry.LastEntry(param)
 		self.uncommited_last = lastentry.LastEntry(param)
 		self.uncommited = None
+		self.data_file_size = config.DATA_FILE_SIZE
 
 	def update_last_time(self, time, nanotime):
 		size = self.last.time_size
@@ -103,7 +104,8 @@ class SaveParam:
 
 		if path is not None:
 			file = self.file_factory.open(path, "r+b")
-			self.file = cStringIO.StringIO(bz2.decompress(file.read()))
+			self.file = cStringIO.StringIO()
+			self.file.write(bz2.decompress(file.read()))
 			file.close()
 
 			self.file_time, self.file_nanotime = self.param_path.time_from_path(path)
@@ -129,10 +131,9 @@ class SaveParam:
 		if not self.param.isnan(self.last.value):
 
 			if self.last.time_size == 0:
-				#overwrite value at the end that didn't have the duration	
+				#set minimum duration for value at the end that didn't have the duration	
 				#specified
-				self.file.seek(-self.param.value_lenght, os.SEEK_END)
-				self.uncommited.seek(-self.param.value_lenght, os.SEEK_END)
+				self.update_last_time(*self.param.time_just_after(*self.last.last_time()))
 
 			value_blob = self.param.value_to_binary(self.param.nan())
 			self.file.write(value_blob)
@@ -154,7 +155,13 @@ class SaveParam:
 			return
 
 		try:
-			if self.first_write:
+			if not self.first_write:
+				self.update_last_time(time, nanotime)
+
+				if value != self.last.value:
+					self.write_value(value, time, nanotime)
+
+			else:
 				if self.param.isnan(value):
 					return
 
@@ -165,15 +172,11 @@ class SaveParam:
 				self.write_value(value, time, nanotime)
 
 				self.first_write = False
-			else:
-				self.update_last_time(time, nanotime)
-
-				if value != self.last.value:
-					self.write_value(value, time, nanotime)
 
 		except lastentry.TimeError, e:
-			print "Ignoring value for param %s, as this value (time:%s) is no later than lastest value(time:%s)" \
-					% (self.param_path.param_path, e.current_time, e.msg_time)
+			syslog.syslog(syslog.LOG_WARNING,
+					"Ignoring value for param %s, as this value (time:%s) is no later than lastest value(time:%s)" \
+					% (self.param_path.param_path, e.current_time, e.msg_time))
 
 
 	def process_msg(self, msg):
@@ -200,18 +203,28 @@ class SaveParam:
 
 	def reset_uncommited(self):
 		self.uncommited = cStringIO.StringIO()
-		self.uncommited.write(self.param.value_to_binary(self.last.value))
 		self.uncommited_time, self.uncommited_nanotime = self.last.last_time()
 
 		self.uncommited_last.reset(self.uncommited_time, self.uncommited_nanotime, self.last.value)
+
+		self.uncommited.write(self.param.value_to_binary(self.last.value))
+		self.uncommited.write(self.uncommited_last.update_time(self.uncommited_time, self.uncommited_nanotime))
+
+	def save_file(self, data, time, nanotime):
+		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
+		temp.write(data)
+		temp.close()
+
+		os.chmod(temp.name, 0644)
+		os.rename(temp.name, self.param_path.create_file_path(time, nanotime))
+
 
 	def commit(self):
 		time = self.file_time
 		nanotime = self.file_nanotime
 
 		zipped = bz2.compress(self.file.getvalue())
-		syslog.syslog(syslog.LOG_INFO, "Commiting, file new size:%s" % (len(zipped)))
-		if len(zipped) >= config.DATA_FILE_SIZE:
+		if len(zipped) >= self.data_file_size:
 			time = self.uncommited_time 
 			nanotime = self.uncommited_nanotime
 
@@ -221,17 +234,7 @@ class SaveParam:
 
 			zipped = bz2.compress(self.uncommited.getvalue())
 
-			self.file = self.uncommited
-
-			syslog.syslog(syslog.LOG_INFO, "File size overflow, switching to new cause size of existing is %s" % (len(zipped),))
-
-
-		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
-		temp.write(zipped)
-		temp.close()
-
-		os.rename(temp.name, self.param_path.create_file_path(time, nanotime))
-
+		self.save_file(zipped, time, nanotime)
 
 		self.reset_uncommited()
 

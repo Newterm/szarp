@@ -74,8 +74,8 @@ class FileFactory:
 		def write(self, data):
 			self.file.write(data)
 
-		def read(self, len):
-			return self.file.read(len)
+		def read(self):
+			return self.file.read()
 
 		def lock(self):
 			pass

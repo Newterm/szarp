@@ -77,14 +77,14 @@ class Param:
 		else:
 			return time
 
-	def time_just_before(self, time, nanotime):
+	def time_just_after(self, time, nanotime):
 		if self.time_prec == 8:
-			if nanotime == 0:
-				return (time - 1, 10 ** 9 - 1)
+			if nanotime == 10 ** 9 - 1:
+				return time + 1, 0
 			else:
-				return (time, nanotime - 1)
+				return time, nanotime + 1
 		else:
-			return (time - 1, nanotime)
+			return time + 1, nanotime
 
 
 def from_node(node):

@@ -197,7 +197,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/szarp_base_common/szbparammonitor.h \
 	@srcdir@/include/szarp_base_common/szbparamobserver.h \
 	@srcdir@/include/sz4/block.h \
-	@srcdir@/include/sz4/load_file_locked.h \
+	@srcdir@/include/sz4/load_bz2_file.h \
 	@srcdir@/include/sz4/buffer.h \
 	@srcdir@/include/sz4/buffer_templ.h \
 	@srcdir@/include/sz4/real_param_entry.h \
@@ -215,7 +215,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/sz4/lua_first_last_time..h \
 	@srcdir@/include/sz4/decode_file.h \
 	@srcdir@/include/sz4/encode_file.h \
-	@srcdir@/sz4/load_file_locked.cpp \
+	@srcdir@/sz4/load_bz2_file.cpp \
 	@srcdir@/sz4/path.cpp \
 	@srcdir@/sz4/buffer.cpp \
 	@srcdir@/sz4/base.cpp \

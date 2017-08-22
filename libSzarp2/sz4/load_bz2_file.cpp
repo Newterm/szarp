@@ -11,7 +11,7 @@
 
 namespace sz4 {
 
-bool load_file_locked(const boost::filesystem::wpath& path, std::vector<unsigned char>& data) {
+bool load_bz2_file(const boost::filesystem::wpath& path, std::vector<unsigned char>& data) {
 	std::string path_string;
 #if BOOST_FILESYSTEM_VERSION == 3
 	path_string = path.string().c_str();

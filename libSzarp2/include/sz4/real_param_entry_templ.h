@@ -120,7 +120,7 @@ void sz4_file_block_entry<V, T, base>::refresh_if_needed() {
 		return;
 
 	std::vector<unsigned char> buffer;
-	if (load_file_locked(this->m_block_path, buffer)) {
+	if (load_bz2_file(this->m_block_path, buffer)) {
 		std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), this->start_time());
 		this->m_block->set_data(values);
 	}

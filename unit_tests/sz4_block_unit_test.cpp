@@ -184,7 +184,7 @@ void Sz4BlockTestCase::blockLoadTest() {
 	save_bz2_file({ file_content, file_content + sizeof(file_content) }, path);
 
 	std::vector<unsigned char> bytes;
-	CPPUNIT_ASSERT(sz4::load_file_locked(path, bytes));
+	CPPUNIT_ASSERT(sz4::load_bz2_file(path, bytes));
 	auto v = sz4::decode_file<short, unsigned>(&bytes[0], bytes.size(), 0);
 	for (size_t i = 0; i < 7; i++) {
 		if (i != 5)
