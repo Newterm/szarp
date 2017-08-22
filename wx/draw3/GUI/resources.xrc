@@ -1255,19 +1255,19 @@
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="30MINUTE_RADIO">
-                    <label>30 Minutes\tAlt+3</label>
+                    <label>30 Minutes\tAlt+H</label>
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="5MINUTE_RADIO">
-                    <label>5 Minutes\tAlt+3</label>
+                    <label>5 Minutes\tAlt+J</label>
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="MINUTE_RADIO">
-                    <label>Minute\tAlt+3</label>
+                    <label>Minute\tAlt+K</label>
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="30SEC_RADIO">
-                    <label>30 seconds\tAlt+4</label>
+                    <label>30 seconds\tAlt+L</label>
                     <radio>1</radio>
                 </object>
                 <object class="wxMenuItem" name="SEASON_RADIO">
