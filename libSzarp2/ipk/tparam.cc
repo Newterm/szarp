@@ -186,10 +186,14 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 					_dataType = DOUBLE;
 				else if (!xmlStrcmp(attr, BAD_CAST "short"))
 					_dataType = SHORT;
-				else if (!xmlStrcmp(attr, BAD_CAST "int"))
+				else if (!xmlStrcmp(attr, BAD_CAST "integer"))
 					_dataType = INT;
+				else if (!xmlStrcmp(attr, BAD_CAST "ushort"))
+					_dataType = USHORT;
+				else if (!xmlStrcmp(attr, BAD_CAST "uinteger"))
+					_dataType = UINT;
 				else
-					xw.XMLError("param data_type has invalid value, expected one of: float, double, short, int");
+					xw.XMLError("param data_type has invalid value, expected one of: float, double, short, int, ushort, uint");
 			} else
 			if (xw.IsAttr("time_type")) {
 				if (!xmlStrcmp(attr, BAD_CAST "second"))
@@ -489,8 +493,12 @@ TParam::parseXML(xmlNodePtr node)
 		_dataType = DOUBLE;
 	else if (!xmlStrcmp(c, BAD_CAST "short"))
 		_dataType = SHORT;
-	else if (!xmlStrcmp(c, BAD_CAST "int"))
+	else if (!xmlStrcmp(c, BAD_CAST "integer"))
 		_dataType = INT;
+	else if (!xmlStrcmp(c, BAD_CAST "ushort"))
+		_dataType = USHORT;
+	else if (!xmlStrcmp(c, BAD_CAST "uinteger"))
+		_dataType = UINT;
 	else
 		_dataType = SHORT;
 	

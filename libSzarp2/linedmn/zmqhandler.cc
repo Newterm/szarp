@@ -29,13 +29,20 @@ void set_param_value(szarp::ParamValue* value, const short& v) {
 	value->set_int_value(v);
 }
 
+void set_param_value(szarp::ParamValue *value, const unsigned short& v) {
+	value->set_int_value(v);
+}
+
 void set_param_value(szarp::ParamValue* value, const int& v) {
+	value->set_int_value(v);
+}
+
+void set_param_value(szarp::ParamValue *value, const unsigned int& v) {
 	value->set_int_value(v);
 }
 
 void set_param_value(szarp::ParamValue* value, const float& v) {
 	value->set_float_value(v);
-
 }
 
 void set_param_value(szarp::ParamValue* value, const double& v) {
@@ -116,7 +123,9 @@ template<class T, class V> void zmqhandler::set_value(size_t index, const T& t, 
 }
 
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const short& v);
+template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const unsigned short& v);
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const int& v);
+template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const unsigned int& v);
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const float& v);
 template void zmqhandler::set_value(size_t index, const sz4::second_time_t& t, const double& v);
 template void zmqhandler::set_value(size_t index, const time_t& t, const short& v);
@@ -124,7 +133,9 @@ template void zmqhandler::set_value(size_t index, const time_t& t, const int& v)
 template void zmqhandler::set_value(size_t index, const time_t& t, const float& v);
 template void zmqhandler::set_value(size_t index, const time_t& t, const double& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const short& v);
+template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const unsigned short& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const int& v);
+template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const unsigned int& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const float& v);
 template void zmqhandler::set_value(size_t index, const sz4::nanosecond_time_t& t, const double& v);
 

@@ -26,13 +26,17 @@ template<class return_type, class builder> struct factory {
 	template<class ...Args> static return_type* op(TParam *param, Args... args) {
 		switch (param->GetDataType()) {
 			case TParam::SHORT:
-				return op_1<short, Args...>(param, args...);
+				return op_1<int16_t, Args...>(param, args...);
 			case TParam::INT:
-				return op_1<int, Args...>(param, args...);
+				return op_1<int32_t, Args...>(param, args...);
 			case TParam::FLOAT:
 				return op_1<float, Args...>(param, args...);
 			case TParam::DOUBLE:
 				return op_1<double, Args...>(param, args...);
+			case TParam::UINT:
+				return op_1<uint32_t, Args...>(param, args...);
+			case TParam::USHORT:
+				return op_1<uint16_t, Args...>(param, args...);
 			default:
 				assert(false);
 		}

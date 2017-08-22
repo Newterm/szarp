@@ -1,5 +1,5 @@
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@ import struct
 import os
 import math
 
+extra_ns = '{http://www.praterm.com.pl/SZARP/ipk-extra}'
+
 class Param:
 	def __init__(self, name, data_type, prec, time_prec, written_to_base):
 		self.param_name = name
@@ -35,12 +37,24 @@ class Param:
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 15
 			self.nan = lambda : -2 ** 15
-		elif self.data_type == "int":
+		elif self.data_type == "ushort":
+			self.value_format_string = "<H"
+			self.value_lenght = 2
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == 2 ** 16 - 1
+			self.nan = lambda : 2 ** 16 - 1
+		elif self.data_type == "integer":
 			self.value_format_string = "<i"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 31
 			self.nan = lambda : -2 ** 31
+		elif self.data_type == "uinteger":
+			self.value_format_string = "<I"
+			self.value_lenght = 4
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == 2 ** 32 - 1
+			self.nan = lambda : 2 ** 32 - 1
 		elif self.data_type == "float":
 			self.value_format_string = "<f"
 			self.value_lenght = 4
@@ -53,6 +67,7 @@ class Param:
 			self.value_from_msg = lambda x : x.double_value
 			self.isnan = lambda x : math.isnan(x)
 			self.nan = lambda : float('nan')
+
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 

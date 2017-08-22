@@ -806,6 +806,18 @@
 		<optional>
 			<attribute name="ip_addr"/>
 		</optional>
+		<optional>
+			<attribute name="data_type">
+				<choice>
+					<value>short</value>
+					<value>ushort</value>
+					<value>integer</value>
+					<value>uinteger</value>
+					<value>float</value>
+					<value>double</value>
+				</choice>
+			</attribute>
+		</optional>
 		<!-- ipk-icinga -->
 		<optional>
 			<attribute name="no_data_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-icinga">
@@ -983,7 +995,10 @@
 			<attribute name="val_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
 				<choice>
 					<value>byte</value>
+					<value>short</value>
+					<value>ushort</value>
 					<value>integer</value>
+					<value>uinteger</value>
 					<value>real</value>
 					<value>float</value>
 					<value>long</value>

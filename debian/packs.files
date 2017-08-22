@@ -15,7 +15,7 @@ Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
 Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,mbusdmn}
 Files: opt/szarp/bin/{nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn}
 Files: opt/szarp/bin/{tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn}
-Files: opt/szarp/bin/{k601dmn,borutadmn,pythondmn,defdmn}
+Files: opt/szarp/bin/{k601dmn,borutadmn,borutadmn_z,pythondmn,defdmn}
 Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py}
 Files: opt/szarp/lib/python/{probes_server.tac,meaner4,paramsvalues_pb2.py
 Files: opt/szarp/lib/python/{parhub.py,test_ipc.py*}

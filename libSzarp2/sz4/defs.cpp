@@ -73,4 +73,12 @@ bool no_data_search_condition::operator()(const double& v) const {
 	return !std::isnan(v);
 }
 
+bool no_data_search_condition::operator()(const uint32_t& v) const {
+	return v != std::numeric_limits<uint32_t>::max();
+}
+
+bool no_data_search_condition::operator()(const uint16_t& v) const {
+	return v != std::numeric_limits<uint16_t>::max();
+}
+
 }

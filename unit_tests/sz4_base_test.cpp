@@ -57,9 +57,11 @@ void Sz4BaseTestCase::setUp() {
 "<params xmlns=\"http://www.praterm.com.pl/SZARP/ipk\" version=\"1.0\" read_freq=\"10\" send_freq=\"10\" title=\"Globalmalt Bydgoszcz\" documentation_base_url=\"http://www.szarp.com\">"
 "  <device xmlns:modbus=\"http://www.praterm.com.pl/SZARP/ipk-extra\" daemon=\"/dev/null\">"
 "    <unit id=\"1\" type=\"1\" subtype=\"1\" bufsize=\"1\">"
-"    	<param name=\"a:a:a\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
+"    	<param name=\"a:a:a\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
 "      	</param>"
-"    	<param name=\"b:b:b\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
+"    	<param name=\"b:b:b\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
+"      	</param>"
+"    	<param name=\"c:c:c\" data_type=\"ushort\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
 "      	</param>"
 "    </unit>"
 "  </device>"
@@ -89,19 +91,37 @@ void Sz4BaseTestCase::setUp() {
 
 				std::ostringstream oss;
 
-				short value = 10;
-				oss.write((const char*) &value, sizeof(value));
+				if (s != L'd') {
+					unsigned value = 10;
+					ofs.write((const char*) &value, sizeof(value));
 
-				unsigned char delta = 50;
-				oss.write((const char*) &delta, sizeof(delta));
+					unsigned char delta = 50;
+					ofs.write((const char*) &delta, sizeof(delta));
 
-				if (i == 2000)
-				{
-					value = 1;
-					oss.write((const char*) &value, sizeof(value));
+					if (i == 2000)
+					{
+						value = 1;
+						ofs.write((const char*) &value, sizeof(value));
 
-					delta = 1;
-					oss.write((const char*) &delta, sizeof(delta));
+						delta = 1;
+						ofs.write((const char*) &delta, sizeof(delta));
+					}	
+				} else {
+
+					short value = 10;
+					ofs.write((const char*) &value, sizeof(value));
+
+					unsigned char delta = 50;
+					ofs.write((const char*) &delta, sizeof(delta));
+
+					if (i == 2000)
+					{
+						value = 1;
+						ofs.write((const char*) &value, sizeof(value));
+
+						delta = 1;
+						ofs.write((const char*) &delta, sizeof(delta));
+					}	
 				}
 
 				auto s = oss.str();
@@ -137,10 +157,10 @@ void Sz4BaseTestCase::smokeTest1() {
 
 	sz4::base base(m_base_dir.wstring(), ipk);
 
-	sz4::weighted_sum<short, sz4::second_time_t> sum;
-	sz4::weighted_sum<short, sz4::second_time_t>::time_diff_type weight;
+	sz4::weighted_sum<unsigned , sz4::second_time_t> sum;
+	sz4::weighted_sum<unsigned , sz4::second_time_t>::time_diff_type weight;
 	base.get_weighted_sum(p11, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum);
-	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<short>::type(5000), sum.sum(weight));
+	CPPUNIT_ASSERT_EQUAL(sz4::value_sum<unsigned>::type(5000), sum.sum(weight));
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), weight);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(500), sum.no_data_weight());
 
@@ -157,9 +177,9 @@ void Sz4BaseTestCase::cacheTest1() {
 
 	sz4::base base(m_base_dir.wstring(), ipk);
 
-	sz4::weighted_sum<short, sz4::second_time_t>::time_diff_type weight;
+	sz4::weighted_sum<unsigned, sz4::second_time_t>::time_diff_type weight;
 
-	sz4::weighted_sum<short, sz4::second_time_t> sum_r;
+	sz4::weighted_sum<unsigned, sz4::second_time_t> sum_r;
 	base.get_weighted_sum(pr, sz4::second_time_t(1000), sz4::second_time_t(2000), PT_SEC10, sum_r);
 
 	sz4::weighted_sum<double, sz4::second_time_t> sum_l;
@@ -189,29 +209,28 @@ void Sz4BaseTestCase::getLastTest() {
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(2051), tr);
 
 	//get_weighted_sum for any range starting at last time should yield no-data
-	sz4::weighted_sum<short, sz4::second_time_t> sum_0r;
+	sz4::weighted_sum<unsigned, sz4::second_time_t> sum_0r;
 	base.get_weighted_sum(pr, tr, sz4::time_just_after(tr), PT_SEC, sum_0r);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::second_time_t>::type(0), sum_0r.weight());
 
 	//get_weighted_sum for time just before last time should return sth
-	sz4::weighted_sum<short, sz4::second_time_t> sum_1r;
+	sz4::weighted_sum<unsigned, sz4::second_time_t> sum_1r;
 	base.get_weighted_sum(pr, sz4::time_just_before(tr), tr, PT_SEC, sum_1r);
-	CPPUNIT_ASSERT_EQUAL(short(1), sum_1r.avg());
+	CPPUNIT_ASSERT_EQUAL(unsigned(1), sum_1r.avg());
 
 	sz4::nanosecond_time_t trn;
 	base.get_last_time(pr, trn);
 	CPPUNIT_ASSERT_EQUAL(sz4::nanosecond_time_t(2051, 0), trn);
 
 	//get_weighted_sum for any range starting at last time should yield no-data
-	sz4::weighted_sum<short, sz4::nanosecond_time_t> sum_0rn;
+	sz4::weighted_sum<unsigned, sz4::nanosecond_time_t> sum_0rn;
 	base.get_weighted_sum(pr, trn, sz4::time_just_after(trn), PT_SEC, sum_0rn);
 	CPPUNIT_ASSERT_EQUAL(sz4::time_difference<sz4::nanosecond_time_t>::type(0), sum_0rn.weight());
 
 	//get_weighted_sum for time just before last time should return sth
-	sz4::weighted_sum<short, sz4::nanosecond_time_t> sum_1rn;
+	sz4::weighted_sum<double, sz4::nanosecond_time_t> sum_1rn;
 	base.get_weighted_sum(pr, sz4::time_just_before(trn), trn, PT_SEC, sum_1rn);
-	CPPUNIT_ASSERT_EQUAL(short(1), sum_1rn.avg());
-
+	CPPUNIT_ASSERT_EQUAL(double(1), sum_1rn.avg());
 
 	//the same as before but for LUA param
 	sz4::second_time_t tl;

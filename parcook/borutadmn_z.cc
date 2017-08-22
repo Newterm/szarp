@@ -453,6 +453,7 @@ protocols::protocols() {
 	m_serial_client_factories["modbus"] = create_modbus_serial_client;
 	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
 	m_serial_server_factories["modbus"] = create_modbus_serial_server;
+	m_serial_client_factories["fc"] = create_fc_serial_client;
 }
 
 std::string protocols::get_proto_name(xmlNodePtr node) {

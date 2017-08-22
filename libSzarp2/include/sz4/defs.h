@@ -292,6 +292,8 @@ public:
 	virtual bool operator()(const int&) const = 0;
 	virtual bool operator()(const float&) const = 0;
 	virtual bool operator()(const double&) const = 0;
+	virtual bool operator()(const uint32_t&) const = 0;
+	virtual bool operator()(const uint16_t&) const = 0;
 	virtual ~search_condition() {};
 };
 
@@ -301,6 +303,8 @@ public:
 	bool operator()(const int& v) const override;
 	bool operator()(const float& v) const override;
 	bool operator()(const double& v) const override;
+	bool operator()(const uint32_t& v) const override;
+	bool operator()(const uint16_t& v) const override;
 };
 
 }
