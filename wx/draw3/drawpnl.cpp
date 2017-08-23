@@ -287,11 +287,6 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 			}
 		}
 		break;
-	case WXK_F1:
-		if (event.ShiftDown()) {
-					printf("IKE!\n");
-		}
-		break;
 	case WXK_F12:
 		panel->df->ToggleMenuBarVisbility();
 		break;
