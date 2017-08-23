@@ -509,6 +509,8 @@ tcp_client_driver* create_modbus_tcp_client();
 serial_server_driver* create_modbus_serial_server();
 tcp_server_driver* create_modbus_tcp_server();
 
+serial_client_driver *create_fc_serial_client();
+
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
 
