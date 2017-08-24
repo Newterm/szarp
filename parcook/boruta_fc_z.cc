@@ -164,7 +164,8 @@ const unsigned char AK = 0x1;	// AK=1 means read value data
 const unsigned char RESPONSE_SIZE = 16; // 16 bytes of response telegram
 const unsigned char MIN_EXTRA_ID = 1; // min address of inverter
 const unsigned char MAX_EXTRA_ID = 32; // max address of inverter
-const unsigned char SCALING_BOUNDARY = 6; // max scaling precision
+
+using FCRMAP = std::map<uint32_t, fc_register *>;
 
 class fc_proto;
 class fc_register
@@ -193,8 +194,6 @@ void fc_register::set_val(int32_t val, sz4::nanosecond_time_t& time) {
 	m_val = val;
 	m_mod_time = time;
 }
-
-using FCRMAP = std::map<unsigned char, fc_register *>;
 
 class read_fc_val_op
 {
@@ -320,9 +319,9 @@ public:
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	void connection_error(struct bufferevent *bufev) override;
 	int configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t send, serial_port_configuration& spc);
-	void configure_uint16_register (int8_t pnu);
-	void configure_uint32_register (int8_t pnu);
-	void configure_int32_register (int8_t pnu);
+	void configure_uint16_register (uint32_t pnu);
+	void configure_uint32_register (uint32_t pnu);
+	void configure_int32_register (uint32_t pnu);
 	void scheduled(struct bufferevent *bufev, int fd) override;
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto);
@@ -424,16 +423,19 @@ int fc_proto::parse_frame()
 	/* 16 byte is BCC */
 	/* Checking wheter checksum is the same as received */
 	if (m_buffer.at(15) != m_last_bcc) {
-		m_log.log(5, "parse_frame error - received wrong checksum");
+		m_log.log(2, "parse_frame error - received wrong checksum");
 		m_registers_iterator = --m_registers.end();
 		return 1;
 	}
 
 	/* First 7 bytes of buffer should be the same as request_buffer */
-	const size_t byte = 7;
-	for (size_t i = 0; i < byte; ++i) {
+	/* Is it possbile to receive AK 0x02, it means we get double world */
+	const uint8_t byte = 7;
+	for (uint8_t i = 0; i < byte; ++i) {
+		if(i == 3)
+			continue;
 		if(m_buffer.at(i) != m_request_buffer.at(i)) {
-			m_log.log(5, "parse_frame error - received buffer is different from requested buffer at %zu byte", i);
+			m_log.log(2, "parse_frame error - received buffer is different from requested buffer at %u byte", i);
 			m_registers_iterator = --m_registers.end();
 			return 1;
 		}
@@ -450,6 +452,7 @@ int fc_proto::parse_frame()
 
 	/* Convert octal char to int and set 4 bytes from PWE to register */
 	int32_t value = parse_pwe(pwe_chars);
+	m_log.log(10, "Setting value: %d", value);
 	m_registers_iterator->second->set_val(value, m_current_time);
 
 	/* Next 2 bytes are PCD1 status word */
@@ -552,22 +555,25 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 	m_extra_id = l + 128;
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
-	for(size_t i = 0; i < m_read_count; ++i) {
+	for(uint32_t i = 0; i < m_read_count; ++i) {
 		std::stringstream ss;
-		ss << ".//ipk:param[position()=" << i+1 << "]";
-		const char *expr = ss.str().c_str();
-		xmlNodePtr pnode = uxmlXPathGetNode(xmlCharStrdup(expr), xp_ctx, false);
+		char *expr;
+		asprintf(&expr, ".//ipk:param[position()=%d]", i+1);
+		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
+		free(expr);
+
 		if (pnode == NULL)
 			throw std::runtime_error("Error occured when getting parameter node");
 
 		std::string _pnu;
+		m_log.log(10, "extra:param %s", _pnu.c_str());
 		if (get_xml_extra_prop(pnode, "parameter-number", _pnu, false)) {
 			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param element at line %ld", xmlGetLineNo(pnode));
 			return 1;
 		}
 
-		const int8_t pnu = boost::lexical_cast<unsigned short>(_pnu);
-		m_log.log(10, "configure extra:parameter-number: %u", pnu);
+		const uint32_t pnu = boost::lexical_cast<uint32_t>(_pnu);
+		m_log.log(10, "configure extra:parameter-number: %d", pnu);
 
 		std::string val_type;
 		if (get_xml_extra_prop(pnode, "val_type", val_type, true)) {
@@ -595,17 +601,17 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 	return 0;
 }
 
-void fc_proto::configure_uint16_register(int8_t pnu) {
+void fc_proto::configure_uint16_register(uint32_t pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
 	m_read_operators.push_back(new uint16_read_fc_val_op(m_registers[pnu], &m_log));
 }
 
-void fc_proto::configure_uint32_register(int8_t pnu) {
+void fc_proto::configure_uint32_register(uint32_t pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
 	m_read_operators.push_back(new uint32_read_fc_val_op(m_registers[pnu], &m_log));
 }
 
-void fc_proto::configure_int32_register(int8_t pnu) {
+void fc_proto::configure_int32_register(uint32_t pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
 	m_read_operators.push_back(new int32_read_fc_val_op(m_registers[pnu], &m_log));
 }
