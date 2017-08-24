@@ -165,8 +165,6 @@ const unsigned char RESPONSE_SIZE = 16; // 16 bytes of response telegram
 const unsigned char MIN_EXTRA_ID = 1; // min address of inverter
 const unsigned char MAX_EXTRA_ID = 32; // max address of inverter
 
-using FCRMAP = std::map<uint32_t, fc_register *>;
-
 class fc_proto;
 class fc_register
 {
@@ -185,6 +183,8 @@ public:
 	int32_t get_val(bool& valid, sz4::nanosecond_time_t& time);
 	int32_t get_val() const;
 };
+
+using FCRMAP = std::map<uint32_t, fc_register *>;
 
 int32_t fc_register::get_val() const {
 	return m_val;
@@ -556,9 +556,11 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
 	for(uint32_t i = 0; i < m_read_count; ++i) {
-		std::stringstream ss;
 		char *expr;
-		asprintf(&expr, ".//ipk:param[position()=%d]", i+1);
+		if(asprintf(&expr, ".//ipk:param[position()=%d]", i+1) == -1) {
+			m_log.log(0, "Error occured when finding param");
+
+		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
 		free(expr);
 
