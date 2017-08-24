@@ -1,7 +1,7 @@
 [Unit]
 Description=SZARP Scada Software Server Probes Server
-After=network.target parcook.service meaner3.service
-BindsTo=szarp-server.target
+After=parcook.service meaner3.service
+PartOf=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/probes-server
 [Service]
 Type=forking
@@ -10,4 +10,4 @@ PIDFile=/var/run/probes_server.pid
 StandardOutput=journal
 StandardError=journal
 [Install]
-WantedBy=default.target
+WantedBy=szarp-server.target

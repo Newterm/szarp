@@ -1,10 +1,11 @@
 [Unit]
 Description=SZARP Scada Software Server Meaner3
-After=network.target parcook.service
-BindsTo=szarp-server.target parcook.service
+After=parcook.service
+BindsTo=parcook.service
+PartOf=szarp-server.target parcook.service
 ConditionPathExists=/etc/szarp/units-enabled/meaner3
 [Service]
 Type=simple
 ExecStart=/opt/szarp/bin/meaner3 -n
 [Install]
-WantedBy=default.target
+WantedBy=szarp-server.target

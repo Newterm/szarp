@@ -1,7 +1,8 @@
 [Unit]
 Description=SZARP Scada Software Server iks-server
-After=network.target parhub.service
-BindsTo=szarp-server.target
+After=parhub.service
+BindsTo=parhub.service
+PartOf=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/iks-server
 [Service]
 Type=simple
@@ -9,4 +10,4 @@ ExecStart=/opt/szarp/bin/iks-server --no_daemon
 StandardOutput=journal
 StandardError=journal
 [Install]
-WantedBy=default.target
+WantedBy=szarp-server.target

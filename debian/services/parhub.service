@@ -1,7 +1,6 @@
 [Unit]
 Description=SZARP Scada Software Server Parhub
-After=network.target
-BindsTo=szarp-server.target
+PartOf=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/parhub
 [Service]
 Type=simple
@@ -10,4 +9,4 @@ ExecStart=/usr/bin/python2 /opt/szarp/lib/python/parhub.py
 StandardOutput=journal
 StandardError=journal
 [Install]
-WantedBy=default.target
+WantedBy=szarp-server.target
