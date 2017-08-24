@@ -541,6 +541,14 @@ void DrawPanel::OnRefresh(wxCommandEvent & evt) {
 	dw->RefreshData(false);
 }
 
+void DrawPanel::OnShowArrows(wxCommandEvent& evt) {
+	bool isShowArrowsChecked = menu_bar->FindItem(XRCID("ShowArrows"))->IsChecked();
+
+	(dynamic_cast<GCDCGraphs*>(dg))->SetShowArrowsChecked(isShowArrowsChecked);
+	(dynamic_cast<GCDCGraphs*>(dg))->SetMarginsRecalculable();
+	(dynamic_cast<GCDCGraphs*>(dg))->FullRefresh();
+}
+
 void DrawPanel::OnShowAverage(wxCommandEvent &evt)
 {
 	if (tw) {

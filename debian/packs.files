@@ -47,6 +47,8 @@ Files: opt/szarp/resources/wx/icons/{draw16.xpm,extr16.xpm,lock_icon16.xpm,scc.i
 Files: opt/szarp/resources/wx/images/szarp-logo.png
 Files: opt/szarp/resources/wx/images/star.png
 Files: opt/szarp/resources/wx/images/draw_background1_tex.bmp
+Files: opt/szarp/resources/wx/images/left-arrow.png
+Files: opt/szarp/resources/wx/images/right-arrow.png
 Files: opt/szarp/resources/ssc.desktop
 Files: opt/szarp/resources/scc.desktop
 Files: opt/szarp/resources/regulators

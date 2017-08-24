@@ -54,7 +54,7 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	bool m_refresh;
 
-	bool m_recalulate_margins;
+	bool m_recalculate_margins;
 
 	wxBitmap m_remark_flag_bitmap;
 
@@ -65,6 +65,8 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 		double bottommargin;
 		double infotopmargin;
 	} m_screen_margins;
+
+	bool isShowArrowsChecked = false;
 
 	void DrawWindowInfo(wxGraphicsContext &dc);
 
@@ -142,6 +144,8 @@ public:
 	
 	virtual void SetFocus();
 
+	void SetMarginsRecalculable();
+
 	void OnPaint(wxPaintEvent&);
 
 	/** Event handler - called when left mouse button is pressed.
@@ -197,6 +201,10 @@ public:
 
 
 	virtual ~GCDCGraphs();
+
+	bool GetShowArrowsChecked();
+
+	void SetShowArrowsChecked(bool setArrow);
 
 	DECLARE_EVENT_TABLE()
 

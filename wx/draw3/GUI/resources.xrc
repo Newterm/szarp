@@ -1457,6 +1457,10 @@
                 <label>Show interface</label>
                 <checkable>1</checkable>
             </object>
+            <object class="wxMenuItem" name="ShowArrows">
+                <label>Show arrows</label>
+                <checkable>1</checkable>
+            </object>
         </object>
         <object class="wxMenu" name="HelpM">
             <label>_Help</label>

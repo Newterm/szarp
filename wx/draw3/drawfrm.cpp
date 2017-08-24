@@ -216,6 +216,19 @@ void DrawFrame::OnShowInterface(wxCommandEvent &event)
 	}
 }
 
+void DrawFrame::OnShowArrows(wxCommandEvent &event)
+{
+	if (m_notebook == NULL) {
+		draw_panel->OnShowArrows(event);
+	} else {
+		for (unsigned int i = 0; i < m_notebook->GetPageCount(); i++) {
+			DrawPanel *panel = dynamic_cast<DrawPanel *>(m_notebook->GetPage(i));
+			if (panel != NULL) {
+				panel->OnShowArrows(event);
+			}
+		}
+	}
+}
 void DrawFrame::OnExit(wxCommandEvent & event)
 {
 	Close();
@@ -1235,6 +1248,7 @@ void DrawFrame::OnSearchDate(wxCommandEvent &event) {
 BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("ShowAverage"), DrawFrame::OnShowAverage)
     EVT_MENU(XRCID("ShowInterface"), DrawFrame::OnShowInterface)
+    EVT_MENU(XRCID("ShowArrows"), DrawFrame::OnShowArrows)
     EVT_MENU(XRCID("Quit"), DrawFrame::OnExit)
     EVT_MENU(XRCID("About"), DrawFrame::OnAbout)
     EVT_MENU(XRCID("Help"), DrawFrame::OnHelp)

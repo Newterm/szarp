@@ -50,7 +50,7 @@
  * to make it work fast. 3.0 version of wxWidgets promises to provide wxGCDC that would have
  * the same API as wxDC, so we won't need most of this code anyway.*/
 
-GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY), m_right_down(false), m_draw_param_name(false), m_cfg_mgr(cfg), m_recalulate_margins(true) {
+GCDCGraphs::GCDCGraphs(wxWindow* parent, ConfigManager *cfg) : wxWindow(parent, wxID_ANY), m_right_down(false), m_draw_param_name(false), m_cfg_mgr(cfg), m_recalculate_margins(true) {
 	m_screen_margins.leftmargin = 10;
 	m_screen_margins.rightmargin = 10;
 	m_screen_margins.topmargin = 10;
@@ -109,6 +109,18 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 
 	dc.SetBrush(wxBrush(back2_col, wxSOLID));
 	dc.DrawRectangle(0, 0, w, h);
+
+	if ( GetShowArrowsChecked() == true) {
+
+		wxBitmap left_arrow;
+		wxBitmap right_arrow;
+
+		left_arrow.LoadFile("/opt/szarp/resources/wx/images/left-arrow.png", wxBITMAP_TYPE_PNG);
+		right_arrow.LoadFile("/opt/szarp/resources/wx/images/right-arrow.png", wxBITMAP_TYPE_PNG);
+
+		dc.DrawBitmap(left_arrow, 0, 0, 40, h);
+		dc.DrawBitmap(right_arrow, w - 40, 0, 40, h);
+	}
 
 	size_t i = 0;
 	int c = 1;
@@ -589,7 +601,7 @@ void GCDCGraphs::OnPaint(wxPaintEvent& e) {
 	wxGraphicsContext* dc = wxGraphicsContext::Create(pdc);
 
 	dc->SetFont(GetFont(), *wxWHITE);
-	
+
 	RecalculateMargins(*dc);
 	DrawBackground(*dc);
 
@@ -635,8 +647,12 @@ void GCDCGraphs::Refresh() {
 	m_refresh = true;
 }
 
+void GCDCGraphs::SetMarginsRecalculable() {
+	m_recalculate_margins = true;
+}
+
 void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
-	if (!m_recalulate_margins)
+	if (!m_recalculate_margins)
 		return;
 
 	double leftmargin = 36;
@@ -649,6 +665,12 @@ void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
 		wxString sval = di->GetValueStr(di->GetMax(), _T(""));
 
 		dc.GetTextExtent(sval, &tw, &th, &td, &tel);
+		if ( isShowArrowsChecked == true) {
+			tw += 42;
+			m_screen_margins.rightmargin = 40;
+		} else if ( isShowArrowsChecked == false) {
+			m_screen_margins.rightmargin = 10;
+		}
 		if (leftmargin < tw + 1)
 			leftmargin = tw + 1;
 		if (bottommargin < th + 1)
@@ -666,7 +688,7 @@ void GCDCGraphs::RecalculateMargins(wxGraphicsContext &dc) {
 	m_screen_margins.bottommargin = bottommargin;
 	m_screen_margins.topmargin = topmargin;
 
-	m_recalulate_margins = false;
+	m_recalculate_margins = false;
 }
 
 void GCDCGraphs::DrawSeasonsLimitsInfo(wxGraphicsContext &dc) {
@@ -1068,7 +1090,7 @@ void GCDCGraphs::ResetGraphs(DrawsController *controller) {
 	for (size_t i = 0; i < controller->GetDrawsCount(); i++)
 		m_draws.push_back(controller->GetDraw(i));
 
-	m_recalulate_margins = true;
+	m_recalculate_margins = true;
 	Refresh();
 	SetFocus();
 }
@@ -1080,6 +1102,14 @@ void GCDCGraphs::DrawsSorted(DrawsController* d) {
 void GCDCGraphs::DrawInfoChanged(Draw *draw) { 
 	if (draw->GetSelected())
 		ResetGraphs(draw->GetDrawsController());
+}
+
+bool GCDCGraphs::GetShowArrowsChecked() {
+	return isShowArrowsChecked;
+}
+
+void GCDCGraphs::SetShowArrowsChecked(bool setArrow) {
+	isShowArrowsChecked = setArrow;
 }
 
 GCDCGraphs::~GCDCGraphs() {

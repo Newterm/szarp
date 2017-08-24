@@ -75,6 +75,10 @@ public:
 	 */
 	void OnShowInterface(wxCommandEvent &evt); 
 	/**
+	 * Method call for Window -> Show arrows.
+	 */
+	void OnShowArrows(wxCommandEvent &evt);
+	/**
 	 * Method call when we used exit from MenuBar.
 	 */
 	void OnExit(wxCommandEvent &evt); 

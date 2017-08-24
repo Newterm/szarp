@@ -82,6 +82,9 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/** Show/Hide interface */
 	void OnShowInterface(wxCommandEvent &evt);
 
+	/** Show/Hide arrows */
+	void OnShowArrows(wxCommandEvent &evt);
+
 	/**Clear cache*/
 	void ClearCache();
 
