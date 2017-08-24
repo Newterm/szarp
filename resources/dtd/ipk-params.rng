@@ -992,6 +992,9 @@
 					<value>word</value>
 					<value>decimal2</value>
 					<value>decimal3</value>
+					<value>uint16</value>
+					<value>uint32</value>
+					<value>int32</value>
 				</choice>
 			</attribute>
 		</optional>
