@@ -646,6 +646,10 @@ void fc_proto::connection_error(struct bufferevent *bufev)
 void fc_proto::starting_new_cycle()
 {
 	m_log.log(10, "starting_new_cycle");
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	m_current_time.second = time.tv_sec;
+	m_current_time.nanosecond = time.tv_nsec;
 	stop_read_timer();
 }
 
