@@ -217,7 +217,7 @@ void ushort_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
 	unsigned short v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, unsigned short(v));
+	handler->set_value(index, t, v);
 }
 
 class uinteger_read_fc_val_op : public read_fc_val_op {
@@ -233,7 +233,7 @@ void uinteger_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
 	unsigned int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, unsigned int(v));
+	handler->set_value(index, t, v);
 }
 
 class integer_read_fc_val_op : public read_fc_val_op {
@@ -249,7 +249,7 @@ void integer_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
 	int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, int(v));
+	handler->set_value(index, t, v);
 }
 
 class fc_proto : public serial_client_driver
