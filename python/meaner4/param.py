@@ -41,8 +41,8 @@ class Param:
 			self.value_format_string = "<H"
 			self.value_lenght = 2
 			self.value_from_msg = lambda x : x.int_value
-			self.isnan = lambda x : x == -2 ** 15
-			self.nan = lambda : -2 ** 15
+			self.isnan = lambda x : x == 2 * 2 ** 15 - 1
+			self.nan = lambda : 2 * 2 ** 15 - 1
 		elif self.data_type == "integer":
 			self.value_format_string = "<i"
 			self.value_lenght = 4
@@ -53,8 +53,8 @@ class Param:
 			self.value_format_string = "<I"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.int_value
-			self.isnan = lambda x : x == -2 ** 31
-			self.nan = lambda : -2 ** 31
+			self.isnan = lambda x : x == 2 * 2 ** 31 - 1
+			self.nan = lambda : 2 * 2 ** 31 - 1
 		elif self.data_type == "float":
 			self.value_format_string = "<f"
 			self.value_lenght = 4
