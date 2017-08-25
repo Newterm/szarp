@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ import config
 class SaveParamTest(unittest.TestCase):
 	def setUp(self):
 		self.node = lxml.etree.fromstring("""
-      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto" time_type="nanosecond" data_type="int">
+      <param name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto" time_type="nanosecond" data_type="uinteger">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>

@@ -1,5 +1,5 @@
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -35,24 +35,37 @@ class Param:
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 15
 			self.nan = lambda : -2 ** 15
-		elif self.data_type == "int": 
+		elif self.data_type == "ushort":
+			self.value_format_string = "<hu"
+			self.value_lenght = 2
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == -2 ** 15
+			self.nan = lambda : -2 ** 15
+		elif self.data_type == "integer":
 			self.value_format_string = "<i"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 31
 			self.nan = lambda : -2 ** 31
-		elif self.data_type == "float": 
+				elif self.data_type == "uinteger":
+			self.value_format_string = "<zu"
+			self.value_lenght = 4
+			self.value_from_msg = lambda x : x.int_value
+			self.isnan = lambda x : x == -2 ** 31
+			self.nan = lambda : -2 ** 31
+		elif self.data_type == "float":
 			self.value_format_string = "<f"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.float_value
 			self.isnan = lambda x : math.isnan(x)
 			self.nan = lambda : float('nan')
-		elif self.data_type == "double": 
+		elif self.data_type == "double":
 			self.value_format_string = "<d"
 			self.value_lenght = 8
 			self.value_from_msg = lambda x : x.double_value
 			self.isnan = lambda x : math.isnan(x)
 			self.nan = lambda : float('nan')
+
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
 
@@ -94,6 +107,8 @@ def from_node(node):
 
 	if "data_type" in node.attrib:
 		data_type = node.attrib["data_type"]
+	elif "val_type" in node.attrib:
+		data_type = node.attrib["val_type"]
 	else:
 		data_type = "short"
 

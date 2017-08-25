@@ -170,7 +170,7 @@ class fc_register
 {
 private:
 	fc_proto *m_fc_proto;
-	int32_t m_val;
+	int m_val;
 	sz4::nanosecond_time_t m_mod_time;
 	driver_logger *m_log;
 public:
@@ -179,18 +179,18 @@ public:
 		m_val(SZARP_NO_DATA),
 		m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value),
 		m_log(log) {};
-	void set_val(int32_t value, sz4::nanosecond_time_t& time);
-	int32_t get_val(bool& valid, sz4::nanosecond_time_t& time);
-	int32_t get_val() const;
+	void set_val(int value, sz4::nanosecond_time_t& time);
+	int get_val(bool& valid, sz4::nanosecond_time_t& time);
+	int get_val() const;
 };
 
-using FCRMAP = std::map<uint32_t, fc_register *>;
+using FCRMAP = std::map<unsigned int, fc_register *>;
 
-int32_t fc_register::get_val() const {
+int fc_register::get_val() const {
 	return m_val;
 }
 
-void fc_register::set_val(int32_t val, sz4::nanosecond_time_t& time) {
+void fc_register::set_val(int val, sz4::nanosecond_time_t& time) {
 	m_val = val;
 	m_mod_time = time;
 }
@@ -204,52 +204,52 @@ class read_fc_val_op
 		virtual void set_val(zmqhandler *handler, int64_t index) = 0;
 };
 
-class uint16_read_fc_val_op : public read_fc_val_op {
+class ushort_read_fc_val_op : public read_fc_val_op {
 	private:
 		fc_register *m_reg;
 	public:
-		uint16_read_fc_val_op(fc_register *reg, driver_logger *log) :
+		ushort_read_fc_val_op(fc_register *reg, driver_logger *log) :
 			read_fc_val_op(log), m_reg(reg) {};
 		void set_val(zmqhandler *handler, int64_t index);
 };
 
-void uint16_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
+void ushort_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
-	uint16_t v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, uint16_t(v));
+	unsigned short v = m_reg->get_val(valid, t);
+	handler->set_value(index, t, unsigned short(v));
 }
 
-class uint32_read_fc_val_op : public read_fc_val_op {
+class uinteger_read_fc_val_op : public read_fc_val_op {
 	private:
 		fc_register *m_reg;
 	public:
-		uint32_read_fc_val_op(fc_register *reg, driver_logger *log) :
+		uinteger_read_fc_val_op(fc_register *reg, driver_logger *log) :
 			read_fc_val_op(log), m_reg(reg) {};
 		void set_val(zmqhandler *handler, int64_t index);
 };
 
-void uint32_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
+void uinteger_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
-	uint32_t v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, uint32_t(v));
+	unsigned int v = m_reg->get_val(valid, t);
+	handler->set_value(index, t, unsigned int(v));
 }
 
-class int32_read_fc_val_op : public read_fc_val_op {
+class integer_read_fc_val_op : public read_fc_val_op {
 	private:
 		fc_register *m_reg;
 	public:
-		int32_read_fc_val_op(fc_register *reg, driver_logger *log) :
+		integer_read_fc_val_op(fc_register *reg, driver_logger *log) :
 			read_fc_val_op(log), m_reg(reg) {};
 		virtual void set_val(zmqhandler *handler, int64_t index);
 };
 
-void int32_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
+void integer_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	bool valid;
 	sz4::nanosecond_time_t t;
-	int32_t v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, int32_t(v));
+	int v = m_reg->get_val(valid, t);
+	handler->set_value(index, t, int(v));
 }
 
 class fc_proto : public serial_client_driver
@@ -300,7 +300,7 @@ class fc_proto : public serial_client_driver
 	bool read_line(struct bufferevent *bufev);
 
 	/* Parser of PWEhigh and PWElow octal chars, returns full 4 byte value */
-	int32_t parse_pwe(const std::vector<unsigned char>& val);
+	int parse_pwe(const std::vector<unsigned char>& val);
 
 	void start_read_timer();
 	void stop_read_timer();
@@ -319,16 +319,16 @@ public:
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	void connection_error(struct bufferevent *bufev) override;
 	int configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t send, serial_port_configuration& spc);
-	void configure_uint16_register (uint32_t pnu);
-	void configure_uint32_register (uint32_t pnu);
-	void configure_int32_register (uint32_t pnu);
+	void configure_ushort_register (unsigned int pnu);
+	void configure_uinteger_register (unsigned int pnu);
+	void configure_integer_register (unsigned int pnu);
 	void scheduled(struct bufferevent *bufev, int fd) override;
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto);
 
 };
 
-int32_t fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
+int fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
 	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
 		valid = m_fc_proto->register_val_expired(m_mod_time);
 		mod_time = m_mod_time;
@@ -451,7 +451,7 @@ int fc_proto::parse_frame()
 	}
 
 	/* Convert octal char to int and set 4 bytes from PWE to register */
-	int32_t value = parse_pwe(pwe_chars);
+	int value = parse_pwe(pwe_chars);
 	m_log.log(10, "Setting value: %d", value);
 	m_registers_iterator->second->set_val(value, m_current_time);
 
@@ -468,9 +468,9 @@ int fc_proto::parse_frame()
 	return 0;
 }
 
-int32_t fc_proto::parse_pwe(const std::vector<unsigned char>& pwe)
+int fc_proto::parse_pwe(const std::vector<unsigned char>& pwe)
 {
-	int32_t value = 0;
+	int value = 0;
 	for (const int& value_buffer: pwe) {
 		value = (value << 8) | value_buffer;
 	}
@@ -555,7 +555,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 	m_extra_id = l + 128;
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
-	for(uint32_t i = 0; i < m_read_count; ++i) {
+	for(unsigned int i = 0; i < m_read_count; ++i) {
 		char *expr;
 		if(asprintf(&expr, ".//ipk:param[position()=%d]", i+1) == -1) {
 			m_log.log(0, "Error occured when finding param");
@@ -574,7 +574,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 			return 1;
 		}
 
-		const uint32_t pnu = boost::lexical_cast<uint32_t>(_pnu);
+		const unsigned int pnu = boost::lexical_cast<unsigned int>(_pnu);
 		m_log.log(10, "configure extra:parameter-number: %d", pnu);
 
 		std::string val_type;
@@ -583,14 +583,14 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 			return 1;
 		}
 
-		if (val_type == "uint16") {
-			configure_uint16_register(pnu);
+		if (val_type == "ushort") {
+			configure_ushort_register(pnu);
 		}
-		else if (val_type == "uint32") {
-			configure_uint32_register(pnu);
+		else if (val_type == "uinteger") {
+			configure_uinteger_register(pnu);
 		}
-		else if (val_type == "int32") {
-			configure_int32_register(pnu);
+		else if (val_type == "integer") {
+			configure_integer_register(pnu);
 		}
 		else {
 			m_log.log(0, "Unsupported value type: %s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
@@ -603,19 +603,19 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, uint64_t read, uint64_t se
 	return 0;
 }
 
-void fc_proto::configure_uint16_register(uint32_t pnu) {
+void fc_proto::configure_ushort_register(unsigned int pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new uint16_read_fc_val_op(m_registers[pnu], &m_log));
+	m_read_operators.push_back(new ushort_read_fc_val_op(m_registers[pnu], &m_log));
 }
 
-void fc_proto::configure_uint32_register(uint32_t pnu) {
+void fc_proto::configure_uinteger_register(unsigned int pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new uint32_read_fc_val_op(m_registers[pnu], &m_log));
+	m_read_operators.push_back(new uinteger_read_fc_val_op(m_registers[pnu], &m_log));
 }
 
-void fc_proto::configure_int32_register(uint32_t pnu) {
+void fc_proto::configure_integer_register(unsigned int pnu) {
 	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new int32_read_fc_val_op(m_registers[pnu], &m_log));
+	m_read_operators.push_back(new integer_read_fc_val_op(m_registers[pnu], &m_log));
 }
 
 void fc_proto::scheduled(struct bufferevent *bufev, int fd)
