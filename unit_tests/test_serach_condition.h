@@ -10,6 +10,8 @@ public:
 	virtual bool operator()(const short &v) const { return false; }
 	virtual bool operator()(const float &v) const { return false; }
 	virtual bool operator()(const double &v) const { return false; }
+	virtual bool operator()(const uint32_t &v) const { return false; }
+	virtual bool operator()(const uint16_t &v) const { return false; }
 };
 
 
