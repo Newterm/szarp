@@ -67,18 +67,26 @@ template class szbase_file_block_entry<int16_t, sz4::second_time_t, base>;
 template class szbase_file_block_entry<double, sz4::second_time_t, base>;
 template class szbase_file_block_entry<float, sz4::second_time_t, base>;
 template class szbase_file_block_entry<int32_t, sz4::second_time_t, base>;
+template class szbase_file_block_entry<uint32_t, sz4::second_time_t, base>;
+template class szbase_file_block_entry<uint16_t, sz4::second_time_t, base>;
 template class szbase_file_block_entry<int16_t, sz4::nanosecond_time_t, base>;
 template class szbase_file_block_entry<double, sz4::nanosecond_time_t, base>;
 template class szbase_file_block_entry<float, sz4::nanosecond_time_t, base>;
 template class szbase_file_block_entry<int32_t, sz4::nanosecond_time_t, base>;
+template class szbase_file_block_entry<uint32_t, sz4::nanosecond_time_t, base>;
+template class szbase_file_block_entry<uint16_t, sz4::nanosecond_time_t, base>;
 
 template class real_param_entry_in_buffer<int16_t, sz4::second_time_t, base>;
 template class real_param_entry_in_buffer<double, sz4::second_time_t, base>;
 template class real_param_entry_in_buffer<float, sz4::second_time_t, base>;
 template class real_param_entry_in_buffer<int32_t, sz4::second_time_t, base>;
+template class real_param_entry_in_buffer<uint32_t, sz4::second_time_t, base>;
+template class real_param_entry_in_buffer<uint16_t, sz4::second_time_t, base>;
 template class real_param_entry_in_buffer<int16_t, sz4::nanosecond_time_t, base>;
 template class real_param_entry_in_buffer<double, sz4::nanosecond_time_t, base>;
 template class real_param_entry_in_buffer<float, sz4::nanosecond_time_t, base>;
 template class real_param_entry_in_buffer<int32_t, sz4::nanosecond_time_t, base>;
+template class real_param_entry_in_buffer<uint32_t, sz4::nanosecond_time_t, base>;
+template class real_param_entry_in_buffer<uint16_t, sz4::nanosecond_time_t, base>;
 
 }

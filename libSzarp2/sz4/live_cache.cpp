@@ -187,14 +187,18 @@ template
 live_cache::live_cache<generic_live_block_builder>
 	(const live_cache_config &c, zmq::context_t* context);
 
-template class live_block<short, sz4::second_time_t>;
+template class live_block<int16_t, sz4::second_time_t>;
 template class live_block<double, sz4::second_time_t>;
 template class live_block<float, sz4::second_time_t>;
-template class live_block<int, sz4::second_time_t>;
+template class live_block<int32_t, sz4::second_time_t>;
+template class live_block<uint32_t, sz4::second_time_t>;
+template class live_block<uint16_t, sz4::second_time_t>;
 
-template class live_block<short, sz4::nanosecond_time_t>;
+template class live_block<int16_t, sz4::nanosecond_time_t>;
 template class live_block<double, sz4::nanosecond_time_t>;
 template class live_block<float, sz4::nanosecond_time_t>;
-template class live_block<int, sz4::nanosecond_time_t>;
+template class live_block<int32_t, sz4::nanosecond_time_t>;
+template class live_block<uint32_t, sz4::nanosecond_time_t>;
+template class live_block<uint16_t, sz4::nanosecond_time_t>;
 
 }
