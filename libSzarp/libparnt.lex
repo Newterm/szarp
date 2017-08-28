@@ -139,7 +139,7 @@
 			if (yylval.str)
 				free(yylval.str);
 			yylval.str = strdup(yytext);
-			return string;
+			return string_token;
 		}
 <STRING>"\n"	{
 			sz_log(1, "Parse error: end-of-line in string");
@@ -185,7 +185,7 @@
 			if (yylval.str)
 				free(yylval.str);
 			yylval.str = strdup(yytext);
-			return id; 
+			return id_token;
 		}
 <FORMULA>.	{
 		sz_log(1, "Parse error: unknown character (%s)", yytext);
@@ -242,7 +242,7 @@
 			if (yylval.str)
 				free(yylval.str);
 			yylval.str = strdup(yytext+1);
-			return section;
+			return section_token;
 		}
 
 <INITIAL>[^ \t\n:#=]+"="	{
@@ -252,7 +252,7 @@
 			if (yylval.str)
 				free(yylval.str); 
 			yylval.str = strdup(yytext);
-			return param;
+			return param_token;
 		}
 
 <PARAM>[^\n]*"\\\n"	{

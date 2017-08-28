@@ -1660,7 +1660,6 @@ int main(int argc, char **argv)
 	bool verbose, force;
 
 	loginit_cmdline(2, NULL, &argc, argv);
-	log_info(0);
 
 	if (usage(argc, argv, verbose, force))
 		return 1;

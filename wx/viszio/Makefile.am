@@ -18,7 +18,7 @@ AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFL
 	-DWNCK_I_KNOW_THIS_IS_UNSTABLE
 
 
-LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
 LIBSZARP2=../../libSzarp2/libSzarp2.la 
 LIBWXCOMMON=../common/libwxcommon.la
 

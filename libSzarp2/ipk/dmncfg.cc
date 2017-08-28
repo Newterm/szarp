@@ -41,8 +41,6 @@
 #include "libpar.h"
 #include "xmlutils.h"
 
-#include "liblog_impl_asyslog.h"
-
 #define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
 DaemonConfig::DaemonConfig(const char *name)
@@ -105,7 +103,7 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
-int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* async_logging_context) 
+int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* ) 
 {
 	char *c;
 	int l;
@@ -114,7 +112,6 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 
 	/* Set initial logging. */
 	loginit_cmdline(2, NULL, argc, argv);
-	
 	
 	/* libpar command line*/
 	libpar_read_cmdline(argc, argv);
@@ -132,31 +129,6 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 	/* libpar */
 	libpar_init_with_filename(SZARP_CFG, 1);
 
-	/* logging */
-	c = libpar_getpar(m_daemon_name.c_str(), "log_level", 0);
-        if (c == NULL)
-                l = 2;
-        else {
-                l = atoi(c);
-                free(c);
-        }
-	sz_logdone();
-	if (async_logging_context)
-		sz_log_system_init(sz_log_asyslog_init, sz_log_asyslog_vlog, sz_log_asyslog_close);
-
-        c = libpar_getpar(m_daemon_name.c_str(), "log", 0);
-        if (c == NULL)
-		c = strdup(m_daemon_name.c_str());
-
-        l = sz_loginit(l, c, SZ_LIBLOG_FACILITY_DAEMON, async_logging_context);
-        if (l < 0) {
-               sz_log(0, "%s: cannot inialize log %s, errno %d", 
-				m_daemon_name.c_str(), c, errno);
-                free(c);
-                return 1;
-        }
-	free(c);
-	
 	/* other libpar params */
 	m_ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 1);
 	m_parcook_path = libpar_getpar(m_daemon_name.c_str(), "parcook_path", 1);

@@ -54,8 +54,6 @@ int main(int argc, char* argv[])
 	char *input;
 	int i,a;
 	
-	loginit_cmdline(2, NULL, &argc, argv);
-	log_info(0);
 	sc = new TSzarpConfig();
 
 	xmlInitParser();
@@ -98,7 +96,6 @@ int main(int argc, char* argv[])
 	
 	delete sc;
 	free(input);
-	logdone();
 	xmlCleanupParser();
 	return a;
 }

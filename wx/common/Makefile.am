@@ -6,7 +6,7 @@
 SUBDIRS =
 
 LDADD=@WX_LIBS@ ../../libSzarp2/libSzarp2.la @XML_LIBS@ \
-	../../libSzarp/libSzarp.la @CURL_LIBS@ @LDADD@ @LUA_LIBS@
+	../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@ @CURL_LIBS@ @LDADD@ @LUA_LIBS@
 AM_CPPFLAGS = \
 	-I @srcdir@/../../include \
 	-I @srcdir@/../../libSzarp2/include \

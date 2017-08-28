@@ -734,8 +734,6 @@ int main(int argc, char *argv[])
 	int fill_how_many_sec_num = 0;
 	struct arguments arguments;
 
-	loglevel = loginit_cmdline(2, NULL, &argc, argv);
-	
 	libpar_read_cmdline(&argc, argv);
 	libpar_init_with_filename(SZARP_CFG, 1);
 
@@ -762,15 +760,8 @@ int main(int argc, char *argv[])
 	}
 	
 	c = libpar_getpar(SZARP_CFG_SECTION, "log", 0);
-	if (c == NULL)
-		c = strdup(DEFAULT_LOG);
 	loglevel = loginit(loglevel, c);
-	if (loglevel < 0) {
-		sz_log(0, "szbwriter: cannot inialize log file %s, errno %d", c, errno);
-		free(c);
-		return 1;
-	}
-	free(c);
+	if (c) free(c);
 
 	arguments.add_new_params = false;
 	arguments.no_probes = false;

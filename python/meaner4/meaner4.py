@@ -28,8 +28,8 @@ from libpar import LibparReader
 def go():
 	lpr = LibparReader()
 
-	path = lpr.get("global", "sz4dir")
-	ipk = lpr.get("global", "IPK")
+	path = lpr.get("", "sz4dir")
+	ipk = lpr.get("", "IPK")
 	uri = lpr.get("parhub", "pub_conn_addr")
 	heartbeat = int(lpr.get("sz4", "heartbeat_frequency"))
 	interval = int(lpr.get("sz4", "saving_interval"))

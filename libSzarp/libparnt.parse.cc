@@ -391,12 +391,12 @@ char *parse_arg(void)
 			tmp = getvalue(yylval.str);
 			scan();
 			return tmp;
-		case string :
+		case string_token :
 			/* Copy string */
 			tmp = eval(strdup(yylval.str));
 			scan();
 			return tmp;
-		case id :
+		case id_token :
 			/* Copy name of the function */
 			tmp = eval(strdup(yylval.str));
 			/* '(' expected */
@@ -525,7 +525,7 @@ int parse(FILE *stream)
 			case parse_error : 
 				/* return error from */
 				return -1;
-			case section :
+			case section_token :
 				/* section name spotted, check if current statement
 				 * is active
 				 */
@@ -540,7 +540,7 @@ int parse(FILE *stream)
 				}
 				scan();
 				break;
-			case param :
+			case param_token :
 				/* Param name spotted, copy it */
 				tmp = eval(strdup(yylval.str));
 				/* Look for param content */

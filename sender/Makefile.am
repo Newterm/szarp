@@ -17,7 +17,7 @@ AM_CPPFLAGS = @LUA_CFLAGS@ \
 	   -I@srcdir@/../libSzarp2/include \
 	   -DPREFIX=\"@prefix@\"
 
-LIBSZARP=../libSzarp/libSzarp.la \
+LIBSZARP=../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@ \
 	../libSzarp2/libSzarp2.la
 
 LDADD = $(LIBSZARP) @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_LOCALE_LIB@ @LUA_LIBS@ @PTHREAD_CFLAGS@

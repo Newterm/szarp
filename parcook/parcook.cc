@@ -1773,9 +1773,6 @@ int main(int argc, char *argv[])
 
 	setbuf(stdout, 0);
 
-	/* set initial logging, process liblog and libpar command line
-	 * params */
-	log_level = loginit_cmdline(2, NULL, &argc, argv);
 	/* Check for other copies of program. */
 	if ((i = check_for_other (argc, argv))) {
 		sz_log(0, "parcook: another copy of program is running, pid %d, exiting", i);
@@ -1798,14 +1795,6 @@ int main(int argc, char *argv[])
 		free(logfile);
 	}
 	logfile = libpar_getpar("parcook", "log", 0);
-	if (logfile == NULL)
-		logfile = strdup("parcook");
-	if (sz_loginit(log_level, logfile) < 0) {
-		sz_log(0, "parcook: cannot open log file '%s', exiting",
-		    logfile);
-		return 1;
-	}
-	sz_log(0, "parcook: started");
 
 	/* read some other params */
 	parcookpat = libpar_getpar("", "parcook_path", 1);
@@ -1837,6 +1826,9 @@ int main(int argc, char *argv[])
 	if (arguments.no_daemon == 0) {
 		go_daemon();
 	}
+
+	loginit_cmdline(log_level, logfile, &argc, argv);
+	sz_log(0, "parcook: started");
 
 	/* load configuration, start daemons */
 	ParseCfg(ipk, linedmnpat);

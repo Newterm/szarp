@@ -540,7 +540,6 @@ int main(int argc, char *argv[])
 	sigaction(SIGTERM, &Act, NULL);
 	sigaction(SIGINT, &Act, NULL);
 
-	log_level = loginit_cmdline(2, NULL, &argc, argv);
 	/* Check for other copies of program. */
 	int pid;
 	if ((pid = check_for_other (argc, argv))) {
@@ -560,15 +559,11 @@ int main(int argc, char *argv[])
 		log_level = 2;
 	}
 	log_value = libpar_getpar("sender", "log", 0);
-	if (log_value == NULL)
-		log_value = strdup("sender");
-	if (sz_loginit(log_level, log_value) < 0) {
-		sz_log(0, "sender: cannot open log file '%s', exiting",
-		    log_value);
-		return 1;
+	sz_loginit(log_level, log_value);
+	if (log_value != NULL) {
+		free(log_value);
 	}
 	sz_log(0, "sender: started");
-	free(log_value);
 
 	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
 	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");

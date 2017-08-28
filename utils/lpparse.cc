@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	char * section;
 	char *empty;
 	
-	loginit_cmdline(2, "", &argc, argv);
+	loginit_cmdline(0, "", &argc, argv);
 	libpar_read_cmdline(&argc, argv);
 	if (argc <= 1) {
 		usage();

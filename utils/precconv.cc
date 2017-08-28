@@ -65,8 +65,6 @@ int main(int argc, char* argv[])
 	long val = 0;
 	std::wstring name, value, value2, ipk;
 
-	loginit_cmdline(2, NULL, &argc, argv);
-	log_info(0);
 	libpar_read_cmdline(&argc, argv);
 	libpar_init();
 	

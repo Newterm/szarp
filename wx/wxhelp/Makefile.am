@@ -14,7 +14,7 @@ AM_CPPFLAGS = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \
 	-I@srcdir@/../../libSzarp/include
 
 LIBWXCOMMON=../common/libwxcommon.la
-LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
 
 # Program to create
 

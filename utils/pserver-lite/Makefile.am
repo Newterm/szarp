@@ -15,7 +15,7 @@ AM_CPPFLAGS = \
 	-I@srcdir@/../../libSzarp2/include/szbase \
 	@XML_CFLAGS@ @LUA_CFLAGS@ $(BOOST_CPPFLAGS)
 
-LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
 LIBSZARP2=../../libSzarp2/libSzarp2.la
 
 LDADD = \

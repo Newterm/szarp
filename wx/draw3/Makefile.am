@@ -29,7 +29,7 @@ AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLA
 	
 LIBIKSCOMMON=../../iks/common/libiks-common.a
 LIBIKSCLIENT=../../iks/client/libiks-client.a
-LIBSZARP=../../libSzarp/libSzarp.la
+LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
 LIBSZARP2=../../libSzarp2/libSzarp2.la
 LIBWXCOMMON=../common/libwxcommon.la
 LIBWXSCINTILLA=../../extern/wxscintilla/libwxscintilla.la

@@ -23,13 +23,13 @@ typedef union {
 #define else_dir	302
 #define elseif_dir	303
 #define end_dir		304
-#define string		305
+#define string_token		305
 #define parse_error	306
 #define not_equal_op	307
-#define section		308
-#define param		309
+#define section_token		308
+#define param_token		309
 #define param_content	310
-#define id		311
+#define id_token		311
 #define variable	312
 #define becomes		313
 

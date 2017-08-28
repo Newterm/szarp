@@ -98,9 +98,8 @@ int main( int argc , char** argv )
 	} 
 
 	const char* logname = NULL;
-	if (vm.count("force_syslog") || !vm.count("no_daemon")) 
+	if (!vm.count("force_syslog") && !vm.count("no_daemon"))
 		logname = "iks-server";
-   
 
 	sz_loginit( vm["log_level"].as<unsigned>() , logname , SZ_LIBLOG_FACILITY_DAEMON );
 	sz_log(2,"Welcome, milord");

@@ -49,22 +49,8 @@
 ConfigLoader::ConfigLoader(const char *filename, const char *_section,
 		int *argc, char **argv) : section(_section), buffer(NULL)
 {
-	int log_level;
-	char * log_file;
-	
-	char *def_log;
-	
-	loginit_cmdline(2, NULL, argc, argv);
 	libpar_read_cmdline(argc, argv);
 	libpar_init_with_filename(filename, 1);
-
-	asprintf(&def_log, PREFIX"/logs/%s.log", section);
-	assert (def_log != NULL);
-	log_file = strdup(getString("log", def_log));
-	free(def_log);
-	log_level = getInt("log_level", 2);
-	loginit(log_level, log_file);
-	free(log_file);
 }
 
 /**
