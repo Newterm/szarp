@@ -392,8 +392,12 @@ AM_OPTIONS_WXCONFIG
 wc_config_prefix="${lib_prefix}"
 if test "$no_wx" != "yes" ; then
         AM_PATH_WXCONFIG(3.0.2, [], [no_wx=yes])
-		if test ${WX_VERSION:0:1} != 3 ; then
-			AC_MSG_ERROR([Cannot build SZARP with wx version: $WX_VERSION (2.8 required)])
+        if test ${WX_VERSION:0:1} != 3 ; then
+                AC_MSG_WARN([
+                              Cannot build SZARP with wx version: $WX_VERSION (3.0.2 required)
+
+                              Configuring without wxWidgets.
+                        ])
 		fi
         if test "$no_wx" = "yes" ; then
                 AC_MSG_WARN([
@@ -403,7 +407,7 @@ if test "$no_wx" != "yes" ; then
                               Please check that wx-config is in path, the directory
                               where wxWidgets libraries are installed (returned by
                               'wx-config --libs' command) is in LD_LIBRARY_PATH or
-                              equivalent variable and wxWidgets version is 2.8.0 or
+                              equivalent variable and wxWidgets version is 3.0.2 or
                               above.
 
                               Configuring without wxWidgets.
