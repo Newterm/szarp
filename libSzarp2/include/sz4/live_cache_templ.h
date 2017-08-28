@@ -129,11 +129,11 @@ void get_time(szarp::ParamValue* value, nanosecond_time_t &t) {
 	t = nanosecond_time_t(value->time(), value->nanotime());
 }
 
-void get_value(szarp::ParamValue* value, short& v) {
+void get_value(szarp::ParamValue* value, int16_t& v) {
 	v = value->int_value();
 }
 
-void get_value(szarp::ParamValue* value, int& v) {
+void get_value(szarp::ParamValue* value, int32_t& v) {
 	v = value->int_value();
 }
 
@@ -143,6 +143,14 @@ void get_value(szarp::ParamValue* value, float& v) {
 
 void get_value(szarp::ParamValue* value, double& v) {
 	v = value->double_value();
+}
+
+void get_value(szarp::ParamValue* value, uint16_t& v) {
+	v = value->int_value();
+}
+
+void get_value(szarp::ParamValue* value, uint32_t& v) {
+	v = value->int_value();
 }
 
 }

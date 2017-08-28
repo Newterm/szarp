@@ -18,8 +18,10 @@
 
 """
 import zmq
+from zmq import devices
 from libpar import LibparReader
 from daemon import runner
+import sys
 
 class ParHub:
 	def __init__(self):
@@ -44,10 +46,14 @@ class ParHub:
 		dev.start()
 
 if __name__ == "__main__":
-	app = runner.DaemonRunner(ParHub())
 	try:
-		app.do_action()
-	except runner.DaemonRunnerStopFailureError as ex:
+		if "--no-daemon" in sys.argv:
+			parhub = ParHub()
+			parhub.run()
+		else:
+			app = runner.DaemonRunner(ParHub())
+			app.do_action()
+	except Exception as ex:
 		# if the script was not running, the pid file won't be locked
 		# and we don't want the stop action to fail
 		if str(ex).find("not locked") < 0:
