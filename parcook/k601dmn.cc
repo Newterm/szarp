@@ -92,6 +92,7 @@
 #include "k601-prop-plugin.h"
 #include "serialport.h"
 #include "serialadapter.h"
+#include "atcconn.h"
 #include "daemonutils.h"
 #include "xmlutils.h"
 #include "custom_assert.h"
@@ -501,12 +502,10 @@ public:
 	K601Daemon() :
 			m_state(SEND),
 			m_id(""),
-			m_path(""),
-			m_ip(""),
 			m_curr_register(0),
 			m_params_read_in_cycle(0),
-			m_serial_port(NULL),
-			plugin(NULL)
+			m_connection(nullptr),
+			plugin(nullptr)
 	{
 		m_serial_conf.speed = 1200;
 		m_serial_conf.char_size = SerialPortConfiguration::CS_8;
@@ -516,16 +515,20 @@ public:
 
 	~K601Daemon()
 	{
-		if (m_serial_port != NULL) {
-			delete m_serial_port;
+		if (m_connection != nullptr) {
+			m_connection->Close();
+			delete m_connection;
 		}
-		if (plugin != NULL) {
+		if (plugin != nullptr) {
 			dlclose(plugin);
-			plugin = NULL;
+			plugin = nullptr;
 		}
 	}
 
 	void Init(int argc, char *argv[]);
+	int GetTcpDataPort(const xmlXPathContextPtr&, int);
+	int GetTcpCmdPort(const xmlXPathContextPtr&, int);
+	int get_int_attr_def(const xmlXPathContextPtr&, const char *, int);
 
 	/** Start event-based state machine */
 	void StartDo();
@@ -568,15 +571,10 @@ protected:
 					/**< time for which daemon waits for data from Kamstrup meter */
 
 	std::string m_id;		/**< ID of given kamsdmn */
-	std::string m_path;		/**< Serial port file descriptor path */
-
-	std::string m_ip;		/**< SerialAdapter ip */
-	int m_data_port;		/**< SerialAdapter data port number */
-	int m_cmd_port;			/**< SerialAdapter command port number */
 
 	int m_curr_register;	/**< number of currently processed register */
 	int m_params_read_in_cycle;	/**< count of params which were successfully read in a cycle (not NODATA) */
-	BaseSerialPort *m_serial_port;
+	BaseConnection *m_connection;
 	std::vector<unsigned char> m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	bool m_data_was_read;	/**< was any data read since last check? */
 	SerialPortConfiguration m_serial_conf;
@@ -604,7 +602,7 @@ protected:
 void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
 	sz_log(1, "%s: ReadError, closing connection..", m_id.c_str());
-	m_serial_port->Close();
+	m_connection->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
 }
@@ -658,53 +656,73 @@ void K601Daemon::Init(int argc, char *argv[])
 
 	xp_ctx->node = cfg->GetXMLDevice();
 	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
-	if (c == NULL) {
-		xmlChar *path = get_device_node_prop(xp_ctx, "path");
-		if (path == NULL) {
-			throw K601Exception("ERROR!: neither IP nor device "
-					"path has been specified");
-		}
-		m_path.assign((const char*)path);
-		xmlFree(path);
+	if (c == nullptr) {
+		xmlChar *atc_ip = get_device_node_extra_prop(xp_ctx, "atc-ip");
+		if(atc_ip == nullptr) {
+			xmlChar *path = get_device_node_prop(xp_ctx, "path");
+			if (path == nullptr) {
+				throw K601Exception("ERROR!: neither IP nor device "
+						"path has been specified");
+			}
+			std::string _path;
+			_path.assign((const char*)path);
+			xmlFree(path);
+			m_id = _path;
 
-		m_id = m_path;
-	} else {
-		m_ip.assign((const char*)c);
+			/* Setting serial configuration */
+			try {
+				SerialPort *port = new SerialPort(m_event_base);
+				port->Init(_path);
+				m_connection = port;
+			} catch (SerialPortException &e) {
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				SetRestart();
+				ScheduleNext(RESTART_INTERVAL_MS);
+			}
+		}
+		else {
+			std::string _ip;
+			int _data_port;
+			int _cmd_port;
+			_ip.assign((const char*)atc_ip);
+			xmlFree(atc_ip);
+			_data_port = GetTcpDataPort(xp_ctx, AtcConnection::DEFAULT_DATA_PORT);
+			_cmd_port = GetTcpCmdPort(xp_ctx, AtcConnection::DEFAULT_CONTROL_PORT);
+			m_id = _ip + ":" + std::to_string(_data_port);
+
+			/* Setting atc configuration */
+			try {
+				AtcConnection *client = new AtcConnection(m_event_base);
+				client->InitTcp(_ip, _data_port, _cmd_port);
+				m_connection = client;
+			} catch (SerialPortException &e) {
+				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				SetRestart();
+				ScheduleNext(RESTART_INTERVAL_MS);
+			}
+		}
+	}
+	else {
+		std::string _ip;
+		int _data_port;
+		int _cmd_port;
+		_ip.assign((const char*)c);
 		xmlFree(c);
 
-		xmlChar* tcp_data_port = get_device_node_extra_prop(xp_ctx, "tcp-data-port");
-		if (tcp_data_port == NULL) {
-			m_data_port = SerialAdapter::DEFAULT_DATA_PORT;
-			dolog(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
-		} else {
-			std::istringstream istr((char*) tcp_data_port);
-			bool conversion_failed = (istr >> m_data_port).fail();
-			if (conversion_failed) {
-				throw K601Exception("ERROR!: Invalid data port value: "
-						+ std::string((char*) tcp_data_port));
-			}
-		}
-		xmlFree(tcp_data_port);
+		_data_port = GetTcpDataPort(xp_ctx, SerialAdapter::DEFAULT_DATA_PORT);
+		_cmd_port = GetTcpCmdPort(xp_ctx, SerialAdapter::DEFAULT_CMD_PORT);
+		m_id = _ip + ":" + std::to_string(_data_port);
 
-		xmlChar* tcp_cmd_port = get_device_node_extra_prop(xp_ctx, "tcp-cmd-port");
-		if (tcp_cmd_port == NULL) {
-			m_cmd_port = SerialAdapter::DEFAULT_CMD_PORT;
-			dolog(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
-		} else {
-			std::istringstream istr((char*) tcp_cmd_port);
-			bool conversion_failed = (istr >> m_cmd_port).fail();
-			if (conversion_failed) {
-				throw K601Exception("ERROR!: Invalid cmd port value: "
-						+ std::string((char*) tcp_cmd_port));
-			}
+		/* Setting tcp connecton */
+		try {
+			SerialAdapter *client = new SerialAdapter(m_event_base);
+			client->InitTcp(_ip, _data_port, _cmd_port);
+			m_connection = client;
+		} catch (SerialPortException &e) {
+			dolog(0, "%s: %s", m_id.c_str(), e.what());
+			SetRestart();
+			ScheduleNext(RESTART_INTERVAL_MS);
 		}
-		xmlFree(tcp_cmd_port);
-
-		std::stringstream istr;
-		std::string data_port_str;
-		istr << m_data_port;
-		istr >> data_port_str;
-		m_id = m_ip + ":" + data_port_str;
 	}
 
 	single = cfg->GetSingle() || cfg->GetDiagno();
@@ -714,10 +732,11 @@ void K601Daemon::Init(int argc, char *argv[])
 		printf("\
 line number: %d\n\
 device: %ls\n\
+id: %s\n\
 params in: %d\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
+", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), m_id.c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
 			       kamsinfo->m_params[i].reg,
@@ -766,21 +785,39 @@ Unique registers (read params): %d\n\
 	}
 }
 
+int K601Daemon::GetTcpDataPort(const xmlXPathContextPtr& xp_ctx, int default_value) {
+	return get_int_attr_def(xp_ctx, "tcp-data-port", default_value);
+}
+
+int K601Daemon::GetTcpCmdPort(const xmlXPathContextPtr& xp_ctx, int default_value) {
+	return get_int_attr_def(xp_ctx, "tcp-cmd-port", default_value);
+}
+
+int K601Daemon::get_int_attr_def(const xmlXPathContextPtr& xp_ctx, const char *name, int default_value) {
+	xmlChar* str_value = get_device_node_extra_prop(xp_ctx, name);
+	if (str_value == nullptr) {
+		dolog(2, "Unspecified '%s', assuming default: %hu", name, default_value);
+		return default_value;
+	}
+
+	int value = 0;
+	try {
+		value = std::stoi((char *)str_value);
+	} catch(const std::logic_error& e) {
+		xmlFree(str_value);
+		throw K601Exception("Error!: Invalid " + std::string(name) + " value: " + std::string((char *)str_value));
+	}
+	xmlFree(str_value);
+	return value;
+}
+
 void K601Daemon::StartDo() {
 	evtimer_set(&m_ev_timer, TimerCallback, this);
 	event_base_set(m_event_base, &m_ev_timer);
 	try {
-		if (m_ip.compare("") != 0) {
-			SerialAdapter *client = new SerialAdapter(m_event_base);
-			m_serial_port = client;
-			client->InitTcp(m_ip, m_data_port, m_cmd_port);
-		} else {
-			SerialPort *port = new SerialPort(m_event_base);
-			m_serial_port = port;
-			port->Init(m_path);
-		}
-		m_serial_port->AddListener(this);
-		m_serial_port->Open();
+		m_connection->AddListener(this);
+		dolog(10, "%s: Opening connection...", m_id.c_str());
+		m_connection->Open();
 	} catch (SerialPortException &e) {
 		dolog(1, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
@@ -793,7 +830,7 @@ void K601Daemon::OpenFinished(const BaseConnection *conn)
 {
 	std::string info = m_id + ": connection established, setting configuration..";
 	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
-	m_serial_port->SetConfiguration(m_serial_conf);
+	m_connection->SetConfiguration(m_serial_conf);
 }
 
 void K601Daemon::Do()
@@ -811,7 +848,7 @@ void K601Daemon::Do()
 			m_read_buffer.clear();
 			m_data_was_read = false;
 			try {
-				m_serial_port->WriteData(&query[0], query.size());
+				m_connection->WriteData(&query[0], query.size());
 				m_state = READ;
 			} catch (SerialPortException &e) {
 				dolog(1, "%s: %s", m_id.c_str(), e.what());
@@ -884,8 +921,8 @@ void K601Daemon::Do()
 		case RESTART:
 			dolog(10, "RESTART");
 			try {
-				m_serial_port->Close();
-				m_serial_port->Open();
+				m_connection->Close();
+				m_connection->Open();
 			} catch (SerialPortException &e) {
 				dolog(1, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				SetNoData();
