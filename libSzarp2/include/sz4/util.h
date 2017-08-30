@@ -59,6 +59,8 @@ template<class T> T scale_value(const T& v, TParam::DataType dt, int prec) {
 			return v;
 		case TParam::SHORT:
 		case TParam::INT:
+		case TParam::UINT:
+		case TParam::USHORT:
 			if (value_is_no_data(v))
 				return v;
 			else
@@ -84,6 +86,8 @@ template<class T> T descale_value(const T& v, TParam* p) {
 				return v * pow(10, p->GetPrec());
 		case TParam::SHORT:
 		case TParam::INT:
+		case TParam::UINT:
+		case TParam::USHORT:
 			return v;
 		default:
 			assert(false);
