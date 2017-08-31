@@ -44,8 +44,6 @@
 	int yylex_destroy(void);
 #endif
 
-void yylex_reinit_globals(void);
-
 /* lexical analyzer input stream */
 extern FILE *yyin;
 
@@ -733,11 +731,6 @@ void parser_reset(void) {
 	}
 	nofunc = 0;
 
-}
-
-void parser_hard_reset(void) {
-	parser_reset();
-	yylex_reinit_globals();
 }
 
 void parser_destroy(void)
