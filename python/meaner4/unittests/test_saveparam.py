@@ -54,32 +54,43 @@ class SaveParamTest(unittest.TestCase):
 
 		return msg
 
+	def _read(self, path):
+		with open(path) as f:
+			return f.read()
+
 	def _unpack(self, path):
 		with open(path) as f:
 			return bz2.decompress(f.read())
 
-	def _check_size(self, path, size):
+	def _check_size_bz(self, path, size):
 		self.assertEqual(len(self._unpack(path)), size)
 
-	def _check_file(self, path, fmt, expected):
+	def _check_file_bz(self, path, fmt, expected):
 		self.assertEqual(struct.unpack(fmt, self._unpack(path)), expected)
+
+	def _check_size(self, path, size):
+		self.assertEqual(len(self._read(path)), size)
+
+	def _check_file(self, path, fmt, expected):
+		self.assertEqual(struct.unpack(fmt, self._read(path)), expected)
+
 
 	def test_basictest(self):
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
+		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/42949672964294967295.sz4")
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg_batch([self._msg(123456, 4)])
-		self._check_size(path, 4)
-		self._check_file(path, "<i", (4, ))
+		self._check_size(path, 12)
+		self._check_file(path, "<IIi", (123456, 0, 4))
 
 		sp.process_msg_batch([self._msg(123457, 4)])
-		self._check_size(path, 9)
-		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
+		self._check_size(path, 21)
+		self._check_file(path, "<IIiBBBBBi", (123456, 0, 4, 0xf0, 0x3b, 0x9a, 0xca, 0x00, 4))
 
 		sp.process_msg_batch([self._msg(123458, 5)])
-		self._check_size(path, 4 + 5 + 4)
-		self._check_file(path, "<iBBBBBi", (4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5))
+		self._check_size(path, 8 + 4 + 5 + 4 + 5 + 4)
+		self._check_file(path, "<IIiBBBBBiBBBBBi", (123456, 0, 4, 0xf0, 0x3b, 0x9a, 0xca, 0x00, 4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5))
 
 		del sp
 
@@ -88,7 +99,7 @@ class SaveParamTest(unittest.TestCase):
 	def test_basictest2(self):
 		"""Similar to basictest, but creates new saveparam object before writing second value"""
 		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
+		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/42949672964294967295.sz4")
 
 		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 		sp.process_msg_batch([self._msg(123456, 4)])

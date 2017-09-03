@@ -1,5 +1,4 @@
-"""
-  SZARP: SCADA software 
+""" SZARP: SCADA software 
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -66,89 +65,170 @@ class FileFactory:
 
 class SaveParam:
 	def __init__(self, param, szbase_dir, file_factory=FileFactory()):
-		self.param = param
-		self.param_path = parampath.ParamPath(self.param, szbase_dir)
-		self.first_write = True
-		self.file_factory = file_factory
-		self.last = lastentry.LastEntry(param)
-		self.uncommited_last = lastentry.LastEntry(param)
-		self.uncommited = None
+		self.param_path = parampath.ParamPath(param, szbase_dir)
+		self.last_entry = lastentry.LastEntry(param)
 		self.data_file_size = config.DATA_FILE_SIZE
+		self.file_factory = file_factory
+		self.file_nanotime = None
+		self.file_time = None
+		self.param = param
+		self.file = None
+		self.prev = None
 
-	def update_last_time(self, time, nanotime):
-		size = self.last.time_size
-		blob = self.last.update_time(time, nanotime)
+		self.first_write = True
 
-		self.file.seek(-size, os.SEEK_END)
-		self.file.write(blob)
-
-		size = self.uncommited_last.time_size
-		blob = self.uncommited_last.update_time(time, nanotime)
-
-		self.uncommited.seek(-size, os.SEEK_END)
-		self.uncommited.write(blob)
-
-			
-	def write_value(self, value, time, nanotime):
-		blob = self.param.value_to_binary(value)
-
-		self.file.write(blob)
-		self.last.new_value(time, nanotime, value)
-
-		self.uncommited.write(blob)
-		self.uncommited_last.new_value(time, nanotime, value)
-		
-
-	def prepare_for_writing(self, time, nanotime):
-		path = self.param_path.find_latest_path()
-
-		if path is not None:
+	def __read_bzip_file(self, path):
+		try:
 			file = self.file_factory.open(path, "r+b")
-			self.file = cStringIO.StringIO()
-			self.file.write(bz2.decompress(file.read()))
+			return bz2.decompress(file.read())
+		finally:
 			file.close()
 
-			self.file_time, self.file_nanotime = self.param_path.time_from_path(path)
-			self.last.from_file(self.file, self.file_time, self.file_nanotime)
+	def __create_current_file(self, time, nanotime, value):
+		if self.file is not None:
+			self.file.close()
+			self.file = None
 
-			self.reset_uncommited()
+		self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
+
+		time_blob = self.param.time_to_binary(time, nanotime)
+		self.file.write(time_blob)
+
+		value_blob = self.param.value_to_binary(value)
+		self.file.write(value_blob)
+
+		self.file_size = len(time_blob) + len(value_blob)
+
+
+	def __do_first_write_to_existing_current_file(self, time, nanotime):
+		self.first_write = False
+
+		self.file = self.file_factory.open(self.param_path(*self.param.max_time), "w+b")
+		self.last_entry.from_current_file(self.file)
+
+		time_1, nanotime_1 = self.param.time_just_after(*self.last_entry.last_time())
+		if self.param.is_time_before(time_1, nanotime_1, time, nanotime):
+			self._write(self.param.nan(), time_1, nanotime_1)
+
+		self.__write(value, time, nanotime)
+
+	def __do_first_write_to_new_current_file(self, time, nanotime, value):
+
+		if self.prev is not None:
+			prev_entry = lastentry.LastEntry(self.param)
+			prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
+
+			self.file = self.file_factory.open(self.param_path(*self.param.max_time), "w+b")
+
+			last_time, last_nanotime = self.last_entry.last_time()
+			last_time_1, last_nanotime_1 = self.param.time_just_after(last_time, last_nanotime)
+
+			if self.param.is_time_before(last_time_1, last_nanotime_1, time, nanotime):
+				self.__create_current_file(last_time_1, last_nanotime_1, self.param.nan())
+				self.last_entry.reset(time, nanotime, value)
+				self.__write_value(value, time, nanotime)
+
+			elif self.param.is_time_before(last_time, last_nanotime, time, nanotime):
+				self.__create_current_file(time, nanotime, self.param.nan())
+				self.last_entry.reset(time, nanotime, value)
+
+			else:
+				raise lastentry.TimeError(last, (time, nanotime))
+
+			self.first_write = False
 		else:
+
 			param_dir = self.param_path.param_dir()
 			if not os.path.exists(param_dir):
 				os.makedirs(param_dir)
 
-			self.file = cStringIO.StringIO()
-			self.uncommited = cStringIO.StringIO()
+			self.__create_current_file(time, nanotime, value)
+			self.last_entry.reset(time, nanotime, value)
 
-			self.file_time = time
-			self.uncommited_time = time
-
-			self.file_nanotime = nanotime
-			self.uncommited_nanotime = nanotime
+			self.first_write = False
 
 
-	def fill_no_data(self, time, nanotime):
-		if not self.param.isnan(self.last.value):
+	def __do_first_write(self, time, nanotime, value):
+		current, prev = self.param_path.find_latest_paths()
+		self.prev = prev
 
-			if self.last.time_size == 0:
-				#set minimum duration for value at the end that didn't have the duration	
-				#specified
-				self.update_last_time(*self.param.time_just_after(*self.last.last_time()))
-
-			value_blob = self.param.value_to_binary(self.param.nan())
-			self.file.write(value_blob)
-			self.uncommited.write(value_blob)
-
-			time_blob = self.last.get_time_delta_since_latest_time(time, nanotime)
-			self.file.write(time_blob)
-
-			time_blob = self.uncommited_last.get_time_delta_since_latest_time(time, nanotime)
-			self.uncommited.write(time_blob)
-
-			self.last.reset(time, nanotime, self.param.nan())
-			self.uncommited_last.reset(time, nanotime, self.param.nan())
+		if current is not None:
+			self.__do_first_write_to_existing_current_file(time, nanotime, value)
 		else:
-			self.update_last_time(time, nanotime)
+			self.__do_first_write_to_new_current_file(time, nanotime, value)
+
+	def __write_value(self, value, time, nanotime):
+		if self.param.max_file_item_size + self.file_size > self.data_file_size:
+			self.__start_next_file(time, nanotime)
+		else:
+			value_blob = self.param.value_to_binary(value)
+			time_blob = self.last_entry.update_time(time, nanotime)
+
+			self.file.write(time_blob)
+			self.file.write(value_blob)
+
+			self.file_size += len(time_blob) + len(value_blob)
+
+	def __save_values(self, buf, entry, values):
+		for v in values:
+			buf.write(prev.value_to_binary(v[0]))
+			if v[1] is not None:
+				buf.write(entry.update_time(v[1]))
+				entry.reset(v[0], *v[1])
+
+	def __compact_values(self, vals):
+		if len(vals) <= 1:
+			return vals
+
+		ret = [ vals[0] ]
+		for v in ret[1:]:
+			if ret[-1][0] != v[0]:
+				ret.append(v)
+			else:
+				ret[-1] = v
+
+		return ret
+
+	def __start_next_file(self, time, nanotime, value):
+		(start_time, start_nanotime), vals = self.last_entry.from_current_file(self.file)
+		vals = self.__compact_values(vals)
+
+		entry = lastentry.LastEntry(self.param)
+
+		saved_2_prev = False
+		if self.prev is not None:
+			io = cStringIO.StringIO()
+
+			io.write(self.__read_bzip_file(self.prev))
+			entry.from_file(io)
+
+			#if the file is not empty...
+			if entry.value is not None:
+				io.seek(-entry.time_size, os.SEEK_END)
+				io.write(io.update_time(start_time, start_nanotime))
+				self.__save_values(io, entry, vals)
+
+				bzip2 = bz2.compress(io.getvalue())
+				if len(bzip2) < self.data_file_size:
+					self.__save_file(bzip2, self.prev)
+					saved_2_prev = True
+
+		if not saved_2_prev:
+			io = cStringIO().StringIO()
+			self.__save_values(io, entry, vals)
+			self.prev = self.param_path.create_file_path(start_time, start_nanotime)
+			self.__save_file(bz2.compress(io.getvalue()), self.prev)
+
+		self.file = self.__create_current_file(time, nanotime, value)
+		self.last.from_current_file(self.file)
+
+	def __save_file(self, data, path):
+		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
+		temp.write(data)
+		temp.close()
+
+		os.chmod(temp.name, 0644)
+		os.rename(temp.name, path)
 
 	def process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
@@ -156,22 +236,12 @@ class SaveParam:
 
 		try:
 			if not self.first_write:
-				self.update_last_time(time, nanotime)
-
-				if value != self.last.value:
-					self.write_value(value, time, nanotime)
-
+				self.__write_value(value, time, nanotime)
 			else:
 				if self.param.isnan(value):
 					return
 
-				self.prepare_for_writing(time, nanotime)
-
-				if self.last.value is not None:
-					self.fill_no_data(time, nanotime)
-				self.write_value(value, time, nanotime)
-
-				self.first_write = False
+				self.__do_first_write(time, nanotime, value)
 
 		except lastentry.TimeError, e:
 			syslog.syslog(syslog.LOG_WARNING,
@@ -183,62 +253,12 @@ class SaveParam:
 		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
 
 	def process_msg_batch(self, batch):
-		msg = batch[0]
-		val = self.param.value_from_msg(msg)
+		vals = [ (self.param.value_from_msg(m), m.time, m.nanotime) for m in batch ]
+		vals = self.__compact_values(vals)
+		for v in vals:
+			self.process_value(*v)
+		return batch[-1].time
 
-		for nmsg in batch[1:]:
-			nval = self.param.value_from_msg(nmsg)
-
-			if nval != val:
-				self.process_value(val, msg.time, msg.nanotime)
-				val = nval
-
-			msg = nmsg
-
-		self.process_value(val, msg.time, msg.nanotime)
-
-		self.commit()
-
-		return msg.time
-
-	def reset_uncommited(self):
-		self.uncommited = cStringIO.StringIO()
-		self.uncommited_time, self.uncommited_nanotime = self.last.last_time()
-
-		self.uncommited_last.reset(self.uncommited_time, self.uncommited_nanotime, self.last.value)
-
-		self.uncommited.write(self.param.value_to_binary(self.last.value))
-		self.uncommited.write(self.uncommited_last.update_time(self.uncommited_time, self.uncommited_nanotime))
-
-	def save_file(self, data, time, nanotime):
-		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
-		temp.write(data)
-		temp.close()
-
-		os.chmod(temp.name, 0644)
-		os.rename(temp.name, self.param_path.create_file_path(time, nanotime))
-
-
-	def commit(self):
-		time = self.file_time
-		nanotime = self.file_nanotime
-
-		zipped = bz2.compress(self.file.getvalue())
-		if len(zipped) >= self.data_file_size:
-			time = self.uncommited_time 
-			nanotime = self.uncommited_nanotime
-
-			self.file_time = time
-			self.file_nanotime = nanotime
-			self.file = self.uncommited
-
-			zipped = bz2.compress(self.uncommited.getvalue())
-
-		self.save_file(zipped, time, nanotime)
-
-		self.reset_uncommited()
-
-			
 	def close(self):
-		if self.uncommited is not None:
-			self.commit()
+		if self.file:
+			self.file.close()
