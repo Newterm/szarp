@@ -1485,7 +1485,11 @@ void DefinedDrawSet::SyncWithPrefix(wxString prefix, const std::vector<DefinedPa
 				dw->SetValid(true);
 				break;
 			}
+		}
 
+		if (!dw->IsValid()){
+			wxString msg = _("Param \"")+dw->GetBaseParam()+_("\" is not present in draw set \"")+dw->GetBaseDraw()+wxT("\".\n")+_("Please remove it from your defined set.");
+			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
 		}
 
 	}

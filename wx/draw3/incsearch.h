@@ -143,13 +143,20 @@ public:
 
 			if(draw_info != NULL) {
 				name += draw_info->GetName().wc_str();
-				name += L" [";
-				name += draw_info->GetParam()->GetIPKParam()->GetShortName();
-				name += L"] (";
-				name += draw_info->GetParam()->GetIPKParam()->GetName();
-				name += L") - Window ";
+				auto param = draw_info->GetParam();
+				if (param) {
+					auto ipk_param = param->GetIPKParam();
+					if (ipk_param) {
+						name += L" [";
+						name += ipk_param->GetShortName();
+						name += L"] (";
+						name += ipk_param->GetName();
+						name += L")";
+					}
+				}
 			}
 
+			name += L" - Window ";
 			name += std::wstring(draw_set->GetName().wc_str());
 			return name;
 		}
