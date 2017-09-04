@@ -24,6 +24,7 @@ public:
 	virtual void log(std::string&& msg, szlog::priority = szlog::priority::INFO) const = 0;
 	virtual ~LogHandler() {}
 
+	virtual void reinit() = 0;
 };
 
 class COutLogger: public LogHandler {
@@ -31,6 +32,7 @@ class COutLogger: public LogHandler {
 
 public:
 	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override {
+		std::atomic_signal_fence(std::memory_order_relaxed);
 		std::lock_guard<std::mutex> lock(_msg_mutex);
 		auto now = std::chrono::system_clock::now();
 		auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -39,6 +41,9 @@ public:
 		std::cout << format_date(localtime_t) << " " << msg_priority_for_level(p) << msg << std::endl;
 	}
 
+	void reinit() override {
+		_msg_mutex.unlock();
+	}
 };
 
 class JournaldLogger: public LogHandler {
@@ -50,40 +55,34 @@ class JournaldLogger: public LogHandler {
 
 public:
 	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override {
+		std::atomic_signal_fence(std::memory_order_relaxed);
 		std::lock_guard<std::mutex> lock(_msg_mutex);
 		std::cout << get_priority_prefix(p) << " " << msg << std::endl;
 	}
 
+	void reinit() override {
+		_msg_mutex.unlock();
+	}
 };
 
 class FileLogger: public LogHandler {
-	mutable std::mutex _msg_mutex;
-	std::atomic<bool> should_close{ false };
-	
-	mutable std::condition_variable cv;
+public:
+	FileLogger(const std::string& filename);
+	~FileLogger() override;
 
+	void reinit() override;
+	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override;
+
+private:
 	mutable std::list<std::tuple<szlog::priority, std::string>> msg_q;
+	mutable std::thread logger_thread;
 
 	const std::string get_priority_prefix(szlog::priority p) const;
 
 	void log_start(const std::string& filename);
+	void processMessages(std::ofstream&);
 
-public:
-	FileLogger(const std::string& filename) {
-		std::string logfile = filename;
-		// if not absolute path, force /var/log/szarp
-		if (filename.front() != '/') {
-			logfile = "/var/log/szarp/"+filename+".log";
-		}
-
-		// check if passing logger is OK
-		std::thread([this, logfile](){ log_start(logfile); }).detach();
-	}
-
-	~FileLogger() override;
-
-	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override;
-
+	void blockSignals();
 };
 
 } // namespace szlog

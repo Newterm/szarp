@@ -110,9 +110,6 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 	
 	assert (m_load_called == 0);
 
-	/* Set initial logging. */
-	loginit_cmdline(2, NULL, argc, argv);
-	
 	/* libpar command line*/
 	libpar_read_cmdline(argc, argv);
 
@@ -128,6 +125,22 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 
 	/* libpar */
 	libpar_init_with_filename(SZARP_CFG, 1);
+
+	/* logging */
+	c = libpar_getpar(m_daemon_name.c_str(), "log_level", 0);
+	if (c == NULL)
+		l = 2;
+	else {
+		l = atoi(c);
+		free(c);
+	}
+
+	c = libpar_getpar(m_daemon_name.c_str(), "log", 0);
+	if (c == NULL)
+		c = strdup(m_daemon_name.c_str());
+
+	loginit(l, c);
+	free(c);
 
 	/* other libpar params */
 	m_ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 1);

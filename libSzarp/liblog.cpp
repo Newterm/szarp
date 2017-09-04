@@ -45,16 +45,17 @@
 
 namespace szlog {
 
-std::shared_ptr<Logger> logger;
+std::shared_ptr<Logger> logger{new Logger()};
 
+}
+
+namespace {
+std::mutex log_mutex;
 }
 
 
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY)
 {
-	if (!szlog::logger)
-		szlog::logger = std::make_shared<szlog::Logger>();
-
 	szlog::logger->set_log_treshold(level);
 	std::string pname = "";
 	if (logfile) {
@@ -74,14 +75,11 @@ int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[],
 namespace szlog {
 
 void init(const ArgsManager& args_mgr) {
-	if (!szlog::logger)
-		szlog::logger = std::make_shared<Logger>();
-
 	auto log_type = args_mgr.get<std::string>("logger");
 	if (log_type) {
-		if (*log_type == "cout" || args_mgr.has("no-daemon") || args_mgr.has("no_daemon")) {
+		if (*log_type == "cout") {
 			logger->set_logger<COutLogger>();
-		} else if (*log_type == "journald") {
+		} else if (*log_type == "journald" || args_mgr.get<bool>("no-daemon").get_value_or(false) || args_mgr.get<bool>("no_daemon").get_value_or(false)) {
 			logger->set_logger<JournaldLogger>();
 		} else if (*log_type == "file") {
 			auto logfile_opt = args_mgr.get<std::string>("log_file");
@@ -106,9 +104,6 @@ void init(const ArgsManager& args_mgr) {
 }
 
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY, void *) {
-	if (!szlog::logger)
-		szlog::logger = std::make_shared<szlog::Logger>();
-
 	if (logname != NULL) {
 		auto pname = std::string(logname);
 		if (!pname.empty()) {
@@ -121,12 +116,15 @@ int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY, void *) {
 	}
 
 	szlog::logger->set_log_treshold(level);
+	return level;
 }
 
 void sz_logdone(void) {
 }
 
 void sz_log(int level, const char * msg_format, ...) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> lock(log_mutex);
 	va_list fmt_args;
 	va_start(fmt_args, msg_format);
 
@@ -147,6 +145,7 @@ namespace szlog {
 
 template <>
 Logger& Logger::operator<<(const szlog::priority& p) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 	const auto t_id = std::this_thread::get_id();
 
@@ -157,6 +156,7 @@ Logger& Logger::operator<<(const szlog::priority& p) {
 
 template <>
 Logger& Logger::operator<<(const szlog::str_mod& m) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 	const auto t_id = std::this_thread::get_id();
 
@@ -197,7 +197,7 @@ priority PriorityForLevel(int level) {
 // To substitute with std::put_time in (g++ >= 5)
 std::string format_date(tm* localtime_t) {
 	std::stringstream oss;
-	std::vector<std::pair<int, char>> date_fields_with_postfixes = {{localtime_t->tm_year + 1900, '-'}, {localtime_t->tm_mon, '-'}, {localtime_t->tm_mday, ' '}, {localtime_t->tm_hour, ':'}, {localtime_t->tm_min, ':'}, {localtime_t->tm_sec, ' '}};
+	std::vector<std::pair<int, char>> date_fields_with_postfixes = {{localtime_t->tm_year + 1900, '-'}, {localtime_t->tm_mon + 1, '-'}, {localtime_t->tm_mday, ' '}, {localtime_t->tm_hour, ':'}, {localtime_t->tm_min, ':'}, {localtime_t->tm_sec, ' '}};
 	for (auto c: date_fields_with_postfixes) {
 
 		// If less than 10 we need to add the "0" in front (00:02 instead of 0:2)
@@ -229,9 +229,9 @@ const std::string msg_priority_for_level(szlog::priority p) {
 }
 
 Logger& log() {
-	if (!logger)
-		logger = std::make_shared<Logger>();
-	
+	if (!szlog::logger)
+		szlog::logger = std::make_shared<Logger>();
+
 	return *logger;
 }
 

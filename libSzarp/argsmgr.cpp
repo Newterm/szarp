@@ -67,32 +67,30 @@ boost::optional<const wchar_t*> ArgsManager::get_libparval(const std::string& se
 template <>
 boost::optional<std::string> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const {
 	auto val = get_libparval<char*>(section, arg);
-	if (val) return std::string(std::move(*val));
+	if (val) return std::string(*val);
 	return boost::none;
 }
 
 template <>
 boost::optional<std::wstring> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const {
 	auto val = get_libparval<wchar_t*>(section, arg);
-	if (val) return std::wstring(std::move(*val));
+	if (val) return std::wstring(*val);
 	return boost::none;
 }
 
 template <>
 boost::optional<const std::string> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const {
-	auto ret = move(get_libparval<std::string>(section, arg));
+	auto ret = get_libparval<std::string>(section, arg);
 
-	// RVO won't help here
-	if (ret) return std::move(*ret);
+	if (ret) return *ret;
 	return boost::none;
 }
 
 template <>
 boost::optional<const std::wstring> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const {
-	auto ret = move(get_libparval<std::wstring>(section, arg));
+	auto ret = get_libparval<std::wstring>(section, arg);
 
-	// RVO won't help here
-	if (ret) return std::move(*ret);
+	if (ret) return *ret;
 	return boost::none;
 }
 
@@ -135,14 +133,14 @@ boost::optional<const wchar_t*> ArgsManager::get_overriden(const std::string& se
 
 template <>
 boost::optional<std::string> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const {
-	auto ret = std::move(get_overriden<const std::string>(section, arg));
+	auto ret = get_overriden<const std::string>(section, arg);
 	if (ret) return *ret;
 	return boost::none;
 }
 
 template <>
 boost::optional<std::wstring> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const {
-	auto ret = std::move(get_overriden<const std::wstring>(section, arg));
+	auto ret = get_overriden<const std::wstring>(section, arg);
 	if (ret) return *ret;
 	return boost::none;
 }
@@ -150,14 +148,14 @@ boost::optional<std::wstring> ArgsManager::get_overriden(const std::string& sect
 
 template <>
 boost::optional<char*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const {
-	auto ret = std::move(get_overriden<const char*>(section, arg));
+	auto ret = get_overriden<const char*>(section, arg);
 	if (ret) return const_cast<char*>(*ret);
 	return boost::none;
 }
 
 template <>
 boost::optional<wchar_t*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const {
-	auto ret = std::move(get_overriden<const wchar_t*>(section, arg));
+	auto ret = get_overriden<const wchar_t*>(section, arg);
 	if (ret) return const_cast<wchar_t*>(*ret);
 	return boost::none;
 }

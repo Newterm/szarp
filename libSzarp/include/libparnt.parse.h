@@ -35,4 +35,3 @@ typedef union {
 
 /**< Frees flex memory (Flex 2.5.9 required) */
 void parser_destroy(void);
-

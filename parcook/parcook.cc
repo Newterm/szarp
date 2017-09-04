@@ -935,10 +935,16 @@ errno %d, exiting", shmdes, errno);
 /************************************************************************/
 /* Signal handling */
 
+namespace {
+std::mutex _exit_mutex;
+}
+
 RETSIGTYPE Terminate(int sig)
 {
+	// atexit has to be called EXACTLY once
+	std::lock_guard<std::mutex> lock(_exit_mutex);
 	sz_log(2, "parcook: signal %d caught, cleaning up and exiting", sig);
-	exit(1);
+	std::exit(1);
 }
 
 RETSIGTYPE CriticalHandler(int sig)

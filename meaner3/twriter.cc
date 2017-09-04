@@ -86,17 +86,9 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 	}
 	
 	c = libpar_getpar(section, "log", 0);
-	if (c == NULL) {
-		asprintf(&c, PREFIX"/logs/%s.log", section);
-		assert(c != NULL);
-	}
 	l = sz_loginit(l, c);
-	if (l < 0) {
-		sz_log(0, "TWriter::LoadConfig(): cannot initialize log file %s, errno %d", c, errno);
+	if (c != NULL)
 		free(c);
-		return 1;
-	}
-	free(c);
 
 	if (parcook->LoadConfig() != 0)
 		return 1;

@@ -67,6 +67,7 @@ class Logger {
 
 
 	void log(std::shared_ptr<LogEntry> msg) {
+		std::atomic_signal_fence(std::memory_order_relaxed);
 		if (msg->_p > treshold) return;
 		if (_logger)
 			_logger->log(std::move(msg->_str.str()), msg->_p);
@@ -80,7 +81,7 @@ class Logger {
 
 	void log_later(std::shared_ptr<LogEntry> msg) {
 		// TODO: add async logging (detach)
-		std::thread([this, msg](){ log(msg); }).join();
+		std::thread([this, msg](){ log(msg); }).detach();
 	}
 
 public:
@@ -90,8 +91,8 @@ public:
 	}
 
 	template <typename T>
-	void set_logger(std::shared_ptr<T> logger) {
-		_logger = logger;
+	void set_logger(std::shared_ptr<T> new_logger) {
+		_logger = new_logger;
 	}
 
 	void set_log_treshold(szlog::priority p) {
@@ -104,10 +105,15 @@ public:
 
 	template <typename T>
 	Logger& operator<<(const T& msg);
+
+	void reinit() {
+		_logger->reinit();
+	}
 };
 
 template <typename T>
 Logger& Logger::operator<<(const T& msg) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 	const auto t_id = std::this_thread::get_id();
 	_msgs[t_id]->_str << msg;
