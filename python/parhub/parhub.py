@@ -18,20 +18,22 @@
 
 """
 import zmq
+from zmq import devices
 from libpar import LibparReader
 from daemon import runner
+import sys
 
 class ParHub:
-	def __init__(self):
+	def __init__(self, will_daemonize):
 		lpr = LibparReader()
 		self.sub_addr = lpr.get("parhub", "sub_addr")
 		self.pub_addr = lpr.get("parhub", "pub_addr")
-
-		self.stdin_path = "/dev/null"
-		self.stdout_path = "/var/log/szarp/parhub.stdin.log"
-		self.stderr_path = "/var/log/szarp/parhub.stderr.log"
-		self.pidfile_path = "/var/run/parhub.pid"
-		self.pidfile_timeout = 5
+		if (will_daemonize):
+			self.stdin_path = "/dev/null"
+			self.stdout_path = "/var/log/szarp/parhub.stdin.log"
+			self.stderr_path = "/var/log/szarp/parhub.stderr.log"
+			self.pidfile_path = "/var/run/parhub.pid"
+			self.pidfile_timeout = 5
 
 	def run(self):
 		dev = zmq.devices.Device(zmq.FORWARDER, zmq.SUB, zmq.PUB)
@@ -44,10 +46,14 @@ class ParHub:
 		dev.start()
 
 if __name__ == "__main__":
-	app = runner.DaemonRunner(ParHub())
 	try:
-		app.do_action()
-	except runner.DaemonRunnerStopFailureError as ex:
+		if "--no-daemon" in sys.argv:
+			parhub = ParHub(False)
+			parhub.run()
+		else:
+			app = runner.DaemonRunner(ParHub(True))
+			app.do_action()
+	except Exception as ex:
 		# if the script was not running, the pid file won't be locked
 		# and we don't want the stop action to fail
 		if str(ex).find("not locked") < 0:
