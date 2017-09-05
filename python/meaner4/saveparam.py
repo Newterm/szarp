@@ -183,74 +183,62 @@ class SaveParam:
 	def __save_values(self, buf, entry, values):
 		for v in values:
 			if v[0] != entry.value:
-				buf.write(self.param.value_to_binary(v[0]))
-				if v[1] is not None:
+				if entry.value is not None:
 					buf.write(entry.update_time(*v[1]))
-				entry.value = v[0]	
-			else:
-				if v[1] is not None:
-					entry.update_time(*v[1])
-				
-				
-
-	def __compact_values(self, vals):
-		if len(vals) <= 1:
-			return vals
-
-		ret = [ vals[0] ]
-		for v in vals[1:]:
-			if ret[-1][0] != v[0]:
-				ret.append(v)
-			else:
-				ret[-1] = v
-
-		return ret
-
-	def __get_last_time_and_value(self, vals):
-		assert len(vals) > 1
-
-		return self.param.time_just_after(*vals[-2][1]), vals[-1][0]
+					buf.write(self.param.value_to_binary(v[0]))
+				else:
+					buf.write(self.param.value_to_binary(v[0]))
+				entry.value = v[0]
 				
 
-	def __start_next_file(self, time, nanotime, value):
-		(start_time, start_nanotime), vals = self.last_entry.from_current_file(self.file)
-		print "vals:", vals
-		vals = self.__compact_values(vals)
-		print "vals:", vals
+	def __try_appending_to_prev_file(self, vals):
+		if self.prev is None:
+			return False
+
+		io = self.__read_bzip_file(self.prev)
 
 		entry = lastentry.LastEntry(self.param)
+		entry.from_file(io, *self.param_path.time_from_path(self.prev))
 
-		saved_2_prev = False
-		if self.prev is not None:
-			io = self.__read_bzip_file(self.prev)
-			entry.from_file(io, *self.param_path.time_from_path(self.prev))
-
-			#if the file is not empty...
-			if entry.value is not None:
-				io.seek(-entry.time_size, os.SEEK_END)
-				io.write(entry.update_time(start_time, start_nanotime))
-				self.__save_values(io, entry, vals)
-
-				bzip2 = bz2.compress(io.getvalue())
-				if len(bzip2) < self.data_file_size:
-					self.__save_file(bzip2, self.prev)
-					saved_2_prev = True
-
-		if not saved_2_prev:
-			io = cStringIO.StringIO()
-			entry.reset(start_time, start_nanotime)
+		#if the file is not empty...
+		if entry.value is not None:
+			io.seek(-entry.time_size, os.SEEK_END)
 			self.__save_values(io, entry, vals)
-			self.prev = self.param_path.create_file_path(start_time, start_nanotime)
-			self.__save_file(bz2.compress(io.getvalue()), self.prev)
 
-		(time_last, nanotime_last), last_value = self.__get_last_time_and_value(vals)
-		if self.param.is_time_before(time_last, nanotime_last, time, nanotime):
-			self.__create_current_file(time_last, nanotime_last, last_value)
+			bzip2 = bz2.compress(io.getvalue())
+			if len(bzip2) < self.data_file_size:
+				self.__save_file(bzip2, self.prev)
+				return True
+
+		return False
+
+	def __create_new_bz_file(self, vals):
+		io = cStringIO.StringIO()
+
+		entry = lastentry.LastEntry(self.param)
+		entry.reset(*vals[0][1])
+		self.__save_values(io, entry, vals)
+
+		self.prev = self.param_path.create_file_path(*vals[0][1])
+		self.__save_file(bz2.compress(io.getvalue()), self.prev)
+
+	def __start_next_file(self, time, nanotime, value):
+		vals = self.last_entry.from_current_file(self.file)
+		print "vals:", vals
+
+		if self.__try_appending_to_prev_file(vals) == False:
+			self.__create_new_bz_file(vals)
+
+		last_time, last_nanotime = vals[-1][1]
+		if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
+			self.__create_current_file(last_time, last_nanotime, vals[-1][0])
+			self.last_entry.from_current_file(self.file)
+
 			self.__write_value(value, time, nanotime)
 		else:
-			self.__create_current_file(time, nanotimet, value)
+			self.__create_current_file(time, nanotime, value)
+			self.last_entry.from_current_file(self.file)
 
-		self.last_entry.from_current_file(self.file)
 
 	def __save_file(self, data, path):
 		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
@@ -285,7 +273,6 @@ class SaveParam:
 	def process_msg_batch(self, batch):
 		vals = [ (self.param.value_from_msg(m), m.time, m.nanotime) for m in batch ]
 
-		vals = self.__compact_values(vals)
 		for v in vals:
 			self.process_value(*v)
 

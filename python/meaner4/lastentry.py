@@ -96,13 +96,13 @@ class LastEntry:
 			try:
 				self.value = self.param.value_from_binary(binary)
 				print "from_file, value:", self.value
+				ret.append((self.value, self.last_time()))
 			except:
 				file.truncate(pos)
 				break
 
 			if file.tell() == file_size:
 				self.time_size = 0
-				ret.append((self.value, None))
 				break
 
 			pos = file.tell()
@@ -111,12 +111,9 @@ class LastEntry:
 			except:
 				file.truncate(pos)
 				self.time_size = 0
-				ret.append((self.value, None))
 				break
 
 			print "from_file, time:", self.last_time()
-
-			ret.append((self.value, self.last_time()))
 
 			pos = file.tell()
 
@@ -127,7 +124,7 @@ class LastEntry:
 
 		if self.param.time_prec == 8:
 			time, nanotime = struct.unpack("<II", file.read(8))
-			return ((time, nanotime), self.from_file(file, time, nanotime))
+			return self.from_file(file, time, nanotime)
 		else:
 			time = struct.unpack("<I", file.read(4))
-			return ((time, 0),  self.from_file(file, time, 0))
+			return self.from_file(file, time, 0)
