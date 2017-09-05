@@ -44,8 +44,8 @@ class FileFactory:
 		def write(self, data):
 			self.file.write(data)
 
-		def read(self):
-			return self.file.read()
+		def read(self, size=-1):
+			return self.file.read(size)
 
 		def lock(self):
 			fcntl.lockf(self.file, fcntl.LOCK_EX)
@@ -80,7 +80,12 @@ class SaveParam:
 	def __read_bzip_file(self, path):
 		try:
 			file = self.file_factory.open(path, "r+b")
-			return bz2.decompress(file.read())
+
+			io = cStringIO.StringIO()
+			io.write(bz2.decompress(file.read()))
+			io.seek(0, 0)
+			return io
+
 		finally:
 			file.close()
 
@@ -100,17 +105,21 @@ class SaveParam:
 		self.file_size = len(time_blob) + len(value_blob)
 
 
-	def __do_first_write_to_existing_current_file(self, time, nanotime):
+	def __do_first_write_to_existing_current_file(self, time, nanotime, value):
 		self.first_write = False
 
-		self.file = self.file_factory.open(self.param_path(*self.param.max_time), "w+b")
+		self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "a+b")
+		
 		self.last_entry.from_current_file(self.file)
 
-		time_1, nanotime_1 = self.param.time_just_after(*self.last_entry.last_time())
-		if self.param.is_time_before(time_1, nanotime_1, time, nanotime):
-			self._write(self.param.nan(), time_1, nanotime_1)
+		self.file_size = self.file.tell()
 
-		self.__write(value, time, nanotime)
+		time_1, nanotime_1 = self.param.time_just_after(*self.last_entry.last_time())
+
+		if self.param.is_time_before(time_1, nanotime_1, time, nanotime):
+			self.__write_value(self.param.nan(), time_1, nanotime_1)
+
+		self.__write_value(value, time, nanotime)
 
 	def __do_first_write_to_new_current_file(self, time, nanotime, value):
 
@@ -118,22 +127,24 @@ class SaveParam:
 			prev_entry = lastentry.LastEntry(self.param)
 			prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
 
-			self.file = self.file_factory.open(self.param_path(*self.param.max_time), "w+b")
+			self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
 
-			last_time, last_nanotime = self.last_entry.last_time()
+			last_time, last_nanotime = prev_entry.last_time()
 			last_time_1, last_nanotime_1 = self.param.time_just_after(last_time, last_nanotime)
+
+			print "last:", last_time_1, last_nanotime_1, last_time, last_nanotime, time, nanotime
 
 			if self.param.is_time_before(last_time_1, last_nanotime_1, time, nanotime):
 				self.__create_current_file(last_time_1, last_nanotime_1, self.param.nan())
-				self.last_entry.reset(time, nanotime, value)
+				self.last_entry.reset(last_time_1, last_nanotime_1, self.param.nan())
 				self.__write_value(value, time, nanotime)
 
 			elif self.param.is_time_before(last_time, last_nanotime, time, nanotime):
-				self.__create_current_file(time, nanotime, self.param.nan())
+				self.__create_current_file(time, nanotime, value)
 				self.last_entry.reset(time, nanotime, value)
 
 			else:
-				raise lastentry.TimeError(last, (time, nanotime))
+				raise lastentry.TimeError((last_time, last_nanotime), (time, nanotime))
 
 			self.first_write = False
 		else:
@@ -149,8 +160,7 @@ class SaveParam:
 
 
 	def __do_first_write(self, time, nanotime, value):
-		current, prev = self.param_path.find_latest_paths()
-		self.prev = prev
+		current, self.prev = self.param_path.find_latest_paths()
 
 		if current is not None:
 			self.__do_first_write_to_existing_current_file(time, nanotime, value)
@@ -159,29 +169,36 @@ class SaveParam:
 
 	def __write_value(self, value, time, nanotime):
 		if self.param.max_file_item_size + self.file_size > self.data_file_size:
-			self.__start_next_file(time, nanotime)
+			self.__start_next_file(time, nanotime, value)
 		else:
-			value_blob = self.param.value_to_binary(value)
-			time_blob = self.last_entry.update_time(time, nanotime)
 
+			time_blob = self.last_entry.update_time(time, nanotime)
 			self.file.write(time_blob)
+
+			value_blob = self.param.value_to_binary(value)
 			self.file.write(value_blob)
 
 			self.file_size += len(time_blob) + len(value_blob)
 
 	def __save_values(self, buf, entry, values):
 		for v in values:
-			buf.write(prev.value_to_binary(v[0]))
-			if v[1] is not None:
-				buf.write(entry.update_time(v[1]))
-				entry.reset(v[0], *v[1])
+			if v[0] != entry.value:
+				buf.write(self.param.value_to_binary(v[0]))
+				if v[1] is not None:
+					buf.write(entry.update_time(*v[1]))
+				entry.value = v[0]	
+			else:
+				if v[1] is not None:
+					entry.update_time(*v[1])
+				
+				
 
 	def __compact_values(self, vals):
 		if len(vals) <= 1:
 			return vals
 
 		ret = [ vals[0] ]
-		for v in ret[1:]:
+		for v in vals[1:]:
 			if ret[-1][0] != v[0]:
 				ret.append(v)
 			else:
@@ -189,23 +206,29 @@ class SaveParam:
 
 		return ret
 
+	def __get_last_time_and_value(self, vals):
+		assert len(vals) > 1
+
+		return self.param.time_just_after(*vals[-2][1]), vals[-1][0]
+				
+
 	def __start_next_file(self, time, nanotime, value):
 		(start_time, start_nanotime), vals = self.last_entry.from_current_file(self.file)
+		print "vals:", vals
 		vals = self.__compact_values(vals)
+		print "vals:", vals
 
 		entry = lastentry.LastEntry(self.param)
 
 		saved_2_prev = False
 		if self.prev is not None:
-			io = cStringIO.StringIO()
-
-			io.write(self.__read_bzip_file(self.prev))
-			entry.from_file(io)
+			io = self.__read_bzip_file(self.prev)
+			entry.from_file(io, *self.param_path.time_from_path(self.prev))
 
 			#if the file is not empty...
 			if entry.value is not None:
 				io.seek(-entry.time_size, os.SEEK_END)
-				io.write(io.update_time(start_time, start_nanotime))
+				io.write(entry.update_time(start_time, start_nanotime))
 				self.__save_values(io, entry, vals)
 
 				bzip2 = bz2.compress(io.getvalue())
@@ -214,13 +237,20 @@ class SaveParam:
 					saved_2_prev = True
 
 		if not saved_2_prev:
-			io = cStringIO().StringIO()
+			io = cStringIO.StringIO()
+			entry.reset(start_time, start_nanotime)
 			self.__save_values(io, entry, vals)
 			self.prev = self.param_path.create_file_path(start_time, start_nanotime)
 			self.__save_file(bz2.compress(io.getvalue()), self.prev)
 
-		self.file = self.__create_current_file(time, nanotime, value)
-		self.last.from_current_file(self.file)
+		(time_last, nanotime_last), last_value = self.__get_last_time_and_value(vals)
+		if self.param.is_time_before(time_last, nanotime_last, time, nanotime):
+			self.__create_current_file(time_last, nanotime_last, last_value)
+			self.__write_value(value, time, nanotime)
+		else:
+			self.__create_current_file(time, nanotimet, value)
+
+		self.last_entry.from_current_file(self.file)
 
 	def __save_file(self, data, path):
 		temp = tempfile.NamedTemporaryFile(dir=self.param_path.param_dir(), delete=False)
@@ -254,9 +284,11 @@ class SaveParam:
 
 	def process_msg_batch(self, batch):
 		vals = [ (self.param.value_from_msg(m), m.time, m.nanotime) for m in batch ]
+
 		vals = self.__compact_values(vals)
 		for v in vals:
 			self.process_value(*v)
+
 		return batch[-1].time
 
 	def close(self):

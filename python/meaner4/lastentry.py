@@ -51,7 +51,6 @@ class LastEntry:
 	def reset(self, time, nanotime, value = None):
 		self.time_size = 0
 		self.time = self.time_to_int(time, nanotime)
-		self.value_start_time = self.time
 		self.value = value
 
 	def get_time_delta(self, time_from, time_to):
@@ -66,7 +65,7 @@ class LastEntry:
 
 	def update_time(self, time, nanotime):
 		time_int = self.time_to_int(time, nanotime)
-		delta = self.get_time_delta(self.value_start_time, time_int)
+		delta = self.get_time_delta(self.time, time_int)
 
 		self.time = time_int
 		self.time_size = len(delta)
@@ -81,6 +80,7 @@ class LastEntry:
 		self.reset(time, nanotime, value)
 
 	def from_file(self, file, time, nanotime):
+
 		ret = []
 
 		self.reset(time, nanotime)
@@ -95,14 +95,14 @@ class LastEntry:
 			binary = file.read(self.param.value_lenght)
 			try:
 				self.value = self.param.value_from_binary(binary)
+				print "from_file, value:", self.value
 			except:
 				file.truncate(pos)
 				break
 
-			self.value_start_time = self.time
-
 			if file.tell() == file_size:
 				self.time_size = 0
+				ret.append((self.value, None))
 				break
 
 			pos = file.tell()
@@ -111,19 +111,23 @@ class LastEntry:
 			except:
 				file.truncate(pos)
 				self.time_size = 0
-				ret.append((value, None))
+				ret.append((self.value, None))
 				break
 
-			ret.append((value, self.last_time()))
+			print "from_file, time:", self.last_time()
+
+			ret.append((self.value, self.last_time()))
 
 			pos = file.tell()
 
 		return ret
 
 	def from_current_file(self, file):
+		file.seek(0, os.SEEK_SET)
+
 		if self.param.time_prec == 8:
-			time, nanotime = struct.unpack("<ii", f.read(8))
+			time, nanotime = struct.unpack("<II", file.read(8))
 			return ((time, nanotime), self.from_file(file, time, nanotime))
 		else:
-			time = struct.unpack("<i", f.read(4))
+			time = struct.unpack("<I", file.read(4))
 			return ((time, 0),  self.from_file(file, time, 0))

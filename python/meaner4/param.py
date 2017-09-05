@@ -87,11 +87,29 @@ class Param:
 		else:
 			return time == self.max_time[0]
 
-	def is_time_before(l_time, l_nanotime, r_time, r_nanotime):
+	def is_time_before(self, l_time, l_nanotime, r_time, r_nanotime):
 		return l_time < r_time \
-			or self.time.prec == 8 \
+			or self.time_prec == 8 \
 				and l_time == r_time \
 				and l_nanotime < r_nanotime
+
+	def time_just_after(self, time, nanotime):
+		if self.time_prec == 8:
+			if nanotime == 10 ** 9 - 1:
+				return time + 1, 0
+			else:
+				return time, nanotime + 1
+		else:
+			return time + 1, 0
+
+	def time_just_before(self, time, nanotime):
+		if self.time_prec == 8:
+			if nanotime == 0:
+				return time - 1, 10 ** 9 - 1
+			else:
+				return time, nanotime - 1
+		else:
+			return time - 1, 0
 
 def from_node(node):
 	param_name = node.attrib["name"]

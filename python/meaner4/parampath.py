@@ -68,12 +68,11 @@ class ParamPath:
 
 	def find_latest_paths(self):
 		try:
-			file_names = [ f for f in os.listdir(self.param_dir()) if f.endswith(".sz4") ]
-			file_names.sort()
-
+			file_names = [ os.path.join(self.param_dir(), f) for f in os.listdir(self.param_dir()) if f.endswith(".sz4") ]
 			if len(file_names) == 0:
 				return None, None
 
+			file_names.sort()
 			time, nanotime = self.time_from_path(file_names[-1])
 
 			if self.param.is_max_time(time, nanotime):
