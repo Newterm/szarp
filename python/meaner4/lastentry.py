@@ -96,7 +96,7 @@ class LastEntry:
 			try:
 				self.value = self.param.value_from_binary(binary)
 				print "from_file, value:", self.value
-				ret.append((self.value, self.last_time()))
+				ret.append({ 'value': self.value, 'time' : self.last_time() })
 			except:
 				file.truncate(pos)
 				break

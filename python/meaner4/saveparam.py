@@ -78,14 +78,12 @@ class SaveParam:
 		self.first_write = True
 
 	def __read_bzip_file(self, path):
+		file = self.file_factory.open(path, "r+b")
 		try:
-			file = self.file_factory.open(path, "r+b")
-
 			io = cStringIO.StringIO()
 			io.write(bz2.decompress(file.read()))
 			io.seek(0, 0)
 			return io
-
 		finally:
 			file.close()
 
@@ -105,7 +103,7 @@ class SaveParam:
 		self.file_size = len(time_blob) + len(value_blob)
 
 
-	def __do_first_write_to_existing_current_file(self, time, nanotime, value):
+	def __do_first_write_to_existing_file(self, time, nanotime, value):
 		self.first_write = False
 
 		self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "a+b")
@@ -115,13 +113,12 @@ class SaveParam:
 		self.file_size = self.file.tell()
 
 		time_1, nanotime_1 = self.param.time_just_after(*self.last_entry.last_time())
-
 		if self.param.is_time_before(time_1, nanotime_1, time, nanotime):
 			self.__write_value(self.param.nan(), time_1, nanotime_1)
 
 		self.__write_value(value, time, nanotime)
 
-	def __do_first_write_to_new_current_file(self, time, nanotime, value):
+	def __do_first_write_to_new_file(self, time, nanotime, value):
 
 		if self.prev is not None:
 			prev_entry = lastentry.LastEntry(self.param)
@@ -163,9 +160,9 @@ class SaveParam:
 		current, self.prev = self.param_path.find_latest_paths()
 
 		if current is not None:
-			self.__do_first_write_to_existing_current_file(time, nanotime, value)
+			self.__do_first_write_to_existing_file(time, nanotime, value)
 		else:
-			self.__do_first_write_to_new_current_file(time, nanotime, value)
+			self.__do_first_write_to_new_file(time, nanotime, value)
 
 	def __write_value(self, value, time, nanotime):
 		if self.param.max_file_item_size + self.file_size > self.data_file_size:
@@ -182,13 +179,13 @@ class SaveParam:
 
 	def __save_values(self, buf, entry, values):
 		for v in values:
-			if v[0] != entry.value:
+			if v['value'] != entry.value:
 				if entry.value is not None:
-					buf.write(entry.update_time(*v[1]))
-					buf.write(self.param.value_to_binary(v[0]))
+					buf.write(entry.update_time(*v['time']))
+					buf.write(self.param.value_to_binary(v['value']))
 				else:
-					buf.write(self.param.value_to_binary(v[0]))
-				entry.value = v[0]
+					buf.write(self.param.value_to_binary(v['value']))
+				entry.value = v['value']
 				
 
 	def __try_appending_to_prev_file(self, vals):
@@ -216,10 +213,10 @@ class SaveParam:
 		io = cStringIO.StringIO()
 
 		entry = lastentry.LastEntry(self.param)
-		entry.reset(*vals[0][1])
+		entry.reset(*vals[0]['time'])
 		self.__save_values(io, entry, vals)
 
-		self.prev = self.param_path.create_file_path(*vals[0][1])
+		self.prev = self.param_path.create_file_path(*vals[0]['time'])
 		self.__save_file(bz2.compress(io.getvalue()), self.prev)
 
 	def __start_next_file(self, time, nanotime, value):
@@ -229,9 +226,9 @@ class SaveParam:
 		if self.__try_appending_to_prev_file(vals) == False:
 			self.__create_new_bz_file(vals)
 
-		last_time, last_nanotime = vals[-1][1]
+		last_time, last_nanotime = vals[-1]['time']
 		if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
-			self.__create_current_file(last_time, last_nanotime, vals[-1][0])
+			self.__create_current_file(last_time, last_nanotime, vals[-1]['value'])
 			self.last_entry.from_current_file(self.file)
 
 			self.__write_value(value, time, nanotime)

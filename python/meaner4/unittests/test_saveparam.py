@@ -58,7 +58,6 @@ class SaveParamTest(unittest.TestCase):
 		shutil.rmtree(self.temp_dir)
 
 
-
 	def _msg(self, value, time, nanotime = 0):
 		msg = paramsvalues_pb2.ParamValue()
 		msg.param_no = 1
@@ -183,7 +182,7 @@ class SaveParamTest(unittest.TestCase):
 		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
 		self._check_file(path, "<IIiBBBBBi", (i - 1, 1) + (self.param.nan(),) + _999999999_NS + (i,))
 
-	def test_startfrombzgap(self):
+	def test_startfrombznogap(self):
 		"""Test if the proper start of saveparam happens with bz2 file only"""
 		i, _ = self.newfiletest_start()
 		os.remove(os.path.join(self.param_dir, "42949672964294967295.sz4"))
@@ -212,15 +211,19 @@ class SaveParamTest(unittest.TestCase):
 
 			prev_size = size
 
-		path2 = os.path.join(self.param_dir, "00000000000000000000.sz4")
+		path = os.path.join(self.param_dir, "00000000000000000000.sz4")
 		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(i - 1) ] + [[ i - 1 ]])
-		self._check_file_bz(path2, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
+		self._check_file_bz(path, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
+
+		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		self._check_file(path, "<IIiBBBBBi", (i - 1, 0, i - 1) + SEC_NS + (i,))
 
 	def test_bzipfileoverflow(self):
 		i, sp = self.newfiletest_start()
 
 		prev_size = self._file_size(sp.file)
 		prev_bz2_size = os.stat(os.path.join(self.param_dir, "00000000000000000000.sz4")).st_size
+
 		while True:
 			i += 1
 
@@ -233,5 +236,10 @@ class SaveParamTest(unittest.TestCase):
 					break
 				else:
 					prev_bz2_size = bz2_size
+					last_bz2_i = i
 
 			prev_size = size
+
+		path = os.path.join(self.param_dir, "00000000000000000000.sz4")
+		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(last_bz2_i  - 1) ] + [[ last_bz2_i - 1 ]])
+		self._check_file_bz(path, "<" + "iBBBBB" * (last_bz2_i - 1) + "i", tuple(expected_bz))

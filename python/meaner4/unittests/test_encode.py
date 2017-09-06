@@ -26,8 +26,10 @@ import StringIO
 
 class EncodeDecodeTest(unittest.TestCase):
 	def test_decode_encode_def(self):
-		v = 33958800
+		encoded = timedelta.encode(0)
+		self.assertEqual(chr(0x0), encoded[0])
 
+		v = 33958800
 		encoded = timedelta.encode(v)
 		self.assertEqual(4, len(encoded))
 
