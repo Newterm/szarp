@@ -1,5 +1,5 @@
-#ifndef __EXCEPTION_H
-#define __EXCEPTION_H
+#ifndef __SZEXCEPTION_H
+#define __SZEXCEPTION_H
 
 #include <cstring>
 #include <stdexcept>
@@ -65,4 +65,4 @@ protected:
 	}
 };
 
-#endif /* __EXCEPTION_H */
+#endif /* __SZEXCEPTION_H */
