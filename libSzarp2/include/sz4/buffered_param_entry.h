@@ -245,7 +245,7 @@ public:
 	void param_data_changed(TParam*, const std::string& path) {
 		m_invalidate_non_fixed = true;
 	}
-
+/*
 	void refferred_param_removed(generic_param_entry* param_entry) {
 		delete m_param->GetLuaExecParam();
 		m_param->SetLuaExecParam(NULL);
@@ -254,7 +254,7 @@ public:
 		m_param->SetSz4Type(TParam::SZ4_NONE);
 		generic_param_entry::refferred_param_removed(param_entry);
 	}
-
+*/
 	void set_live_block(generic_live_block *block) {};
 
 	virtual ~buffered_param_entry_in_buffer() {};
