@@ -52,6 +52,9 @@
 
 #ifndef NO_LUA
 #include <lua.hpp>
+#ifndef luaL_reg
+#define luaL_reg luaL_Reg
+#endif
 #endif
 
 #include <argp.h>

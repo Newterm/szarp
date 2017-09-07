@@ -25,6 +25,11 @@
 #include "sz4/base.h"
 #include "sz4/util.h"
 
+#ifndef luaL_reg
+#define luaL_reg luaL_Reg
+#endif
+
+
 namespace sz4 {
 
 template<class base> struct base_ipk_pair : public std::pair<base*, typename base::ipk_container_type*> {};

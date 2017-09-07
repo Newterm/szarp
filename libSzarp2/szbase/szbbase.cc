@@ -35,6 +35,9 @@
 #if LUA_PARAM_OPTIMISE
 #include "loptcalculate.h"
 #endif
+#ifndef luaL_reg
+#define luaL_reg luaL_Reg
+#endif
 #endif
 
 #ifdef MINGW32
