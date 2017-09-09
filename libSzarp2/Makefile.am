@@ -216,6 +216,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/sz4/decode_file.h \
 	@srcdir@/include/sz4/encode_file.h \
 	@srcdir@/sz4/load_bz2_file.cpp \
+	@srcdir@/sz4/load_current_file.cpp \
 	@srcdir@/sz4/path.cpp \
 	@srcdir@/sz4/buffer.cpp \
 	@srcdir@/sz4/base.cpp \

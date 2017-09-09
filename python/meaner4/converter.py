@@ -56,14 +56,15 @@ def szbase_file_path_to_date(path):
 
 class FileFactory:
 	class File:
-		def __init__(self, path):
+		def __init__(self, path, mode):
 			self.path = path
 
 			self.file = cStringIO.StringIO()
 			try:
-				file = open(path, "r+b")
+				file = open(path, mode)
 				s = file.read()
 				self.file.write(s)
+				file.close()	
 			except:
 				pass
 
@@ -74,8 +75,8 @@ class FileFactory:
 		def write(self, data):
 			self.file.write(data)
 
-		def read(self):
-			return self.file.read()
+		def read(self, size=-1):
+			return self.file.read(size)
 
 		def lock(self):
 			pass
@@ -89,11 +90,17 @@ class FileFactory:
 		def close(self):
 			file = open(self.path, "w+b")
 			file.write(self.file.getvalue())
-			self.file.close()
+			file.close()
 
 	def open(self, path, mode):
-		return self.File(path)
+		return self.File(path, mode)
 
+
+class Msg:
+	def __init__(self, time, value):
+		self.time = time
+		self.nanotime = 0
+		self.int_value = value
 
 class Converter:
 	def __init__(self, config_dir, szc_dir, offset, current, queue):
@@ -107,14 +114,11 @@ class Converter:
 
 		self.s_params = {}
 
-		del parampath.ParamPath.find_latest_path 
-		parampath.ParamPath.find_latest_path = lambda self: None
-
 		delta_cache = {}
 		def get_time_delta_cached(self, time_from, time_to):
 			diff = time_to - time_from
 			if diff < 0:
-				raise TimeError(time_from, time_to)
+				raise lastentry.TimeError(time_from, time_to)
 
 			if diff in delta_cache:
 				return delta_cache[diff]
@@ -190,15 +194,12 @@ class Converter:
 	def convert_param(self, sp, pname, pno):
 		if not sp.param.written_to_base:
 			return
-
-		value = None
 		prev_time = None
 		param_path = sp.param_path.param_path
-		sz4_time = self.param_sz4_time_start(param_path)
+		syslog.syslog(syslog.LOG_INFO, "pname: %s" % (param_path,))
+
 
 		szbase_files = self.get_szbase_files(param_path)
-
-		values_count = 0
 
 		for j, path in enumerate(szbase_files):
 			self.queue.put((self.offset, param_path, pno + 1,
@@ -206,51 +207,22 @@ class Converter:
 					len(szbase_files)))
 
 			time, ntime = self.file_start_end_time(path)
-			if sz4_time is not None and sz4_time <= time:
-				if value is not None:
-					sp.update_last_time(prev_time, 0)
-				sp.close()
-				return
 			
-			if prev_time is not None and value is not None and time > prev_time and not sp.param.isnan(value):
-				sp.update_last_time(prev_time, 0)
-				value = sp.param.nan()
-				sp.write_value(value, prev_time, 0)
-
 			is_szc = path.endswith(".szc")
 			delta = 10 if is_szc else 600 
 
 			values = self.read_file(param_path, path, is_szc)
-			for v in values:
-				if value is None:
-					if not sp.param.isnan(v):
-						sp.process_value(v, time, 0)
-						value = v
-				elif value != v:
-					values_count += 1
-					sp.update_last_time(time, 0)
-					sp.write_value(v, time, 0)
-					value = v
-
-					if values_count > 500:
-						sp.commit()
-						values_count = 0
-
-
+			msgs = []
+			for value in values:
+				msgs.append(Msg(time, value))
 				time += delta
 				if not time < ntime:
 					break
 
- 				if sz4_time is not None and sz4_time <= time:
-					if value is not None:
-						sp.update_last_time(time, 0)
-					sp.close()
-					return
-				
-			prev_time = time
+			sp.process_msg_batch(msgs)
 
-		if value is not None:
-			sp.update_last_time(time, 0)
+			if time + delta != ntime:
+				sp.reset()
 
 		sp.close()
 

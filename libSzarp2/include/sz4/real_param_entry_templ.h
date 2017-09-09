@@ -32,6 +32,7 @@
 
 #include "decode_file.h"
 #include "live_cache.h"
+#include "load_current_file.h"
 
 namespace sz4 {
 
@@ -106,7 +107,7 @@ template<class V, class T, class base>
 sz4_file_block_entry<V, T, base>::sz4_file_block_entry(const T& start_time
 	, const std::wstring& block_path
 	, block_cache* cache)
-	: parent(start_time, block_path, cache)
+	: parent(time_trait<T>::invalid_value, block_path, cache)
 {}
 
 template<class V, class T, class base>
@@ -126,6 +127,50 @@ void sz4_file_block_entry<V, T, base>::refresh_if_needed() {
 	}
 
 	this->m_needs_refresh = false;
+}
+
+template<class V, class T, class block_map, class base>
+sz4_current_block_entry<V, T, block_map, base>::sz4_current_block_entry(block_map* map
+	, const std::wstring& block_path
+	, block_cache* cache)
+	: parent(time_trait<T>::last_valid_time, block_path, cache)
+	, m_map(map)
+{
+	this->m_start_time = time_trait<T>::invalid_value;
+}
+
+template<class V, class T, class block_map, class base>
+void sz4_current_block_entry<V, T, block_map, base>::refresh_if_needed() {
+	if (!this->m_block) {
+		this->m_block = new typename parent::block_type(time_trait<T>::last_valid_time, this, this->m_cache);
+		this->m_needs_refresh = true;
+	}
+
+	if (!this->m_needs_refresh)
+		return;
+	this->m_needs_refresh = false;
+
+	T last_time;
+	if (m_map->size() == 0)
+		last_time = time_trait<T>::invalid_value;
+	else
+		last_time = m_map->rbegin()->second->end_time();
+
+	std::vector<unsigned char> buffer;
+	T start_time;
+	if (!load_current_file(this->m_block_path, start_time, buffer))
+		return;
+
+	if (!time_trait<T>::is_valid(this->m_start_time))
+		this->m_start_time = start_time;
+
+	//transient state
+	if (start_time != this->m_start_time && last_time != start_time)
+		return;
+
+	this->m_start_time = start_time;
+	std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), start_time);
+	this->m_block->set_data(values);
 }
 
 template<class V, class T, class base>
@@ -196,6 +241,7 @@ real_param_entry_in_buffer<V, T, base>::real_param_entry_in_buffer(base *_base
 	, m_has_paths_to_update(false)
 	, m_first_sz4_date(time_trait<T>::invalid_value)
 	, m_live_block(nullptr)
+	, m_current_block(nullptr)
 {}
 
 template<class V, class T, class base>
@@ -211,23 +257,24 @@ void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& star
 
 	refresh_if_needed();
 
-	//search for the first block that has starting time bigger than
-	//start_time
-	if (m_blocks.size() == 0) {
-		//no blocks - nodata
-		sum.add_no_data_weight(end - start);
-		if (from_live == cache_ret::none)
-			sum.set_fixed(false);
-		return;
-	}
-
+	file_block_entry_type* entry(nullptr);
 	T current(start);
 	typename map_type::iterator i = m_blocks.upper_bound(start);
-	//if not first - back one off
-	if (i != m_blocks.begin())
+	//if not first or end - back one off
+	if (i != m_blocks.begin() && i != m_blocks.end())
 		std::advance(i, -1);
-	do {
-		file_block_entry_type* entry = i->second;
+
+	while (true) {
+		if (i == m_blocks.end()) {
+			if (entry != m_current_block)
+				entry = m_current_block;
+			else
+				break;
+		} else
+			entry = i->second;
+
+		if (!entry)
+			break;
 
 		if (end < entry->start_time()) {
 			sum.add_no_data_weight(end - current);
@@ -246,8 +293,9 @@ void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& star
 			current = end_for_block;
 		}
 
-		std::advance(i, 1);
-	} while (i != m_blocks.end());
+		if (i != m_blocks.end())
+			std::advance(i, 1);
+	}
 
 	if (current < end) {
 		sum.add_no_data_weight(end - current);
@@ -279,6 +327,12 @@ T real_param_entry_in_buffer<V, T, base>::search_data_right_impl(const T& start,
 		}
 	}
 
+	if (m_current_block) {
+		T t = m_current_block->search_data_right(start, end, condition);
+		if (time_trait<T>::is_valid(t))
+			return t;
+	}
+
 	if (m_live_block)
 		return m_live_block->search_data_right(start, end, condition);
 	else
@@ -299,6 +353,12 @@ T real_param_entry_in_buffer<V, T, base>::search_data_left_impl(const T& _start,
 	}
 
 	refresh_if_needed();
+
+	if (m_current_block && end > m_current_block->start_time()) {
+		T t = m_current_block->search_data_left(start, end, condition);
+		if (time_trait<T>::is_valid(t))
+			return t;
+	}
 
 	if (m_blocks.size() == 0)
 		return time_trait<T>::invalid_value;
@@ -337,6 +397,7 @@ void real_param_entry_in_buffer<V, T, base>::refresh_if_needed() {
 		m_paths_to_update.clear();
 		m_has_paths_to_update = false;
 	}
+
 	if (m_refresh_file_list) {
 		try {
 			refresh_file_list();
@@ -352,12 +413,19 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file(const std::string& pat
 	if (!time_trait<T>::is_valid(time))
 		return;
 
-	typename map_type::iterator i = m_blocks.find(time);
-	if (i != m_blocks.end())
-		i->second->set_needs_refresh();
-	else {
-		if (sz4_file == true || !time_trait<T>::is_valid(m_first_sz4_date))
+	if (time == time_trait<T>::last_valid_time) {
+		if (m_current_block)
+			m_current_block->set_needs_refresh();	
+		else
 			m_refresh_file_list = true;
+	} else {
+		typename map_type::iterator i = m_blocks.find(time);
+		if (i != m_blocks.end())
+			i->second->set_needs_refresh();
+		else {
+			if (sz4_file == true || !time_trait<T>::is_valid(m_first_sz4_date))
+				m_refresh_file_list = true;
+		}
 	}
 }
 
@@ -402,8 +470,14 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 		bool sz4 = std::get<2>(f);
 
 		file_block_entry<V, T, base> *entry(nullptr);
+		bool current(false);
 		if (sz4) {
-			entry = new sz4_file_block_entry<V, T, base>(
+			if (time_trait<T>::last_valid_time == file_time) {
+				current = true;
+				entry = new sz4_current_block_entry<V, T, map_type, base>(
+						&m_blocks, file_path, m_base->cache());
+			} else
+				entry = new sz4_file_block_entry<V, T, base>(
 						file_time, file_path, m_base->cache());
 		} else {
 			if (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time)
@@ -411,7 +485,9 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 						file_time, file_path, m_base->cache());
 		}
 
-		if (entry)
+		if (current)
+			m_current_block = entry;
+		else
 			m_blocks.insert(std::make_pair(file_time, entry));
 
 	}

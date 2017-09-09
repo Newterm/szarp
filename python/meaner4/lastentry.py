@@ -20,6 +20,7 @@
 
 import os
 import struct
+import syslog
 import timedelta
 
 class TimeError(Exception):
@@ -75,6 +76,8 @@ class LastEntry:
 	def read_time(self, file):
 		delta, self.time_size = timedelta.decode(file)
 		self.time += delta
+		if self.time > 2 ** 32:
+			syslog.syslog(syslog.LOG_ERROR, "Error: %s, %s, %s", self.delta, self.time, self.time.size)
 
 	def new_value(self, time, nanotime, value):
 		self.reset(time, nanotime, value)
@@ -95,7 +98,6 @@ class LastEntry:
 			binary = file.read(self.param.value_lenght)
 			try:
 				self.value = self.param.value_from_binary(binary)
-				print "from_file, value:", self.value
 				ret.append({ 'value': self.value, 'time' : self.last_time() })
 			except:
 				file.truncate(pos)
@@ -109,11 +111,13 @@ class LastEntry:
 			try:
 				self.read_time(file)
 			except:
+				syslog.syslog(syslog.LOG_WARNING, "Truncating to size: %s, %s, %s, %s" % (time, pos, len(file.file.getvalue()), [ord(x) for x in file.file.getvalue()]))
+				f = open("/tmp/log.values", "w")
+				f.write(file.file.getvalue())
+				f.close()
 				file.truncate(pos)
 				self.time_size = 0
 				break
-
-			print "from_file, time:", self.last_time()
 
 			pos = file.tell()
 
@@ -126,5 +130,5 @@ class LastEntry:
 			time, nanotime = struct.unpack("<II", file.read(8))
 			return self.from_file(file, time, nanotime)
 		else:
-			time = struct.unpack("<I", file.read(4))
+			time = struct.unpack("<I", file.read(4))[0]
 			return self.from_file(file, time, 0)

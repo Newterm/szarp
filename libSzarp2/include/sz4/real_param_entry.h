@@ -83,6 +83,18 @@ public:
 	void refresh_if_needed();
 };
 
+template<class V, class T, class block_map, class base> class sz4_current_block_entry : public file_block_entry<V, T, base> {
+	block_map *m_map;
+public:
+	typedef file_block_entry<V, T, base> parent;
+	sz4_current_block_entry(
+			block_map* map,
+			const std::wstring& block_path,
+			block_cache* cache);
+
+	void refresh_if_needed();
+};
+
 template<class V, class T, class base> class szbase_file_block_entry : public file_block_entry<V, T, base> {
 	size_t m_read_so_far;
 public:
@@ -115,6 +127,8 @@ protected:
 	T m_first_sz4_date;
 
 	live_block<V, T>* m_live_block;
+
+	file_block_entry<V, T, base>* m_current_block;
 public:
 	real_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath& param_dir);
 
