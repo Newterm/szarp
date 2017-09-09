@@ -107,7 +107,7 @@ template<class V, class T, class base>
 sz4_file_block_entry<V, T, base>::sz4_file_block_entry(const T& start_time
 	, const std::wstring& block_path
 	, block_cache* cache)
-	: parent(time_trait<T>::invalid_value, block_path, cache)
+	: parent(start_time, block_path, cache)
 {}
 
 template<class V, class T, class base>
@@ -244,6 +244,31 @@ real_param_entry_in_buffer<V, T, base>::real_param_entry_in_buffer(base *_base
 	, m_current_block(nullptr)
 {}
 
+namespace {
+
+template<class V, class T, class base>
+void get_wsum_from_entry(file_block_entry<V, T, base>* entry, T& start, const T& end, weighted_sum<V, T>& sum) {
+	if (end < entry->start_time()) {
+		sum.add_no_data_weight(end - start);
+		start = end;
+		return;
+	}
+
+	if (start < entry->start_time()) {
+		sum.add_no_data_weight(entry->start_time() - start);
+		start = entry->start_time();
+	}
+
+	if (start < entry->end_time()) {
+		T end_of_block = std::min(end, entry->end_time());
+		entry->get_weighted_sum(start, end_of_block, sum);
+
+		start = end_of_block;
+	}
+}
+
+}
+
 template<class V, class T, class base>
 void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& start, const T& _end, SZARP_PROBE_TYPE, weighted_sum<V, T>& sum) {
 
@@ -257,45 +282,18 @@ void real_param_entry_in_buffer<V, T, base>::get_weighted_sum_impl(const T& star
 
 	refresh_if_needed();
 
-	file_block_entry_type* entry(nullptr);
 	T current(start);
-	typename map_type::iterator i = m_blocks.upper_bound(start);
-	//if not first or end - back one off
-	if (i != m_blocks.begin() && i != m_blocks.end())
-		std::advance(i, -1);
-
-	while (true) {
-		if (i == m_blocks.end()) {
-			if (entry != m_current_block)
-				entry = m_current_block;
-			else
-				break;
-		} else
-			entry = i->second;
-
-		if (!entry)
-			break;
-
-		if (end < entry->start_time()) {
-			sum.add_no_data_weight(end - current);
-			return;
-		}
-
-		if (current < entry->start_time()) {
-			sum.add_no_data_weight(entry->start_time() - current);
-			current = i->first;
-		}
-
-		if (current < entry->end_time()) {
-			T end_for_block = std::min(end, entry->end_time());
-			entry->get_weighted_sum(current, end_for_block, sum);
-
-			current = end_for_block;
-		}
-
-		if (i != m_blocks.end())
-			std::advance(i, 1);
+	if (m_blocks.size()) {
+		auto i = m_blocks.upper_bound(start);
+		//if not first - back one off
+		if (i != m_blocks.begin())
+			i -= 1;
+		for (; i != m_blocks.end() && current < end; i++)
+			get_wsum_from_entry(i->second, current, end, sum);
 	}
+
+	if (current < end && m_current_block)
+		get_wsum_from_entry(m_current_block, current, end, sum);
 
 	if (current < end) {
 		sum.add_no_data_weight(end - current);
@@ -454,6 +452,9 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 		if (m_blocks.find(file_time) != m_blocks.end())
 			continue;
 
+		if (file_time == time_trait<T>::last_valid_time && m_current_block)
+			continue;
+
 		if (sz4 && (!time_trait<T>::is_valid(m_first_sz4_date) || m_first_sz4_date > file_time))
 			m_first_sz4_date = file_time;
 		
@@ -485,11 +486,12 @@ void real_param_entry_in_buffer<V, T, base>::refresh_file_list() {
 						file_time, file_path, m_base->cache());
 		}
 
-		if (current)
-			m_current_block = entry;
-		else
-			m_blocks.insert(std::make_pair(file_time, entry));
-
+		if (entry) {
+			if (current)
+				m_current_block = entry;
+			else
+				m_blocks.insert(std::make_pair(file_time, entry));
+		}
 	}
 }
 
