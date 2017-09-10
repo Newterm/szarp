@@ -159,7 +159,7 @@ class SaveParamTest(unittest.TestCase):
 			i += 1
 
 		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
-		self._check_file(path, "<IIiBBBBBi", (i - 1, 0, i - 1) + SEC_NS + (i,))
+                self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
 
 		path2 = os.path.join(self.param_dir, "00000000000000000000.sz4")
 		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(i - 1) ] + [[ i - 1 ]])
@@ -216,7 +216,7 @@ class SaveParamTest(unittest.TestCase):
 		self._check_file_bz(path, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
 
 		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
-		self._check_file(path, "<IIiBBBBBi", (i - 1, 0, i - 1) + SEC_NS + (i,))
+		self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
 
 	def test_bzipfileoverflow(self):
 		i, sp = self.newfiletest_start()

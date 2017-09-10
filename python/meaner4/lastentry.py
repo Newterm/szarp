@@ -20,7 +20,6 @@
 
 import os
 import struct
-import syslog
 import timedelta
 
 class TimeError(Exception):
@@ -76,8 +75,6 @@ class LastEntry:
 	def read_time(self, file):
 		delta, self.time_size = timedelta.decode(file)
 		self.time += delta
-		if self.time > 2 ** 32:
-			syslog.syslog(syslog.LOG_ERROR, "Error: %s, %s, %s", self.delta, self.time, self.time.size)
 
 	def new_value(self, time, nanotime, value):
 		self.reset(time, nanotime, value)
@@ -111,10 +108,7 @@ class LastEntry:
 			try:
 				self.read_time(file)
 			except:
-				syslog.syslog(syslog.LOG_WARNING, "Truncating to size: %s, %s, %s, %s" % (time, pos, len(file.file.getvalue()), [ord(x) for x in file.file.getvalue()]))
-				f = open("/tmp/log.values", "w")
-				f.write(file.file.getvalue())
-				f.close()
+				import pdb; pdb.set_trace()
 				file.truncate(pos)
 				self.time_size = 0
 				break

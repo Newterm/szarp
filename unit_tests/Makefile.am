@@ -38,6 +38,7 @@ unit_tests_SOURCES = \
 	sz4_live_cache.cpp \
 	sz4_decode_test.cpp \
 	sz4_factory_test.cpp \
+	sz4_real_param.cpp \
 	zmq_handler_test.cpp \
 	simple_mocks.h
 

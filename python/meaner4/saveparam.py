@@ -121,19 +121,20 @@ class SaveParam:
 
 		if self.prev is not None:
 			prev_entry = lastentry.LastEntry(self.param)
-			prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
+			vals = prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
 
 			self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
 
 			last_time, last_nanotime = prev_entry.last_time()
-			last_time_1, last_nanotime_1 = self.param.time_just_after(last_time, last_nanotime)
+			if len(vals) > 0 and vals[-1]['time'] == (last_time, last_nanotime):
+				last_time, last_nanotime = self.param.time_just_after(last_time, last_nanotime)
 
-			if self.param.is_time_before(last_time_1, last_nanotime_1, time, nanotime):
-				self.__create_current_file(self.param.nan(), last_time_1, last_nanotime_1)
-				self.last_entry.reset(last_time_1, last_nanotime_1, self.param.nan())
+			if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
+				self.__create_current_file(self.param.nan(), last_time, last_nanotime)
+				self.last_entry.reset(last_time, last_nanotime, self.param.nan())
 				self.__write_value(value, time, nanotime)
 
-			elif self.param.is_time_before(last_time, last_nanotime, time, nanotime):
+			elif (last_time, last_nanotime) == (time, nanotime):
 				self.__create_current_file(value, time, nanotime)
 				self.last_entry.reset(time, nanotime, value)
 
@@ -222,7 +223,7 @@ class SaveParam:
 		if self.__try_appending_to_prev_file(vals) == False:
 			self.__create_new_bz_file(vals)
 
-		last_time, last_nanotime = vals[-1]['time']
+		last_time, last_nanotime = self.param.time_just_after(*vals[-1]['time'])
 		if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
 			self.__create_current_file(vals[-1]['value'], last_time, last_nanotime)
 			self.last_entry.from_current_file(self.file)

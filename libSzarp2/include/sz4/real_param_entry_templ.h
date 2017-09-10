@@ -36,6 +36,77 @@
 
 namespace sz4 {
 
+template<class V, class T, class base> class file_block_entry {
+protected:
+	typedef file_block<V, T, base> block_type;
+	block_type* m_block;
+
+	T m_start_time;
+	block_cache* m_cache;
+
+	bool m_needs_refresh;
+	const boost::filesystem::wpath m_block_path;
+public:
+	file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache) ;
+
+	virtual void refresh_if_needed() = 0;
+
+	virtual T start_time();
+
+	T end_time();
+
+	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum);
+
+	T search_data_right(const T& start, const T& end, const search_condition& condition);
+
+	T search_data_left(const T& start, const T& end, const search_condition& condition);
+
+	void set_needs_refresh();
+
+	void block_deleted();
+
+	virtual ~file_block_entry();
+};
+
+template<class V, class T, class base> class sz4_file_block_entry : public file_block_entry<V, T, base> {
+public:
+	typedef file_block_entry<V, T, base> parent;
+	sz4_file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache);
+
+	void refresh_if_needed();
+};
+
+template<class V, class T, class block_map, class base> class sz4_current_block_entry : public file_block_entry<V, T, base> {
+	block_map *m_map;
+public:
+	typedef file_block_entry<V, T, base> parent;
+	sz4_current_block_entry(
+			block_map* map,
+			const std::wstring& block_path,
+			block_cache* cache);
+
+	T start_time() override;
+
+	void refresh_if_needed();
+};
+
+template<class V, class T, class base> class szbase_file_block_entry : public file_block_entry<V, T, base> {
+	size_t m_read_so_far;
+public:
+	typedef file_block_entry<V, T, base> parent;
+
+	szbase_file_block_entry(const T& start_time,
+			const std::wstring& block_path,
+			block_cache* cache);
+
+	void refresh_if_needed();
+};
+
+
 template<class value_type, class time_type, class base>
 file_block<value_type, time_type, base>::file_block(const time_type& start_time
 	, entry_type* entry
@@ -171,6 +242,13 @@ void sz4_current_block_entry<V, T, block_map, base>::refresh_if_needed() {
 	this->m_start_time = start_time;
 	std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), start_time);
 	this->m_block->set_data(values);
+}
+
+template<class V, class T, class block_map, class base>
+T sz4_current_block_entry<V, T, block_map, base>::start_time() {
+	refresh_if_needed();
+	
+	return this->m_start_time;
 }
 
 template<class V, class T, class base>
