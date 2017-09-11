@@ -60,9 +60,9 @@ class Param:
 		self.max_file_item_size = self.value_lenght + self.time_prec + 1
 
 		if time_prec == 8:
-			self.max_time = 2 ** 32, 2 ** 32 - 1
+			self.max_time = 2 ** 32 - 1, 2 ** 32 - 2
 		else:
-			self.max_time = 2 ** 32 - 1, 0
+			self.max_time = 2 ** 32 - 2, 0
 
 
 	def value_to_binary(self, value):

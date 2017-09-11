@@ -242,6 +242,7 @@ void sz4_current_block_entry<V, T, block_map, base>::refresh_if_needed() {
 	this->m_start_time = start_time;
 	std::vector<value_time_pair<V, T> > values = decode_file<V, T>(&buffer[0], buffer.size(), start_time);
 	this->m_block->set_data(values);
+	this->m_block->set_start_time(this->m_start_time);
 }
 
 template<class V, class T, class block_map, class base>
@@ -403,7 +404,7 @@ T real_param_entry_in_buffer<V, T, base>::search_data_right_impl(const T& start,
 		}
 	}
 
-	if (m_current_block) {
+	if (m_current_block && end > m_current_block->start_time() && start < m_current_block->end_time()) {
 		T t = m_current_block->search_data_right(start, end, condition);
 		if (time_trait<T>::is_valid(t))
 			return t;
@@ -430,7 +431,7 @@ T real_param_entry_in_buffer<V, T, base>::search_data_left_impl(const T& _start,
 
 	refresh_if_needed();
 
-	if (m_current_block && end > m_current_block->start_time()) {
+	if (m_current_block && end < m_current_block->end_time() && start >= m_current_block->start_time()) {
 		T t = m_current_block->search_data_left(start, end, condition);
 		if (time_trait<T>::is_valid(t))
 			return t;

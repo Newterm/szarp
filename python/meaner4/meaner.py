@@ -109,7 +109,6 @@ class Meaner(MeanerBase):
 		self.heartbeat_param.process_value(
 			FIRST_HEART_BEAT if self.last_heartbeat is None else NON_FIRST_HEART_BEAT,
 			time)
-		self.heartbeat_param.commit()
 		self.last_heartbeat = time
 
 	def meaner4_next_heartbeat(self):
@@ -119,7 +118,6 @@ class Meaner(MeanerBase):
 		value = 0 if self.last_heartbeat is None else 1
 		self.last_meaner4_heartbeat = int(time.time())
 		self.meaner4_heartbeat_param.process_value(value, self.last_meaner4_heartbeat)
-		self.meaner4_heartbeat_param.commit()
 
 	def loop(self):
 		while not force_interrupt:

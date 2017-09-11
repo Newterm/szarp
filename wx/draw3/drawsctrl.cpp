@@ -377,7 +377,7 @@ void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 			data.direction,
 			start.Format().c_str(),
 			end.IsValid() ? end.Format().c_str() : L"none",
-			time.Format().c_str());
+			time.IsValid() ? time.Format().c_str() : L"none");
 
 	switch (data.direction) {
 		case -1:

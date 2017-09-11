@@ -103,7 +103,7 @@ class SaveParamTest(unittest.TestCase):
 		self.assertEqual(struct.unpack(fmt, self._read(path)), expected)
 
 	def basictest(self):
-		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
 		sp.process_msg_batch([self._msg(4, 123456)])
@@ -158,7 +158,7 @@ class SaveParamTest(unittest.TestCase):
 			prev_size = size
 			i += 1
 
-		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
                 self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
 
 		path2 = os.path.join(self.param_dir, "00000000000000000000.sz4")
@@ -174,23 +174,23 @@ class SaveParamTest(unittest.TestCase):
 	def test_startfrombz(self):
 		"""Test if the proper start of saveparam happens with bz2 file only"""
 		i, _ = self.newfiletest_start()
-		os.remove(os.path.join(self.param_dir, "42949672964294967295.sz4"))
+		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
 		sp.process_msg_batch([self._msg(i, i)])
 
-		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 		self._check_file(path, "<IIiBBBBBi", (i - 1, 1) + (self.param.nan(),) + _999999999_NS + (i,))
 
 	def test_startfrombznogap(self):
 		"""Test if the proper start of saveparam happens with bz2 file only"""
 		i, _ = self.newfiletest_start()
-		os.remove(os.path.join(self.param_dir, "42949672964294967295.sz4"))
+		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
 		sp.process_msg_batch([self._msg(i, i - 1, 1)])
 
-		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 		self._check_file(path, "<IIi", (i - 1, 1, i))
 
 	def test_appendingtobzip(self):
@@ -215,7 +215,7 @@ class SaveParamTest(unittest.TestCase):
 		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(i - 1) ] + [[ i - 1 ]])
 		self._check_file_bz(path, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
 
-		path = os.path.join(self.param_dir, "42949672964294967295.sz4")
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 		self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
 
 	def test_bzipfileoverflow(self):

@@ -117,31 +117,37 @@ class SaveParam:
 
 		self.__write_value(value, time, nanotime)
 
+	def __do_first_write_last_present(self, value, time, nanotime):
+
+		prev_entry = lastentry.LastEntry(self.param)
+		vals = prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
+
+		self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
+
+		last_time, last_nanotime = prev_entry.last_time()
+
+		last_value_has_no_duration = len(vals) > 0 and vals[-1]['time'] == (last_time, last_nanotime)
+		if last_value_has_no_duration == True:
+			last_time, last_nanotime = self.param.time_just_after(last_time, last_nanotime)
+
+		if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
+			self.__create_current_file(self.param.nan(), last_time, last_nanotime)
+			self.last_entry.reset(last_time, last_nanotime, self.param.nan())
+			self.__write_value(value, time, nanotime)
+
+		elif (last_time, last_nanotime) == (time, nanotime):
+			self.__create_current_file(value, time, nanotime)
+			self.last_entry.reset(time, nanotime, value)
+
+		else:
+			raise lastentry.TimeError((last_time, last_nanotime), (time, nanotime))
+
+		self.first_write = False
+
 	def __do_first_write_to_new_file(self, value, time, nanotime):
 
 		if self.prev is not None:
-			prev_entry = lastentry.LastEntry(self.param)
-			vals = prev_entry.from_file(self.__read_bzip_file(self.prev), *self.param_path.time_from_path(self.prev))
-
-			self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
-
-			last_time, last_nanotime = prev_entry.last_time()
-			if len(vals) > 0 and vals[-1]['time'] == (last_time, last_nanotime):
-				last_time, last_nanotime = self.param.time_just_after(last_time, last_nanotime)
-
-			if self.param.is_time_before(last_time, last_nanotime, time, nanotime):
-				self.__create_current_file(self.param.nan(), last_time, last_nanotime)
-				self.last_entry.reset(last_time, last_nanotime, self.param.nan())
-				self.__write_value(value, time, nanotime)
-
-			elif (last_time, last_nanotime) == (time, nanotime):
-				self.__create_current_file(value, time, nanotime)
-				self.last_entry.reset(time, nanotime, value)
-
-			else:
-				raise lastentry.TimeError((last_time, last_nanotime), (time, nanotime))
-
-			self.first_write = False
+			self.__do_first_write_last_present(value, time, nanotime)
 		else:
 
 			param_dir = self.param_path.param_dir()
