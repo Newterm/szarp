@@ -35,30 +35,44 @@ class FileFactory:
 		def __init__(self, path, mode):
 			self.file = open(path, mode, 0)
 
+			pos = self.file.tell()
+
+			self.file.seek(0, 0)
+
+			self.buf = cStringIO.StringIO()
+			self.buf.write(self.file.read())
+
+			self.buf.seek(pos, 0)
+
+			self.dirty = len(self.buf.getvalue())
+
 		def seek(self, offset, whence):
-			self.file.seek(offset, whence)
+			self.buf.seek(offset, whence)
 
 		def tell(self):
-			return self.file.tell()
+			return self.buf.tell()
 
 		def write(self, data):
-			self.file.write(data)
+			self.dirty = min(self.dirty, self.buf.tell())
+			self.buf.write(data)
 
 		def read(self, size=-1):
-			return self.file.read(size)
+			return self.buf.read(size)
 
-		def lock(self):
-			fcntl.lockf(self.file, fcntl.LOCK_EX)
+		def sync(self):
+			self.file.seek(self.dirty, 0)
+			self.file.write(self.buf.getvalue()[self.dirty:])
+			self.dirty = self.file.tell()
+			self.file.truncate(len(self.buf.getvalue()))
 
-		def unlock(self):
-			self.file.flush()
-			fcntl.lockf(self.file, fcntl.LOCK_UN)
-
-		def close(self):
+		def close(self, sync=True):
+			if sync:
+				self.sync()
 			self.file.close()
 
 		def truncate(self, size):
-			self.file.truncate(size)
+			self.dirty = min(self.dirty, size)
+			self.buf.truncate(size)
 
 	def open(self, path, mode):
 		return self.File(path, mode)
@@ -85,11 +99,11 @@ class SaveParam:
 			io.seek(0, 0)
 			return io
 		finally:
-			file.close()
+			file.close(sync=False)
 
 	def __create_current_file(self, value, time, nanotime):
 		if self.file is not None:
-			self.file.close()
+			self.file.close(sync=False)
 
 		self.file = self.file_factory.open(self.param_path.create_file_path(*self.param.max_time), "w+b")
 
@@ -199,7 +213,7 @@ class SaveParam:
 		io = self.__read_bzip_file(self.prev)
 
 		entry = lastentry.LastEntry(self.param)
-		entry.from_file(io, *self.param_path.time_from_path(self.prev))
+		ovals = entry.from_file(io, *self.param_path.time_from_path(self.prev))
 
 		#if the file is not empty...
 		if entry.value is not None:
@@ -248,7 +262,7 @@ class SaveParam:
 		os.chmod(temp.name, 0644)
 		os.rename(temp.name, path)
 
-	def process_value(self, value, time, nanotime = 0):
+	def __process_value(self, value, time, nanotime = 0):
 		if not self.param.written_to_base:
 			return
 
@@ -266,14 +280,31 @@ class SaveParam:
 					"Ignoring value for param %s, as this value (time:%s) is no later than lastest value(time:%s)" \
 					% (self.param_path.param_path, e.current_time, e.msg_time))
 
+	def process_value(self, value, time, nanotime = 0):
+		self.__process_value(value, time, nanotime)
+		if self.file is not None:
+			self.file.sync()
 
-	def process_msg(self, msg):
-		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
+	def process_msgs(self, msgs):
+		if len(msgs) == 0:
+			return;
 
-	def process_msg_batch(self, batch):
-		for m in batch:
-			self.process_value(self.param.value_from_msg(m), m.time, m.nanotime)
-		return batch[-1].time
+		v = self.param.value_from_msg(msgs[0])
+		self.__process_value(v, msgs[0].time, msgs[0].nanotime)
+
+		for m in msgs[1:-1]:
+			vn = self.param.value_from_msg(m)
+			if vn != v:
+				self.__process_value(self.param.value_from_msg(m), m.time, m.nanotime)
+				v = vn
+
+		if len(msgs) > 1:
+			self.__process_value(self.param.value_from_msg(msgs[-1]), msgs[-1].time, msgs[-1].nanotime)
+
+		if self.file is not None:
+			self.file.sync()
+
+		return msgs[-1].time
 
 	def reset(self):
 		self.close()
@@ -281,5 +312,5 @@ class SaveParam:
 
 	def close(self):
 		if self.file is not None:
-			self.file.close()
+			self.file.close(sync=True)
 			self.file = None

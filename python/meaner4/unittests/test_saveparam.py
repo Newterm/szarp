@@ -106,15 +106,15 @@ class SaveParamTest(unittest.TestCase):
 		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
-		sp.process_msg_batch([self._msg(4, 123456)])
+		sp.process_msgs([self._msg(4, 123456)])
 		self._check_size(path, 12)
 		self._check_file(path, "<IIi", (123456, 0, 4))
 
-		sp.process_msg_batch([self._msg(4, 123457)])
+		sp.process_msgs([self._msg(4, 123457)])
 		self._check_size(path, 21)
 		self._check_file(path, "<IIiBBBBBi", (123456, 0, 4 ) + SEC_NS + (4,))
 
-		sp.process_msg_batch([self._msg(5, 123458)])
+		sp.process_msgs([self._msg(5, 123458)])
 		self._check_size(path, 8 + 4 + 5 + 4 + 5 + 4)
 		self._check_file(path, "<IIiBBBBBiBBBBBi", (123456, 0, 4) + SEC_NS +  (4,) + SEC_NS + (5,))
 
@@ -132,7 +132,7 @@ class SaveParamTest(unittest.TestCase):
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
 
-		sp.process_msg_batch([ self._msg(5, 123459) ])
+		sp.process_msgs([ self._msg(5, 123459) ])
 		self._check_size(path, 12 + 5 + 4 + 5 + 4 + 1 + 4 + 5 + 4)
 		self._check_file(path, "<IIiBBBBBiBBBBBiBiBBBBBi", 
 					(123456, 0, 4) + \
@@ -149,7 +149,7 @@ class SaveParamTest(unittest.TestCase):
 		sp.data_file_size = 100
 
 		while True:
-			sp.process_msg_batch([self._msg(i, i)])
+			sp.process_msgs([self._msg(i, i)])
 
 			size = self._file_size(sp.file)
 			if prev_size > size:
@@ -177,7 +177,7 @@ class SaveParamTest(unittest.TestCase):
 		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
-		sp.process_msg_batch([self._msg(i, i)])
+		sp.process_msgs([self._msg(i, i)])
 
 		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 		self._check_file(path, "<IIiBBBBBi", (i - 1, 1) + (self.param.nan(),) + _999999999_NS + (i,))
@@ -188,7 +188,7 @@ class SaveParamTest(unittest.TestCase):
 		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
 
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
-		sp.process_msg_batch([self._msg(i, i - 1, 1)])
+		sp.process_msgs([self._msg(i, i - 1, 1)])
 
 		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
 		self._check_file(path, "<IIi", (i - 1, 1, i))
@@ -203,7 +203,7 @@ class SaveParamTest(unittest.TestCase):
 		while True:
 			i += 1
 
-			sp.process_msg_batch([self._msg(i, i)])
+			sp.process_msgs([self._msg(i, i)])
 
 			size = self._file_size(sp.file)
 			if prev_size > size:
@@ -227,7 +227,7 @@ class SaveParamTest(unittest.TestCase):
 		while True:
 			i += 1
 
-			sp.process_msg_batch([self._msg(i, i)])
+			sp.process_msgs([self._msg(i, i)])
 
 			size = self._file_size(sp.file)
 			if prev_size > size:

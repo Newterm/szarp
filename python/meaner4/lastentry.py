@@ -56,6 +56,7 @@ class LastEntry:
 	def get_time_delta(self, time_from, time_to):
 		diff = time_to - time_from
 		if diff < 0:
+			import pdb; pdb.set_trace()
 			raise TimeError(time_from, time_to)
 
 		return timedelta.encode(diff)

@@ -54,43 +54,10 @@ def szbase_file_path_to_date(path):
 
 	return year, month
 
-class FileFactory:
-	class File:
-		def __init__(self, path, mode):
-			self.path = path
-
-			self.file = cStringIO.StringIO()
-			try:
-				file = open(path, mode)
-				s = file.read()
-				self.file.write(s)
-				file.close()	
-			except:
-				pass
-
-
-		def seek(self, offset, whence):
-			self.file.seek(offset, whence)
-
-		def write(self, data):
-			self.file.write(data)
-
-		def read(self, size=-1):
-			return self.file.read(size)
-
-		def lock(self):
+class ConvFileFactory:
+	class File(saveparam.FileFactory.File):
+		def sync(self):
 			pass
-
-		def unlock(self):
-			pass
-
-		def tell(self):
-			return self.file.tell()
-
-		def close(self):
-			file = open(self.path, "w+b")
-			file.write(self.file.getvalue())
-			file.close()
 
 	def open(self, path, mode):
 		return self.File(path, mode)
@@ -131,10 +98,10 @@ class Converter:
 		lastentry.LastEntry.get_time_delta = get_time_delta_cached
 
 		for p in self.ipk.params:
-			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory())
+			sp = saveparam.SaveParam(p, self.szbase_dir, ConvFileFactory())
 			self.s_params[p.param_name] = sp
 	
-		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), self.szbase_dir, FileFactory())
+		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), self.szbase_dir, ConvFileFactory())
 
 		self.queue = queue
 
@@ -219,7 +186,7 @@ class Converter:
 				if not time < ntime:
 					break
 
-			sp.process_msg_batch(msgs)
+			sp.process_msgs(msgs)
 
 			if time + delta != ntime:
 				sp.reset()
