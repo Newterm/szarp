@@ -59,15 +59,18 @@ class FileFactory:
 		def read(self, size=-1):
 			return self.buf.read(size)
 
-		def sync(self):
+		def __sync(self):
 			self.file.seek(self.dirty, 0)
 			self.file.write(self.buf.getvalue()[self.dirty:])
 			self.dirty = self.file.tell()
 			self.file.truncate(len(self.buf.getvalue()))
 
+		def sync(self):
+			self.__sync();
+
 		def close(self, sync=True):
 			if sync:
-				self.sync()
+				self.__sync()
 			self.file.close()
 
 		def truncate(self, size):
