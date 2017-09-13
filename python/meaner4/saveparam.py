@@ -84,7 +84,8 @@ class SaveParam:
 	def __init__(self, param, szbase_dir, file_factory=FileFactory()):
 		self.param_path = parampath.ParamPath(param, szbase_dir)
 		self.last_entry = lastentry.LastEntry(param)
-		self.data_file_size = config.DATA_FILE_SIZE
+		self.compressed_file_size = config.COMPRESSED_FILE_SIZE
+		self.uncompressed_file_size = config.UNCOMPRESSED_FILE_SIZE
 		self.file_factory = file_factory
 		self.file_nanotime = None
 		self.file_time = None
@@ -186,7 +187,7 @@ class SaveParam:
 			self.__do_first_write_to_new_file(value, time, nanotime)
 
 	def __write_value(self, value, time, nanotime):
-		if self.param.max_file_item_size + self.file_size > self.data_file_size:
+		if self.param.max_file_item_size + self.file_size > self.uncompressed_file_size:
 			self.__start_next_file(value, time, nanotime)
 		else:
 
@@ -224,7 +225,7 @@ class SaveParam:
 			self.__save_values(io, entry, vals)
 
 			bzip2 = bz2.compress(io.getvalue())
-			if len(bzip2) < self.data_file_size:
+			if len(bzip2) < self.compressed_file_size:
 				self.__save_file(bzip2, self.prev)
 				return True
 

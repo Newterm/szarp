@@ -146,7 +146,8 @@ class SaveParamTest(unittest.TestCase):
 		i = 0
 		prev_size = 0	
 		sp = saveparam.SaveParam(self.param, self.temp_dir)
-		sp.data_file_size = 100
+		sp.compressed_file_size = 100
+		sp.uncompressed_file_size = 100
 
 		while True:
 			sp.process_msgs([self._msg(i, i)])
