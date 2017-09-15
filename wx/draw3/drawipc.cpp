@@ -56,7 +56,7 @@ wxString DrawClient::SendMsg(wxString topic, wxString msg) {
 DrawServer::DrawServer(FrameManager *frm_mgr, ConfigManager *cfg_mgr) : m_frm_mgr(frm_mgr), m_cfg_mgr(cfg_mgr) {}
 
 wxConnectionBase *DrawServer::OnAcceptConnection(const wxString &topic) {
-	if (topic != _T("START_BASE") 
+	if (topic != _T("START_BASE")
 			&& topic != _T("START_URL")
 			&& topic != _T("START_URL_EXISTING"))
 		return NULL;
@@ -64,14 +64,14 @@ wxConnectionBase *DrawServer::OnAcceptConnection(const wxString &topic) {
 	return new DrawServerConnection(m_frm_mgr, topic);
 }
 
-DrawServerConnection::DrawServerConnection(FrameManager *frm_mgr, wxString topic) : 
-		m_buffer(NULL), 
+DrawServerConnection::DrawServerConnection(FrameManager *frm_mgr, wxString topic) :
+		m_buffer(NULL),
 		m_frm_mgr(frm_mgr),
 		m_topic(topic)
 {
 }
 
-wxChar* DrawServerConnection::OnRequest(const wxString& topic, const wxString& item, int *size, wxIPCFormat format) {
+const void *DrawServerConnection::OnRequest(const wxString& topic, const wxString& item, size_t *size, wxIPCFormat format) {
 	if (format != wxIPC_TEXT)
 		return NULL;
 

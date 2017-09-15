@@ -76,9 +76,9 @@ public:
 	 * @param item request content
 	 * @param size output param, size of response
 	 * @return response to a request*/
-	virtual wxChar* OnRequest(const wxString& topic, const wxString& item, int *size, wxIPCFormat format);
+	const void *OnRequest(const wxString& topic, const wxString& item, size_t *size, wxIPCFormat format ) override;
 	virtual ~DrawServerConnection();
-	
+
 };
 
 #endif
