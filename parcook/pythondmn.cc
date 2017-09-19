@@ -21,7 +21,7 @@
 #include <iostream>
 #include <ctime>
 
-#include "cmdlineparser.h"
+#include "argsmgr.h"
 #include "cfgdealer_handler.h"
 
 namespace py = boost::python;
@@ -34,7 +34,7 @@ public:
 		{}
 
 	template <typename Config>
-	int configure(const Config&, const basedmn::ArgsManager&);
+	int configure(const Config&, const ArgsManager&);
 	int configure_events();
 
 	int get_line_number();
@@ -105,7 +105,7 @@ int ipc::configure_events() {
 }
 
 template <typename Config>
-int ipc::configure(const Config& cfg, const basedmn::ArgsManager& args_mgr) {
+int ipc::configure(const Config& cfg, const ArgsManager& args_mgr) {
 	configure_events();
 
 	try {
@@ -448,8 +448,8 @@ void pyszbase::set_prober_server_address(const std::wstring &prefix,
 
 int main( int argc, char ** argv )
 {
-	basedmn::ArgsManager args_mgr("pythondmn");
-	args_mgr.parse(argc, argv, basedmn::DefaultArgs(), basedmn::DaemonArgs());
+	ArgsManager args_mgr("pythondmn");
+	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
 	args_mgr.initLibpar();
 
 	if (!args_mgr.has("device-path")) {

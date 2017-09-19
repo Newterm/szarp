@@ -18,7 +18,7 @@ ConfigDealerHandler::DeviceInfo::DeviceInfo(const pt::ptree& conf, size_t _devic
 }
 
 
-ConfigDealerHandler::ConfigDealerHandler(const basedmn::ArgsManager& args_mgr) {
+ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	/* libpar params */
 
 	ipk_path = *args_mgr.get<std::string>("IPK");

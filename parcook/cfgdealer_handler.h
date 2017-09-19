@@ -4,7 +4,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-#include "cmdlineparser.h"
+#include "../libSzarp/include/argsmgr.h"
 #include "../libSzarp2/include/config_info.h"
 
 namespace basedmn {
@@ -28,7 +28,7 @@ class ConfigDealerHandler {
 	};
 
 public:
-	ConfigDealerHandler(const basedmn::ArgsManager&);
+	ConfigDealerHandler(const ArgsManager&);
 
 	std::string GetPrintableDeviceXMLString() const {
 		std::ostringstream oss;

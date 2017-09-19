@@ -143,9 +143,6 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 		std::move(libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 0))
 	};
 
-	/* other libpar params */
-	m_parcook_path = libpar_getpar(m_daemon_name.c_str(), "parcook_path", 1);
-
 	if (libpardone)
 		libpar_done();
 		
@@ -162,7 +159,7 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 			return 1;
 		}
 	/* load params.xml */
-	} else if (LoadXML(m_ipk_path.c_str())) {
+	} else if (LoadXML(ipc_info.GetParcookPath().c_str())) {
 		return 1;
 	}
 		
@@ -512,7 +509,7 @@ void DaemonConfig::CloseXML(int clean_parser)
 const std::string& DaemonConfig::GetIPKPath() const
 {
 	assert (m_load_xml_called != 0);
-	return m_ipk_path;
+	return ipc_info.GetParcookPath();
 }
 
 int DaemonConfig::GetDiagno()

@@ -222,11 +222,8 @@ private:
 	bool m_load_called;	/**< true if Load() method was already called */
 	bool m_load_xml_called;	/**< true if LoadXML() method was already called */
 
-	std::string m_parcook_path;	/**< path to parcook config file, used for IPC
-				  identifiers */
 	std::string m_linex_path;	/**< path to lineX.cfg file, used for IPC
 				  identifiers */
-	std::string m_ipk_path; /**< path to params.xml file */
 	xmlDocPtr m_ipk_doc;	/**< IPK configuration as XML document */
 	xmlNodePtr m_ipk_device;/**< XML 'device' element for daemon */
 	TSzarpConfig *m_ipk;	/**< pointer to IPK configuration */ 
