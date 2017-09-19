@@ -19,7 +19,7 @@
 /* * draw3
  * SZARP
 
- * Pawe³ Pa³ucha pawel@praterm.com.pl
+ * PaweÅ‚ PaÅ‚ucha pawel@praterm.com.pl
  *
  * $Id$
  * Single panel for all program widgets.
@@ -325,7 +325,10 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 		return;
 
 	realized = true;
-	filter_popup_menu = ((wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("filter_context"),_T("wxMenuBar")))->GetMenu(0);
+	wxMenu *menu = ((wxMenuBar*) wxXmlResource::Get()->LoadObject(this,_T("filter_context"),_T("wxMenuBar")))->GetMenu(0);
+	auto itemList = menu->GetMenuItems();
+	for( auto item : itemList )
+		filter_popup_menu.Append(item);
 
 #ifdef WXAUI_IN_PANEL
 	hpanel = new wxPanel(this);
@@ -931,22 +934,22 @@ void DrawPanel::FilterChanged(DrawsController *d) {
 
 	switch (filter) {
 		case 0:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF0"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF0"));
 			break;
 		case 1:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF1"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF1"));
 			break;
 		case 2:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF2"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF2"));
 			break;
 		case 3:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF3"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF3"));
 			break;
 		case 4:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF4"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF4"));
 			break;
 		case 5:
-			popup_menu_item = filter_popup_menu->FindItem(XRCID("ContextF5"));
+			popup_menu_item = filter_popup_menu.FindItem(XRCID("ContextF5"));
 			break;
 	}
 
@@ -981,7 +984,6 @@ void DrawPanel::OnFilterChange(wxCommandEvent &event) {
 		assert(false);
 
 	dw->SetFilter(filter);
-
 }
 
 void DrawPanel::OnDrawTree(wxCommandEvent&) {
@@ -998,7 +1000,7 @@ bool DrawPanel::IsUserDefined() {
 }
 
 void DrawPanel::OnToolFilterMenu(wxCommandEvent &event) {
-	PopupMenu(filter_popup_menu);
+	PopupMenu(&filter_popup_menu);
 }
 
 DrawSet* DrawPanel::GetSelectedSet() {
@@ -1160,16 +1162,16 @@ void DrawPanel::SearchDate() {
 }
 
 BEGIN_EVENT_TABLE(DrawPanel, wxPanel)
-    EVT_MENU(drawTB_REFRESH, DrawPanel::OnRefresh)
-    EVT_MENU(drawTB_FIND, DrawPanel::OnFind)
-    EVT_MENU(drawTB_SUMWIN, DrawPanel::OnSummaryWindow)
-    EVT_MENU(XRCID("ContextF0"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF1"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF2"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF3"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF4"), DrawPanel::OnFilterChange)
-    EVT_MENU(XRCID("ContextF5"), DrawPanel::OnFilterChange)
-    EVT_MENU(drawTB_SPLTCRS, DrawPanel::ToggleSplitCursor)
-    EVT_MENU(drawTB_FILTER, DrawPanel::OnToolFilterMenu)
-    EVT_MENU(drawTB_DRAWTREE, DrawPanel::OnDrawTree)
+	EVT_MENU(drawTB_REFRESH, DrawPanel::OnRefresh)
+	EVT_MENU(drawTB_FIND, DrawPanel::OnFind)
+	EVT_MENU(drawTB_SUMWIN, DrawPanel::OnSummaryWindow)
+	EVT_MENU(XRCID("ContextF0"), DrawPanel::OnFilterChange)
+	EVT_MENU(XRCID("ContextF1"), DrawPanel::OnFilterChange)
+	EVT_MENU(XRCID("ContextF2"), DrawPanel::OnFilterChange)
+	EVT_MENU(XRCID("ContextF3"), DrawPanel::OnFilterChange)
+	EVT_MENU(XRCID("ContextF4"), DrawPanel::OnFilterChange)
+	EVT_MENU(XRCID("ContextF5"), DrawPanel::OnFilterChange)
+	EVT_MENU(drawTB_SPLTCRS, DrawPanel::ToggleSplitCursor)
+	EVT_MENU(drawTB_FILTER, DrawPanel::OnToolFilterMenu)
+	EVT_MENU(drawTB_DRAWTREE, DrawPanel::OnDrawTree)
 END_EVENT_TABLE()

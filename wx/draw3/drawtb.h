@@ -20,7 +20,7 @@
  * draw3
  * SZARP
  
- * Micha≥ Blajerski <nameless@praterm.com.pl>
+ * Micha≈Ç Blajerski <nameless@praterm.com.pl>
  *
  * $Id: drawtb.h 15 2009-07-18 14:40:33Z reksi0 $
  * Mini toolbar to control menubar and most used draw3 functions.

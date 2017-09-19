@@ -20,7 +20,7 @@
  * draw3
  * SZARP
 
-* Pawe≥ Pa≥ucha pawel@praterm.com.pl
+* Pawe≈Ç Pa≈Çucha pawel@praterm.com.pl
 *
  * $Id$
  * Configuration manager.

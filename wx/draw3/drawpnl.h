@@ -20,7 +20,7 @@
  * draw3
  * SZARP
 
- * Pawe≥ Pa≥ucha pawel@praterm.com.pl
+ * Pawe≈Ç Pa≈Çucha pawel@praterm.com.pl
  *
  * $Id$
  * Single panel for all program widgets.
@@ -288,7 +288,7 @@ protected:
 	bool active;
 
 	/**Menu that allows user to choose filter level*/
-	wxMenu *filter_popup_menu;
+	wxMenu filter_popup_menu;
 
 	/**This panel's menubar*/
 	wxMenuBar *menu_bar;

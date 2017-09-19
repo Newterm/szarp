@@ -19,7 +19,7 @@
  * draw3
  * SZARP
  
- * Micha≥ Blajerski <nameless@praterm.com.pl>
+ * Micha≈Ç Blajerski <nameless@praterm.com.pl>
  *
  * $Id$
  * Mini toolbar to control menubar and most used draw3 functions.
