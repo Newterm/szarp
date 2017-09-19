@@ -14,10 +14,10 @@ namespace pt = boost::property_tree;
 
 class CfgDealerArgs: public ArgsHolder {
 public:
-	po::options_description get_options() override {
+	po::options_description get_options() const override {
 		po::options_description desc{"Server configuration"};
 		desc.add_options()
-			("sub_addr,a", po::value<std::string>()->default_value(""), "Address to serve configurations on");
+			("sub_addr,a", po::value<std::string>()->default_value("tcp://*:5555"), "Address to serve configurations on");
 
 		return desc;
 	}
@@ -29,9 +29,10 @@ CfgDealer::CfgDealer(const ArgsManager& args_mgr) {
 }
 
 void CfgDealer::configure_socket(const ArgsManager& args_mgr) {
-	sub_addr = *args_mgr.get<std::string>("sub_addr")
+	const auto sub_addr = *args_mgr.get<std::string>("sub_addr");
+	zmq::context_t context{1};
 	socket.reset(new zmq::socket_t(context, ZMQ_REP));
-	socket->bind(sub_addr);
+	socket->bind(sub_addr.c_str());
 }
 
 void CfgDealer::prepare_configs(const ArgsManager& args_mgr) {
@@ -65,19 +66,19 @@ void CfgDealer::serve() {
 		zmq::message_t request;
 
 		//  Wait for next request from client
-		socket.recv (&request);
+		socket->recv (&request);
 		process_request(request);
 	}
 }
 
-void CfgDealer::process_request(const zmq::message_t& request) {
+void CfgDealer::process_request(zmq::message_t& request) {
 	auto device_no = boost::lexical_cast<unsigned int>(std::string((char*) request.data(), request.size()));
 
 	if (device_no > no_devices) {
 		return;
 	}
 
-	const auto device_tree = get_device_config(device_no);
+	const auto device_config = get_device_config(device_no);
 
 	output_device_config(device_config);
 }
@@ -85,9 +86,9 @@ void CfgDealer::process_request(const zmq::message_t& request) {
 const pt::ptree CfgDealer::get_device_config(const size_t device_no) {
 	pt::ptree params_tree;
 
-	const auto attr_tree = tree.get_child("params.<xmlattr>");
+	const auto attr_tree = tree->get_child("params.<xmlattr>");
 	params_tree.add_child("params.<xmlattr>", attr_tree);
-	auto dev = tree.get_child("params").begin();
+	auto dev = tree->get_child("params").begin();
 	// device_no starts from 1, but there is an <xmlattr> node
 	std::advance(dev, device_no);
 
@@ -96,7 +97,7 @@ const pt::ptree CfgDealer::get_device_config(const size_t device_no) {
 	return params_tree;
 }
 
-void CfgDealer::output_device_config(const pt::tree& device_config) {
+void CfgDealer::output_device_config(const pt::ptree& device_config) {
 	std::ostringstream oss;
 	pt::xml_parser::write_xml(oss, device_config);
 
@@ -105,15 +106,15 @@ void CfgDealer::output_device_config(const pt::tree& device_config) {
 	//  Send reply back to client
 	zmq::message_t reply (params_str.size());
 	memcpy (reply.data(), params_str.c_str(), params_str.size());
-	socket.send (reply);
+	socket->send (reply);
 }
 
 int main (int argc, char ** argv) {
-	args_mgr = ArgsManager("cfgdealer");
-	args_mgr.parse(argc, argv, {new DefaultArgs(), new CfgDealerArgs()});
+	auto args_mgr = ArgsManager("cfgdealer");
+	args_mgr.parse(argc, argv, DefaultArgs(), CfgDealerArgs());
 
 	CfgDealer cfg_dealer(args_mgr);
-	cfg_dealer->serve();
+	cfg_dealer.serve();
 
     return 0;
 }

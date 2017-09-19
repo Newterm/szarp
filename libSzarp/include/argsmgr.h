@@ -6,6 +6,7 @@
 #include "cmdlineparser.h"
 
 class ArgsManager {
+	std::string base_arg;
 public:
 	ArgsManager(const std::string& _name): name(_name), cmd(name) {}
 	ArgsManager(std::string&& _name): name(std::move(_name)), cmd(name) {}
@@ -15,9 +16,32 @@ public:
 		//libpar_done();
 	}
 
-	void parse(int argc, const char ** argv, const std::vector<ArgsHolder*>& opt_args);
-	void parse(int argc, char ** argv, const std::vector<ArgsHolder*>& opt_args) {
-		parse(argc, const_cast<const char **>(argv), opt_args);
+	template <typename... As>
+	void parse(int argc, const char ** argv, const As&... as) {
+		cmd.parse(argc, argv, as...);
+		base_arg = cmd.get<std::string>("base").get_value_or("");
+	}
+
+	template <typename... As>
+	void parse(int argc, char ** argv, const As&... as) {
+		parse(argc, const_cast<const char **>(argv), as...);
+	}
+
+	void initLibpar() {
+		const std::string SZARP_CFG = "/etc/szarp/szarp.cfg";
+		if (!base_arg.empty()) {
+			#ifndef MINGW32
+				libpar_init_from_folder("/opt/szarp/"+base_arg+"/");
+			#else
+				libpar_init_with_filename("%HOMEDRIVE%\\%HOMEPATH%\\.szarp\\"+base_arg+"\\config\\params.xml");
+			#endif
+		} else {
+			#ifndef MINGW32
+				libpar_init_with_filename(SZARP_CFG.c_str(), 0);
+			#else
+				throw std::runtime_error("Cannot initialize without base prefix");
+			#endif
+		}
 	}
 
 	template <typename T = char*>

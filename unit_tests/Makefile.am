@@ -38,6 +38,7 @@ unit_tests_SOURCES = \
 	sz4_decode_test.cpp \
 	sz4_factory_test.cpp \
 	zmq_handler_test.cpp \
+	cmdlineparser_test.cpp \
 	simple_mocks.h
 
 sz4_extr_simple_SOURCES = sz4_extr_simple.cpp

@@ -449,7 +449,8 @@ void pyszbase::set_prober_server_address(const std::wstring &prefix,
 int main( int argc, char ** argv )
 {
 	basedmn::ArgsManager args_mgr("pythondmn");
-	args_mgr.parse(argc, argv, {new basedmn::DaemonArgs, new basedmn::DefaultArgs()});
+	args_mgr.parse(argc, argv, basedmn::DefaultArgs(), basedmn::DaemonArgs());
+	args_mgr.initLibpar();
 
 	if (!args_mgr.has("device-path")) {
 		throw std::runtime_error("Path is required!");

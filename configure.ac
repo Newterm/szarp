@@ -1018,6 +1018,11 @@ if test "$with_mingw32" != "yes" ; then
         SUBDIRS="$SUBDIRS parcook"
 fi
 
+# Program cfgdealer included under Linux
+if test "$with_mingw32" != "yes" ; then
+        SUBDIRS="$SUBDIRS cfgdealer"
+fi
+
 # ISL - needs Linux, SSL, and PAM.
 if test "$with_mingw32" != "yes" -a "$no_ssl" != "yes" -a "$no_pam" != "yes" ; then
 	SUBDIRS="$SUBDIRS isl"
@@ -1044,7 +1049,7 @@ fi
 
 # WX programs needs wxWidgets
 if test x$no_wx != xyes ; then
-        SUBDIRS="$SUBDIRS extern wx"
+        SUBDIRS="$SUBDIRS"
         DRAW3=draw3
         if test x$host_os != xmingw32 ; then
                 IPKEDIT=ipkedit
@@ -1198,6 +1203,7 @@ AC_OUTPUT( \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/s7daemon/Makefile \
+	cfgdealer/Makefile \
 	pyipk/Makefile \
 	qt4/Makefile \
 	qt4/filler2/Makefile \

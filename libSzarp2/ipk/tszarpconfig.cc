@@ -1110,6 +1110,6 @@ const std::vector<size_t> TSzarpConfig::GetSendIpcInds(const TDevice &d) const {
 		}
 	}
 
-	return std::move(ret);
+	return ret;
 }
 

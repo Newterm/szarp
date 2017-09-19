@@ -7,17 +7,22 @@
 
 class CfgDealer {
 public:
-	CfgDealer();
+	CfgDealer(const ArgsManager& args_mgr);
+	void serve();
 
 private:
-	void serve();
-	void process_request(const zmq::message_t& request);
+	void process_request(zmq::message_t& request);
 
 	const boost::property_tree::ptree get_device_config(const size_t device_no);
-	void output_device_config(const boost::property_tree::tree& device_config);
+	void output_device_config(const boost::property_tree::ptree& device_config);
 
 	void configure_socket(const ArgsManager&);
 	void prepare_configs(const ArgsManager&);
+
+private:
+	std::unique_ptr<zmq::socket_t> socket;
+	std::unique_ptr<boost::property_tree::ptree> tree;
+	size_t no_devices;
 };
 
 #endif

@@ -2,26 +2,6 @@
 #include <iostream>
 #include "conversion.h"
 
-void ArgsManager::parse(int argc, const char ** argv, const std::vector<ArgsHolder*>& opt_args) {
-	cmd.parse(argc, argv, opt_args);
-	const std::string SZARP_CFG = "/etc/szarp/szarp.cfg";
-
-	auto base = cmd.get<std::string>("base");
-	if (base) {
-		#ifndef MINGW32
-			libpar_init_from_folder("/opt/szarp/"+*base+"/");
-		#else
-			libpar_init_with_filename("%HOMEDRIVE%\\%HOMEPATH%\\.szarp\\"+base+"\\config\\params.xml");
-		#endif
-	} else {
-		#ifndef MINGW32
-			libpar_init_with_filename(SZARP_CFG.c_str(), 0);
-		#else
-			throw std::runtime_error("Cannot initialize without base prefix");
-		#endif
-	}
-}
-
 template <>
 boost::optional<char*> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const { 
 	char* libpar_val;
