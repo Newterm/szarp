@@ -38,6 +38,14 @@ class ProbersAddressDialog : public wxDialog {
 	std::map<wxString, std::pair<wxString, wxString> > m_modified_addresses;
 
 	std::vector<wxString> m_prefixes;
+
+  wxString getTextFromUser(const wxString& message,
+                           const wxString& caption = wxGetTextFromUserPromptStr,
+                           const wxString& default_value = wxEmptyString,
+                           wxWindow* parent = NULL,
+                           int x = wxDefaultCoord,
+                           int y = wxDefaultCoord,
+                           bool centre = true);
 public:
 	ProbersAddressDialog(wxWindow *parent,
 		DatabaseManager *db_mgr,

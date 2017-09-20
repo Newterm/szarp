@@ -74,17 +74,27 @@ ProbersAddressDialog::ProbersAddressDialog(wxWindow *parent, DatabaseManager *db
 void ProbersAddressDialog::OnListItemActivated(wxListEvent &event) {
 	wxString prefix = m_prefixes.at(event.GetIndex());
 	wxString address;
+
 	if (m_addresses[prefix].first.Length())
 			address = m_addresses[prefix].first + _T(":") + m_addresses[prefix].second;
-	wxString naddress = wxGetTextFromUser(
+
+	wxString naddress = getTextFromUser(
 		_("Set address for prober server:"), 
 		_("Prober server address"),
 		address,
 		this);
 
-	if (!naddress.IsEmpty() && address != naddress) {
-		wxString server;
-		wxString port;
+	wxString server;
+	wxString port;
+
+	if(naddress.IsEmpty()) {
+		server = prefix;
+		port = DEFAULT_PROBER_PORT;
+	}
+	else if (address == naddress) {
+		return;
+	}
+	else if (!naddress.IsEmpty()) {
 		int pos = naddress.Find(L':');
 		if (pos == -1) {
 			server = naddress;
@@ -99,12 +109,12 @@ void ProbersAddressDialog::OnListItemActivated(wxListEvent &event) {
 			wxMessageBox(_("Failed to add port, it must be 1-65535 integer, setting default port"), _("Error"),
 					wxOK | wxICON_ERROR, this);
 		}
-
-		m_modified_addresses[prefix] = std::make_pair(server, port);
-		m_addresses[prefix] = std::make_pair(server, port);
-
-		m_address_list->SetItem(event.GetIndex(), 2, server + _T(":") + port);
 	}
+
+	m_modified_addresses[prefix] = std::make_pair(server, port);
+	m_addresses[prefix] = std::make_pair(server, port);
+
+	m_address_list->SetItem(event.GetIndex(), 2, server + _T(":") + port);
 }
 
 bool ProbersAddressDialog::ValidatePort(wxString s) {
@@ -138,6 +148,34 @@ void ProbersAddressDialog::OnClose(wxCloseEvent &event) {
 
 std::map<wxString, std::pair<wxString, wxString> > ProbersAddressDialog::GetModifiedAddresses() {
 	return m_modified_addresses;
+}
+
+wxString ProbersAddressDialog::getTextFromUser(const wxString& message, const wxString& caption,
+		const wxString& defaultValue, wxWindow *parent,
+		wxCoord x, wxCoord y, bool centre)
+{
+	wxString str;
+	long style = wxTextEntryDialogStyle;
+
+	if (centre) {
+		style |= wxCENTRE;
+	}
+	else {
+		style &= ~wxCENTRE;
+	}
+
+	wxTextEntryDialog dialog(parent, message, caption, defaultValue, style, wxPoint(x, y));
+
+	switch(dialog.ShowModal()) {
+	case wxID_OK:
+		str = dialog.GetValue();
+		break;
+	default:
+		str = defaultValue;
+		break;
+	}
+
+	return str;
 }
 
 BEGIN_EVENT_TABLE(ProbersAddressDialog, wxDialog)
