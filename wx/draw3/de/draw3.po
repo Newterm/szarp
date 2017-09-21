@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-25 09:41+0200\n"
+"POT-Creation-Date: 2017-09-21 10:55+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -44,8 +44,8 @@ msgstr ""
 # "Błąd"
 #: cfgmgr.cpp:1228 drawfrm.cpp:731 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
-#: paramslist.cpp:322 paredit.cpp:219 remarks.cpp:1350 remarks.cpp:1451
-#: remarks.cpp:1497 remarks.cpp:1545 seldraw.cpp:569
+#: paramslist.cpp:322 paredit.cpp:219 probadddiag.cpp:101 remarks.cpp:1350
+#: remarks.cpp:1451 remarks.cpp:1497 remarks.cpp:1545 seldraw.cpp:569
 msgid "Error"
 msgstr "Fehler"
 
@@ -70,7 +70,7 @@ msgid "Export of set to file: %s failed"
 msgstr ""
 
 # msgstr "Błąd"
-#: cfgmgr.cpp:1453 defcfg.cpp:2081 defcfg.cpp:2088 paramslist.cpp:243
+#: cfgmgr.cpp:1453 defcfg.cpp:2085 defcfg.cpp:2092 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
 msgid "Error!"
 msgstr "Fehler!"
@@ -133,7 +133,8 @@ msgid "Failed to import set from file: %s\n"
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja się nie powiodła."
-#: cfgmgr.cpp:1535 defcfg.cpp:1580 defcfg.cpp:1645
+#: cfgmgr.cpp:1535 defcfg.cpp:1492 defcfg.cpp:1584 defcfg.cpp:1649
+#: drawpick.cpp:668
 msgid "Operation failed."
 msgstr "Vorgang ist fehlgeschlagen."
 
@@ -200,35 +201,50 @@ msgstr "unrecognized response from server"
 msgid "Invalid title attribute"
 msgstr "Ungültiges Datum"
 
+#: defcfg.cpp:1491
+#, fuzzy
+msgid "Param \""
+msgstr "Parametr"
+
+#: defcfg.cpp:1491
+msgid "\" is not present in draw set \""
+msgstr ""
+
+# "Możesz usunąć tylko okna zdefiniowane przez użytkownika"
+#: defcfg.cpp:1491
+#, fuzzy
+msgid "Please remove it from your defined set."
+msgstr "Sie können nur entfernen die Fenster des Benutzers"
+
 # "Import plików nie powiódł się."
-#: defcfg.cpp:1579
+#: defcfg.cpp:1583
 #, fuzzy
 msgid "Failed to import defined draw sets from configuration file.\n"
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Nie udało się zapisać pliku z zestawami użytkownika."
-#: defcfg.cpp:1644
+#: defcfg.cpp:1648
 msgid "Failed to save file with users sets."
 msgstr "Die Datei mit den Sätzen der Benutzer wurde nicht gespeichert."
 
-#: defcfg.cpp:1731
+#: defcfg.cpp:1735
 #, c-format
 msgid "Draw %s removed from set %s, it relates to non-existent configuration"
 msgstr ""
 
-#: defcfg.cpp:1755
+#: defcfg.cpp:1759
 #, c-format
 msgid "Defined set %s was removed because all draws in this set were removed"
 msgstr ""
 
 # "Wybierz plik do zaimportowania"
-#: defcfg.cpp:2059
+#: defcfg.cpp:2063
 msgid "Choose file to import"
 msgstr "Wählen Sie Draw2-Datei zu importieren"
 
 # "Nie udało się automatycznie wykryć prefiksu konfiguracji. Wprowadź prefiks "
 # "ręcznie."
-#: defcfg.cpp:2070
+#: defcfg.cpp:2074
 msgid ""
 "Unable to perform automatic detection of configuration's prefix for this "
 "file. Please enter prefix of this configuration"
@@ -237,12 +253,12 @@ msgstr ""
 "Datei.Bitte geben Sie Präfix dieser Konfiguration"
 
 # msgstr "Nie udało się wykryć prefiksu konfiguracji."
-#: defcfg.cpp:2071
+#: defcfg.cpp:2075
 msgid "Unable to detect prefix"
 msgstr "Nicht in der Lage zu erkennen Präfix"
 
 # "Nie udało się załadować konfiguracji %s. Nie mogę zaimportować wykresów."
-#: defcfg.cpp:2081
+#: defcfg.cpp:2085
 #, fuzzy, c-format
 msgid "Failed to load configuration of prefix %s. Unable to import draws."
 msgstr ""
@@ -250,67 +266,67 @@ msgstr ""
 "werden."
 
 # "Import plików nie powiódł się."
-#: defcfg.cpp:2088
+#: defcfg.cpp:2092
 #, fuzzy
 msgid "Failed to import draws from file."
 msgstr "Fehler beim Import die Fenster von Datei."
 
 # "Operacja importu plików zakończyła się poprawnie."
-#: defcfg.cpp:2108
+#: defcfg.cpp:2112
 #, fuzzy
 msgid "Draws imported successfully."
 msgstr "Die Fenster wurden erfolgreich importiert."
 
 # "Ok!"
-#: defcfg.cpp:2108
+#: defcfg.cpp:2112
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 gcdcgraphs.cpp:736 glgraphs.cpp:1359
+#: disptime.cpp:74 gcdcgraphs.cpp:739 glgraphs.cpp:1359
 msgid "january"
 msgstr ""
 
-#: disptime.cpp:75 gcdcgraphs.cpp:739 glgraphs.cpp:1362
+#: disptime.cpp:75 gcdcgraphs.cpp:742 glgraphs.cpp:1362
 msgid "february"
 msgstr ""
 
-#: disptime.cpp:76 gcdcgraphs.cpp:742 glgraphs.cpp:1365
+#: disptime.cpp:76 gcdcgraphs.cpp:745 glgraphs.cpp:1365
 msgid "march"
 msgstr ""
 
-#: disptime.cpp:77 gcdcgraphs.cpp:745 glgraphs.cpp:1368
+#: disptime.cpp:77 gcdcgraphs.cpp:748 glgraphs.cpp:1368
 msgid "april"
 msgstr ""
 
-#: disptime.cpp:78 gcdcgraphs.cpp:748 glgraphs.cpp:1371
+#: disptime.cpp:78 gcdcgraphs.cpp:751 glgraphs.cpp:1371
 msgid "may"
 msgstr ""
 
-#: disptime.cpp:79 gcdcgraphs.cpp:751 glgraphs.cpp:1374
+#: disptime.cpp:79 gcdcgraphs.cpp:754 glgraphs.cpp:1374
 msgid "june"
 msgstr ""
 
-#: disptime.cpp:80 gcdcgraphs.cpp:754 glgraphs.cpp:1377
+#: disptime.cpp:80 gcdcgraphs.cpp:757 glgraphs.cpp:1377
 msgid "july"
 msgstr ""
 
-#: disptime.cpp:81 gcdcgraphs.cpp:757 glgraphs.cpp:1380
+#: disptime.cpp:81 gcdcgraphs.cpp:760 glgraphs.cpp:1380
 msgid "august"
 msgstr ""
 
-#: disptime.cpp:82 gcdcgraphs.cpp:760 glgraphs.cpp:1383
+#: disptime.cpp:82 gcdcgraphs.cpp:763 glgraphs.cpp:1383
 msgid "septermber"
 msgstr ""
 
-#: disptime.cpp:83 gcdcgraphs.cpp:763 glgraphs.cpp:1386
+#: disptime.cpp:83 gcdcgraphs.cpp:766 glgraphs.cpp:1386
 msgid "october"
 msgstr ""
 
-#: disptime.cpp:84 gcdcgraphs.cpp:766 glgraphs.cpp:1389
+#: disptime.cpp:84 gcdcgraphs.cpp:769 glgraphs.cpp:1389
 msgid "november"
 msgstr ""
 
-#: disptime.cpp:85 gcdcgraphs.cpp:769 glgraphs.cpp:1392
+#: disptime.cpp:85 gcdcgraphs.cpp:772 glgraphs.cpp:1392
 msgid "december"
 msgstr ""
 
@@ -824,12 +840,18 @@ msgstr "Wollen Sie wirklich entfernen Sie dieses Schaubild?"
 msgid "Removal"
 msgstr "Entfernen"
 
+# "Import plików nie powiódł się."
+#: drawpick.cpp:667
+#, fuzzy
+msgid "First defined draw has to be from original configuraion.\n"
+msgstr "Fehler beim Import die Fenster von Datei."
+
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:710 drawpick.cpp:898 drawpick.cpp:977
+#: drawpick.cpp:744 drawpick.cpp:932 drawpick.cpp:1011
 msgid "Editing parameter set "
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:778
+#: drawpick.cpp:812
 #, c-format
 msgid ""
 "The set with given name '%s' already exists.\n"
@@ -838,60 +860,60 @@ msgid ""
 "title."
 msgstr ""
 
-#: drawpick.cpp:783
+#: drawpick.cpp:817
 msgid "Set name already exists."
 msgstr ""
 
 # "Zestaw musi zawierać conajmniej jeden wykres."
-#: drawpick.cpp:800
+#: drawpick.cpp:834
 msgid "You must add at least one draw."
 msgstr "Sie müssen mindestens ein Schaubild hinzufügen"
 
 # "Brak wykresów"
-#: drawpick.cpp:801
+#: drawpick.cpp:835
 msgid "No draws"
 msgstr "Keiner Schaubilder"
 
-#: drawpick.cpp:812
+#: drawpick.cpp:846
 msgid "You must set the title."
 msgstr "Sie müsssen den Titel festlegen"
 
-#: drawpick.cpp:812
+#: drawpick.cpp:846
 msgid "No title"
 msgstr "Ohne Titel"
 
-#: drawpick.cpp:861 paredit.cpp:889
+#: drawpick.cpp:895 paredit.cpp:889
 #, fuzzy
 msgid "Error while editing network set: "
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:861 paredit.cpp:889
+#: drawpick.cpp:895 paredit.cpp:889
 #, fuzzy
 msgid "Editing network set error"
 msgstr "Bearbeite von einer Reihe von Parametern"
 
-#: drawpick.cpp:869
+#: drawpick.cpp:903
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr ""
 
-#: drawpick.cpp:869 paredit.cpp:898 remarks.cpp:1529
+#: drawpick.cpp:903 paredit.cpp:898 remarks.cpp:1529
 msgid "Insufficient privileges"
 msgstr ""
 
-#: drawpick.cpp:874
+#: drawpick.cpp:908
 #, fuzzy
 msgid "Failed to fetch new sets: "
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: drawpick.cpp:874
+#: drawpick.cpp:908
 #, fuzzy
 msgid "Failed to fetch network sets"
 msgstr "Fehler beim Verbindung mit dem Server."
 
 # Szukaj
-#: drawpick.cpp:888 drawpick.cpp:970 drawpick.cpp:1000 drawpnl.cpp:643
-#: drawpnl.cpp:678 drawtb.cpp:78 paredit.cpp:757
+#: drawpick.cpp:922 drawpick.cpp:1004 drawpick.cpp:1034 drawpnl.cpp:642
+#: drawpnl.cpp:677 drawtb.cpp:78 paredit.cpp:757
 msgid "Find"
 msgstr "Suche"
 
@@ -1098,15 +1120,15 @@ msgid "The are no user defined sets. Do you want to create one?"
 msgstr ""
 "Nicht benutzerdefinierte Sätze. Würden erstellen Sie eine neue Schaubild"
 
-#: gcdcgraphs.cpp:392 wxgraphs.cpp:215
+#: gcdcgraphs.cpp:391 wxgraphs.cpp:215
 msgid "No data"
 msgstr "Keiner Daten"
 
-#: gcdcgraphs.cpp:728 glgraphs.cpp:1351
+#: gcdcgraphs.cpp:731 glgraphs.cpp:1351
 msgid "summer season"
 msgstr "Sommersaison"
 
-#: gcdcgraphs.cpp:730 glgraphs.cpp:1353
+#: gcdcgraphs.cpp:733 glgraphs.cpp:1353
 msgid "winter season"
 msgstr "Wintersaison"
 
@@ -1387,25 +1409,29 @@ msgstr ""
 msgid "All values equal zero."
 msgstr ""
 
-#: probadddiag.cpp:42
+#: probadddiag.cpp:44
 #, fuzzy
 msgid "Server"
 msgstr "Zapisz"
 
-#: probadddiag.cpp:43
+#: probadddiag.cpp:45
 msgid "Prefix"
 msgstr ""
 
-#: probadddiag.cpp:44
+#: probadddiag.cpp:46
 msgid "Address"
 msgstr "Adres"
 
-#: probadddiag.cpp:80
+#: probadddiag.cpp:82
 msgid "Set address for prober server:"
 msgstr ""
 
-#: probadddiag.cpp:81
+#: probadddiag.cpp:83
 msgid "Prober server address"
+msgstr ""
+
+#: probadddiag.cpp:101
+msgid "Failed to add port, it must be 1-65535 integer, setting default port"
 msgstr ""
 
 # "Wartość minimalna"

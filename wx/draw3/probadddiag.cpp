@@ -93,10 +93,29 @@ void ProbersAddressDialog::OnListItemActivated(wxListEvent &event) {
 			server = naddress.Mid(0, pos);
 			port = naddress.Mid(pos + 1);
 		}
+
+		if(!ValidatePort(port)) {
+			port = DEFAULT_PROBER_PORT;
+			wxMessageBox(_("Failed to add port, it must be 1-65535 integer, setting default port"), _("Error"),
+					wxOK | wxICON_ERROR, this);
+		}
+
 		m_modified_addresses[prefix] = std::make_pair(server, port);
 		m_addresses[prefix] = std::make_pair(server, port);
 
 		m_address_list->SetItem(event.GetIndex(), 2, server + _T(":") + port);
+	}
+}
+
+bool ProbersAddressDialog::ValidatePort(wxString s) {
+	using boost::lexical_cast;
+	using boost::bad_lexical_cast;
+
+	try {
+		int port = lexical_cast<int>(s);
+		return port > 0 && port <= std::numeric_limits<uint16_t>::max();
+	} catch(bad_lexical_cast &) {
+		return false;
 	}
 }
 

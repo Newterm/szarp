@@ -50,6 +50,8 @@ public:
 
 	void OnClose(wxCloseEvent &e);
 
+	bool ValidatePort(wxString s);
+
 	void OnHelpButton(wxCommandEvent &event);
 
 	void OnListItemActivated(wxListEvent &event);
