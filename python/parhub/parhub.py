@@ -35,15 +35,17 @@ class ParHub:
 			self.pidfile_path = "/var/run/parhub.pid"
 			self.pidfile_timeout = 5
 
+		self.context = zmq.Context(1)
+
 	def run(self):
-		dev = zmq.devices.Device(zmq.FORWARDER, zmq.SUB, zmq.PUB)
+		frontend = self.context.socket(zmq.SUB)
+		frontend.bind(self.sub_addr)
+		frontend.setsockopt(zmq.SUBSCRIBE, "")
 
-		dev.bind_in(self.sub_addr)
-		dev.setsockopt_in(zmq.SUBSCRIBE, "")
+		backend = self.context.socket(zmq.PUB)
+		backend.bind(self.pub_addr)
 
-		dev.bind_out(self.pub_addr)
-
-		dev.start()
+		zmq.device(zmq.FORWARDER, frontend, backend)
 
 if __name__ == "__main__":
 	try:

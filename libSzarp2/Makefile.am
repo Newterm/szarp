@@ -197,7 +197,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/szarp_base_common/szbparammonitor.h \
 	@srcdir@/include/szarp_base_common/szbparamobserver.h \
 	@srcdir@/include/sz4/block.h \
-	@srcdir@/include/sz4/load_file_locked.h \
+	@srcdir@/include/sz4/load_bz2_file.h \
 	@srcdir@/include/sz4/buffer.h \
 	@srcdir@/include/sz4/buffer_templ.h \
 	@srcdir@/include/sz4/real_param_entry.h \
@@ -215,7 +215,8 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/sz4/lua_first_last_time..h \
 	@srcdir@/include/sz4/decode_file.h \
 	@srcdir@/include/sz4/encode_file.h \
-	@srcdir@/sz4/load_file_locked.cpp \
+	@srcdir@/sz4/load_bz2_file.cpp \
+	@srcdir@/sz4/load_current_file.cpp \
 	@srcdir@/sz4/path.cpp \
 	@srcdir@/sz4/buffer.cpp \
 	@srcdir@/sz4/base.cpp \
@@ -246,11 +247,9 @@ libSzarpLuaParser_la_SOURCES = \
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in \
 	$(EXTRA_HEADERS) \
-	tools/ipk_config \
 	$(PROTOBUF_ALL)
 
 bin_SCRIPTS= \
-	@srcdir@/tools/ipk_config \
 	@srcdir@/tools/ipk_add_template \
 	@srcdir@/tools/ipk_base_max \
 	@srcdir@/tools/ipk_check_dtd \

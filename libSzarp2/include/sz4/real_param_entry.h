@@ -39,62 +39,6 @@ protected:
 	entry_type *m_entry;
 };
 
-template<class V, class T, class base> class file_block_entry {
-protected:
-	typedef file_block<V, T, base> block_type;
-	block_type* m_block;
-
-	T m_start_time;
-	block_cache* m_cache;
-
-	bool m_needs_refresh;
-	const boost::filesystem::wpath m_block_path;
-public:
-	file_block_entry(const T& start_time,
-			const std::wstring& block_path,
-			block_cache* cache) ;
-
-	virtual void refresh_if_needed() = 0;
-
-	T start_time();
-
-	T end_time();
-
-	void get_weighted_sum(const T& start, const T& end, weighted_sum<V, T>& wsum);
-
-	T search_data_right(const T& start, const T& end, const search_condition& condition);
-
-	T search_data_left(const T& start, const T& end, const search_condition& condition);
-
-	void set_needs_refresh();
-
-	void block_deleted();
-
-	virtual ~file_block_entry();
-};
-
-template<class V, class T, class base> class sz4_file_block_entry : public file_block_entry<V, T, base> {
-public:
-	typedef file_block_entry<V, T, base> parent;
-	sz4_file_block_entry(const T& start_time,
-			const std::wstring& block_path,
-			block_cache* cache);
-
-	void refresh_if_needed();
-};
-
-template<class V, class T, class base> class szbase_file_block_entry : public file_block_entry<V, T, base> {
-	size_t m_read_so_far;
-public:
-	typedef file_block_entry<V, T, base> parent;
-
-	szbase_file_block_entry(const T& start_time,
-			const std::wstring& block_path,
-			block_cache* cache);
-
-	void refresh_if_needed();
-};
-
 template<class V, class T, class base> class real_param_entry_in_buffer {
 public:
 	typedef file_block_entry<V, T, base> file_block_entry_type;
@@ -115,6 +59,8 @@ protected:
 	T m_first_sz4_date;
 
 	live_block<V, T>* m_live_block;
+
+	file_block_entry<V, T, base>* m_current_block;
 public:
 	real_param_entry_in_buffer(base *_base, TParam* param, const boost::filesystem::wpath& param_dir);
 

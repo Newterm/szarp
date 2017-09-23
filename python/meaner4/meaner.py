@@ -63,7 +63,7 @@ class Meaner(MeanerBase):
 
 		if self.msgs:
 			for index, batch in self.msgs.iteritems():
-				saving_time = self.save_params[index].process_msg_batch(batch)
+				saving_time = self.save_params[index].process_msgs(batch)
 
 				if latest_time is None or saving_time > latest_time:
 					latest_time = saving_time

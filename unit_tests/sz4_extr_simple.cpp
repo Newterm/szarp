@@ -12,7 +12,7 @@
 #include "sz4/block.h"
 #include "sz4/buffer.h"
 #include "sz4/base.h"
-#include "sz4/load_file_locked.h"
+#include "sz4/load_bz2_file.h"
 
 void dump_param_deps(sz4::generic_param_entry *e) {
 	std::vector<std::pair<int, sz4::generic_param_entry*> > p;
