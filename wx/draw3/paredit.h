@@ -160,6 +160,8 @@ private:
 
 	bool ValidateComma(const wxString &);
 
+	bool ContainsForbiddenCharacters(const wxString &, std::string &);
+
 	bool ParamExists(const std::string &);
 
 	void ValidateParamNames();

@@ -374,6 +374,14 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 		return;
 	}
 
+	std::string found_character;
+	if (ContainsForbiddenCharacters(m_param_name_input->GetValue(), found_character)) {
+		wxString error_character(found_character);
+		wxMessageBox(_("Param name cannot contain forbidden characters. Found ") + error_character,  _("Forbidden characters found"),
+				wxOK | wxICON_ERROR, this);
+		return;
+	}
+
 	if (m_base_prefix.IsEmpty()) {
 		wxMessageBox(_("You must set a reference configuration."), _("Reference configuration missing."),
 			     wxOK | wxICON_ERROR, this);
@@ -408,6 +416,23 @@ void ParamEdit::OnCancel(wxCommandEvent & event) {
 bool ParamEdit::ValidateComma(const wxString &s){
 	std::wregex re(L",[0-9]", std::regex_constants::icase);
 	return !std::regex_search(s.wc_str(), re);
+}
+
+bool ParamEdit::ContainsForbiddenCharacters(const wxString &s, std::string &found_character) {
+	// If you want to add another forbidden character, put it just in the array below
+	std::string forbidden_characters[] = { "\"", "\\" };
+
+	size_t i = 0;
+	while(!forbidden_characters[i].empty()) {
+		size_t found_forbidden_character = s.ToStdString().find(forbidden_characters[i]);
+		if (found_forbidden_character != std::string::npos) {
+			found_character = forbidden_characters[i];
+			return true;
+		} else {
+			i++;
+		}
+	}
+	return false;
 }
 
 void ParamEdit::TransferToWindow(DefinedParam *param) {

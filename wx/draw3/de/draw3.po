@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-21 10:55+0200\n"
+"POT-Creation-Date: 2017-09-26 12:01+0200\n"
 "PO-Revision-Date: 2008-07-16 11:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -42,15 +42,15 @@ msgstr ""
 "gespeichert weden."
 
 # "Błąd"
-#: cfgmgr.cpp:1228 drawfrm.cpp:731 drawpsc.cpp:426 drawpsc.cpp:439
+#: cfgmgr.cpp:1228 drawfrm.cpp:732 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
-#: paramslist.cpp:322 paredit.cpp:219 probadddiag.cpp:101 remarks.cpp:1350
+#: paramslist.cpp:322 paredit.cpp:219 probadddiag.cpp:109 remarks.cpp:1350
 #: remarks.cpp:1451 remarks.cpp:1497 remarks.cpp:1545 seldraw.cpp:569
 msgid "Error"
 msgstr "Fehler"
 
 # "Parametr:Użytkownika:"
-#: cfgmgr.cpp:1404 paredit.cpp:721 GUI/resources.xrc:1515
+#: cfgmgr.cpp:1404 paredit.cpp:746 GUI/resources.xrc:1515
 msgid "User:Param:"
 msgstr "Benutzer:Parameter:"
 
@@ -578,147 +578,147 @@ msgid "No sets"
 msgstr ""
 
 # Maksymalna ilość drukowalnych osi
-#: drawfrm.cpp:554
+#: drawfrm.cpp:555
 msgid "Maximum number of printed vertical axes"
 msgstr "Maximale Zahl der Achsen für den Druck"
 
 # Liczba osi
-#: drawfrm.cpp:555
+#: drawfrm.cpp:556
 msgid "Number of axes:"
 msgstr "Anzahl der Achsen:"
 
 # Drukowanie
-#: drawfrm.cpp:556
+#: drawfrm.cpp:557
 msgid "Printing"
 msgstr "Drucken"
 
-#: drawfrm.cpp:730
+#: drawfrm.cpp:731
 #, c-format
 msgid ""
 "Configuration '%s' cannot be reloaded, probably new version of this "
 "configuration contatins errors."
 msgstr ""
 
-#: drawfrm.cpp:902
+#: drawfrm.cpp:903
 msgid "English"
 msgstr "Englisch"
 
-#: drawfrm.cpp:903
+#: drawfrm.cpp:904
 msgid "French"
 msgstr "Französisch"
 
-#: drawfrm.cpp:904
+#: drawfrm.cpp:905
 msgid "German"
 msgstr "Deutsch"
 
-#: drawfrm.cpp:905
+#: drawfrm.cpp:906
 msgid "Hungarian"
 msgstr ""
 
-#: drawfrm.cpp:906
+#: drawfrm.cpp:907
 msgid "Italian"
 msgstr ""
 
-#: drawfrm.cpp:907
+#: drawfrm.cpp:908
 msgid "Polish"
 msgstr "Polnish"
 
-#: drawfrm.cpp:908
+#: drawfrm.cpp:909
 msgid "Serbian"
 msgstr ""
 
-#: drawfrm.cpp:913 drawfrm.cpp:919
+#: drawfrm.cpp:914 drawfrm.cpp:920
 msgid "automatic"
 msgstr ""
 
-#: drawfrm.cpp:918
+#: drawfrm.cpp:919
 msgid "Current language is "
 msgstr "Aktuelle Sprache ist "
 
-#: drawfrm.cpp:921
+#: drawfrm.cpp:922
 msgid "Choose language"
 msgstr "Wählen Sie die Sprache"
 
-#: drawfrm.cpp:947
+#: drawfrm.cpp:948
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Aktuelle Sprache is geändert worden. Sie müssen draw3 neustarten."
 
-#: drawfrm.cpp:948
+#: drawfrm.cpp:949
 msgid "Language changed"
 msgstr "Die Sprache wurde geändert"
 
-#: drawfrm.cpp:955
+#: drawfrm.cpp:956
 msgid "Antialiased"
 msgstr ""
 
 # "Not translated"
-#: drawfrm.cpp:956
+#: drawfrm.cpp:957
 #, fuzzy
 msgid "currently selected"
 msgstr "no current article has been selected"
 
 # "Wybierz parametry wykresu"
-#: drawfrm.cpp:957
+#: drawfrm.cpp:958
 #, fuzzy
 msgid "Choose graphs window style"
 msgstr "Wählen Sie Parameter des Schaubilds"
 
-#: drawfrm.cpp:965 drawfrm.cpp:989
+#: drawfrm.cpp:966 drawfrm.cpp:990
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
 msgstr ""
 
-#: drawfrm.cpp:965 drawfrm.cpp:989
+#: drawfrm.cpp:966 drawfrm.cpp:990
 msgid "Remarks not configured."
 msgstr ""
 
 # "Hasło:"
-#: drawfrm.cpp:1041
+#: drawfrm.cpp:1042
 #, fuzzy
 msgid "Enter password:"
 msgstr "Passwort:"
 
 # Hasło
-#: drawfrm.cpp:1042
+#: drawfrm.cpp:1043
 #, fuzzy
 msgid "New password"
 msgstr "Passwort"
 
 # "Wybierz plik do zaimportowania"
-#: drawfrm.cpp:1155
+#: drawfrm.cpp:1156
 #, fuzzy
 msgid "Choose file to extract data to"
 msgstr "Wählen Sie Draw2-Datei zu importieren"
 
-#: drawfrm.cpp:1158
+#: drawfrm.cpp:1159
 msgid "Comma Separated Values (*.csv)"
 msgstr ""
 
 # "Błąd komunikacji z regulatorem"
-#: drawfrm.cpp:1215 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1216 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
 #, fuzzy
 msgid "Error in communicatoin with server: "
 msgstr "Regulator Kommunikationsfehler"
 
-#: drawfrm.cpp:1215 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1216 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
 #, fuzzy
 msgid "Failed to update paramaters"
 msgstr "Fehler beim Verbindung mit dem Server."
 
-#: drawfrm.cpp:1221
+#: drawfrm.cpp:1222
 msgid "Network params and sets were updated"
 msgstr ""
 
-#: drawfrm.cpp:1221
+#: drawfrm.cpp:1222
 msgid "Params and sets updated."
 msgstr ""
 
-#: drawfrm.cpp:1224
+#: drawfrm.cpp:1225
 msgid "There are no new network params or sets"
 msgstr ""
 
-#: drawfrm.cpp:1224
+#: drawfrm.cpp:1225
 #, fuzzy
 msgid "No new params and sets."
 msgstr "Fehler beim Verbindung mit dem Server."
@@ -882,13 +882,13 @@ msgstr "Sie müsssen den Titel festlegen"
 msgid "No title"
 msgstr "Ohne Titel"
 
-#: drawpick.cpp:895 paredit.cpp:889
+#: drawpick.cpp:895 paredit.cpp:914
 #, fuzzy
 msgid "Error while editing network set: "
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
 # "Edycja zestawu parametrów"
-#: drawpick.cpp:895 paredit.cpp:889
+#: drawpick.cpp:895 paredit.cpp:914
 #, fuzzy
 msgid "Editing network set error"
 msgstr "Bearbeite von einer Reihe von Parametern"
@@ -897,7 +897,7 @@ msgstr "Bearbeite von einer Reihe von Parametern"
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr ""
 
-#: drawpick.cpp:903 paredit.cpp:898 remarks.cpp:1529
+#: drawpick.cpp:903 paredit.cpp:923 remarks.cpp:1529
 msgid "Insufficient privileges"
 msgstr ""
 
@@ -912,8 +912,8 @@ msgid "Failed to fetch network sets"
 msgstr "Fehler beim Verbindung mit dem Server."
 
 # Szukaj
-#: drawpick.cpp:922 drawpick.cpp:1004 drawpick.cpp:1034 drawpnl.cpp:642
-#: drawpnl.cpp:677 drawtb.cpp:78 paredit.cpp:757
+#: drawpick.cpp:922 drawpick.cpp:1004 drawpick.cpp:1034 drawpnl.cpp:645
+#: drawpnl.cpp:680 drawtb.cpp:78 paredit.cpp:782
 msgid "Find"
 msgstr "Suche"
 
@@ -1338,50 +1338,58 @@ msgstr "Sie müssen den Namen des Parameters geben"
 msgid "Parameter name missing."
 msgstr "Fehlende Parameter-Namen"
 
+#: paredit.cpp:380
+msgid "Param name cannot contain forbidden characters. Found "
+msgstr ""
+
+#: paredit.cpp:380
+msgid "Forbidden characters found"
+msgstr ""
+
 # "Musisz podać konfigurację odniesienia."
-#: paredit.cpp:378
+#: paredit.cpp:386
 msgid "You must set a reference configuration."
 msgstr "Sie mussen die Konfiguration eines Verweises festlegen"
 
-#: paredit.cpp:378
+#: paredit.cpp:386
 msgid "Reference configuration missing."
 msgstr "Referenz-Konfiguration fehlt."
 
-#: paredit.cpp:569
+#: paredit.cpp:594
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "Fehler beim Kompilieren des Parameters %s"
 
 # "Not translated"
-#: paredit.cpp:590
+#: paredit.cpp:615
 #, fuzzy, c-format
 msgid "Invalid expression %s"
 msgstr "unrecognized response from server"
 
 # "Koniec:"
-#: paredit.cpp:663
+#: paredit.cpp:688
 #, fuzzy, c-format
 msgid "Found time: %s"
 msgstr "Das Ende der Zeit:"
 
-#: paredit.cpp:665
+#: paredit.cpp:690
 #, c-format
 msgid "%s"
 msgstr ""
 
 # "Brak danych"
-#: paredit.cpp:665
+#: paredit.cpp:690
 #, fuzzy
 msgid "No date found"
 msgstr "Fehlende daten"
 
 # "Parametr:Użytkownika:"
-#: paredit.cpp:719
+#: paredit.cpp:744
 #, fuzzy, c-format
 msgid "User:%s:"
 msgstr "Benutzer:Parameter:"
 
-#: paredit.cpp:898
+#: paredit.cpp:923
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr ""
 
@@ -1409,16 +1417,16 @@ msgstr ""
 msgid "All values equal zero."
 msgstr ""
 
-#: probadddiag.cpp:44
+#: probadddiag.cpp:42
 #, fuzzy
 msgid "Server"
 msgstr "Zapisz"
 
-#: probadddiag.cpp:45
+#: probadddiag.cpp:43
 msgid "Prefix"
 msgstr ""
 
-#: probadddiag.cpp:46
+#: probadddiag.cpp:44
 msgid "Address"
 msgstr "Adres"
 
@@ -1430,7 +1438,7 @@ msgstr ""
 msgid "Prober server address"
 msgstr ""
 
-#: probadddiag.cpp:101
+#: probadddiag.cpp:109
 msgid "Failed to add port, it must be 1-65535 integer, setting default port"
 msgstr ""
 
