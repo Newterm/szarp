@@ -448,6 +448,7 @@ void DrawFrame::DetachFromNotebook()
 	sizer->Layout();
 
 	sizer->Show((size_t) 0, true);
+	draw_panel->SetActive(true);
 	draw_panel->SetFocus();
 
 	m_notebook->Destroy();
