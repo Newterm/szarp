@@ -14,42 +14,32 @@ class Sz4BufferTestCase : public CPPUNIT_NS::TestFixture
 
 	mocks::IPKContainerMock m_mock;
 	sz4::base_templ<mocks::mock_types> m_base;
-	boost::filesystem::wpath m_base_dir;
-	boost::filesystem::wpath m_param_dir;
 public:
 	Sz4BufferTestCase() : m_base(L"", &m_mock) {}
 	void setUp();
-	void tearDown();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4BufferTestCase );
 
 void Sz4BufferTestCase::setUp() {
-	m_base_dir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-	boost::filesystem::create_directories(m_base_dir);
-
-	m_param_dir = m_base_dir / L"A" / L"A" / L"A";
-	boost::filesystem::create_directories(m_param_dir);
-}
-
-void Sz4BufferTestCase::tearDown() {
-	boost::filesystem::remove_all(m_base_dir);
 }
 
 void Sz4BufferTestCase::test1() {
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/szb_bufer_unit_test_1" << getpid() << L"." << time(NULL) << L".tmp";
+	std::wstringstream param_dir_name;
+	param_dir_name << base_dir_name.str() << L"/A/A/A";
+	boost::filesystem::create_directories(param_dir_name.str());
 
 	for (int i = 1000; i < 2000; i += 100) {
-		std::ostringstream oss;
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
 		unsigned data = 10;
-		oss.write((const char*) &data, sizeof(data));
+		ofs.write((const char*) &data, sizeof(data));
 		unsigned char delta = 50;
-		oss.write((const char*) &delta, sizeof(delta));
-		auto s = oss.str();
-
-		std::wstringstream name;
-		name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
-		save_bz2_file({ s.begin(), s.end() }, m_param_dir / name.str());
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
@@ -62,7 +52,7 @@ void Sz4BufferTestCase::test1() {
 	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	auto buffer = new sz4::buffer_templ<sz4::base_templ<mocks::mock_types>>(&m_base, &monitor, &container_mock, L"TEST", m_base_dir.wstring());
+	auto buffer = new sz4::buffer_templ<sz4::base_templ<mocks::mock_types>>(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
@@ -121,23 +111,24 @@ void Sz4BufferTestCase::test1() {
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	delete buffer;
+	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 }
 
 void Sz4BufferTestCase::test2() {
-	std::ostringstream oss;
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/szb_bufer_unit_test_2" << getpid() << L"." << time(NULL) << L".tmp";
+	std::wstringstream param_dir_name;
+	param_dir_name << base_dir_name.str() << L"/A/A/A";
+	boost::filesystem::create_directories(param_dir_name.str());
 
 	for (int i = 1000; i < 2000; i += 100) {
-		oss.str("");
-
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
 		unsigned data = 10;
-		oss.write((const char*) &data, sizeof(data));
+		ofs.write((const char*) &data, sizeof(data));
 		unsigned char delta = 50;
-		oss.write((const char*) &delta, sizeof(delta));
-		auto s = oss.str();
-
-		std::wstringstream name;
-		name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
-		save_bz2_file({ s.begin(), s.end() }, m_param_dir / name.str());
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
@@ -149,7 +140,7 @@ void Sz4BufferTestCase::test2() {
 	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", m_base_dir.wstring());
+	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 	sz4::weighted_sum<int, sz4::second_time_t> sum;
 	sz4::weighted_sum<int, sz4::second_time_t>::time_diff_type weight;
 
@@ -160,17 +151,15 @@ void Sz4BufferTestCase::test2() {
 	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
 	TestObserver o;
-	monitor.add_observer(&o, &param, SC::S2A(m_param_dir.wstring()), 1);
+	monitor.add_observer(&o, &param, SC::S2A(param_dir_name.str()), 1);
 	{
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
 		unsigned data = 20;
-		oss.write((const char*) &data, sizeof(data));
+		ofs.write((const char*) &data, sizeof(data));
 		unsigned char delta = 50;
-		oss.write((const char*) &delta, sizeof(delta));
-		auto s = oss.str();
-
-		std::wstringstream name;
-		name << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
-		save_bz2_file({ s.begin(), s.end() }, m_param_dir / name.str());
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 	o.wait_for(1);
 
@@ -182,16 +171,15 @@ void Sz4BufferTestCase::test2() {
 	CPPUNIT_ASSERT_EQUAL(true, sum.fixed());
 
 	{
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary | std::ios_base::app);
 		unsigned data = 30;
-		oss.write((const char*) &data, sizeof(data));
+		ofs.write((const char*) &data, sizeof(data));
+
 		//3000;
 		unsigned char delta[] = { 0x83u, 0xe8u };
-		oss.write((const char*) delta, sizeof(delta));
-		auto s = oss.str();
-
-		std::wstringstream name;
-		name << std::setfill(L'0') << std::setw(10) << 1900 << L".sz4";
-		save_bz2_file({ s.begin(), s.end() }, m_param_dir / name.str());
+		ofs.write((const char*) delta, sizeof(delta));
 	}
 	o.wait_for(2);
 
@@ -206,30 +194,33 @@ void Sz4BufferTestCase::test2() {
 	buffer.get_weighted_sum(&param, sz4::second_time_t(1900), sz4::second_time_t(4000), PT_SEC10, sum);
 	CPPUNIT_ASSERT_EQUAL(false, sum.fixed());
 
+	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
+
 }
 
 void Sz4BufferTestCase::searchTest() {
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/szb_bufer_unit_test_2" << getpid() << L"." << time(NULL) << L".tmp";
+	std::wstringstream param_dir_name;
+	param_dir_name << base_dir_name.str() << L"/A/A/A";
+	boost::filesystem::create_directories(param_dir_name.str());
 
 	for (int i = 0; i < 2100; i += 100) {
-		std::ostringstream oss;
-
+		std::wstringstream ss;
+		ss << param_dir_name.str() << L"/" << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+		std::ofstream ofs(SC::S2A(ss.str()).c_str(), std::ios_base::binary);
 		int j;
 		for (j = 0; j < 100 - (2000 - i) / 100 - 10; j++) {
 			unsigned data = j % 25;
-			oss.write((const char*) &data, sizeof(data));
+			ofs.write((const char*) &data, sizeof(data));
 			unsigned char delta = 1;
-			oss.write((const char*) &delta, sizeof(delta));
+			ofs.write((const char*) &delta, sizeof(delta));
 		}
 
 		unsigned data = i / 100 + 10000;
-		oss.write((const char*) &data, sizeof(data));
+		ofs.write((const char*) &data, sizeof(data));
 		unsigned char delta = 1;
-		oss.write((const char*) &delta, sizeof(delta));
-		auto s = oss.str();
-
-		std::wstringstream name;
-		name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
-		save_bz2_file({ s.begin(), s.end() }, m_param_dir / name.str());
+		ofs.write((const char*) &delta, sizeof(delta));
 	}
 
 
@@ -242,7 +233,7 @@ void Sz4BufferTestCase::searchTest() {
 	SzbParamMonitor monitor(L"");
 	mocks::IPKContainerMock container_mock;
 	container_mock.add_param(&param);
-	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", m_base_dir.wstring());
+	sz4::buffer_templ<sz4::base_templ<mocks::mock_types>> buffer(&m_base, &monitor, &container_mock, L"TEST", base_dir_name.str());
 
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(0), buffer.search_data_right(&param, sz4::second_time_t(0), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));
 	CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100), buffer.search_data_right(&param, sz4::second_time_t(100), sz4::second_time_t(2000), PT_SEC10, test_search_condition(0)));
@@ -264,5 +255,7 @@ void Sz4BufferTestCase::searchTest() {
 	for (int i = 0; i < 20; i++) {
 		CPPUNIT_ASSERT_EQUAL(sz4::second_time_t(100 * i + 70 + i), buffer.search_data_left(&param, sz4::second_time_t(2000), sz4::second_time_t(0), PT_SEC10, test_search_condition(10000 + i)));
 	}
+
+	boost::filesystem::remove_all(boost::filesystem::wpath(base_dir_name.str()));
 
 }

@@ -35,19 +35,19 @@ class Param:
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 15
 			self.nan = lambda : -2 ** 15
-		elif self.data_type == "int":
+		elif self.data_type == "int": 
 			self.value_format_string = "<i"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.int_value
 			self.isnan = lambda x : x == -2 ** 31
 			self.nan = lambda : -2 ** 31
-		elif self.data_type == "float":
+		elif self.data_type == "float": 
 			self.value_format_string = "<f"
 			self.value_lenght = 4
 			self.value_from_msg = lambda x : x.float_value
 			self.isnan = lambda x : math.isnan(x)
 			self.nan = lambda : float('nan')
-		elif self.data_type == "double":
+		elif self.data_type == "double": 
 			self.value_format_string = "<d"
 			self.value_lenght = 8
 			self.value_from_msg = lambda x : x.double_value
@@ -58,12 +58,6 @@ class Param:
 
 		self.written_to_base = written_to_base
 		self.max_file_item_size = self.value_lenght + self.time_prec + 1
-
-		if time_prec == 8:
-			self.max_time = 2 ** 32 - 1, 2 ** 32 - 2
-		else:
-			self.max_time = 2 ** 32 - 2, 0
-
 
 	def value_to_binary(self, value):
 		return struct.pack(self.value_format_string, value)
@@ -80,36 +74,18 @@ class Param:
 	def time_to_file_stamp(self, time, nanotime):
 		if self.time_prec == 8:
 			return time + float(nanotime) / (10 ** 9)
-
-	def is_max_time(self, time, nanotime):
-		if self.time_prec == 8:
-			return time == self.max_time[0] and nanotime == self.max_time[1]
 		else:
-			return time == self.max_time[0]
-
-	def is_time_before(self, l_time, l_nanotime, r_time, r_nanotime):
-		return l_time < r_time \
-			or self.time_prec == 8 \
-				and l_time == r_time \
-				and l_nanotime < r_nanotime
-
-	def time_just_after(self, time, nanotime):
-		if self.time_prec == 8:
-			if nanotime == 10 ** 9 - 1:
-				return time + 1, 0
-			else:
-				return time, nanotime + 1
-		else:
-			return time + 1, 0
+			return time
 
 	def time_just_before(self, time, nanotime):
 		if self.time_prec == 8:
 			if nanotime == 0:
-				return time - 1, 10 ** 9 - 1
+				return (time - 1, 10 ** 9 - 1)
 			else:
-				return time, nanotime - 1
+				return (time, nanotime - 1)
 		else:
-			return time - 1, 0
+			return (time - 1, nanotime)
+
 
 def from_node(node):
 	param_name = node.attrib["name"]

@@ -71,6 +71,6 @@ class ParamPathTest(unittest.TestCase):
 			with open(pp.create_file_path(i, i), "w") as f:
 				pass
 
-		self.assertEqual(pp.find_latest_paths()[1],
+		self.assertEqual(pp.find_latest_path(),
 			temp_dir + "/Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000090000000009.sz4")
 		shutil.rmtree(temp_dir)
