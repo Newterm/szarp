@@ -186,6 +186,14 @@ AC_CHECK_LIB(m, sin)
 
 AC_SEARCH_LIBS(fmodq, quadmath)
 
+no_bz2=""
+AC_SEARCH_LIBS(BZ2_bzdopen, bz2, [], [no_bz2=yes])
+if test x$no_bz2 == xyes; then
+	AC_MSG_FAILURE([
+		Bz2 library not found.
+	])
+fi
+
 # Check endianness
 big_endian=
 AC_C_BIGENDIAN([big_endian=true],[],[])

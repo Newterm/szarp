@@ -26,8 +26,12 @@ import StringIO
 
 class EncodeDecodeTest(unittest.TestCase):
 	def test_decode_encode_def(self):
-		v = 33958800
+		#test encoding of 0
+		encoded = timedelta.encode(0)
+		self.assertEqual(chr(0x0), encoded[0])
 
+		#some arbitrary long enough number
+		v = 33958800
 		encoded = timedelta.encode(v)
 		self.assertEqual(4, len(encoded))
 
@@ -38,7 +42,6 @@ class EncodeDecodeTest(unittest.TestCase):
 
 		year_in_ns = 365 * 24 * 3600 * 10 ** 9
 		for v in range(0, 10 * year_in_ns, year_in_ns / 50):
-			print v
 			encoded = timedelta.encode(v)
 			decoded, _ = timedelta.decode(StringIO.StringIO(encoded))
 

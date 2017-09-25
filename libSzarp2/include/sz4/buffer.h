@@ -36,7 +36,7 @@
 #include "sz4/block.h"
 #include "sz4/path.h"
 #include "sz4/param_observer.h"
-#include "sz4/load_file_locked.h"
+#include "sz4/load_bz2_file.h"
 #include "sz4/param_entry.h"
 #include "sz4/param_entry_factory.h"
 

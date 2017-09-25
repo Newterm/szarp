@@ -28,12 +28,17 @@ import tempfile
 import unittest
 import struct
 import shutil
+from itertools import chain
 
 import param
 import paramsvalues_pb2
 import parampath
-import saveparam
 import config
+import saveparam
+import bz2
+
+SEC_NS = (0xf0, 0x3b, 0x9a, 0xca, 0x00)
+_999999999_NS = (0xf0, 0x3b, 0x9a, 0xc9, 0xff)
 
 class SaveParamTest(unittest.TestCase):
 	def setUp(self):
@@ -44,84 +49,198 @@ class SaveParamTest(unittest.TestCase):
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>
       </param>
 """)
+		self.param = param.from_node(self.node)
 
-	def _msg(self, time, value):
+		self.temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
+		self.param_dir = os.path.join(self.temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu")
+
+	def tearDown(self):
+		shutil.rmtree(self.temp_dir)
+
+
+	def _msg(self, value, time, nanotime = 0):
 		msg = paramsvalues_pb2.ParamValue()
 		msg.param_no = 1
 		msg.time = time
+		msg.nanotime = nanotime
 		msg.int_value = value
 
 		return msg
 
+	def _file_size(self, f):
+		p = f.tell()
+
+		f.seek(0, 2)
+		s = f.tell()
+
+		f.seek(p, 0)
+		return s
+
+	def _read(self, path):
+		with open(path) as f:
+			return f.read()
+
+	def _unpack(self, path):
+		with open(path) as f:
+			return bz2.decompress(f.read())
+
+	def _check_size_bz(self, path, size):
+		self.assertEqual(len(self._unpack(path)), size)
+
+	def _check_file_bz(self, path, fmt, expected):
+		print [ord(x) for x in self._unpack(path)]
+		print len([ord(x) for x in self._unpack(path)])
+		print expected
+		self.assertEqual(struct.unpack(fmt, self._unpack(path)), expected)
+
 	def _check_size(self, path, size):
-		st = os.stat(path)
-		self.assertEqual(st.st_size, size)
+		self.assertEqual(len(self._read(path)), size)
 
 	def _check_file(self, path, fmt, expected):
-		with open(path) as f:
-			self.assertEqual(struct.unpack(fmt, f.read()), expected)
+		print [ord(x) for x in self._read(path)]
+		print len([ord(x) for x in self._read(path)])
+		print expected
+		self.assertEqual(struct.unpack(fmt, self._read(path)), expected)
+
+	def basictest(self):
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
+
+		sp = saveparam.SaveParam(self.param, self.temp_dir)
+		sp.process_msgs([self._msg(4, 123456)])
+		self._check_size(path, 12)
+		self._check_file(path, "<IIi", (123456, 0, 4))
+
+		sp.process_msgs([self._msg(4, 123457)])
+		self._check_size(path, 21)
+		self._check_file(path, "<IIiBBBBBi", (123456, 0, 4 ) + SEC_NS + (4,))
+
+		sp.process_msgs([self._msg(5, 123458)])
+		self._check_size(path, 8 + 4 + 5 + 4 + 5 + 4)
+		self._check_file(path, "<IIiBBBBBiBBBBBi", (123456, 0, 4) + SEC_NS +  (4,) + SEC_NS + (5,))
+
+		return sp, path
 
 	def test_basictest(self):
-		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
-
-		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 4)
-		self._check_file(path, "<i", (4, ))
-
-		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 9)
-		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
-
-		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 4 + 5 + 4)
-		self._check_file(path, "<iBBBBBi", (4, 0xf0, 0x77, 0x35, 0x94, 0x00, 5))
-
+		sp, _ = self.basictest()
 		del sp
-
-		shutil.rmtree(temp_dir)
 
 	def test_basictest2(self):
 		"""Similar to basictest, but creates new saveparam object before writing second value"""
-		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00001234560000000000.sz4")
-
-		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		sp.process_msg(self._msg(123456, 4))
-		self._check_size(path, 4)
-		self._check_file(path, "<i", (4, ))
-
-		sp.process_msg(self._msg(123457, 4))
-		self._check_size(path, 9)
-		self._check_file(path, "<iBBBBB", (4, 0xf0, 0x3b, 0x9a, 0xca, 0x00))
-
+		sp, path = self.basictest()
+		sp.close()
 		del sp
-		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
 
-		sp.process_msg(self._msg(123458, 5))
-		self._check_size(path, 22)
-		self._check_file(path, "<iBBBBBiBBBBBi",
-					(4, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
-					-2**31, 0xf0, 0x3b, 0x9a, 0xca, 0x00,
-					5, ))
+		sp = saveparam.SaveParam(self.param, self.temp_dir)
 
-		shutil.rmtree(temp_dir)
+		sp.process_msgs([ self._msg(5, 123459) ])
+		self._check_size(path, 12 + 5 + 4 + 5 + 4 + 1 + 4 + 5 + 4)
+		self._check_file(path, "<IIiBBBBBiBBBBBiBiBBBBBi", 
+					(123456, 0, 4) + \
+					 SEC_NS + (4,) + \
+					 SEC_NS + (5,) + \
+					 (0x01, self.param.nan()) + \
+					 _999999999_NS + (5,))
 
-	def test_basictest3(self):
-		temp_dir = tempfile.mkdtemp(suffix="meaner4_unit_test")
+	def newfiletest_start(self):
 
-		item_size = 4 + 5
-		items_per_file = config.DATA_FILE_SIZE / item_size
+		i = 0
+		prev_size = 0	
+		sp = saveparam.SaveParam(self.param, self.temp_dir)
+		sp.compressed_file_size = 100
+		sp.uncompressed_file_size = 100
 
-		sp = saveparam.SaveParam(param.from_node(self.node), temp_dir)
-		for i in range(items_per_file):
-			sp.process_msg(self._msg(i, i))
+		while True:
+			sp.process_msgs([self._msg(i, i)])
 
-		path = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/00000000000000000000.sz4")
-		self._check_size(path, (items_per_file - 1) * item_size)
+			size = self._file_size(sp.file)
+			if prev_size > size:
+				break
 
-		path2 = os.path.join(temp_dir, "Kociol_3/Sterownik/Aktualne_wysterowanie_falownika_podmuchu/%010d0000000000.sz4" % (items_per_file - 1))
-		self._check_size(path2, 4)
+			prev_size = size
+			i += 1
 
-		shutil.rmtree(temp_dir)
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
+                self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
+
+		path2 = os.path.join(self.param_dir, "00000000000000000000.sz4")
+		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(i - 1) ] + [[ i - 1 ]])
+		self._check_file_bz(path2, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
+
+		return i, sp
+
+	def test_newfiletest(self):
+		"""Test if the proper switching to new file occurs"""
+		self.newfiletest_start()
+
+	def test_startfrombz(self):
+		"""Test if the proper start of saveparam happens with bz2 file only"""
+		i, _ = self.newfiletest_start()
+		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
+
+		sp = saveparam.SaveParam(self.param, self.temp_dir)
+		sp.process_msgs([self._msg(i, i)])
+
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
+		self._check_file(path, "<IIiBBBBBi", (i - 1, 1) + (self.param.nan(),) + _999999999_NS + (i,))
+
+	def test_startfrombznogap(self):
+		"""Test if the proper start of saveparam happens with bz2 file only"""
+		i, _ = self.newfiletest_start()
+		os.remove(os.path.join(self.param_dir, "42949672954294967294.sz4"))
+
+		sp = saveparam.SaveParam(self.param, self.temp_dir)
+		sp.process_msgs([self._msg(i, i - 1, 1)])
+
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
+		self._check_file(path, "<IIi", (i - 1, 1, i))
+
+	def test_appendingtobzip(self):
+		"""Test if the proper start of saveparam happens with bz2 file only"""
+
+		i, sp = self.newfiletest_start()
+
+		prev_size = self._file_size(sp.file)
+
+		while True:
+			i += 1
+
+			sp.process_msgs([self._msg(i, i)])
+
+			size = self._file_size(sp.file)
+			if prev_size > size:
+				break
+
+			prev_size = size
+
+		path = os.path.join(self.param_dir, "00000000000000000000.sz4")
+		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(i - 1) ] + [[ i - 1 ]])
+		self._check_file_bz(path, "<" + "iBBBBB" * (i - 1) + "i", tuple(expected_bz))
+
+		path = os.path.join(self.param_dir, "42949672954294967294.sz4")
+		self._check_file(path, "<IIiBBBBBi", (i - 1, 1, i - 1) + _999999999_NS + (i,))
+
+	def test_bzipfileoverflow(self):
+		i, sp = self.newfiletest_start()
+
+		prev_size = self._file_size(sp.file)
+		prev_bz2_size = os.stat(os.path.join(self.param_dir, "00000000000000000000.sz4")).st_size
+
+		while True:
+			i += 1
+
+			sp.process_msgs([self._msg(i, i)])
+
+			size = self._file_size(sp.file)
+			if prev_size > size:
+				bz2_size = os.stat(os.path.join(self.param_dir, "00000000000000000000.sz4")).st_size
+				if bz2_size == prev_bz2_size:
+					break
+				else:
+					prev_bz2_size = bz2_size
+					last_bz2_i = i
+
+			prev_size = size
+
+		path = os.path.join(self.param_dir, "00000000000000000000.sz4")
+		expected_bz = chain.from_iterable([ (x,) + SEC_NS for x in range(last_bz2_i  - 1) ] + [[ last_bz2_i - 1 ]])
+		self._check_file_bz(path, "<" + "iBBBBB" * (last_bz2_i - 1) + "i", tuple(expected_bz))

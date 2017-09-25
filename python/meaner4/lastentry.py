@@ -1,5 +1,5 @@
 """
-  SZARP: SCADA software 
+  SZARP: SCADA software
   Darek Marcinkiewicz <reksio@newterm.pl>
 
   This program is free software; you can redistribute it and/or modify
@@ -26,12 +26,14 @@ class TimeError(Exception):
 	def __init__(self, current_time, msg_time):
 		self.current_time = current_time
 		self.msg_time = msg_time
-		
+
 
 class LastEntry:
 	def __init__(self, param):
 		self.param = param
 		self.delta_cache = {}
+		self.value = None
+		self.time = None
 
 	def time_to_int(self, time, nanotime):
 		if self.param.time_prec == 8:
@@ -40,11 +42,16 @@ class LastEntry:
 
 		return time
 
+	def last_time(self):
+		if self.param.time_prec == 8:
+			return self.time / 1000000000, self.time % 1000000000
+		else:
+			return self.time, 0
+
 	def reset(self, time, nanotime, value = None):
 		self.time_size = 0
 		self.time = self.time_to_int(time, nanotime)
-		self.value_start_time = self.time
-		self.value = value 
+		self.value = value
 
 	def get_time_delta(self, time_from, time_to):
 		diff = time_to - time_from
@@ -58,7 +65,7 @@ class LastEntry:
 
 	def update_time(self, time, nanotime):
 		time_int = self.time_to_int(time, nanotime)
-		delta = self.get_time_delta(self.value_start_time, time_int)
+		delta = self.get_time_delta(self.time, time_int)
 
 		self.time = time_int
 		self.time_size = len(delta)
@@ -73,22 +80,25 @@ class LastEntry:
 		self.reset(time, nanotime, value)
 
 	def from_file(self, file, time, nanotime):
+
+		ret = []
+
 		self.reset(time, nanotime)
 
+		pos = file.tell()
 		file.seek(0, 2)
 		file_size = file.tell()
-		file.seek(0, 0)
+		file.seek(pos, 0)
 
 		pos = 0
 		while file.tell() < file_size:
 			binary = file.read(self.param.value_lenght)
 			try:
 				self.value = self.param.value_from_binary(binary)
+				ret.append({ 'value': self.value, 'time' : self.last_time() })
 			except:
-				file.truncate(pos)	
+				file.truncate(pos)
 				break
-
-			self.value_start_time = self.time
 
 			if file.tell() == file_size:
 				self.time_size = 0
@@ -96,11 +106,23 @@ class LastEntry:
 
 			pos = file.tell()
 			try:
-				self.read_time(file)	
+				self.read_time(file)
 			except:
+				import pdb; pdb.set_trace()
 				file.truncate(pos)
 				self.time_size = 0
 				break
 
 			pos = file.tell()
 
+		return ret
+
+	def from_current_file(self, file):
+		file.seek(0, os.SEEK_SET)
+
+		if self.param.time_prec == 8:
+			time, nanotime = struct.unpack("<II", file.read(8))
+			return self.from_file(file, time, nanotime)
+		else:
+			time = struct.unpack("<I", file.read(4))[0]
+			return self.from_file(file, time, 0)

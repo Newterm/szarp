@@ -36,6 +36,7 @@ struct nanosecond_time_t {
 	explicit nanosecond_time_t(double _time) : second(_time), nanosecond((_time - (long)_time) * 1000000000) {}
 	explicit nanosecond_time_t(const second_time_t& time);
 	bool operator==(const nanosecond_time_t& t) const { return second == t.second && nanosecond == t.nanosecond; }
+	bool operator!=(const nanosecond_time_t& t) const { return !(*this == t); }
 	long long operator- (const nanosecond_time_t& t) const {
 		long long d = second;
 		d -= t.second;
