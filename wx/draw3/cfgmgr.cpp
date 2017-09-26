@@ -1159,6 +1159,7 @@ void ConfigManager::SetDatabaseManager(DatabaseManager *db_mgr) {
 
 bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
+	m_db_mgr->RemoveParams(m_defined_sets->GetDefinedParams());
 	std::wstring wprefix = prefix.wc_str();
 	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
 		return false;
@@ -1185,6 +1186,7 @@ void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 			m_defined_sets->RemoveAllRelatedToPrefix(*i);
 	}
 
+	m_db_mgr->AddParams(m_defined_sets->GetDefinedParams());
 	psc->ConfigurationLoaded(dynamic_cast<IPKConfig*>(config_hash[prefix]));
 }
 

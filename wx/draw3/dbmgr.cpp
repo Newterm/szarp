@@ -145,7 +145,7 @@ void DatabaseManager::OnDatabaseResponse(DatabaseResponse &response) {
 void DatabaseManager::CheckAndNotifyAboutError(DatabaseResponse &response) {
 	DatabaseQuery* q = response.GetQuery();
 
-	if (q->type == DatabaseQuery::GET_DATA)
+	if (q->type == DatabaseQuery::GET_DATA) {
 		for (std::vector<DatabaseQuery::ValueData::V>::iterator i = q->value_data.vv->begin();
 				i != q->value_data.vv->end();
 				i++) {
@@ -164,7 +164,7 @@ void DatabaseManager::CheckAndNotifyAboutError(DatabaseResponse &response) {
 			}
 			free(i->error_str);
 		}
-	else if (q->type == DatabaseQuery::SEARCH_DATA) {
+	} else if (q->type == DatabaseQuery::SEARCH_DATA) {
 		if (!q->search_data.ok) {
 			switch (q->search_data.error) {
 				case SZBE_SEARCH_TIMEOUT:
