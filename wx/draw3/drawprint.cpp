@@ -499,9 +499,9 @@ void GraphPrinter::PrintDraws(wxDC *dc, std::vector<Draw*> draws, int draws_coun
 		m_draw = draws[j];
 	
 #ifdef __WXMSW__
-		DrawAllPoints(dc, NULL, 7);
+		DrawAllPoints(dc, 7);
 #else
-		DrawAllPoints(dc, NULL);
+		DrawAllPoints(dc);
 #endif
 
 	}

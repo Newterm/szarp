@@ -42,46 +42,6 @@
 #include <wx/dcmemory.h>
 #endif
 
-#ifdef __WXGTK__
-#include <gdk/gdk.h>
-#endif
-/**I hope this all non cross-platform stuff will be removed when 
- * next version of wxWidgets is relased so I won't bother to document it.*/
-class SDC {
-/*    #ifdef __WXGTK__
-	GdkGC *m_gc;
-	GdkDrawable *m_gdkbmp;
-#else
-	HDC m_gc;
-	HBITMAP m_mswbmp;
-	HBITMAP m_defbmp;
-	wxPen m_pen;
-	bool m_selected;
-	void Select();
-#endif*/
-	public:
-	SDC();
-/*  #ifdef __WXGTK__
-	void SetObjects(GdkGC *gc, GdkBitmap* bmp);
-#else
-	void SetObjects(HDC gc, HBITMAP bmp);
-#endif*/
-	void SetLineWidth(int width);
-	void SetWhiteForeground();
-	void SetBlackForeground();
-	void DrawPoint(int x, int y);
-	void DrawCircle(int x, int y, int r);
-	void DrawLine(int x1, int y1, int x2, int y2);
-	void DrawRectangle(int x, int y, int w, int h);
-	void DrawRectangle(const wxRect &r);
-	void Clear();
-/*  #ifdef __WXMSW__
-	void Deselect();
-#endif*/
-
-};
-
-
 /*Abstract class representing object being some kind of Draw view,
  * that can be blitted onto @see WxGraphs.  Implements @see DrawObserver 
  * thus is notfied about any changes in observed @see Draw.*/
@@ -282,7 +242,7 @@ protected:
 	 * @param dc device context to draw with
 	 * @param sdc supplementary context to draw with
 	 * @param point_width width of point in pixels*/
-	void DrawAllPoints(wxDC *dc, SDC *sdc, int point_width = 1);
+	void DrawAllPoints(wxDC *dc, int point_width = 1);
 
 	/**@return true if for point at given index alternate colour shall be used*/
 	virtual bool AlternateColor(int idx) = 0;
@@ -304,22 +264,6 @@ protected:
 	wxMemoryDC *m_dc;
 	/**Bitmap where the result of drawing is stored*/
 	wxBitmap *m_bmp;
-	/**supplemental device context*/
-	SDC m_sdc;
-
-#ifdef __WXGTK__
-	/**platform specific drawing context used for drawing onto wxMask*/
-	GdkGC *m_gc;
-
-	/**platform specific extracted from wxMask*/
-	GdkBitmap *m_gdkbmp;
-//#else
-	/**platform specific drawing context used for drawing onto wxMask*/
-//	HDC m_gc;
-
-	/**platform specific extracted from wxMask*/
-//	HBITMAP m_mswbmp;
-#endif
 
 	/**Draws point represeting probe at give index if observer @see Draw.
 	 * If adjacent probes are present line connecting them with this point is drawn
@@ -354,7 +298,7 @@ protected:
 	/**repaints view*/
 	virtual void EnableChanged(Draw *draw);
 
-	void DrawDot(int x, int y, wxDC *dc, SDC *sdc, wxRegion* region = NULL);
+	void DrawDot(int x, int y, wxDC *dc, wxRegion* region = NULL);
 
 public:
 	GraphView(WxGraphs *widget);
