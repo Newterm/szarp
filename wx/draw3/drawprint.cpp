@@ -56,17 +56,10 @@ using std::set;
 class GraphPrinter;
 class BackgroundPrinter;
 
-#ifdef __WXMSW__ 
 const int arrow_height = 42;
 const int arrow_width = 30;
 const int line_width = 7;
 const int tick_len = 24;
-#else
-const int arrow_height = 7;
-const int arrow_width = 5;
-const int line_width = 1;
-const int tick_len = 4;
-#endif
 
 
 /**Class represeting daws printout*/
@@ -344,11 +337,7 @@ int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const
 			SetSize(w, h);
 
 			DrawBackground(dc);
-#ifdef __WXMSW__
 			DrawTimeAxis(dc, 48, 24, 15, 7);
-#else
-			DrawTimeAxis(dc, 8, 4, 6);
-#endif
 		}
 
 		DrawYAxisVals(dc, tick_len, line_width);
@@ -498,12 +487,7 @@ void GraphPrinter::PrintDraws(wxDC *dc, std::vector<Draw*> draws, int draws_coun
 
 		m_draw = draws[j];
 	
-#ifdef __WXMSW__
 		DrawAllPoints(dc, 7);
-#else
-		DrawAllPoints(dc);
-#endif
-
 	}
 
 }
@@ -600,11 +584,7 @@ bool DrawsPrintout::OnPrintPage(int page) {
 #endif
 
 	wxFont f;
-#ifdef __WXMSW__ 
 	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#else
-	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#endif
 
 	dc->SetMapMode(wxMM_TEXT);
 	dc->SetFont(f);
@@ -643,11 +623,7 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	int graph_start = bp.PrintBackground(dc, m_draws, cd);
 	bp.GetSize(&w, &h);
 	GraphPrinter gp(
-#ifdef __WXGTK__
-			2, 
-#else
 			10, 
-#endif
 			graph_start, rightmargin, topmargin, bottommargin);
 	gp.SetSize(w, h);
 	gp.SetFont(f);
@@ -713,11 +689,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	wxFont font = dc->GetFont();
 	wxFont f = font;
 	//wxFont f(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, _T("Helvetica"), wxFONTENCODING_ISO8859_2);
-#ifdef __WXMSW__
 	f.SetPointSize(100);
-#else
-	f.SetPointSize(16);
-#endif
 	dc->SetTextForeground(*wxBLACK);
 	dc->SetFont(f);
 
@@ -726,11 +698,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	dc->DrawText(cn, hw - tw / 2, maxy);
 	maxy += int(1.4 * th);
 
-#ifdef __WXMSW__
 	f.SetPointSize(65);
-#else
-	f.SetPointSize(8);
-#endif
 	dc->SetFont(f);
 
 	wxString wt = fdi->GetSetName();
@@ -937,17 +905,10 @@ class XYGraphPrintout : public wxPrintout {
 
 };
 
-#ifdef __WXMSW__
 const int XYGraphPrintout::left_margin = 64 * 6 ;
 const int XYGraphPrintout::right_margin = 64 * 6;
 const int XYGraphPrintout::top_margin = 24 * 6;
 const int XYGraphPrintout::bottom_margin = 24 * 6;
-#else
-const int XYGraphPrintout::left_margin = 64;
-const int XYGraphPrintout::right_margin = 64;
-const int XYGraphPrintout::top_margin = 24;
-const int XYGraphPrintout::bottom_margin = 24;
-#endif
 
 XYGraphPrintout::XYGraphPrintout(XYGraph *graph) :
 	m_graph(graph), 
@@ -961,11 +922,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 		return false;
 
 	wxFont f;
-#ifdef __WXMSW__ 
 	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#else
-	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#endif
 
 	wxDC *dc = GetDC();
 	dc->SetMapMode(wxMM_TEXT);
@@ -1003,39 +960,19 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 	m_painter.SetSize(w, h);
 
 	m_painter.DrawXUnit(dc, 
-#ifdef __WXGTK__
-			6, 1
-#else
 			30, 5
-#endif
 			);
 	m_painter.DrawYUnit(dc, 
-#ifdef __WXGTK__
-			1, 8
-#else
 			5, 35
-#endif
 			);
 	m_painter.DrawXAxis(dc, 
-#ifdef __WXGTK__
-			7, 5, 2
-#else
 			35, 25, 10
-#endif
 			);
 	m_painter.DrawYAxis(dc,
-#ifdef __WXGTK__
-			7, 5, 2
-#else
 			35, 25, 10
-#endif
 			);
 	m_painter.DrawDrawsInfo(dc,
-#ifdef __WXGTK__
-			10, 2
-#else
 			50, 10
-#endif
 			);
 
 	pen = dc->GetPen();
@@ -1048,11 +985,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 		dc->DrawLine(x, y, x + 1, y + 1);
 		if (m_graph->m_averaged) 
 			dc->DrawCircle(x, y, 
-#ifdef __WXGTK__
-					2
-#else
 					10	
-#endif
 					);
 	}
 
@@ -1061,11 +994,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 	int tw, th;
 	int ty = 0;
 
-#ifdef __WXMSW__
 	f.SetPointSize(70);
-#else
-	f.SetPointSize(12);
-#endif
 	dc->SetFont(f);
 
 	wxString txt;
@@ -1076,11 +1005,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 
 	ty += th * 12 / 10;
 
-#ifdef __WXMSW__
 	f.SetPointSize(50);
-#else
-	f.SetPointSize(8);
-#endif
 	dc->SetFont(f);
 
 	txt = m_graph->m_di[0]->GetName();
@@ -1304,17 +1229,10 @@ class XYZGraphPrintout : public wxPrintout {
 
 };
 
-#ifdef __WXMSW__
 const int XYZGraphPrintout::left_margin = 64 * 6 ;
 const int XYZGraphPrintout::right_margin = 64 * 6;
 const int XYZGraphPrintout::top_margin = 24 * 6;
 const int XYZGraphPrintout::bottom_margin = 24 * 6;
-#else
-const int XYZGraphPrintout::left_margin = 64;
-const int XYZGraphPrintout::right_margin = 64;
-const int XYZGraphPrintout::top_margin = 24;
-const int XYZGraphPrintout::bottom_margin = 24;
-#endif
 
 XYZGraphPrintout::XYZGraphPrintout(XYGraph *graph, wxImage image) : m_graph(graph), m_image(image) { }
 
@@ -1322,11 +1240,7 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 	if (page != 1)
 		return false;
 	wxFont f;
-#ifdef __WXMSW__ 
 	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#else
-	f.Create(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-#endif
 
 	wxDC *dc = GetDC();
 	dc->SetMapMode(wxMM_TEXT);
@@ -1356,11 +1270,7 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 	int tw, th;
 	wxString txt;
 
-#ifdef __WXMSW__
 	f.SetPointSize(70);
-#else
-	f.SetPointSize(12);
-#endif
 	dc->SetFont(f);
 
 	txt = m_graph->m_di[0]->GetDrawsSets()->GetID();
@@ -1368,11 +1278,7 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 	dc->DrawText(txt, (pw - tw)  / 2, ty);
 
 	ty += th * 12 / 10;
-#ifdef __WXMSW__
 	f.SetPointSize(50);
-#else
-	f.SetPointSize(8);
-#endif
 	dc->SetFont(f);
 
 
