@@ -1,0 +1,4 @@
+#!/bin/sh
+
+systemctl stop szarp-server.target
+systemctl disable szarp-server.target

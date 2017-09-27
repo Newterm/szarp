@@ -1,0 +1,8 @@
+../services/meaner4.service /lib/systemd/system/
+../services/parhub.service /lib/systemd/system/
+../services/parcook.service /lib/systemd/system/
+../services/meaner3.service /lib/systemd/system/
+../services/paramd.service /lib/systemd/system/
+../services/prober.service /lib/systemd/system/
+../services/probes-server.service /lib/systemd/system/
+../services/szarp-server.target /lib/systemd/system/

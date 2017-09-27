@@ -27,6 +27,8 @@ function switch_to_sz4_units {
 	done
 	for UNIT in "${SZ4UNITS[@]}"; do
 		touch "$UNITSELECT_PATH/$UNIT"
+		systemctl unmask $UNIT
+		systemctl enable $UNIT
 	done
 }
 
@@ -36,6 +38,8 @@ function switch_to_sz3_units {
 	done
 	for UNIT in "${SZ3UNITS[@]}"; do
 		touch "$UNITSELECT_PATH/$UNIT"
+		systemctl unmask $UNIT
+		systemctl enable $UNIT
 	done
 }
 
@@ -109,6 +113,10 @@ END
 
 		rm /tmp/sss_ssl.conf
 	fi
+
+	systemctl unmask szarp-server.target
+	systemctl enable szarp-server.target
+	systemctl start szarp-server.target
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
