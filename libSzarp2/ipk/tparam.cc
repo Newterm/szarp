@@ -193,7 +193,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				else if (!xmlStrcmp(attr, BAD_CAST "uinteger"))
 					_dataType = UINT;
 				else
-					xw.XMLError("param data_type has invalid value, expected one of: float, double, short, int, ushort, uint");
+					xw.XMLError("param data_type has invalid value, expected one of: float, double, short, integer, ushort, uinteger");
 			} else
 			if (xw.IsAttr("time_type")) {
 				if (!xmlStrcmp(attr, BAD_CAST "second"))
