@@ -1,12 +1,62 @@
-#!/bin/sh
+#!/bin/bash
 # $Id: szarp-server.postinst 3192 2006-05-29 13:37:37Z reksio $
 
 set -e;
 
 . /usr/share/debconf/confmodule;
 
+UNITSELECT_PATH="/etc/szarp/units-enabled"
+
+SZ4UNITS=(
+	"meaner4"
+	"parcook"
+	"parhub"
+)
+
+SZ3UNITS=(
+	"meaner3"
+	"parcook"
+	"paramd"
+	"prober"
+	"probes-server"
+)
+
+function switch_to_sz4_units {
+	for UNIT in "${SZ3UNITS[@]}"; do
+		rm -f "$UNITSELECT_PATH/$UNIT"
+	done
+	for UNIT in "${SZ4UNITS[@]}"; do
+		touch "$UNITSELECT_PATH/$UNIT"
+	done
+}
+
+function switch_to_sz3_units {
+	for UNIT in "${SZ4UNITS[@]}"; do
+		rm -f "$UNITSELECT_PATH/$UNIT"
+	done
+	for UNIT in "${SZ3UNITS[@]}"; do
+		touch "$UNITSELECT_PATH/$UNIT"
+	done
+}
+
+
 case "$1" in
     configure)
+
+	if [ ! -d $UNITSELECT_PATH ]; then
+		mkdir -p $UNITSELECT_PATH
+	fi
+
+	# create default configuration
+	db_get szarp/szbase_type
+	if [ "x$RET" = "xsz4" ]; then
+		switch_to_sz4_units
+	elif [ "x$RET" = "xsz3" ]; then
+		switch_to_sz3_units
+	else
+		echo "unknown database type: $RET" 1>&2
+		exit 10;
+	fi
 
     	db_get szarp/prefix; 
 	if [ "x$RET" = "x" ]; then
