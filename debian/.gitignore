@@ -9,3 +9,7 @@ tmp
 !services/*.service
 !services/*.target
 !*.install
+!*.postinst
+!*.postrm
+!*.preinst
+!*.prerm
