@@ -69,12 +69,13 @@ public:
 
 protected:
 	void configure_events();
-	void MainLoop(); 
+	void MainLoop();
 
 	double executeScript(DefParamBase*);
 	void executeScripts();
 	void Calcul(DefParamBase*);
 
+	static double getGlobalParamValue(const std::wstring& name);
 private:
 	std::unique_ptr<IPCHandler> m_ipc;
 	std::unique_ptr<DaemonConfig> m_cfg;
@@ -95,6 +96,7 @@ public:
 
 	static void cycle_timer_callback(int fd, short event, void* arg);
 	static double IPCParamValue(const std::wstring& name);
+	static double IPCParamValue(const char* pname);
 	static double Sz4BaseValue(const std::wstring& name, sz4::nanosecond_time_t t, SZARP_PROBE_TYPE pt);
 };
 

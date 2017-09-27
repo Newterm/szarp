@@ -158,7 +158,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	m_cfg.reset(new DaemonConfig("defdmn"));
 
 	configure_events();
-	
+
 	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
 		throw SzException("Could not load configuration");
 
@@ -183,7 +183,7 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	sz4::live_cache_config* live_config = new sz4::live_cache_config();
 	live_config->retention = 1000;
-	
+
 	configureHubs(live_config);
 
 	char* sub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
@@ -195,13 +195,14 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	registerLuaFunctions();
 
+	int i = 0;
 	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext()) {
 		for (TParam * p = unit->GetFirstParam(); p; p = unit->GetNextParam(p)) {
 			if (p->GetLuaScript()) {
-				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, p->GetIpcInd()));
+				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, i++));
 				param_info.push_back(ptr);
 			} else {
-				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, p->GetIpcInd()));
+				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, RPNParamBuilder>::op(p, p, i++));
 				param_info.push_back(ptr);
 			}
 		} // if any param is ill-formed, stop the daemon
@@ -210,7 +211,34 @@ void Defdmn::configure(int* argc, char** argv) {
 	for (auto& p: param_info) p->subscribe_on_params(m_base.get());
 }
 
+std::wstring makeParamNameGlobal(std::wstring name) {
+	if (std::count(name.begin(), name.end(), L':') == 2) {
+		std::wstring prefix = SC::A2S(libpar_getpar("", "prefix", 0));
+		prefix.erase(std::remove(prefix.begin(), prefix.end(), (wchar_t)'/'), prefix.end());
+
+		name.insert(0, prefix + (wchar_t)':');
+	}
+	return name;
+}
+
+std::wstring makeParamNameGlobal(const char* pname) {
+	std::wstring name(SC::U2S( (const unsigned char*) pname));
+	return makeParamNameGlobal(std::move(name));
+}
+
 double Defdmn::IPCParamValue(const std::wstring& name) {
+	std::wstring global_name = makeParamNameGlobal(name);
+
+	return getGlobalParamValue(global_name);
+}
+
+double Defdmn::IPCParamValue(const char* pname) {
+	std::wstring global_name = makeParamNameGlobal(pname);
+
+	return getGlobalParamValue(global_name);
+}
+
+double Defdmn::getGlobalParamValue(const std::wstring& name) {
 	TParam* param = IPKContainer::GetObject()->GetParam(name);
 	if (!param) return std::numeric_limits<double>::min();
 
@@ -243,16 +271,10 @@ float ChooseFun(float funid, float *parlst)
 	return ((*(FunTable[fid])) (parlst));
 }
 
-std::wstring makeParamNameGlobal(const char* pname) {
-	std::wstring name(SC::U2S( (const unsigned char*) pname));
-	if (std::count(name.begin(), name.end(), L':') == 2) name.insert(0, SC::A2S(libpar_getpar("", "prefix", 0)) + (wchar_t)':');
-	return name;
-}
-
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
 
-	double result = Defdmn::IPCParamValue(makeParamNameGlobal(str));
+	double result = Defdmn::IPCParamValue(str);
 
 	lua_pushnumber(lua, result);
 
