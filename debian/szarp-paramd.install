@@ -1,0 +1,3 @@
+etc/pam.d/paramd
+opt/szarp/bin/paramd
+opt/szarp/resources/paramd_access.conf

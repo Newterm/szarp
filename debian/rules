@@ -9,8 +9,8 @@
 # with incomplete packages
 #
 # How to add files to existing packages:
-#  If the file is installed during make install you need just to add proper "Files" directive to
-#  package's entry in packs.files file.
+#  If the file is installed during make install you need just to add an entry to
+#  package's <package>.install file
 #  Few things to note:
 #  * each Files directive is treated as glob expression
 #  * if you provide wrong path (i.e. poiting to non-existing file) 
@@ -119,7 +119,6 @@ debian/build-no-cb-stamp: debian/config-status-no-cb
 	@touch $@
 
 clean: sanity_check
-	-rm debian/*install
 	-rm debian/*stamp
 	-rm debian/config-status*
 	-rm debian/build*
@@ -136,7 +135,6 @@ install:
 	dh_testroot
 	$(MAKE) install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
 	dh_installdirs
-	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
 	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
 
 binary-no-cb: debian/build-no-cb-stamp 
@@ -185,7 +183,6 @@ install-sssweb:
 	dh_testroot
 	$(MAKE) -C www/pylons/sssweb install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
 	dh_installdirs
-	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
 	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
 
 create-sssweb: DH_OPTIONS=-pszarp-sssweb

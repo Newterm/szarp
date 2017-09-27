@@ -1,0 +1,16 @@
+opt/szarp/lib/python/cmdLineParser.py
+opt/szarp/lib/python/cmdLineParser.pyc
+opt/szarp/lib/python/cmdLineParser.pyo
+opt/szarp/lib/python/DateDialog.py
+opt/szarp/lib/python/DateDialog.pyc
+opt/szarp/lib/python/DateDialog.pyo
+opt/szarp/lib/python/fillerGUI.py
+opt/szarp/lib/python/fillerGUI.pyc
+opt/szarp/lib/python/fillerGUI.pyo
+opt/szarp/lib/python/filler.py
+opt/szarp/lib/python/filler.pyc
+opt/szarp/lib/python/filler.pyo
+opt/szarp/resources/locales/pl_PL/LC_MESSAGES/filler.mo
+opt/szarp/resources/wx/icons/add16.xpm
+opt/szarp/bin/filler
+opt/szarp/bin/ipk2filler.py
