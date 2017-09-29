@@ -41,6 +41,8 @@
 
 #include "cfgmgr.h"
 
+#include "wxlogging.h"
+
 /** Validator class - checks if draw can be disabled, and inform
  * drawswdg about enabling/disabling widget */
 class SelectDrawValidator : public wxValidator {

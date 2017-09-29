@@ -58,7 +58,7 @@
 #include "drawpnl.h"
 
 BEGIN_EVENT_TABLE(FrameManager, wxEvtHandler)
-	EVT_CLOSE(FrameManager::OnClose)
+	LOG_EVT_CLOSE(FrameManager , OnClose, "frmmgr:close" )
 END_EVENT_TABLE()
 
 FrameManager::FrameManager(DatabaseManager *dmgr, ConfigManager *cfgmgr, RemarksHandler *rhandle) :

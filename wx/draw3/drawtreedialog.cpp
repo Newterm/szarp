@@ -201,7 +201,7 @@ DrawTreeDialog::~DrawTreeDialog() {
 }
 
 BEGIN_EVENT_TABLE(DrawTreeDialog, wxDialog)
-	EVT_BUTTON(wxID_OK, DrawTreeDialog::OnOk)
-	EVT_BUTTON(wxID_CANCEL, DrawTreeDialog::OnCancel)
-	EVT_BUTTON(wxID_HELP, DrawTreeDialog::OnHelp)
+	LOG_EVT_BUTTON(wxID_OK, DrawTreeDialog , OnOk, "drawtree:ok" )
+	LOG_EVT_BUTTON(wxID_CANCEL, DrawTreeDialog , OnCancel, "drawtree:cancel" )
+	LOG_EVT_BUTTON(wxID_HELP, DrawTreeDialog , OnHelp, "drawtree:help" )
 END_EVENT_TABLE()

@@ -590,6 +590,6 @@ DrawPscFrame::~DrawPscFrame() {
 }
 
 BEGIN_EVENT_TABLE(DrawPscFrame, PscFrame)
-	EVT_CHOICE(psc_CHOICE, DrawPscFrame::OnUnitChoice)
-	EVT_CLOSE(DrawPscFrame::OnClose)
+	LOG_EVT_CHOICE(psc_CHOICE, DrawPscFrame , OnUnitChoice, "drawpsc:choice" )
+	LOG_EVT_CLOSE(DrawPscFrame , OnClose, "drawpsc:close" )
 END_EVENT_TABLE()

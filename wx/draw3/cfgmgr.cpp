@@ -572,7 +572,7 @@ DefinedDrawsSets* ConfigManager::GetDefinedDrawsSets() {
 }
 
 DrawsSets *
-ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
+ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path, bool logparams )
 {
 	if(splashscreen != NULL) {
 		wxString msg = _("Loading configuration: ");
@@ -580,9 +580,11 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 		splashscreen->PushStatusText(msg);
 	}
 
+	m_logparams = logparams;
+
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
-		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
+		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring(),logparams);
 
 	DrawsSets* ret;
 	if (ipk == NULL)
@@ -1161,7 +1163,7 @@ bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
 	m_db_mgr->RemoveParams(m_defined_sets->GetDefinedParams());
 	std::wstring wprefix = prefix.wc_str();
-	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
+	if (m_ipks->ReadyConfigurationForLoad(wprefix,m_logparams) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
 

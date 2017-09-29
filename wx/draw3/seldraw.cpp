@@ -213,14 +213,14 @@ SelectDrawValidator::~SelectDrawValidator() {
 
 
 BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
-	EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget::OnBlockCheck)
-	EVT_MENU(seldrawID_PSC, SelectDrawWidget::OnPSC)
-	EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget::OnDocs)
-	EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget::OnCopyParamName )
-	EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget::OnAverageValueCalucatedMethodChange)
-	EVT_MENU(seldrawID_CTX_LAST_VALUE, SelectDrawWidget::OnAverageValueCalucatedMethodChange)
-	EVT_MENU(seldrawID_CTX_DIFFERENCE_VALUE, SelectDrawWidget::OnAverageValueCalucatedMethodChange)
-	EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget::OnEditParam)
+	LOG_EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget , OnBlockCheck, "seldraw:block" )
+	LOG_EVT_MENU(seldrawID_PSC, SelectDrawWidget , OnPSC, "seldraw:psc" )
+	LOG_EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget , OnDocs, "seldraw:doc" )
+	LOG_EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget , OnCopyParamName , "seldraw:cpyparam" )
+	LOG_EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_LAST_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_DIFFERENCE_VALUE, SelectDrawWidget , OnAverageValueCalucatedMethodChange, "seldraw:averagevaluemethodchange" )
+	LOG_EVT_MENU(seldrawID_CTX_EDIT_PARAM, SelectDrawWidget , OnEditParam, "seldraw:edit" )
 	EVT_TIMER(wxID_ANY, SelectDrawWidget::OnTimer)
 END_EVENT_TABLE()
 

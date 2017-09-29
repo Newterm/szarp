@@ -38,6 +38,7 @@
 #include <wx/textctrl.h>
 #include <wx/listctrl.h>
 
+#include "wxlogging.h"
 #include "sprecivedevnt.h"
 #include "seteditctrl.h"
 

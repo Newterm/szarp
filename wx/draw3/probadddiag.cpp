@@ -179,10 +179,10 @@ wxString ProbersAddressDialog::getTextFromUser(const wxString& message, const wx
 }
 
 BEGIN_EVENT_TABLE(ProbersAddressDialog, wxDialog)
-	EVT_BUTTON(wxID_OK, ProbersAddressDialog::OnOkButton)
-	EVT_BUTTON(wxID_HELP, ProbersAddressDialog::OnHelpButton)
-	EVT_BUTTON(wxID_CANCEL, ProbersAddressDialog::OnCancelButton)
-	EVT_CLOSE(ProbersAddressDialog::OnClose)
+	LOG_EVT_BUTTON(wxID_OK, ProbersAddressDialog , OnOkButton, "probad:ok" )
+	LOG_EVT_BUTTON(wxID_HELP, ProbersAddressDialog , OnHelpButton, "probad:help" )
+	LOG_EVT_BUTTON(wxID_CANCEL, ProbersAddressDialog , OnCancelButton, "probad:cancel" )
+	LOG_EVT_CLOSE(ProbersAddressDialog , OnClose, "probad:close" )
 	EVT_LIST_ITEM_SELECTED(XRCID("ProbersAddressListCtrl"), ProbersAddressDialog::OnListItemActivated)
 	EVT_LIST_ITEM_ACTIVATED(XRCID("ProbersAddressListCtrl"), ProbersAddressDialog::OnListItemActivated)
 END_EVENT_TABLE()

@@ -247,6 +247,8 @@ void DrawEdit::OnCancel(wxCommandEvent & event) {
 }
 
 void DrawEdit::OnScaleValueChanged(wxCommandEvent& e) {
+	UDPLogger::LogEvent( "drawpick:edit_scale" );
+
 	wxString scale_value = m_scale_input->GetValue();
 	long value;
 	if (!scale_value.ToLong(&value) || value <= 0 || value > 99) {
@@ -1092,32 +1094,32 @@ DrawPicker::~DrawPicker() {
 }
 
 BEGIN_EVENT_TABLE(DrawEdit, wxDialog)
-    EVT_BUTTON(wxID_OK, DrawEdit::OnOK)
-    EVT_BUTTON(wxID_CANCEL, DrawEdit::OnCancel)
-    EVT_BUTTON(XRCID("button_colour"), DrawEdit::OnColor)
+    LOG_EVT_BUTTON(wxID_OK, DrawEdit , OnOK, "drawpick:edit_ok" )
+    LOG_EVT_BUTTON(wxID_CANCEL, DrawEdit , OnCancel, "drawpick:edit_cancel" )
+    LOG_EVT_BUTTON(XRCID("button_colour"), DrawEdit , OnColor, "drawpick:edit_colour" )
     EVT_TEXT(XRCID("text_ctrl_scale_percentage"), DrawEdit::OnScaleValueChanged)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(DrawPicker, wxDialog)
-    EVT_BUTTON(wxID_OK, DrawPicker::OnOK)
-    EVT_BUTTON(wxID_CANCEL, DrawPicker::OnCancel)
-    EVT_BUTTON(wxID_HELP, DrawPicker::OnHelpButton)
-    EVT_BUTTON(XRCID("button_add_draw"), DrawPicker::OnAddDraw)
-    EVT_BUTTON(XRCID("button_add_parameter"), DrawPicker::OnAddParameter)
-    EVT_MENU(drawpickTB_REMOVE, DrawPicker::OnRemove)
-    EVT_MENU(drawpickTB_EDIT, DrawPicker::OnContextEdit)
-    EVT_MENU(drawpickTB_UP, DrawPicker::OnUp)
-    EVT_MENU(drawpickTB_DOWN, DrawPicker::OnDown)
-    EVT_MENU(drawpickTB_PARAM_EDIT, DrawPicker::OnEditParam)
+    LOG_EVT_BUTTON(wxID_OK, DrawPicker , OnOK, "drawpick:picker_ok" )
+    LOG_EVT_BUTTON(wxID_CANCEL, DrawPicker , OnCancel, "drawpick:picker_cancel" )
+    LOG_EVT_BUTTON(wxID_HELP, DrawPicker , OnHelpButton, "drawpick:picker_help" )
+    LOG_EVT_BUTTON(XRCID("button_add_draw"), DrawPicker , OnAddDraw, "drawpick:picker_add_draw" )
+    LOG_EVT_BUTTON(XRCID("button_add_parameter"), DrawPicker , OnAddParameter, "drawpick:picker_add_param" )
+    LOG_EVT_MENU(drawpickTB_REMOVE, DrawPicker , OnRemove, "drawpick:picker_tb_remove" )
+    LOG_EVT_MENU(drawpickTB_EDIT, DrawPicker , OnContextEdit, "drawpick:picker_tb_edit" )
+    LOG_EVT_MENU(drawpickTB_UP, DrawPicker , OnUp, "drawpick:picker_tb_up" )
+    LOG_EVT_MENU(drawpickTB_DOWN, DrawPicker , OnDown, "drawpick:picker_tb_down" )
+    LOG_EVT_MENU(drawpickTB_PARAM_EDIT, DrawPicker , OnEditParam, "drawpick:picker_tb_param_edit" )
     EVT_LIST_ITEM_ACTIVATED(XRCID("list_ctrl"), DrawPicker::OnEdit)
     EVT_LIST_ITEM_RIGHT_CLICK(XRCID("list_ctrl"), DrawPicker::OnContextMenu)
     EVT_LIST_ITEM_SELECTED(XRCID("list_ctrl"), DrawPicker::OnSelected)
-    EVT_BUTTON(XRCID("bitmap_button_up"), DrawPicker::OnUp)
-    EVT_BUTTON(XRCID("bitmap_button_down"), DrawPicker::OnDown)
-    EVT_CLOSE(DrawPicker::OnClose)
+    LOG_EVT_BUTTON(XRCID("bitmap_button_up"), DrawPicker , OnUp, "drawpick:picker_bitmap_up" )
+    LOG_EVT_BUTTON(XRCID("bitmap_button_down"), DrawPicker , OnDown, "drawpick:picker_bitmap_down" )
+    LOG_EVT_CLOSE(DrawPicker , OnClose, "drawpick:picker_close" )
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(PickKeyboardHandler, wxEvtHandler)
-    EVT_CHAR(PickKeyboardHandler::OnChar)
+    LOG_EVT_CHAR(PickKeyboardHandler , OnChar, "drawpick:picker_char" )
 END_EVENT_TABLE()
 

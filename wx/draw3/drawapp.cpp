@@ -389,6 +389,17 @@ bool DrawApp::OnInit() {
 
 	splash->PushStatusText(_("Loading configuration..."));
 
+	/* init activity logger with base name as server name. This assumes that
+	 * server has written basename to /etc/hosts on linux machines and probably
+	 * doesn't work on windows.
+	 */
+	UDPLogger::SetAppName( "draw3" );
+	UDPLogger::SetAddress( (const char*)m_base.mb_str(wxConvUTF8) );
+	UDPLogger::SetPort   ( "7777" );
+	UDPLogger::LogEvent  ( "drawapp:start" );
+
+
+
 	wxString prefix, window;
 	PeriodType pt = PERIOD_T_YEAR;
 	time_t time = -1;
@@ -401,7 +412,7 @@ bool DrawApp::OnInit() {
 			return FALSE;
 		}
 	} else if (!m_base.IsEmpty()) {
-		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring())) == NULL) {
+		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring(),m_show_logparams)) == NULL) {
 			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file or use i2smo test."));
 			StopThreads();
 			return FALSE;
@@ -468,6 +479,8 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddOption(_T("geometry"), wxEmptyString,
 		_("X windows geometry specification"), wxCMD_LINE_VAL_STRING);
 
+	parser.AddSwitch(_T("a") , _T("activity"));
+
 	parser.AddOption(_T("base"), wxEmptyString,
 		_("base name"), wxCMD_LINE_VAL_STRING);
 
@@ -532,6 +545,8 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 	parser.Found(_T("base"), &m_base);
 
 	parser.Found(_T("url"), &m_url);
+
+	m_show_logparams = parser.Found(_T("activity"));
 
 	m_url_open_in_existing = parser.Found(_T("e"));
 
@@ -706,5 +721,11 @@ void DrawGLApp::ShowAbout(wxWindow *parent)
 
 void DrawGLApp::SetProgName(wxString str) {
 	szAppImpl::SetProgName(str);
+}
+
+void DrawApp::HandleEvent(wxEvtHandler *handler, wxEventFunction func, wxEvent& event) const
+{
+	UDPLogger::HandleEvent( handler , func , event );
+	wxApp::HandleEvent( handler , func , event );
 }
 

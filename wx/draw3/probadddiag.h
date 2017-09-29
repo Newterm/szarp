@@ -25,6 +25,8 @@
 #include <wx/listctrl.h>
 #endif
 
+#include "wxlogging.h"
+
 class ProbersAddressDialog : public wxDialog {
 
 	wxListCtrl *m_address_list;

@@ -44,6 +44,8 @@
 #include "classes.h"
 #include <vector>
 
+#include "wxlogging.h"
+
 /**
  * This class reprezents panel with all the draws' display and control
  * widgets. It can be used as a main frame for program tab or windows.

@@ -2447,10 +2447,10 @@ void RemarkViewDialog::RemarkSent(bool ok, wxString error) {
 }
 
 BEGIN_EVENT_TABLE(RemarkViewDialog, wxDialog)
-	EVT_BUTTON(wxID_CLOSE, RemarkViewDialog::OnCloseButton)
-	EVT_BUTTON(wxID_CANCEL, RemarkViewDialog::OnCancelButton)
-	EVT_BUTTON(wxID_HELP, RemarkViewDialog::OnHelpButton)
-	EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog::OnGoToButton)
-	EVT_BUTTON(wxID_ADD, RemarkViewDialog::OnAddButton)
+	LOG_EVT_BUTTON(wxID_CLOSE, RemarkViewDialog , OnCloseButton, "remarksview:close" )
+	LOG_EVT_BUTTON(wxID_CANCEL, RemarkViewDialog , OnCancelButton, "remarksview:cancel" )
+	LOG_EVT_BUTTON(wxID_HELP, RemarkViewDialog , OnHelpButton, "remarksview:help" )
+	LOG_EVT_BUTTON(XRCID("GOTO_BUTTON"), RemarkViewDialog , OnGoToButton, "remarksview:goto" )
+	LOG_EVT_BUTTON(wxID_ADD, RemarkViewDialog , OnAddButton, "remarksview:add" )
 END_EVENT_TABLE()
 

@@ -91,8 +91,11 @@ class TSzarpConfig {
 public:
 	/** 
 	 * @brief constructs empty configuration. 
+	 * 
+	 * @param logparams if true virtual logging parameters
+	 * will be created while loading XML
 	 */
-	TSzarpConfig();
+	TSzarpConfig( bool logparams = true );
 	virtual ~TSzarpConfig(void);
 
 	/**
@@ -113,6 +116,12 @@ public:
 	 * @param prefix set prefix of configuration.
 	 */
 	void SetName(const std::wstring& title, const std::wstring& prefix);
+
+	/** 
+	 * @brief Specify if loggerparams should be added after XML load
+	 * @param _logparams if true, params will be added
+	 */
+	void SetLogParams( bool _logparams ) { logparams = _logparams; }
 
 	/**
 	 * @return prefix of configuration
@@ -324,6 +333,8 @@ public:
 	/** TODO: comment */
 	const std::wstring& GetPSPort() { return ps_port; }
 
+	void CreateLogParams();
+
 	unsigned GetConfigId() const { return config_id; }
 
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
@@ -375,6 +386,8 @@ protected:
 
 	std::wstring ps_port;	/**< Parameter Setting server port*/
 
+	bool logparams; /**< specify if logging parameters should be created */
+	
 	size_t device_counter; /**< numer of created TDevice objects */
 
 	size_t radio_counter; /**< numer of created TRadio objects */
@@ -1892,8 +1905,9 @@ class IPKContainer {
 	/**Adds configuration to the the container
 	 * @param prefix configuration prefix
 	 * @param file path to the file with the configuration
+	 * @param logparams defines if logging params should be generated
 	 */
-	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
+	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring() , bool logparams = true );
 
 	TParam* GetParamFromHash(const std::basic_string<unsigned char>& global_param_name);
 
@@ -1918,7 +1932,7 @@ public:
 
 	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);
 
-	bool ReadyConfigurationForLoad(const std::wstring &prefix);
+	bool ReadyConfigurationForLoad(const std::wstring &prefix, bool logparams = true );
 
 	template<class T> TParam* GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present = true);
 
@@ -1931,7 +1945,7 @@ public:
 	TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
 	/**Loads config into the container
 	 * @return loaded config object, NULL if error occured during configuration load*/
-	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
+	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring(), bool logparams = true );
 
 	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams();
 

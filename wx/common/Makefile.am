@@ -63,6 +63,7 @@ libwxcommon_la_SOURCES = \
 	@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
 	@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
 	@srcdir@/validate.cpp @srcdir/validate.h
+	@srcdir@/wxlogging.cpp @srcdir@/wxlogging.h
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in

@@ -74,6 +74,9 @@ if $programname == 'kwmsdmn' then /var/log/szarp/kwmsdmn.log
 if $programname == 'lbdmn' then /var/log/szarp/lbdmn.log
 & DISCARD_ACTION
 
+if $programname == 'logdmn' then /var/log/szarp/logdmn.log
+& DISCARD_ACTION
+
 if $programname == 'mbdmn' then /var/log/szarp/mbdmn.log
 & DISCARD_ACTION
 

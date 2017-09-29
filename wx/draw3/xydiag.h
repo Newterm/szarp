@@ -37,6 +37,8 @@
 
 #include "cfgmgr.h"
 
+#include "wxlogging.h"
+
 typedef std::pair<std::vector<double>, std::vector<DTime> > XYPoint;
 
 /**Struct describing parametrs of XY graph*/

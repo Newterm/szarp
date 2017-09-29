@@ -43,6 +43,9 @@
 #include "version.h"
 #include "cconv.h"
 
+#include "wxlogging.h"
+
+
 /**
  * DrawToolBar with most used buttons...
  * Important: EVENTS for toolbar buttonts must be connected in DrawFrame class

@@ -35,6 +35,7 @@
 #include <wx/spinctrl.h>
 #include <wx/datectrl.h>
 
+#include "wxlogging.h"
 #include "parameditctrl.h"
 
 /**
