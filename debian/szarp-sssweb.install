@@ -2,4 +2,4 @@ var/cache/pylons-sssweb
 etc/szarp/ssweb-apache.conf
 etc/szarp/ssweb.ini
 usr/lib/python2.7/site-packages/sssweb
-usr/lib/python2.7/site-packages/sssweb-3.1.727.dev0-py2.7.egg-info
+usr/lib/python2.7/site-packages/sssweb*
