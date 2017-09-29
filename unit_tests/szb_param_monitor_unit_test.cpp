@@ -27,39 +27,31 @@ class SzbParamMonitorTest : public CPPUNIT_NS::TestFixture
 {
 	void writeTest();
 	void renameTest();
-	void dirCreateTest();
 
 	CPPUNIT_TEST_SUITE( SzbParamMonitorTest );
 	CPPUNIT_TEST( writeTest );
 	CPPUNIT_TEST( renameTest );
-	CPPUNIT_TEST( dirCreateTest );
 	CPPUNIT_TEST_SUITE_END();
 
 	std::vector<std::string> createDirectories();
-	boost::filesystem::wpath m_dir;
 public:
-	void setUp() override;
-	void tearDown() override;
+	void setUp();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SzbParamMonitorTest );
 
 void SzbParamMonitorTest::setUp() {
-	m_dir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-	boost::filesystem::create_directories(m_dir);
-}
-
-void SzbParamMonitorTest::tearDown() {
-	boost::filesystem::remove_all(m_dir);
 }
 
 std::vector<std::string> SzbParamMonitorTest::createDirectories() {
+	std::stringstream file_name;
+	file_name << "/tmp/szb_monitor_unit_test_" << getpid() << "." << time(NULL) << ".tmp";
 	std::vector<std::string> dir_paths;
 	for (char c = 'a'; c < 'd'; c++) {
 		std::stringstream s;
 		s << c;
 
-		boost::filesystem::path p = m_dir / s.str();
+		boost::filesystem::path p = boost::filesystem::path(file_name.str()) / s.str();
 		boost::filesystem::create_directories(p);
 #if BOOST_FILESYSTEM_VERSION == 3
 		dir_paths.push_back(p.string());
@@ -161,23 +153,3 @@ void SzbParamMonitorTest::renameTest() {
 	CPPUNIT_ASSERT_EQUAL(2, o1.map[(TParam*)1]);
 }
 
-void SzbParamMonitorTest::dirCreateTest() {
-	return;
-	///XXX: this fails now, due to race condition in param monitor
-	SzbParamMonitor m(L"");
-	TestObserver o1;
-
-	auto dir = m_dir / L"a" / L"b" / L"c";
-	m.add_observer(&o1, std::vector<std::pair<TParam*, std::vector<std::string> > >(1, std::make_pair((TParam*)1, std::vector<std::string>{ dir.string() })), 0);
-
-	boost::filesystem::create_directories(dir);
-	int fd = -1;
-	CPPUNIT_ASSERT_NO_THROW(fd = sz4::open_writelock((dir / L"f.tmp").string().c_str(), O_WRONLY | O_CREAT | O_BINARY));
-	write(fd, "1111", 4);
-	sz4::close_unlock(fd);
-	boost::filesystem::rename(dir / L"f.tmp", dir / L"11.sz4");
-
-	CPPUNIT_ASSERT(o1.wait_for(2));
-	CPPUNIT_ASSERT_EQUAL(size_t(1), o1.map.size());
-	CPPUNIT_ASSERT_EQUAL(2, o1.map[(TParam*)1]);
-}
