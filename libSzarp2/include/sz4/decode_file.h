@@ -42,11 +42,8 @@ decode_file(const unsigned char *buffer, size_t size, T time) {
 		memcpy(&pair.value, buffer + index, sizeof(V));
 		index += sizeof(V);
 
-		if (index == size) {
-			pair.time = time_just_after(time);	
-			result.push_back(pair);
+		if (index == size)
 			break;
-		}
 
 		index += decode_time(time, buffer + index, size - index);
 		pair.time = time;

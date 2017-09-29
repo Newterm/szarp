@@ -271,10 +271,6 @@ public:
 		m_data.swap(data);
 	}
 
-	void set_start_time(const time_type& time) {
-		m_start_time = time;
-	}
-
 	void maybe_merge_3_block_entries(typename value_time_vector::iterator i) {
 		cache_block_size_updater _updater(this);
 		if (i != m_data.begin()

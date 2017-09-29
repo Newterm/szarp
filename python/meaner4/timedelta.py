@@ -65,6 +65,7 @@ def enc_first(buf, cnt, delta):
 	buf.write(struct.pack("B", byte))
 	
 def number_of_bits(val):
+	#print val
 	assert val >= 0
 	bits = 0
 	while val:

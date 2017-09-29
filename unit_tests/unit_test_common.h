@@ -45,4 +45,3 @@
 
 #include "sz4/filelock.h"
 
-void save_bz2_file(const std::vector<unsigned char>& data, const boost::filesystem::wpath& path);

@@ -12,12 +12,19 @@
 #include "conversion.h"
 #include "szarp_config.h"
 
-#include "unit_test_common.h"
+#include "sz4/block.h"
+#include "sz4/block_cache.h"
+#include "sz4/defs.h"
+#include "sz4/time.h"
+#include "sz4/path.h"
+#include "sz4/buffer.h"
+#include "sz4/base.h"
+#include "sz4/load_file_locked.h"
 
 class Sz4BaseTestCase : public CPPUNIT_NS::TestFixture
 {
 protected:
-	boost::filesystem::wpath m_base_dir;
+	std::wstring m_base_dir_name;
 
 public:
 
@@ -37,20 +44,28 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( Sz4BaseTestCase );
 
 void Sz4BaseTestCase::setUp() {
-	m_base_dir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-	boost::filesystem::create_directories(m_base_dir);	
+	std::wstringstream base_dir_name;
+	base_dir_name << L"/tmp/sz4_base_test_1" << getpid() << L"." << time(NULL) << L".tmp";
+	
+	m_base_dir_name = base_dir_name.str();
+
+	boost::filesystem::wpath path(m_base_dir_name);
 
 	for (wchar_t l = L'a'; l < L'd'; l++)
 	{
 		std::wstringstream ls;
 		ls << l;
 
-		boost::filesystem::create_directories(m_base_dir / ls.str() / L"config");
+		boost::filesystem::create_directories(path / ls.str() / L"config");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/a/a/a");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/b/b/b");
+		boost::filesystem::create_directories(path / ls.str() / L"szbase/Status/Meaner3/program_uruchomiony");
 
 #if BOOST_FILESYSTEM_VERSION == 3
-		std::ofstream ofs((m_base_dir / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
+		std::ofstream ofs((path / ls.str() / L"config/params.xml").native().c_str(), std::ios_base::binary);
 #else
-		std::ofstream ofs((m_base_dir / ls.str() / L"config/params.xml").external_file_string().c_str(), std::ios_base::binary);
+		std::ofstream ofs((path / ls.str() / L"config/params.xml").external_file_string().c_str(), std::ios_base::binary);
 #endif
 		ofs << 
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -84,12 +99,16 @@ void Sz4BaseTestCase::setUp() {
 
 				boost::filesystem::wpath param_path;
 				if (s != L'd')
-					param_path = m_base_dir / ls.str() / L"szbase" / ss.str() / ss.str() / ss.str();
+					param_path = path / ls.str() / L"szbase" / ss.str() / ss.str() / ss.str();
 				else
-					param_path = m_base_dir / ls.str() / L"szbase" / L"Status" / L"Meaner3" / L"program_uruchomiony";
-				boost::filesystem::create_directories(param_path);
-
-				std::ostringstream oss;
+					param_path = path / ls.str() / L"szbase" / L"Status" / L"Meaner3" / L"program_uruchomiony";
+				std::wstringstream file_name;
+				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
+#if BOOST_FILESYSTEM_VERSION == 3
+				std::ofstream ofs((param_path / file_name.str()).native().c_str(), std::ios_base::binary);
+#else
+				std::ofstream ofs((param_path / file_name.str()).external_file_string().c_str(), std::ios_base::binary);
+#endif
 
 				if (s != L'd') {
 					unsigned value = 10;
@@ -123,23 +142,18 @@ void Sz4BaseTestCase::setUp() {
 						ofs.write((const char*) &delta, sizeof(delta));
 					}	
 				}
-
-				auto s = oss.str();
-				std::wstringstream file_name;
-				file_name << std::setfill(L'0') << std::setw(10) << i << L".sz4";
-				save_bz2_file({ s.begin(), s.end() }, param_path / file_name.str());
 			}
 
 		}
 	}
 
-	IPKContainer::Init(m_base_dir.wstring(), L"/opt/szarp", L"pl");
+	IPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
 
 }
 
 void Sz4BaseTestCase::tearDown() {
 	IPKContainer::Destroy();
-	boost::filesystem::remove_all(m_base_dir);
+	boost::filesystem::remove_all(m_base_dir_name);
 }
 
 void Sz4BaseTestCase::smokeTest1() {
@@ -155,7 +169,7 @@ void Sz4BaseTestCase::smokeTest1() {
 	CPPUNIT_ASSERT(p21 != NULL);
 	CPPUNIT_ASSERT(p22 != NULL);
 
-	sz4::base base(m_base_dir.wstring(), ipk);
+	sz4::base base(m_base_dir_name, ipk);
 
 	sz4::weighted_sum<unsigned , sz4::second_time_t> sum;
 	sz4::weighted_sum<unsigned , sz4::second_time_t>::time_diff_type weight;
@@ -175,7 +189,7 @@ void Sz4BaseTestCase::cacheTest1() {
 	TParam* pl = ipk->GetParam(std::wstring(L"a:z:z:z"));
 	CPPUNIT_ASSERT(pl != NULL);
 
-	sz4::base base(m_base_dir.wstring(), ipk);
+	sz4::base base(m_base_dir_name, ipk);
 
 	sz4::weighted_sum<unsigned, sz4::second_time_t>::time_diff_type weight;
 
@@ -201,7 +215,7 @@ void Sz4BaseTestCase::getLastTest() {
 	TParam* pl = ipk->GetParam(std::wstring(L"a:z:z:z"));
 	CPPUNIT_ASSERT(pl != NULL);
 
-	sz4::base base(m_base_dir.wstring(), ipk);
+	sz4::base base(m_base_dir_name, ipk);
 
 
 	sz4::second_time_t tr;
