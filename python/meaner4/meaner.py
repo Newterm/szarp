@@ -78,11 +78,7 @@ class Meaner(MeanerBase):
 					params_values = paramsvalues_pb2.ParamsValues.FromString(msg)
 
 					for param_value in params_values.param_values:
-						log_param, index = self.ipk.adjust_param_index(param_value.param_no)
-						if log_param:
-							#TODO: we ignore logdmn params (for now)
-							continue
-
+						index = param_value.param_no
 						if index in self.msgs:
 							self.msgs[index].append(param_value)
 						else:
