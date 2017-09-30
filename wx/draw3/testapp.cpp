@@ -180,8 +180,6 @@ void TestApp::OnInitCmdLine(wxCmdLineParser &parser) {
 
         parser.SetLogo(_("Test app version 1.00."));
 
-	parser.AddSwitch(_T("a") , _T("activity"));
-
 	parser.AddOption(_T("base"), wxEmptyString, 
 		_("base name"), wxCMD_LINE_VAL_STRING);
 

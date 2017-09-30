@@ -44,8 +44,6 @@
 #include "singleinstance.h"
 #include "szhlpctrl.h"
 
-#include "wxlogging.h"
-
 class TestRunner;
 
 class TestApp : public szApp<wxApp>

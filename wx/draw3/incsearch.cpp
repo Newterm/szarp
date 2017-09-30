@@ -837,24 +837,24 @@ IncSearch::~IncSearch()
 
 
 BEGIN_EVENT_TABLE(IncSearch, wxDialog)
-    LOG_EVT_BUTTON(wxOK, IncSearch , OnOk, "incsearch:ok" )
-    LOG_EVT_BUTTON(wxRESET, IncSearch , OnReset, "incsearch:reset" )
-    LOG_EVT_BUTTON(wxCANCEL, IncSearch , OnCancel, "incsearch:cancel" )
-    LOG_EVT_BUTTON(wxHELP, IncSearch , OnHelpButton, "incsearch:help" )
+    EVT_BUTTON(wxOK, IncSearch::OnOk)
+    EVT_BUTTON(wxRESET, IncSearch::OnReset)
+    EVT_BUTTON(wxCANCEL, IncSearch::OnCancel)
+    EVT_BUTTON(wxHELP, IncSearch::OnHelpButton)
     EVT_LIST_ITEM_ACTIVATED(incsearch_LIST, IncSearch::OnActivated)
     EVT_LIST_ITEM_RIGHT_CLICK(incsearch_LIST, IncSearch::OnRightItemClick)
-    LOG_EVT_CLOSE(IncSearch , OnClose, "incsearch:close" )
-    LOG_EVT_CHOICE(incsearch_CHOICE, IncSearch , OnChoice, "incsearch:choise" )
+    EVT_CLOSE(IncSearch::OnClose)
+    EVT_CHOICE(incsearch_CHOICE, IncSearch::OnChoice)
     EVT_TEXT(incsearch_TEXT, IncSearch::OnSearch)
-    LOG_EVT_MENU(incsearch_MENU_EDIT, IncSearch , OnEditMenu, "incsearch:edit" )
-    LOG_EVT_MENU(incsearch_MENU_REMOVE, IncSearch , OnRemoveMenu, "incsearch:remove" )
+    EVT_MENU(incsearch_MENU_EDIT, IncSearch::OnEditMenu)
+    EVT_MENU(incsearch_MENU_REMOVE, IncSearch::OnRemoveMenu)
 #ifdef __WXGTK__
     EVT_WINDOW_CREATE(IncSearch::OnWindowCreate)
 #endif
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(IncKeyboardHandler, wxEvtHandler)
-	LOG_EVT_CHAR(IncKeyboardHandler , OnChar, "incsearch:char" )
+	EVT_CHAR(IncKeyboardHandler::OnChar)
 END_EVENT_TABLE()
 
 

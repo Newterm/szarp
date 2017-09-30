@@ -36,8 +36,6 @@
 #include <wx/textctrl.h>
 #include <wx/colordlg.h>
 
-#include "wxlogging.h"
-
 /**
  * Widget for editing draw properties.
  */

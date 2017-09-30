@@ -43,8 +43,6 @@
 #include <wx/graphics.h>
 #include <wx/dynarray.h>
 
-#include "wxlogging.h"
-
 class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver  {
 	bool m_right_down;
 
