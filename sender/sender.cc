@@ -156,15 +156,14 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 	int n;
 	TSendParam *sp = 0;
 	TParam *p = 0;
-	BasePeriod = ipk->GetSendFreq();
+	BasePeriod = ipk->getAttribute<unsigned int>("send_freq", 10);
 	NumberOfPars = 0;
 
-	for (TDevice * d = ipk->GetFirstDevice(); d; d = ipk->GetNextDevice(d))
-		for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-			for (TUnit * u = r->GetFirstUnit(); u;
-			     u = r->GetNextUnit(u))
+	for (TDevice * d = ipk->GetFirstDevice(); d; d = d->GetNext())
+			for (TUnit * u = d->GetFirstUnit(); u;
+			     u = u->GetNext())
 				for (sp = u->GetFirstSendParam(); sp;
-				     sp = u->GetNextSendParam(sp))
+				     sp = sp->GetNext())
 					if (sp->IsConfigured())
 						NumberOfPars += 1;
 
@@ -180,10 +179,9 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 	}
 
 	int k = 0;
-	for (TDevice * d = ipk->GetFirstDevice(); d; d = ipk->GetNextDevice(d))
-		for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-			for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u))
-				for (n = 0, sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp)) {
+	for (TDevice * d = ipk->GetFirstDevice(); d; d = d->GetNext())
+			for (TUnit * u = d->GetFirstUnit(); u; u = u->GetNext())
+				for (n = 0, sp = u->GetFirstSendParam(); sp; sp = sp->GetNext()) {
 					if (!sp->IsConfigured()) {
 						sz_log(1, "Send parameter not configured");
 						continue;

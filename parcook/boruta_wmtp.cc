@@ -257,7 +257,7 @@ public:
 
 	const char* driver_name() { return "wmtp_driver"; }
 
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	virtual int configure(TUnit* unit, short* read, short *send);
 	
 	virtual void connection_error(struct bufferevent *bufev);
 
@@ -458,9 +458,10 @@ bool wmtp_driver::read_line(struct bufferevent* bufev) {
 	return false;
 }
 
-int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+int wmtp_driver::configure(TUnit* unit, short* read, short *send) {
 	// read address
-	if (get_xml_extra_prop(node, "id", m_address))
+	m_address = unit->getAttribute<std::string>("extra:address", "");
+	if (m_address.empty())
 		return 1;
 	if (m_address.size() != 2)
 		return 1;
@@ -473,14 +474,12 @@ int wmtp_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *sen
 	
 	// read requested params
 	unsigned int offset_in_shared_memory = 0;
-	for (xmlNodePtr param_node = node->children; param_node != NULL; param_node = param_node->next) {
-
-		// ommit nodes that aren't "param" elements
-		if ((param_node->type != XML_ELEMENT_NODE) || (strcmp((const char*)(param_node->name), "param") != 0))
-			continue;
-
-		std::string param_name;
-		get_xml_extra_prop(param_node, "name", param_name);
+	for (auto param = unit->GetFirstParam(); param != nullptr; param = param->GetNext()) {
+		std::string param_name = param->getAttribute<std::string>("extra:name", "");
+		if (param_name.empty()) {
+			m_log.log(0, "No extra:name in param %ls", param->GetName().c_str());
+			return 1;
+		}
 
 		// check if param name is valid
 		if (m_auto_params.find(param_name) == m_auto_params.end()) {

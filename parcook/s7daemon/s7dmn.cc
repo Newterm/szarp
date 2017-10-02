@@ -45,7 +45,7 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 
 	_client.ConfigureFromXml(node);
 
-	TUnit* u = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit();
+	TUnit* u = cfg->GetDevice()->GetFirstUnit();
 	TParam *p = u->GetFirstParam();
 	for (int i = 1; i <= u->GetParamsCount(); i++) {
 		char *expr;

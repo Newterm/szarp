@@ -529,9 +529,9 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	muksinfo = new MUKS(cfg->GetDevice()->GetFirstRadio()->
+	muksinfo = new MUKS(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 	if (cfg->GetSingle()) {
@@ -542,7 +542,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), muk
 	}
 	
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

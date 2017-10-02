@@ -141,7 +141,7 @@ class           PolluMbus {
 	 * @param return file descriptor
 	 */
 
-	int InitComm(const std::wstring& device, long BaudRate, unsigned char DataBits,
+	int InitComm(const std::string& device, long BaudRate, unsigned char DataBits,
 	     unsigned char StopBits, unsigned char Parity);
 
 	/**
@@ -193,7 +193,7 @@ void PolluMbus::SetNoData(IPCHandler * ipc)
 
 }
 
-int PolluMbus::InitComm(const std::wstring &device, long BaudRate, unsigned char DataBits,
+int PolluMbus::InitComm(const std::string &device, long BaudRate, unsigned char DataBits,
 	     unsigned char StopBits, unsigned char Parity)
 {
 	int             CommId;
@@ -203,7 +203,7 @@ int PolluMbus::InitComm(const std::wstring &device, long BaudRate, unsigned char
 	long            ParityStatus;
 	struct termios  rsconf;
 	int serial;
-	CommId = open(SC::S2A(device).c_str(), O_RDWR | O_NDELAY |O_NONBLOCK);
+	CommId = open(device.c_str(), O_RDWR | O_NDELAY |O_NONBLOCK);
 	if (CommId < 0)
 		return CommId;
 
@@ -415,21 +415,21 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	mbinfo = new PolluMbus(cfg->GetDevice()->GetFirstRadio()->
+	mbinfo = new PolluMbus(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 	if (cfg->GetSingle()) {
 		printf("\
 line number: %d\n\
-device: %ls\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbinfo->m_params_count);
+device: %s\n\
+params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), mbinfo->m_params_count);
 	}
 
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -439,8 +439,8 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), mbi
 	sz_log(2, "starting main loop");
 	mbinfo->SetNoData(ipc);
 	while (true) {
-		fd = mbinfo->InitComm(cfg->GetDevice()->GetPath(),
-			      cfg->GetDevice()->GetSpeed(), 8, 2, EVEN);
+		fd = mbinfo->InitComm(cfg->GetDevice()->getAttribute("path"),
+			      cfg->GetDevice()->getAttribute<int>("speed"), 8, 2, EVEN);
 		if (fd < 0){
 			sz_log(2, "problem with serial port (open)\n");
 			close(fd);

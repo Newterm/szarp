@@ -649,9 +649,9 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv))
 		return 1;
 
-	rateinfo = new RateInfo(cfg->GetDevice()->GetFirstRadio()->
+	rateinfo = new RateInfo(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 
@@ -667,12 +667,12 @@ int main(int argc, char *argv[])
 	if (cfg->GetSingle()||cfg->GetDiagno()) {
 		printf("\
 line number: %d\n\
-device: %ls\n\
+device: %s\n\
 params in: %d\n\
-params out %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), rateinfo->m_params_count, rateinfo->m_sends_count);
+params out %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), rateinfo->m_params_count, rateinfo->m_sends_count);
 	}	
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

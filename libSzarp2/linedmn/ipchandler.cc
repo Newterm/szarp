@@ -19,7 +19,21 @@
 #include <assert.h>
 #include <errno.h>
 
-void IPCHandler::InitIPC(const basedmn::IPCInfo& ipc_info)
+IPCHandler::IPCHandler(DaemonConfigInfo* cfg): units(cfg->GetUnits())
+{
+	const auto& ipc_info = cfg->GetIPCInfo();
+	single = cfg->GetSingle();
+	line_no = cfg->GetLineNumber();
+	m_params_count = cfg->GetParamsCount();
+	m_sends_count = cfg->GetSendsCount();
+
+	if (!single) {
+		InitIPC(ipc_info);
+	}
+}
+
+
+void IPCHandler::InitIPC(const IPCInfo& ipc_info)
 {
 	if (m_params_count > 0) {
 		m_read = (short *) calloc(m_params_count, sizeof(short));
@@ -94,16 +108,16 @@ void IPCHandler::GoSender()
 	short* send = m_send;
 
 	for (const auto& unit: units) {
-		while (msgrcv(m_msgset_d, &msg, sizeof(msg.cont), unit.msg_type, IPC_NOWAIT)
+		while (msgrcv(m_msgset_d, &msg, sizeof(msg.cont), unit->GetSenderMsgType(), IPC_NOWAIT)
 		       == sizeof(msg.cont))
 		{
-			if (msg.cont.param >= unit.sends_count)
+			if (msg.cont.param >= unit->GetSendParamsCount())
 				continue;
 
 			send[msg.cont.param] = msg.cont.value;
 		}
 
-		send += unit.sends_count;
+		send += unit->GetSendParamsCount();
 	}
 }
 

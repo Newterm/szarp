@@ -99,12 +99,61 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
+int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int force_device_index, void* ) 
+{
+	assert (m_load_called == 0);
+
+	if (args_mgr.has("noconf")) {
+		m_load_called = 1;
+		return 0;
+	}
+
+	szlog::init(args_mgr);
+
+	ipc_info = IPCInfo{
+		*args_mgr.get<std::string>("parcook_path"),
+		*args_mgr.get<std::string>("linex_cfg")
+	};
+
+	ipk_path = *args_mgr.get<std::string>("IPK");
+	ParseCommandLine(args_mgr);
+	/* do not load params.xml */
+	if( sz_cfg ) {
+		/**
+		 * Cannot change m_device to forced value,
+		 * cause m_device is used than to get proper
+		 * shared memory.
+		 */
+		if( force_device_index < 0 ) 
+			force_device_index = m_device;
+		if( LoadNotXML(sz_cfg,force_device_index) ) {
+			return 1;
+		}
+	/* load params.xml */
+	} else if (LoadXML(ipk_path.c_str())) {
+		return 1;
+	}
+		
+	m_load_called = 1;
+
+	m_timeval.tv_sec = GetDevice()->getAttribute<int>("sec_period", 10);
+	m_timeval.tv_usec = GetDevice()->getAttribute<int>("usec_period", 0);
+	if (m_timeval.tv_sec == 0 && m_timeval.tv_usec == 0) m_timeval.tv_sec = 10;
+
+	InitUnits(GetDevice()->GetFirstUnit());
+
+	return 0;
+}
+
 int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* ) 
 {
 	char *c;
 	int l;
 	
 	assert (m_load_called == 0);
+
+	ArgsManager args_mgr(m_daemon_name);
+	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
 
 	/* libpar command line*/
 	libpar_read_cmdline(argc, argv);
@@ -138,10 +187,12 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 	loginit(l, c);
 	free(c);
 	
-	ipc_info = basedmn::IPCInfo{
-		std::move(libpar_getpar(m_daemon_name.c_str(), "IPK", 0)),
-		std::move(libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 0))
+	ipc_info = IPCInfo{
+		libpar_getpar(m_daemon_name.c_str(), "parcook_path", 0),
+		libpar_getpar(m_daemon_name.c_str(), "linex_cfg", 0)
 	};
+
+	ipk_path = libpar_getpar(m_daemon_name.c_str(), "IPK", 0);
 
 	if (libpardone)
 		libpar_done();
@@ -159,13 +210,13 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz
 			return 1;
 		}
 	/* load params.xml */
-	} else if (LoadXML(ipc_info.GetParcookPath().c_str())) {
+	} else if (LoadXML(ipk_path.c_str())) {
 		return 1;
 	}
 		
 	m_load_called = 1;
 
-	InitUnits();
+	InitUnits(GetDevice()->GetFirstUnit());
 
 	return 0;
 }
@@ -176,6 +227,7 @@ enum {
 	SCAN,
 	NOCONF,
 	DUMPHEX,
+	NOPARCOOK,
 	SPEED,
 	ASKDELAY,
 };
@@ -296,6 +348,8 @@ settings in config file."},
          "Print trasmitted bytes in hex-terminal format"},
 	{"askdelay", ASKDELAY, "delay in seconds", 0, 
          "Sets delay between queries to different units"},
+	{"no-parcook", NOPARCOOK, 0, 0,
+         "Do not connect to parcook (pythondmn only)"},
         {0},
 	};
                                                                                 
@@ -332,7 +386,6 @@ Note: not all options are handled by every daemon.\n\
 	arguments.id2 = 0;
 	arguments.scanner = 0;
 	arguments.device = 0;
-	arguments.noconf = 0;
 	arguments.speed = 0;
 	arguments.dumphex = 0;
 	arguments.sniff = 0;
@@ -359,6 +412,25 @@ Note: not all options are handled by every daemon.\n\
 
 	free(doc);
 	return 0;
+}
+
+void DaemonConfig::ParseCommandLine(const ArgsManager& args_mgr) {
+	m_diagno = args_mgr.has("diagno");
+	m_single = args_mgr.has("single");
+	m_noconf = args_mgr.has("noconf");
+	m_dumphex = args_mgr.has("dumphex");
+	m_sniff = args_mgr.has("sniff");
+
+	m_device = args_mgr.get<unsigned int>("device-no").get_value_or(0);
+	m_speed = args_mgr.get<unsigned int>("speed").get_value_or(0);
+	m_askdelay = args_mgr.get<unsigned int>("askdelay").get_value_or(0);
+
+	m_device_path = args_mgr.get<std::string>("device-path").get_value_or("");
+	auto scan = args_mgr.get<std::string>("scan").get_value_or("");
+	if (!scan.empty()) {
+		sscanf(scan.c_str(), "%c-%c", &m_id1, &m_id2);
+		m_scanner = true;
+	}
 }
 
 
@@ -506,10 +578,10 @@ void DaemonConfig::CloseXML(int clean_parser)
 	}
 }
 
-const std::string& DaemonConfig::GetIPKPath() const
+std::string DaemonConfig::GetIPKPath() const
 {
 	assert (m_load_xml_called != 0);
-	return ipc_info.GetParcookPath();
+	return ipk_path;
 }
 
 int DaemonConfig::GetDiagno()
@@ -524,8 +596,7 @@ const char* DaemonConfig::GetDevicePath() const
 	if (!m_device_path.empty())
 		return m_device_path.c_str();
 	if (m_device_obj) { 
-		auto path = m_device_obj->GetPath();
-		m_device_path = SC::S2A(path);
+		m_device_path = m_device_obj->getAttribute("path");
 		return m_device_path.c_str();
 	}
 	return "/dev/INVALID";
@@ -537,7 +608,7 @@ int DaemonConfig::GetSpeed()
 	if (m_speed != 0)
 		return m_speed;
 	if (m_device_obj) 
-		return m_device_obj->GetSpeed();
+		return m_device_obj->getAttribute<int>("speed");
 	return 0;
 }
 
@@ -575,16 +646,10 @@ int DaemonConfig::GetAskDelay() {
 	return m_askdelay;
 }
 
-void DaemonConfig::InitUnits() {
-	assert(m_ipk);
-
-	for (TUnit* unit = GetDevice()->GetFirstRadio()->GetFirstUnit();
-			unit;
-			unit = unit->GetNext()) {
-
-		m_units.push_back(std::move(basedmn::UnitInfo{unit}));
+void DaemonConfig::InitUnits(TUnit* unit) {
+	for (; unit; unit = unit->GetNext()) {
+		m_units.push_back(unit);
 	}
-
 }
 
 size_t DaemonConfig::GetParamsCount() const {
@@ -594,8 +659,7 @@ size_t DaemonConfig::GetParamsCount() const {
 size_t DaemonConfig::GetSendsCount() const {
 	size_t no_sends = 0;
 	
-	TRadio* radio = GetDevice()->GetFirstRadio();
-	for (auto unit = radio->GetFirstUnit(); unit != nullptr; unit = radio->GetNextUnit(unit)) {
+	for (auto unit: m_units) {
 		no_sends += unit->GetSendParamsCount();
 	}
 
@@ -606,10 +670,10 @@ size_t DaemonConfig::GetSendsCount() const {
 void DaemonConfig::CloseIPK() {
 
 	if (m_device_path.empty()) 
-		m_device_path = SC::S2A(m_device_obj->GetPath());
+		m_device_path = m_device_obj->getAttribute("path");
 
 	if (m_speed == 0)
-		m_speed = m_device_obj->GetSpeed();
+		m_speed = m_device_obj->getAttribute<int>("speed", 0);
 
 	delete m_ipk;
 

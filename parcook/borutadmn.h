@@ -140,13 +140,13 @@ public:
 /**client driver operating over tcp connection*/
 class tcp_client_driver : public client_driver {
 public:
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
+	virtual int configure(TUnit* unit, short* read, short *send) = 0;
 };
 
 /**client driver operating over serial line*/
 class serial_client_driver : public client_driver {
 public:
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) = 0;
+	virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc) = 0;
 };
 
 /**client driver operating over tcp connection that pretends */
@@ -179,7 +179,7 @@ public:
 
 	virtual void starting_new_cycle();
 
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	virtual int configure(TUnit* unit, short* read, short *send);
 
 	~tcp_proxy_2_serial_client();
 };
@@ -195,7 +195,7 @@ public:
 	virtual void data_ready(struct bufferevent* bufev) = 0;
 	virtual void starting_new_cycle() = 0;
 	virtual void finished_cycle() = 0;
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration&) = 0;
+	virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration&) = 0;
 };
 
 class tcp_server_manager;
@@ -223,7 +223,7 @@ public:
 	/** notifies driver that we are finishing cycle*/
 	virtual void finished_cycle() = 0;
 
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send) = 0;
+	virtual int configure(TUnit* unit, short* read, short *send) = 0;
 };
 
 /**container for protocols factories*/
@@ -245,14 +245,14 @@ class protocols {
 	serial_server_factories_table m_serial_server_factories;
 
 	/**retrives protocol name from unit node*/
-	std::string get_proto_name(xmlNodePtr node);
+	std::string get_proto_name(TUnit* unit);
 public:
 	protocols();
 	/**following four methods create appropriate driver as specified in the node*/
-	tcp_client_driver* create_tcp_client_driver(xmlNodePtr node);
-	serial_client_driver* create_serial_client_driver(xmlNodePtr node);
-	tcp_server_driver* create_tcp_server_driver(xmlNodePtr node);
-	serial_server_driver* create_serial_server_driver(xmlNodePtr node);
+	tcp_client_driver* create_tcp_client_driver(TUnit*);
+	serial_client_driver* create_serial_client_driver(TUnit*);
+	tcp_server_driver* create_tcp_server_driver(TUnit*);
+	serial_server_driver* create_serial_server_driver(TUnit*);
 };
 
 class serial_connection;
@@ -318,7 +318,7 @@ protected:
 	/** method handling connection establishment event*/
 	void connection_established_cb(size_t connection);
 	/** helper to build a inter unit query delay timer */
-	int build_timer(xmlNodePtr node);
+	int build_timer(TUnit*);
 	/** schedule inter query timer on connection */
 	void schedule_timer(size_t connection);
 	/** scheudule timer callback */
@@ -363,7 +363,7 @@ class tcp_client_manager : public client_manager {
 	/**tcp connections array*/
 	std::vector<tcp_connection> m_tcp_connections;
 	/**retrieves tcp connection setting from xln node*/
-	int get_address(xmlNodePtr node, std::pair<std::string, short>& addr);
+	int get_address(TUnit*, std::pair<std::string, short>& addr);
 	/**closes given connection*/
 	void close_connection(tcp_connection &c);
 	/**establishes connection, to a given address, returns 0 in case
@@ -380,7 +380,7 @@ protected:
 	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
 	tcp_client_manager(boruta_daemon *boruta) : client_manager(boruta) {}
-	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
+	int configure(TUnit *unit, short* read, short* send, protocols &_protocols);
 	int initialize();
 	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
 	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
@@ -404,7 +404,7 @@ protected:
 	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
 public:
 	serial_client_manager(boruta_daemon *boruta) : client_manager(boruta) {}
-	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
+	int configure(TUnit *unit, short* read, short* send, protocols &_protocols);
 	int initialize();
 	void connection_read_cb(serial_connection *c);
 	void connection_error_cb(serial_connection *c);
@@ -421,7 +421,7 @@ class serial_server_manager : public serial_connection_manager {
 public:
 	serial_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
 	/**configures unit*/
-	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
+	int configure(TUnit *unit, short* read, short* send, protocols &_protocols);
 	/**does nothing at this moment*/
 	int initialize();
 
@@ -468,7 +468,7 @@ class tcp_server_manager {
 	void close_connection(struct bufferevent* bufev);
 public:
 	tcp_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
-	int configure(TUnit *unit, xmlNodePtr node, short* read, short* send, protocols &_protocols);
+	int configure(TUnit *unit, short* read, short* send, protocols &_protocols);
 	int initialize();
 	void finished_cycle();
 	void starting_new_cycle();
@@ -522,32 +522,10 @@ serial_client_driver *create_fc_serial_client();
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
 
-int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc);
+int get_serial_port_config(TUnit*, serial_port_configuration &spc);
 
 int set_serial_port_settings(int fd, serial_port_configuration &sc);
 
-
-template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& value, bool optional = false) {
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST pname, BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (prop == NULL) {
-		if (!optional) {
-			dolog(0, "No attribute %s given in line %ld", pname, xmlGetLineNo(node));
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-	std::stringstream ss((char*)prop);
-	bool ok = ss >> value;
-	if (!ok) {
-		if (ss.eof())
-			ok = true;
-		else
-			dolog(0, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
-	}
-	xmlFree(prop);
-	return ok ? 0 : 1;
-}
 
 namespace ascii {
 	int char2value(unsigned char c, unsigned char &o) ;

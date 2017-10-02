@@ -33,8 +33,7 @@ public:
 	ipc() : m_ipc(nullptr), m_read(nullptr), m_read_count(0), m_send_count(0), m_zmq(nullptr), m_zmq_ctx(new zmq::context_t(1))
 		{}
 
-	template <typename Config>
-	int configure(const Config&, const ArgsManager&);
+	int configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr);
 	int configure_events();
 
 	int get_line_number();
@@ -104,43 +103,44 @@ int ipc::configure_events() {
 	return 0;
 }
 
-template <typename Config>
-int ipc::configure(const Config& cfg, const ArgsManager& args_mgr) {
+int ipc::configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr) {
 	configure_events();
 
-	try {
+	m_read_count = cfg->GetParamsCount();
+	m_send_count = cfg->GetSendsCount();
 
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
-		m_ipc = ipc_.release();
+	if (!args_mgr.has("no-parcook")) {
+		try {
 
-		m_read = m_ipc->m_read;
-		m_send = m_ipc->m_send;
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
+			m_ipc = ipc_.release();
 
-		sz_log(2, "m_read_count: %zu, m_send_count: %zu", m_read_count, m_send_count);
+			m_read = m_ipc->m_read;
+			m_send = m_ipc->m_send;
 
-	} catch(...) {
-		if (!args_mgr.has("sz4"))
+			sz_log(2, "m_read_count: %zu, m_send_count: %zu", m_read_count, m_send_count);
+
+		} catch(...) {
 			return 1;
+		}
 	}
 
-	m_conf_str = cfg.GetPrintableDeviceXMLString();
-	m_read_count = cfg.GetParamsCount();
-	m_send_count = cfg.GetSendsCount();
+	m_conf_str = cfg->GetPrintableDeviceXMLString();
 
-	line_number = cfg.GetLineNumber();
-	ipk_path = cfg.GetIPKPath();
+	line_number = cfg->GetLineNumber();
+	ipk_path = cfg->GetIPKPath();
 
 
 	if (!m_event_base)
 		return 0;
 
-	m_cycle = cfg.GetDeviceTimeval();
+	m_cycle = cfg->GetDeviceTimeval();
 
 	try {
 
 		char* sub_address = *args_mgr.get("parhub", "pub_conn_addr");
 		char* pub_address = *args_mgr.get("parhub", "sub_conn_addr"); // we publish on parhub's subscribe address
-		m_zmq = new zmqhandler(cfg.GetIPK(), cfg.GetDevice(), *m_zmq_ctx, sub_address, pub_address);
+		m_zmq = new zmqhandler(cfg, *m_zmq_ctx, sub_address, pub_address);
 		sz_log(2, "ZMQ initialized successfully");
 
 	} catch (zmq::error_t& e) {
@@ -446,10 +446,36 @@ void pyszbase::set_prober_server_address(const std::wstring &prefix,
 
 }	// namespace szarp
 
+class PythonDaemonArgs: public ArgsHolder {
+public:
+	po::options_description get_options() const override {
+		po::options_description desc{"Pythondmn arguments"};
+		desc.add_options()
+			("single,s", "Forbid writing via IPC")
+			("use-cfgdealer", "Enables configuring via config dealer")
+			("cfgdealer-address", po::value<std::string>()->default_value("localhost:5555"), "Config dealer's address")
+			("no-parcook", "Do not connect to parcook.")
+			("device-no", po::value<unsigned int>(), "Device number in config file")
+			("device-path", po::value<std::string>()->default_value("/dev/null"), "Device path attribute");
+
+		return desc;
+	}
+
+	void add_positional_options(po::positional_options_description& p_opts) const override {
+		p_opts.add("device-no", 1);
+		p_opts.add("device-path", 1);
+	}
+
+	void parse(const po::parsed_options&, const po::variables_map& vm) const override {
+		if (vm.count("device-no") == 0) throw std::runtime_error("Device number not specified! Cannot process!");
+		if (vm.count("device-path") == 0) throw std::runtime_error("Device path not specified! Cannot process!");
+	}
+};
+
 int main( int argc, char ** argv )
 {
 	ArgsManager args_mgr("pythondmn");
-	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.parse(argc, argv, DefaultArgs(), PythonDaemonArgs());
 	args_mgr.initLibpar();
 
 	if (!args_mgr.has("device-path")) {
@@ -460,16 +486,16 @@ int main( int argc, char ** argv )
 
 	if (!args_mgr.has("use-cfgdealer")) {
 		auto cfg = new DaemonConfig("pythondmn");
-		if (int ret = cfg->Load(&argc, argv, 0, nullptr, 0, nullptr))
+		if (int ret = cfg->Load(args_mgr, nullptr, 0, nullptr))
 			return ret;
 
-		if (ipc.configure(*cfg, args_mgr)) {
+		if (ipc.configure(cfg, args_mgr)) {
 			sz_log(2, "ipc::configure error -- exiting");
 			exit(1);
 		}
 	} else {
-		basedmn::ConfigDealerHandler cfg(args_mgr);
-		ipc.configure(cfg, args_mgr);
+		ConfigDealerHandler cfg(args_mgr);
+		ipc.configure(&cfg, args_mgr);
 	}
 
 

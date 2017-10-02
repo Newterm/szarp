@@ -328,7 +328,7 @@ public:
 	void starting_new_cycle() override;
 	void data_ready(struct bufferevent *bufev, int fd) override;
 	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration& spc) override;
+	int configure(TUnit *unit, short *read, short *send, serial_port_configuration& spc) override;
 	void scheduled(struct bufferevent *bufev, int fd) override;
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto_impl);
@@ -507,7 +507,7 @@ struct event_base *fc_proto_impl::get_event_base()
 	return m_event_base;
 }
 
-int fc_proto_impl::configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration& spc)
+int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_configuration& spc)
 {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
@@ -515,53 +515,41 @@ int fc_proto_impl::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 	m_read = read;
 	m_send = send;
 
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
-	xp_ctx->node = node;
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-
-	std::string _extra_id;
-	if (get_xml_extra_prop(node, "id", _extra_id)) {
-		m_log.log(0, "Invalid or missing extra:id attribute in param element at line: %ld", xmlGetLineNo(node));
+	std::string _extra_id = unit->getAttribute<std::string>("extra:id", "");
+	if (_extra_id.empty()) {
+		m_log.log(0, "Invalid or missing extra:id attribute in param element");
 		return 1;
 	}
 
 	const int l = boost::lexical_cast<int>(_extra_id);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (line %ld)", l, xmlGetLineNo(node));
+		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
 		return 1;
 	}
 	/* ADR is address + 128 */
 	m_extra_id = l + 128;
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
-	for(size_t i = 0; i < m_read_count; ++i) {
-		std::stringstream ss;
-		ss << ".//ipk:param[position()=" << i+1 << "]";
-		const char *expr = ss.str().c_str();
-		xmlNodePtr pnode = uxmlXPathGetNode(xmlCharStrdup(expr), xp_ctx, false);
-		if (pnode == NULL)
-			throw std::runtime_error("Error occured when getting parameter node");
-
-		std::string _pnu;
-		if (get_xml_extra_prop(pnode, "parameter-number", _pnu, false)) {
-			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param element at line %ld", xmlGetLineNo(pnode));
+	size_t i = 1;
+	for (auto param = unit->GetFirstParam(); param != nullptr; param = param->GetNext(), ++i) {
+		std::string _pnu = param->getAttribute<std::string>("extra:parameter-number", "");
+		if (_pnu.empty()) {
+			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param no %d", i);
 			return 1;
 		}
 
 		const unsigned short pnu = boost::lexical_cast<unsigned short>(_pnu);
 		m_log.log(10, "configure extra:parameter-number: %u", pnu);
 
-		std::string _prec;
-		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
-			m_log.log(0, "Invalid extra:prec attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		std::string _prec = param->getAttribute<std::string>("extra:prec", "");
+		if (_prec.empty()) {
+			m_log.log(0, "Invalid extra:prec attribute in param element no %d", i);
 			return 1;
 		}
 
 		const int l = boost::lexical_cast<int>(_prec);
 		if (l < 0 || ( l > SCALING_BOUNDARY && l != SCALING_PREC)) {
-			m_log.log(0, "Invalid extra:prec attribute value: %d (line %ld)", l, xmlGetLineNo(pnode));
+			m_log.log(0, "Invalid extra:prec attribute value: %d in param no %d", l, i);
 			m_log.log(0, "If conversion-index is negative put it absolute value to prec attribute (not extra:prec)");
 			return 1;
 		}
@@ -570,28 +558,21 @@ int fc_proto_impl::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 		double prec = 0;
 		if (l == SCALING_PREC) {
 			prec = 3.4;
-		}
-		else {
+		} else {
 			prec = pow10(l);
 		}
 		m_log.log(10, "configure extra:prec: %f", prec);
 
-		std::string val_op;
-		if (get_xml_extra_prop(pnode, "val_op", val_op, true)) {
-			m_log.log(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
-			return 1;
-		}
-
+		std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 		if (val_op.empty()) {
 			if (m_registers.find(pnu) != m_registers.end()) {
-				m_log.log(0, "Already configured register with extra:parameter-number (%hd) in param element at line: %ld", pnu, xmlGetLineNo(pnode));
+				m_log.log(0, "Already configured register with extra:parameter-number (%hd) in param element no %d", pnu, i);
 				return 1;
 			}
 			fc_register *reg = new fc_register(pnu, &m_log);
 			m_registers[pnu] = reg;
 			m_read_operators.push_back(new short_read_val_op(reg, prec));
-		}
-		else {
+		} else {
 			fc_register *reg = nullptr;
 			if (m_registers.find(pnu) == m_registers.end()) {
 				reg = new fc_register(pnu, &m_log);
@@ -609,7 +590,7 @@ int fc_proto_impl::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 				m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 			}
 			else {
-				m_log.log(0, "Unsupported extra:val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
+				m_log.log(0, "Unsupported extra:val_op attribute value - %s, param %d", val_op.c_str(), i);
 				return 1;
 			}
 		}

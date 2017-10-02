@@ -1,0 +1,240 @@
+#!/bin/bash
+# SZARP: SCADA software 
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+
+# $Id: szbpush 6638 2009-04-14 14:17:52Z pawel $
+#
+# 2006 Praterm S.A.
+# Darek Marcinkiewicz <rekiso@praterm.com.pl>
+#
+# Skrypt do wysy³ania baz szbase na zdalne koputery przez rsync'a
+# Parametry - login(opcjonalny)+adres(np. byto@praterm),  prefiksy baz do wsy³ania
+#
+# /opt/szarp/bin/szbpush trgr@praterm {trgr,tgw1,tgw2}
+#
+# Do prawid³owego rozwiniêcia wieloznacznego prefiksu katalog musi isnieæ
+# lokalnie. 
+# Ten program jak i szrsync sprawdzaja timestamp pliku /opt/szarp/prefix/szbase_stamp
+# jezeli jest on rozny na kompuetrze lokalnym i zdalnym to przesylana jest pelna lista
+# plikow, wpp. tylko pliki z 2 ostatnich miesiecy.
+
+HN=`hostname -s`
+ME=`basename $0`
+
+REMOTE=
+USE_CURL=
+SSH_PORT=
+EXC=
+
+#dodatkowe opcje dla rsync'a
+RSYNC_OPTIONS="-az --exclude='.*' --exclude='nohup.out' --delete --force"
+
+SSH_OPTIONS="-o StrictHostKeyChecking=no -o ControlPath=$(mktemp --tmpdir -u ssh-%r@%h:%p-XXXXXXX)"
+
+function log {
+    echo `date '+%F %X'` "szbpush[$$]: $@" >> /opt/szarp/logs/szbpush.log
+}
+
+function usage {
+    echo "`basename $0` [-c] <ADDRESS> <BASE> <BASE2>"
+    echo "    -c - user curl to get szbase_stamp"
+    echo "    -b speed limit transfer speed to speed kbps"
+    echo "    -t <time> ssh connection timeout"
+    echo "    -4 sync sz4 base"
+    echo "    <ADDRESS> - address to connect to"
+    echo "    -e \'<REGEX>\' exclude expression"
+    echo "    <BASE> - base to send"
+    echo
+}
+
+OPTS=`getopt -q -o 4cb:p:t:e: -n $ME -- "$@"`
+
+if [ $? != 0 ]; then
+    usage
+    exit 1
+fi
+
+eval set -- "$OPTS"
+
+BWLIMIT=0
+APPEND_VERIFY="--append-verify "
+USE_SZ4=0
+
+while true; do
+    case "$1" in
+    	-b)
+	    BWLIMIT=$2
+	    shift 2
+	    ;;
+	-p)
+	    SSH_OPTIONS="$SSH_OPTIONS -p $2"
+	    shift 2
+	    ;;
+	-c)
+	    USE_CURL=yes
+	    shift
+	    ;;
+	-4)
+	    USE_SZ4=1
+	    shift
+	    ;;
+	-t)
+	    SSH_OPTIONS="$SSH_OPTIONS -o ConnectTimeout=$2"
+	    shift 2
+	    ;;
+	-e)
+	    EXC="$EXC --exclude=$2"
+	    shift 2
+	    ;;
+	--)
+	    shift
+	    break
+	    ;;
+	*)
+	    usage
+	    exit 1
+	    ;;
+    esac
+done
+SZBASE_EXTRA=" $APPEND_VERIFY --include=`date +%Y%m.szb` --include=`date +%Y%m -d '1 month ago'`.szb --exclude=*.szb --exclude=*.sz4"
+
+# sprawdza sposób wywo³ania i ustawia poziom gadatliwo¶ci wyj¶cia
+function get_verbose_level () {
+	RSYNC_VERBOSE="-vP" # domy¶lnie tryb gadatliwy
+
+	m_pid=`/bin/pidof meaner3`
+	pgid=`ps h -o pgid -p $$`
+
+	if  [[ $pgid -eq $m_pid ]]; then
+		RSYNC_VERBOSE="" # wywo³anie z meanera - tryb cichy
+	fi
+}
+
+function get_local_stamp {
+	RET=-1
+	RESULT=`stat --format=%Y $1/szbase_stamp 2>/dev/null`
+	if [ $? -eq 0 ]; then
+		RET=$RESULT;
+	fi
+	echo $RET;
+}
+
+function get_remote_stamp {
+	RET=-1;	
+	if [ -z $USE_CURL ]; then
+		RESULT=`ssh $SSH_OPTIONS $REMOTE "stat --format=%Y $1/szbase_stamp" 2>/dev/null` 
+		SRET=$?
+		#connection failed
+		if [ $SRET -eq 255 ]; then
+		    log "Unable to connect to remote host"
+		    echo "Unable to connect to remote host";
+		    return 2;
+		fi
+	else
+		bid=`basename $1`
+		RESULT=`curl -A "szbpush/0.2 ($HN)" --fail --silent "http://$REMOTE_SERVER:81/sync.cgi?id=${bid}"`
+		SRET=$?
+	fi
+
+	if [ $SRET -eq 0 ]; then
+		RET=$RESULT;
+	fi
+	echo $RET;
+	return 0;
+}
+
+function do_rsync {
+	SE="";
+
+	if [ $USE_SZ4 == 0 ]; then
+		log "get_local_stamp $1";
+		LMT=`get_local_stamp $1`;
+
+		if [ $LMT -ne -1 ]; then
+		    RMT=`get_remote_stamp $1`
+		    [ $? -eq 0 ] || return 1;
+	 
+		    log "do_rsync: LMT: $LMT, RMT: $RMT"
+
+		    if [ $RMT -eq $LMT ]; then
+			SE="yes"
+		    fi
+		fi
+	fi
+
+	export RSYNC_RSH="ssh $SSH_OPTIONS"
+
+	if [ -n "$SE" ]; then
+	    ROPTS="--bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS"
+	    # first synchronize all beside szbase
+	    /usr/bin/rsync $ROPTS $EXC --exclude=szbase $1 $REMOTE:/opt/szarp
+	    # then synchronize only szbase
+	    /usr/bin/rsync $ROPTS $EXC --include=szbase $SZBASE_EXTRA $1 $REMOTE:/opt/szarp
+	else
+	    /usr/bin/rsync $EXC --bwlimit=$BWLIMIT $RSYNC_VERBOSE $RSYNC_OPTIONS $SE $1 $REMOTE:/opt/szarp
+	fi
+}
+
+function cleanup {
+	echo "Got error signal, cleaning up"
+	pgrep -P $$
+	pkill -P $$
+	ssh $SSH_OPTIONS -O exit $REMOTE
+	exit 1
+}
+
+
+if [ $# -lt 2 ]; then
+	usage
+	exit 2
+fi
+
+trap cleanup SIGINT SIGTERM
+
+log "start with args $@"
+
+get_verbose_level;
+
+REMOTE=$1;
+REMOTE_SERVER=`echo "$REMOTE" | cut -d '@' -f 2`
+if [ -z "REMOTE_SERVER" ] ; then
+	REMOTE_SERVER=$REMOTE
+fi
+shift;
+
+CODE=0
+
+ssh -M -N -f $SSH_OPTIONS $REMOTE 
+if [ $? = 255 ]; then
+    echo "Cannot connect, exiting"
+    exit 1
+fi
+
+
+for ARG in $@ ; do
+	for i in /opt/szarp/$ARG ; do
+		log "do_rsync $i start"
+		do_rsync $i;
+		LAST=$?;
+		log "do_rsync $i end (LAST: $LAST)"
+		[ $LAST -ne 0 ] && CODE=$LAST;
+	done
+done
+
+ssh $SSH_OPTIONS -O exit $REMOTE
+
+exit $CODE

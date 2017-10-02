@@ -45,7 +45,7 @@ int param_filter(TParam *p) {
 	if (ft == TParam::NONE 
 			|| ft == TParam::RPN
 			|| ft == TParam::LUA_IPC
-			|| (ft == TParam::DEFINABLE && p->GetType() == TParam::P_COMBINED))
+			|| (ft == FormulaType::DEFINABLE && p->GetType() == ParamType::COMBINED))
 		ret = 0;
 
 	return ret;

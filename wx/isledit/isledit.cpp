@@ -54,8 +54,8 @@
  */
 int par_filter(TParam * p)
 {
-	if ((p->GetType() == TParam::P_REAL)
-	    || (p->GetType() == TParam::P_COMBINED))
+	if ((p->GetType() == ParamType::REAL)
+	    || (p->GetType() == ParamType::COMBINED))
 		return 0;
 	return 1;
 }

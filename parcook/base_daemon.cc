@@ -46,24 +46,24 @@ BaseDaemon::~BaseDaemon()
 {
 }
 
-int BaseDaemon::Init(int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index )
+int BaseDaemon::Init(int argc, const char *argv[], int dev_index )
 {
-	return Init(name, argc, argv, sz_cfg, dev_index);
+	return Init(name, argc, argv, dev_index);
 }
 
-int BaseDaemon::Init( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index )
+int BaseDaemon::Init( const char*name , int argc, const char *argv[], int dev_index )
 {
-	return InitConfig(name,argc,argv,sz_cfg,dev_index)
+	return InitConfig(name,argc,argv,dev_index)
 	    || InitIPC()
 	    || InitSignals();
 }
 
-int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TSzarpConfig* sz_cfg , int dev_index )
+int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , int dev_index )
 {
 	m_cfg = new DaemonConfig(name);
 	ASSERT( m_cfg );
 
-	if( m_cfg->Load(&argc, const_cast<char**>(argv), 1, sz_cfg, dev_index) ) {
+	if( m_cfg->Load(&argc, const_cast<char**>(argv), 1, nullptr, dev_index) ) {
 		sz_log(1,"Cannot load dmn cfg");
 		return 1;
 	}
@@ -78,7 +78,7 @@ int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , TS
 int BaseDaemon::InitIPC()
 {
 	try {
-		auto _ipc = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg)); 
+		auto _ipc = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg)); 
 		ipc = _ipc.release();
 	} catch (const std::exception& e) {
 		sz_log(1,"Cannot init ipc %s", e.what());

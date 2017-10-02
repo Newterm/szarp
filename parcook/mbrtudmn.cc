@@ -1789,7 +1789,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 		m_always_init_port = true;
 	xmlFree(c);
 
-	TUnit *unit = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit();
+	TUnit *unit = cfg->GetDevice()->GetFirstUnit();
 	size_t unit_num = 0;
 
 	short* read = ipc->m_read;
@@ -1874,8 +1874,8 @@ void ModbusLine::PerformSlaveCycle(time_t start) {
 					close(m_fd);
 					m_fd = -1;
 				}
-				m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
-					m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
+				m_fd = InitComm(m_cfg->GetDevice()->getAttribute("path").c_str(),
+					m_cfg->GetDevice()->getAttribute<int>("speed"), 8, m_stop_bits, m_parity);
 				if (m_fd < 0)
 					return;
 			}
@@ -1932,8 +1932,8 @@ void ModbusLine::Go() {
 		}
 	}
 
-	m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
-			     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
+	m_fd = InitComm(m_cfg->GetDevice()->getAttribute("path").c_str(),
+			     m_cfg->GetDevice()->getAttribute<int>("speed"), 8, m_stop_bits, m_parity);
 
 	if (m_fd == -1) {
 		sz_log(0, "Failed to open port, exiting");
@@ -1943,8 +1943,8 @@ void ModbusLine::Go() {
 	do {
 		time_t start = time(NULL);
 		if (m_fd == -1)
-			m_fd = InitComm(SC::S2A(m_cfg->GetDevice()->GetPath()).c_str(),
-				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
+			m_fd = InitComm(m_cfg->GetDevice()->getAttribute("path").c_str(),
+				     m_cfg->GetDevice()->getAttribute<int>("speed"), 8, m_stop_bits, m_parity);
 
 		if (m_fd == -1) {
 			sz_log(0, "Failed to init port, doing nothing");
@@ -1986,7 +1986,7 @@ int main(int argc, char *argv[])
 	ModbusLine modbus;
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

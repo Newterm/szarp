@@ -46,50 +46,6 @@ using namespace std;
 
 #define FREE(x)	if (x != NULL) free(x)
 
-xmlNodePtr TSendParam::generateXMLNode(void)
-{
-#define X (unsigned char *)
-#define ITOA(x) snprintf(buffer, 10, "%d", x)
-#define BUF X(buffer)
-	xmlNodePtr r;
-	char buffer[10];
-
-	r = xmlNewNode(NULL, X"send");
-	if (!configured)
-		return r;
-	if (!paramName.empty()) 
-		xmlSetProp(r, X"param", SC::S2U(paramName).c_str());
-	else {
-		ITOA(value);
-		xmlSetProp(r, X"value", BUF);
-	}
-	switch (type) {
-		case (PROBE) :
-			xmlSetProp(r, X"type", X"probe");
-			break;
-		case (MIN) :
-			xmlSetProp(r, X"type", X"min");
-			break;
-		case (MIN10) :
-			xmlSetProp(r, X"type", X"min10");
-			break;
-		case (HOUR) :
-			xmlSetProp(r, X"type", X"hour");
-			break;
-		case (DAY) :
-			xmlSetProp(r, X"type", X"day");
-			break;
-	}
-	ITOA(repeat);
-	xmlSetProp(r, X"repeat", BUF);
-	if (sendNoData)
-		xmlSetProp(r, X"send_no_data", X"1");
-	return r;
-#undef X
-#undef ITOA
-#undef BUF
-}
-
 
 int TSendParam::parseXML(xmlTextReaderPtr reader) {
 

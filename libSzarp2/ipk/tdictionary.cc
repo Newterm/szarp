@@ -159,11 +159,11 @@ void TDictionary::TranslateParam(TParam *p) {
 }
 
 void TDictionary::TranslateIPK(TSzarpConfig *ipk, const std::wstring& tolang) {
-	LoadDictionary(ipk->GetNativeLanguage(), tolang);
+	LoadDictionary(SC::A2S(ipk->getAttribute<std::string>("language", "pl")), tolang);
 
 	ipk->SetTranslatedTitle(TranslateEntry(L"title", ipk->GetTitle()));
 
-	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNext(true))
+	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNextGlobal())
 		TranslateParam(p);
 
 	m_dictionary.clear();

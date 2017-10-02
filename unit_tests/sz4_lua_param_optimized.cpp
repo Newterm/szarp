@@ -38,7 +38,7 @@ namespace {
 class IPKContainerMock1 : public mocks::IPKContainerMockBase {
 	TParam param;
 public:
-	IPKContainerMock1() : param(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA) {
+	IPKContainerMock1() : param(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA) {
 		param.SetName(L"A:B:C1");
 		param.SetLuaScript((const unsigned char*) 
 "if (t % 100) < 50 then "
@@ -88,9 +88,9 @@ class IPKContainerMock2 : public mocks::IPKContainerMockBase {
 	TParam param2;
 	TParam param4;
 public:
-	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
-				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA),
-				param4(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_LUA)
+	IPKContainerMock2() : param(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL),
+				param2(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA),
+				param4(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::LUA)
 	 {
 		param.SetDataType(TParam::SHORT);
 		param.SetName(L"A:B:C");

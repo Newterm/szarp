@@ -91,8 +91,8 @@ ParamDynamicTreeData IPKLoader::get_dynamic_tree()
 
 	int all = 0, inbase = 0;
 	
-	for (TParam* p = szarpConfig->GetFirstParam(); p; p = szarpConfig->GetNextParam(p)) {
-		if (p->GetFormulaType() == TParam::DEFINABLE) {
+	for (TParam* p = szarpConfig->GetFirstParam(); p; p = p->GetNextGlobal()) {
+		if (p->GetFormulaType() == FormulaType::DEFINABLE) {
 			try {
 				p->PrepareDefinable();
 			} catch( TCheckException& e ) {
@@ -132,7 +132,7 @@ void IPKLoader::insert_raport(xmlNodePtr node, const std::wstring raportTitle, P
 
 	n = create_node(n, raportTitle);
 
-	for (TRaport* rap = szarpConfig->GetFirstRaportItem(raportTitle); rap; rap = szarpConfig->GetNextRaportItem(rap)) {
+	for (TRaport* rap = szarpConfig->GetFirstRaportItem(raportTitle); rap; rap = rap->GetNext()) {
 		double order = rap->GetOrder();
 		xmlNodePtr pn = insert_param(n, rap->GetParam(), X"unknown", false, &order, rap->GetDescr());
 		insert_into_map(pn, rap->GetParam(), dynamic_tree);
@@ -143,18 +143,18 @@ void IPKLoader::insert_raport(xmlNodePtr node, const std::wstring raportTitle, P
 void IPKLoader::insert_into_map(xmlNodePtr node, TParam *p, ParamDynamicTreeData &dynamic_tree) {
 	switch (p->GetType()) {
 
-		case TParam::P_REAL:
+		case ParamType::REAL:
 			dynamic_tree.get_map[node] = PTTParamValueGetter(m_pttParamProxy, p->GetIpcInd(), p->GetPrec());
 			dynamic_tree.set_map[node] = PTTParamValueSetter(m_pttParamProxy, p->GetIpcInd(), p->GetPrec());
 			break;
 
-		case TParam::DEFINABLE:
-		case TParam::P_LUA:
+		case ParamType::DEFINABLE:
+		case ParamType::LUA:
 			dynamic_tree.get_map[node] = SzbaseParamValueGetter(m_szbase, p);
 			dynamic_tree.set_map[node] = DummyHandler();
 			break;
 
-		case TParam::P_COMBINED:
+		case ParamType::COMBINED:
 			dynamic_tree.get_map[node] = PTTParamCombinedValueGetter(m_pttParamProxy, p->GetFormulaCache()[1]->GetIpcInd(), p->GetFormulaCache()[0]->GetIpcInd(), p->GetPrec());
 			dynamic_tree.set_map[node] = DummyHandler();
 			break;
@@ -198,7 +198,7 @@ xmlNodePtr IPKLoader::insert_param(xmlNodePtr node, TParam *p, const xmlChar* va
 	buffer = boost::lexical_cast<std::wstring>(p->GetPrec());
 	xmlSetProp(n, X"prec", SC::S2U(buffer).c_str());
 	xmlSetProp(n, X"value", value);
-	if (p->GetType() == TParam::P_COMBINED) {
+	if (p->GetType() == ParamType::COMBINED) {
 		xmlNodePtr tmp = xmlNewChild(n, NULL, X"msw", NULL);
 		buffer = boost::lexical_cast<std::wstring>(p->GetFormulaCache()[0]->GetIpcInd());
 		xmlSetProp(tmp, X"ipc_ind", SC::S2U(buffer).c_str());
@@ -250,12 +250,12 @@ xmlDocPtr IPKLoader::GetXMLDoc(AbstractNodesFilter &nf, const time_t& time, cons
 
 	int pcount = 0;
 	
-	for (TParam* p = szarpConfig->GetFirstParam(); p; p = szarpConfig->GetNextParam(p)) {
+	for (TParam* p = szarpConfig->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		if (!p->IsInBase())
 			continue;
 		if (!nf(p))
 			continue;
-		if (p->GetFormulaType() == TParam::DEFINABLE) {
+		if (p->GetFormulaType() == FormulaType::DEFINABLE) {
 			try {
 				p->PrepareDefinable();
 			} catch( TCheckException& e ) {

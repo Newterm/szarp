@@ -1123,7 +1123,7 @@ void SBUSDaemon::TimerCallback(int fd, short event, void* thisptr)
 
 bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -1245,7 +1245,7 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 	short* reads = m_ipc->m_read;
 
 	int i = 0;
-	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
+	for (TUnit *unit = dev->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
 		ASSERT(i < rset->nodesetval->nodeNr);
 
 		SBUSUnit* u  = new SBUSUnit(this, m_event_base);

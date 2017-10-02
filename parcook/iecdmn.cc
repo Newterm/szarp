@@ -515,7 +515,7 @@ bool IECDaemon::Configure(DaemonConfig* cfg) {
 	m_speed = cfg->GetSpeed();
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -536,7 +536,7 @@ bool IECDaemon::Configure(DaemonConfig* cfg) {
 	xmlXPathObjectPtr uset = xmlXPathEvalExpression(BAD_CAST ".//ipk:unit", xp_ctx);
 	int param_index = 0;
 	int i = 0;
-	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
+	for (TUnit *unit = dev->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
 		ASSERT(i < uset->nodesetval->nodeNr);
 		xmlNodePtr xunit = uset->nodesetval->nodeTab[i];
 		if (!ConfigureUnit(unit, xunit, param_index, xp_ctx))

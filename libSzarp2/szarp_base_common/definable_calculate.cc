@@ -280,8 +280,8 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 					stack[sp++] = nan("");
 			} else {
 				TParam** fc = param->GetFormulaCache();
-				if (fc[it]->GetType() == TParam::P_LUA
-						&& fc[it]->GetFormulaType() == TParam::LUA_AV) {
+				if (fc[it]->GetType() == ParamType::LUA
+						&& fc[it]->GetFormulaType() == FormulaType::LUA_AV) {
 					stack[sp++] = value_fetch(fc[it]);
 					if (!isnan(stack[sp]))
 						stack[sp] = stack[sp] * pow(10, params[it]->GetPrec());

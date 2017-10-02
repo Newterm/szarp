@@ -539,10 +539,10 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	TParam *p = d->GetParam()->GetIPKParam();
 	TSzarpConfig* sc = p->GetSzarpConfig();
 
-	wxString link = sc->GetDocumentationBaseURL();
+	wxString link = sc->getAttribute("documentation_base_url");
 
 	if (link.IsEmpty())
-		link = _T("http://www.szarp.com");
+		link = _T("http://www.doc.szarp.org");
 
 	link += _T("/cgi-bin/param_docs.py?");
 	link << _T("prefix=") << d->GetBasePrefix().c_str();
@@ -552,7 +552,7 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	TUnit* u;
 	if ((u = p->GetParentUnit())) {
 		TDevice* dev = u->GetDevice();
-		link << _T("&path=") << encode_string(dev->GetPath().c_str());
+		link << _T("&path=") << encode_string(dev->getAttribute("path").c_str());
 	}
 
 	int validity = 8 * 3600;

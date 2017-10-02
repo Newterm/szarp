@@ -198,7 +198,7 @@ public:
 
 int DDEDaemon::Configure(DaemonConfig *cfg) {
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -232,7 +232,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 	if (m_read_freq < 10)
 		m_read_freq = 10;
 
-	TParam *param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
+	TParam *param = cfg->GetDevice()->GetFirstUnit()->GetFirstParam();
 	for (int i = 0; i < m_ipc->m_params_count; ++i) {
 		char *e;
 		int ret = asprintf(&e, "/ipk:params/ipk:device[position()=%d]/ipk:unit[position()=1]/ipk:param[position()=%d]",

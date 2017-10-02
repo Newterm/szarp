@@ -568,17 +568,17 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	if (m_daemon_conf->Load(&argc, argv)) {
 		throw KamsDmnException("Cannot load configuration");
 	}
-	if (m_daemon_conf->GetDevice()->GetFirstRadio()->
+	if (m_daemon_conf->GetDevice()->
 			GetFirstUnit()->GetParamsCount()
 			!= NUMBER_OF_VALS) {
 		throw KamsDmnException("Incorrect number of parameters: " +
-				std::to_string(m_daemon_conf->GetDevice()->GetFirstRadio()->
+				std::to_string(m_daemon_conf->GetDevice()->
 				GetFirstUnit()->GetParamsCount()) +
 				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_daemon_conf));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_daemon_conf));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		throw KamsDmnException("ERROR!: Could not initialize IPC");

@@ -26,7 +26,24 @@
 
 #include "szarp_config.h"
 #include "config_info.h"
+#include "argsmgr.h"
 
+
+class DaemonConfigInfo {
+public:
+	virtual std::vector<UnitInfo*> GetUnits() const = 0;
+	virtual const IPCInfo& GetIPCInfo() const = 0;
+	virtual bool GetSingle() const = 0;
+	virtual std::string GetIPKPath() const = 0;
+	virtual int GetLineNumber() const = 0;
+	virtual size_t GetParamsCount() const = 0;
+	virtual size_t GetSendsCount() const = 0;
+	virtual size_t GetFirstParamIpcInd() const = 0;
+	virtual std::vector<size_t> GetSendIpcInds() const = 0;
+
+	virtual std::string GetPrintableDeviceXMLString() const = 0;
+	virtual struct timeval GetDeviceTimeval() const = 0;
+};
 
 /**
  * This class implements configuration loader for SZARP line daemon. It loads
@@ -48,8 +65,8 @@
  *   possible, especially for 'device' element, so you can use libxml2 DOM API
  *   to read extra data.
  */
-class DaemonConfig {
-	std::vector<basedmn::UnitInfo> m_units;
+class DaemonConfig: public DaemonConfigInfo {
+	std::vector<UnitInfo*> m_units;
 
 public:
 	/** Default constructor. 
@@ -65,12 +82,14 @@ public:
 	 * with assertion.
 	 * @param header usage info header, use NULL to fall back to default
 	 */
+	// [deprecated]
 	virtual void SetUsageHeader(const char *header);
 	/** Set string printed at the end of usage info. The default one
 	 * is '\n'. Copy of string is made. There is no point to use this 
 	 * method after call to Load() - this is checked with assertion.
 	 * @param footer usage info footer, use NULL to fall back to default
 	 */
+	// [deprecated]
 	virtual void SetUsageFooter(const char *footer);
 	/** Read configuration - parses command line, loads values
 	 * from szarp.cfg, loads IPK configuration, initializes logging.
@@ -96,6 +115,8 @@ public:
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
+	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = NULL , int force_device_index = -1, void* async_logging_context = NULL);
+	// [deprecated]
 	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1, void* async_logging_context = NULL);
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
@@ -104,7 +125,6 @@ public:
 	TSzarpConfig* GetIPK() const;
 	/** Return pointer to device element for daemon. You can use methods
 	 * like GetParamsCount(), GetPath(), GetSpeed(), GetStopBits(),
-	 * GetProtocol(), GetFirstRadio(), GetNextRadio(), IsSpecial(),
 	 * GetOptions(). @see TDevice class. Returns NULL if configuration
 	 * was not loaded at user's request or CloseIPK was called.
 	 */
@@ -147,10 +167,10 @@ public:
 	 */
 	void CloseIPK();
 
-	auto GetUnits() const -> decltype(m_units) { return m_units; }
+	std::vector<UnitInfo*> GetUnits() const { return m_units; }
 
 
-	const basedmn::IPCInfo& GetIPCInfo() const { return ipc_info; }
+	const IPCInfo& GetIPCInfo() const { return ipc_info; }
 
 	const char* GetDevicePath() const;
 
@@ -181,13 +201,17 @@ public:
 	size_t GetSendsCount() const;
 
 	bool GetSingle() const;
-	const std::string& GetIPKPath() const;
+	std::string GetIPKPath() const override;
+
+	size_t GetFirstParamIpcInd() const override { return m_ipk->GetFirstParamIpcInd(*m_device_obj); }
+	std::vector<size_t> GetSendIpcInds() const override { return m_ipk->GetSendIpcInds(*m_device_obj); }
 
 protected:
 	/** Parses command line parameters. Internal use.
 	 * @return 0 on success, 1 on error or if usage info was printed
 	 */
 	int ParseCommandLine(int argc, char**argv);
+	void ParseCommandLine(const ArgsManager&);
 	/** Loads IPK configuration from XML file. Internal use.
 	 * @return 0 on success, 1 on error
 	 */
@@ -207,11 +231,10 @@ protected:
 	 */
 	int LoadNotXML( TSzarpConfig* cfg , int device_id );
 
-	/**Inits UnitsInfo. IPK shall be loaded when this method is called*/
-	void InitUnits();
+	void InitUnits(TUnit* unit);
 	
 private:
-	basedmn::IPCInfo ipc_info;
+	IPCInfo ipc_info;
 
 	std::string m_daemon_name;	/**< name of daemon, used for logging and
 				  as libpar section name */
@@ -229,6 +252,10 @@ private:
 	TSzarpConfig *m_ipk;	/**< pointer to IPK configuration */ 
 	TDevice *m_device_obj;	/**< pointer to IPK device object */
 
+	std::string ipk_path;
+
+	struct timeval m_timeval{10, 0};
+
 	int m_single;		/**< 1 if signle mode*/
 	int m_diagno;		/**< 1 if diagno mode*/
 	int m_device;		/**< device numer*/
@@ -240,7 +267,6 @@ private:
 	int m_speed;		/**< speed of port(if provided in command line arguments)*/
 	int m_askdelay;		/**< minium delay between querying units*/
 	int m_dumphex;		/**< 1 if user requested to print data in hex terminal format*/
-	struct timeval m_timeval;
 
 	// for xmlCopyNode (all work) and xmlCopyDoc (only 0/nonzero distinction)
 	static const int SHALLOW_COPY = 0;

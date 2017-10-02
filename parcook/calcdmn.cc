@@ -298,9 +298,9 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	calcinfo = new DaemonClass(cfg->GetDevice()->GetFirstRadio()->
+	calcinfo = new DaemonClass(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 
@@ -324,13 +324,13 @@ int main(int argc, char *argv[])
 	if (cfg->GetSingle()) {
 		printf("\
 line number: %d\n\
-device: %ls\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), calcinfo->m_params_count);
+device: %s\n\
+params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), calcinfo->m_params_count);
 	}
 
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

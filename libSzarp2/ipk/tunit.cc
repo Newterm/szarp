@@ -49,50 +49,19 @@ using namespace std;
 
 int TUnit::parseXML(xmlTextReaderPtr reader)
 {
-
+	TAttribHolder::parseXML(reader);
 	TParam* p = NULL;
 	TSendParam *sp = NULL;
+	params = NULL;
+	sendParams = NULL;
 
 	XMLWrapper xw(reader);
 
-	const char* need_attr[] = { "id", "type", "subtype", "bufsize", 0 };
+	const char* need_attr[] = { "id", 0 };
 	if (!xw.AreValidAttr(need_attr)) {
 		throw XMLWrapperException();
 	}
 
-	const char* ignored_trees[] = { "rate:period", 0 };
-	xw.SetIgnoredTrees(ignored_trees);
-
-	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
-		const xmlChar *attr = xw.GetAttr();
-		try {
-			if (xw.IsAttr("id")) {
-				if (xmlStrlen(attr) != 1) {
-					xw.XMLError("attribute 'id' should be one ASCII");
-				}
-				id = SC::U2S(attr)[0];
-			} else
-			if (xw.IsAttr("type")) {
-				type = boost::lexical_cast<int>(attr);
-			} else
-			if (xw.IsAttr("subtype")) {
-				subtype = boost::lexical_cast<int>(attr);
-			} else
-			if (xw.IsAttr("bufsize")) {
-				bufsize = boost::lexical_cast<int>(attr);
-			} else
-			if (xw.IsAttr("name")) {
-				TUnit::name = SC::U2S(attr);
-			} else {
-				xw.XMLWarningNotKnownAttr();
-			}
-		} catch (boost::bad_lexical_cast &)  {
-			xw.XMLErrorWrongAttrValue();
-		}
-	}
-
-	assert (params == NULL);
-	assert (sendParams == NULL);
 
 	if (!xw.NextTag())
 		return 1;
@@ -101,9 +70,9 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("param")) {
 			if (xw.IsBeginTag() || ( xw.IsEndTag() && !xw.IsEmptyTag()) ) {
 				if (params == NULL)
-					p = params = new TParam(this, GetSzarpConfig());
+					p = params = GetSzarpConfig()->createParam(this);
 				else
-					p = p->Append(new TParam(this, GetSzarpConfig()));
+					p = p->Append(GetSzarpConfig()->createParam(this));
 				if (p->parseXML(reader))
 					return 1;
 			}
@@ -133,52 +102,18 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 
 int TUnit::parseXML(xmlNodePtr node)
 {
-	unsigned char* c = NULL;
-	xmlNodePtr ch;
-	
-#define NOATR(p, n) \
-	{ \
-		sz_log(1, "XML parsing error: attribute '%s' in node '%s' not\
- found (line %ld)", \
- 			n, SC::U2A(p->name).c_str(), xmlGetLineNo(p)); \
-			return 1; \
-	}
-#define NEEDATR(p, n) \
-	if (c) free(c); \
-	c = xmlGetNoNsProp(p, (xmlChar *)n); \
-	if (!c) NOATR(p, n);
-#define X (xmlChar *)
-	NEEDATR(node, "id");
-	if (xmlStrlen(c) != 1) {
-		sz_log(1, "XML file error: attribute 'id' should be one ASCII\
- character (line %ld)", 
- 			xmlGetLineNo(node));
-		return 1;
-	}
-	id = SC::U2S(c)[0];
-	NEEDATR(node, "type");
-	type = atoi((char*)c);
-	NEEDATR(node, "subtype");
-	subtype = atoi((char*)c);
-	NEEDATR(node, "bufsize");
-	bufsize = atoi((char*)c);
-	free(c);
-	c = xmlGetNoNsProp(node, (xmlChar *) "name");
-	if (c) {
-		name = SC::U2S(c);
-		free(c);
-	}
-	
-	assert (params == NULL);
-	assert (sendParams == NULL);
+	TAttribHolder::parseXML(node);
+
 	TParam* p = NULL;
 	TSendParam* sp = NULL;
-	for (ch = node->children; ch; ch = ch->next) {
+	params = NULL;
+	sendParams = NULL;
+	for (auto ch = node->children; ch; ch = ch->next) {
 		if (!strcmp((char *)ch->name, "param")) {
 			if (params == NULL)
-				p = params = new TParam(this, GetSzarpConfig());
+				p = params = GetSzarpConfig()->createParam(this);
 			else
-				p = p->Append(new TParam(this, GetSzarpConfig()));
+				p = p->Append(GetSzarpConfig()->createParam(this));
 			if (p->parseXML(ch))
 				return 1;
 		} else if (!strcmp((char *)ch->name, "send")) {
@@ -191,74 +126,19 @@ int TUnit::parseXML(xmlNodePtr node)
 		}
 	}
 	return 0;
-#undef NEEDATR
-#undef NOATR
-#undef X
-}
-
-xmlNodePtr TUnit::generateXMLNode(void)
-{
-#define X (unsigned char *)
-#define ITOA(x) snprintf(buffer, 10, "%d", x)
-#define BUF X(buffer)
-	char buffer[10];
-	xmlNodePtr r;
-
-	std::wstringstream wss;
-	wss << id;
-
-	r = xmlNewNode(NULL, X"unit");
-	sprintf(buffer, "%s", SC::S2U(wss.str()).c_str());
-	xmlSetProp(r, X"id", BUF);
-	ITOA(type);
-	xmlSetProp(r, X"type", BUF);
-	ITOA(subtype);
-	xmlSetProp(r, X"subtype", BUF);
-	ITOA(bufsize);
-	xmlSetProp(r, X"bufsize", BUF);
-
-	if (!name.empty())
-		xmlSetProp(r, X"name", SC::S2U(name).c_str());
-
-	for (TParam* p = params; p; p = p->GetNext()) {
-		xmlAddChild(r, p->generateXMLNode());
-	}
-	for (TSendParam* sp = GetFirstSendParam(); sp; sp =
-			GetNextSendParam(sp))
-		xmlAddChild(r, sp->generateXMLNode());
-	return r;
-#undef X
-#undef ITOA
-#undef BUF
 }
 
 TDevice* TUnit::GetDevice() const
 {
-	return parentRadio->GetDevice();
+	return parentDevice;
 }
 
-TSzarpConfig* TUnit::GetSzarpConfig() const
+SzarpConfigInfo* TUnit::GetSzarpConfig() const
 {
 	return GetDevice()->GetSzarpConfig();
 }
 
-TSendParam* TUnit::GetNextSendParam(TSendParam* s)
-{
-	if (s == NULL)
-		return NULL;
-	return s->GetNext();
-}
-
-TUnit* TUnit::Append(TUnit* u)
-{
-	TUnit* t = this;
-	while (t->next)
-		t = t->next;
-	t->next = u;
-	return u;
-}
-
-int TUnit::GetParamsCount() const
+size_t TUnit::GetParamsCount() const
 {
 	int i;
 	TParam* p;
@@ -266,7 +146,7 @@ int TUnit::GetParamsCount() const
 	return i;
 }
 
-int TUnit::GetSendParamsCount() const
+size_t TUnit::GetSendParamsCount() const
 {
 	int i;
 	TSendParam* s;
@@ -290,21 +170,17 @@ void TUnit::AddParam(TSendParam* s)
 		sendParams->Append(s);
 }
 
-TParam* TUnit::GetNextParam(TParam* p)
+wchar_t TUnit::GetId() const
 {
-	if (p == NULL)
-		return NULL;
-	return p->GetNext();
+	return SC::A2S(getAttribute("id"))[0];
 }
 
-const std::wstring& TUnit::GetUnitName() 
-{
-	return name;
-}
 
 TUnit::~TUnit()
 {
-	delete next;
+	auto next = GetNext();
+	if (next) delete next;
+
 	delete params;
 	delete sendParams;
 }

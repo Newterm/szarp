@@ -222,9 +222,9 @@ struct phLineInfo
 	unsigned char LineNum;	/* numer linii */
 	ushort ParBase;		/* adres bazowy parametrow */
 	ushort ParTotal;	/* liczba parametrow */
-	std::wstring daemon;	/* plik wykonawczy daemona */
-	std::wstring device;	/* nazwa kontrolowanego urzadzenia */
-	std::wstring options;	/* dodatkowe opcje do programu */
+	std::string daemon;	/* plik wykonawczy daemona */
+	std::string device;	/* nazwa kontrolowanego urzadzenia */
+	std::string options;	/* dodatkowe opcje do programu */
 	int ShmDes;		/* deskryptor wspolnej pamieci */
 	short *ValTab;		/* wskaznik na wspolna pamiec */
 };
@@ -504,7 +504,7 @@ bool compile_script(TParam *p) {
 
 bool compile_scripts(TSzarpConfig *sc, std::vector<LuaParamInfo*>& param_info) {
 
-	for (TParam* p = sc->GetFirstDefined(); p; p = p->GetNext(false)) 
+	for (TParam* p = sc->GetFirstDefined(); p; p = p->GetNext()) 
 		if (p->GetLuaScript()) {
 			bool ret = compile_script(p);
 			if (ret == false)
@@ -1198,14 +1198,14 @@ bool param_is_sent_to_meaner(TParam* p) {
 	if (!d)
 		return true;
 
-	return d->isParcookDevice();
+	return d->getAttribute<bool>("parcook_device", true);
 }
 
 void configure_pars_infos(TSzarpConfig *ipk) 
 {
 	int combined_param_no = VTlen;
 	for (TParam* p = ipk->GetFirstDrawDefinable(); p; p = p->GetNext(), combined_param_no++) {
-		if (p->GetType() != TParam::P_COMBINED)
+		if (p->GetType() != ParamType::COMBINED)
 			continue;
 
 		TParam **p_cache = p->GetFormulaCache();
@@ -1239,14 +1239,17 @@ void configure_pars_infos(TSzarpConfig *ipk)
 		CombinedParams.push_back(combined);
 	}
 
+	TParam* param = ipk->GetFirstParam();
 	for (int i = 0; i < VTlen; i++) {
-		if (ParsInfo[i])
-			continue;
-		tParamInfo* pi = (tParamInfo*) malloc(sizeof(tParamInfo));
-		pi->param = ipk->getParamByIPC(i);
-		pi->type = tParamInfo::SINGLE;
-		pi->send_to_meaner = param_is_sent_to_meaner(pi->param);
-		ParsInfo[i] = pi;
+		if (!ParsInfo[i]) {
+			tParamInfo* pi = (tParamInfo*) malloc(sizeof(tParamInfo));
+			pi->param = param;
+			pi->type = tParamInfo::SINGLE;
+			pi->send_to_meaner = param_is_sent_to_meaner(pi->param);
+			ParsInfo[i] = pi;
+		}
+
+		param = param->GetNextGlobal();
 	}
 }
 
@@ -1259,24 +1262,24 @@ void configure_pars_infos(TSzarpConfig *ipk)
  * @param options string with options
  * @return (m)allocated 2-dimensional array of arguments suitable for execv, last element is NULL
  */
-char * const * wstring2argvp(std::wstring path, int num, std::wstring device, std::wstring options)
+char * const * string2argvp(std::string path, int num, std::string device, std::string options)
 {
 	using namespace boost;
-	typedef escaped_list_separator<wchar_t, std::char_traits<wchar_t> > wide_sep;
-	typedef tokenizer<wide_sep, std::wstring::const_iterator, std::wstring> wide_tokenizer;
+	typedef escaped_list_separator<char, std::char_traits<char> > sep;
+	typedef tokenizer<sep, std::string::const_iterator, std::string> tokenizer;
 	/* ? - I'd like to use only " separator for compatiblity with
 	 * libSzarp2 tokenize() function, but it does not work this way... */
-	wide_sep esp(L"\\", L" ", L"\"'");
-	wide_tokenizer tok(options, esp);
+	sep esp("\\", " ", "\"'");
+	tokenizer tok(options, esp);
 	std::vector<char *> argv_v;
-	for (wide_tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
-		argv_v.push_back(strdup(SC::S2A(*i).c_str()));
+	for (tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
+		argv_v.push_back(strdup((*i).c_str()));
 	}
 	char ** ret = (char **) malloc(sizeof(char *) * (argv_v.size() + 4));
-	ret[0] = strdup(SC::S2A(path).c_str());
+	ret[0] = strdup(path.c_str());
 	int r = asprintf(&(ret[1]), "%d", num);
 	(void)r;
-	ret[2] = strdup(SC::S2A(device).c_str());
+	ret[2] = strdup(device.c_str());
 	int j = 3;
 	for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
 		ret[j] = *i;
@@ -1322,7 +1325,7 @@ void LanchDaemon(int i, char* linedmnpat)
 	/* fork to run line daemon */
 	if ((pid = fork()) > 0) {
 		/* parent, do nothing */
-		sz_log(5, "parcook: starting daemon\nIndex: %d\nLineNum: %d\nParTotal: %d\nDaemon: %ls\nDevice: %ls\nOptions: %ls\nPID: %d",
+		sz_log(5, "parcook: starting daemon\nIndex: %d\nLineNum: %d\nParTotal: %d\nDaemon: %s\nDevice: %s\nOptions: %s\nPID: %d",
 			i, LinesInfo[i].LineNum, LinesInfo[i].ParTotal, LinesInfo[i].daemon.c_str(), LinesInfo[i].device.c_str(), LinesInfo[i].options.c_str(),pid);
 
 		return;
@@ -1333,19 +1336,19 @@ void LanchDaemon(int i, char* linedmnpat)
 	} else {
 		/* child */
 		/* check for daemon executable file */
-		s = stat(SC::S2A(LinesInfo[i].daemon).c_str(), &sstat);
+		s = stat(LinesInfo[i].daemon.c_str(), &sstat);
 		if ((s != 0) || ((sstat.st_mode & S_IFREG) == 0)) {
 			sz_log(0, "parcook: cannot stat regular file '%s' (daemon for line %d), exiting",
-					SC::S2A(LinesInfo[i].daemon).c_str(), i + 1);
+					LinesInfo[i].daemon.c_str(), i + 1);
 			exit(1);
 		}
 
-		execv(SC::S2A(LinesInfo[i].daemon).c_str(), 
-				wstring2argvp(
+		execv(LinesInfo[i].daemon.c_str(), 
+				string2argvp(
 					LinesInfo[i].daemon, i + 1, LinesInfo[i].device, LinesInfo[i].options)
 				);
 		/* shouldn't get here */
-		sz_log(0, "parcook: could not execute '%ls' (daemon for line %d), errno %d (%s)",
+		sz_log(0, "parcook: could not execute '%s' (daemon for line %d), errno %d (%s)",
 				LinesInfo[i].daemon.c_str(), i + 1, errno, strerror(errno));
 		exit(1);
 	} /* fork */
@@ -1361,7 +1364,7 @@ void ParseFormulas(TSzarpConfig *ipk)
 
 	sz_log(10, "Parsing formulas");
 	Equations.len = 0;
-	for (TParam * p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+	for (TParam * p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		if(!param_is_sent_to_meaner(p)) continue;
 		std::wstring formula = p->GetParcookFormula();
 		if (!formula.empty()) {
@@ -1385,7 +1388,7 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 	VTlen = 0;
 	DParamsCount = 0;
 
-	BasePeriod = ipk->GetReadFreq();
+	BasePeriod = ipk->getAttribute<unsigned int>("read_freq", 10);
 	NumberOfLines = ipk->GetDevicesCount();
 	sz_log(10, "parcook: number of lines: %d, base period: %d",
 			NumberOfLines, BasePeriod);
@@ -1398,22 +1401,24 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 	/* start deamons */
 	i = 0;
 	for (TDevice *d = ipk->GetFirstDevice(); d != NULL; 
-			d = ipk->GetNextDevice(d)) {
-		LinesInfo[i].LineNum = d->GetNum()+1;
+			d = d->GetNext()) {
+		LinesInfo[i].LineNum = i+1;
 
 		LinesInfo[i].ParTotal = d->GetParamsCount();
-		LinesInfo[i].daemon =  d->GetDaemon();
+		LinesInfo[i].daemon =  d->getAttribute("daemon");
 
-		LinesInfo[i].device = d->GetPath();
+		LinesInfo[i].device = d->getAttribute("path");
 
-		if (d->GetSpeed() >= 0) {
-			std::wstringstream wss; 
-			wss << d->GetSpeed() << L" " << d->GetOptions();
-			LinesInfo[i].options = wss.str();
+		auto _speed = d->getAttribute<int>("speed");
+		auto _opts = d->getAttribute("options");
+		if (_speed >= 0) {
+			std::stringstream ss; 
+			ss << _speed << " " << _opts;
+			LinesInfo[i].options = ss.str();
 		} else {
-			std::wstringstream wss; 
-			wss << d->GetOptions();
-			LinesInfo[i].options = wss.str();
+			std::stringstream ss; 
+			ss << _opts;
+			LinesInfo[i].options = ss.str();
 		}
 		LanchDaemon(i, linedmnpat);
 		i++;
@@ -1506,7 +1511,7 @@ void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>&
 		
 		pv[p->GetName()] = val;
 			
-		p = p->GetNext(true);
+		p = p->GetNextGlobal();
 	}
 
 	execute_scripts(param_info);

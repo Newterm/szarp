@@ -345,7 +345,7 @@ int KamstrupInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg)
 			m_params[params_found].mul = mul;
 			m_params[params_found].type = type;
 			TParam *p =
-			    cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
+			    cfg->GetDevice()->GetFirstUnit()->
 			    GetFirstParam()->GetNthParam(params_found);
 			ASSERT(p != NULL);
 			(void)p;
@@ -633,7 +633,7 @@ void K601Daemon::Init(int argc, char *argv[])
 		throw K601Exception("ERROR!: Load config failed");
 	}
 	kamsinfo =
-	    new KamstrupInfo(cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
+	    new KamstrupInfo(cfg->GetDevice()->GetFirstUnit()->
 			     GetParamsCount());
 	if (kamsinfo->parseXML(cfg->GetXMLDevice(), cfg)) {
 		throw K601Exception("ERROR!: Parse XML failed");
@@ -717,7 +717,7 @@ device: %ls\n\
 params in: %d\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
+", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
 			       kamsinfo->m_params[i].reg,
@@ -734,7 +734,7 @@ Unique registers (read params): %d\n\
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		exit(1);

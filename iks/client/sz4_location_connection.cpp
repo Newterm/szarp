@@ -48,7 +48,7 @@ void location_connection::add_param(const std::string& base, TParam* param, IksC
 	out.put( "base"       , base );
 	out.put( "prec"       , param->GetPrec() );
 	out.put( "formula"    , (const char*) SC::S2U(formula).c_str() );
-	out.put( "type"       , (param->GetFormulaType() == TParam::LUA_AV) ? "av" : "va" );
+	out.put( "type"       , (param->GetFormulaType() == FormulaType::LUA_AV) ? "av" : "va" );
 	out.put( "start_time" , param->GetLuaStartDateTime() );
 
 	std::stringstream data;
@@ -68,7 +68,7 @@ void location_connection::add_defined_params() {
 	for (auto& params : defined) {
 		std::string base = (const char*) SC::S2U(params.first).c_str();
 		for (auto& param : params.second) {
-			if (param->GetType() != TParam::P_LUA)
+			if (param->GetType() != ParamType::LUA)
 				continue;
 
 			add_param(base, param.get(), [self] ( const bs::error_code& ec

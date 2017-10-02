@@ -907,7 +907,7 @@ void modbus_daemon::timer_callback(int fd, short event, void* daemon) {
 int modbus_daemon::initialize() {
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -1067,21 +1067,23 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 	if (c != NULL) {
 		id = atoi(c);
 		xmlFree(c);
-	} else 
-		switch (u->GetId()) {
+	} else {
+		unsigned char _id = SC::A2U(u->getAttribute("id"))[0];
+		switch (_id) {
 			case L'0'...L'9':
-				id = u->GetId() - L'0';
+				id = _id - L'0';
 				break;
 			case L'a'...L'z':
-				id = (u->GetId() - L'a') + 10;
+				id = (_id - L'a') + 10;
 				break;
 			case L'A'...L'Z':
-				id = (u->GetId() - L'A') + 10;
+				id = (_id - L'A') + 10;
 				break;
 			default:
-				id = u->GetId();
+				id = _id;
 				break;
 		}
+	}
 
 	std::map<unsigned short, float_to_float_storage*> addr_to_storage;
 	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0;
@@ -1369,7 +1371,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 	xmlNodePtr device_node = xp_ctx->node;
 	int j;
 	TUnit *u;
-	for (j = 0, u = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit();
+	for (j = 0, u = cfg->GetDevice()->GetFirstUnit();
 			u; 
 			++j, u = u->GetNext()) {
 
@@ -2270,8 +2272,8 @@ void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffere
 
 int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_configuration &spc) {
 
-	spc.speed = cfg->GetSpeed();
-	spc.path = SC::S2A(cfg->GetDevice()->GetPath());
+	spc.speed = cfg->GetDevice()->getAttribute<int>("speed");
+	spc.path = cfg->GetDevice()->getAttribute("path");
 
 	xmlChar* parity = get_device_node_prop(xp_ctx, "parity");
 	if (parity == NULL) {

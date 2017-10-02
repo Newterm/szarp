@@ -225,23 +225,23 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg)
 	
 	m_single = cfg->GetSingle();
 	
-	std::wstring path = cfg->GetDevice()->GetPath();
-	std::wstring options = cfg->GetDevice()->GetOptions();
+	std::string path = cfg->GetDevice()->getAttribute("path");
+	std::string options = cfg->GetDevice()->getAttribute("options");
 	if (m_single) {
-		printf("Using command '%s'\n", SC::S2A(path + L" " + options).c_str());
+		printf("Using command '%s'\n", (path + " " + options).c_str());
 	}
 
 	using namespace boost;
-        typedef escaped_list_separator<wchar_t, std::char_traits<wchar_t> > wide_sep;
-        typedef tokenizer<wide_sep, std::wstring::const_iterator, std::wstring> wide_tokenizer;
-        wide_sep esp(L"\\", L" ", L"\"'");
-        wide_tokenizer tok(options, esp);
+        typedef escaped_list_separator<char, std::char_traits<char> > sep;
+        typedef tokenizer<sep, std::string::const_iterator, std::string> tokenizer;
+        sep esp("\\", " ", "\"'");
+        tokenizer tok(options, esp);
         std::vector<char *> argv_v;
-        for (wide_tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
-                argv_v.push_back(strdup(SC::S2A(*i).c_str()));
+        for (tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
+                argv_v.push_back(strdup((*i).c_str()));
         }
         m_argvp = (char **) malloc(sizeof(char *) * argv_v.size() + 2);
-        m_argvp[0] = strdup(SC::S2A(path).c_str());
+        m_argvp[0] = strdup(path.c_str());
         int j = 1;
         for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
                 m_argvp[j] = *i;
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv))
 		return 1;
 
-	dmn = new ExecDaemon(cfg->GetDevice()->GetFirstRadio()->
+	dmn = new ExecDaemon(cfg->GetDevice()->
 			GetFirstUnit()->GetParamsCount());
 	ASSERT(dmn != NULL);
 
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

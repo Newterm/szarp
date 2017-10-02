@@ -824,7 +824,7 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	aqtinfo = new AqtBus(cfg->GetDevice()->GetFirstRadio()->
+	aqtinfo = new AqtBus(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount());
 
 	if (aqtinfo->parseDevice(cfg->GetXMLDevice()))
@@ -834,7 +834,7 @@ int main(int argc, char *argv[])
 		printf("\
 line number: %d\n\
 device: %ls\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqtinfo->m_params_count);
+params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), aqtinfo->m_params_count);
 	
 	printf("refresh: %d s\n",aqtinfo->m_refresh);
 	printf("energy: %s\n",aqtinfo->m_energy == ENERGY_READ?"READ":"CALCULATED");
@@ -843,7 +843,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqt
 	
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -862,8 +862,8 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), aqt
 	DataPower power(10);
 	DataPower flow(10);
 	while (true) {
-		fd = aqtinfo->InitComm(SC::S2A(cfg->GetDevice()->GetPath()).c_str(),
-			      cfg->GetDevice()->GetSpeed(), 8, 1, ODD);
+		fd = aqtinfo->InitComm(cfg->GetDevice()->getAttribute("path").c_str(),
+			      cfg->GetDevice()->getAttribute<int>("speed"), 8, 1, ODD);
 
 		/* Rejestry */
 		MyResponse = RESPONSE_BAD ;

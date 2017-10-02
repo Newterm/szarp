@@ -165,7 +165,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	m_cfg->GetIPK()->SetConfigId(0);
 
 	try {
-		m_ipc.reset(new IPCHandler(*m_cfg.get()));
+		m_ipc.reset(new IPCHandler(m_cfg.get()));
 		sz_log(2, "IPC initialized successfully");
 		connectToParcook = true;
 	} catch(...) {
@@ -173,8 +173,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
-	dev->configureDeviceTimeval(boost::lexical_cast<long int>(libpar_getpar("sz4", "heartbeat_frequency", 1)));
-	m_cycle = dev->getDeviceTimeval();
+	m_cycle = m_cfg->GetDeviceTimeval();
 
 	sz4::live_cache_config* live_config = new sz4::live_cache_config();
 	live_config->retention = 1000;
@@ -185,14 +184,13 @@ void Defdmn::configure(int* argc, char** argv) {
 	char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 
 	Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
-	m_zmq.reset(new zmqhandler(*m_cfg->GetIPK(), *dev, *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
+	m_zmq.reset(new zmqhandler(m_cfg.get(), *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
 	sz_log(2, "ZMQ initialized successfully");
 
 	registerLuaFunctions();
 
-	int i = 0;
-	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext()) {
-		for (TParam * p = unit->GetFirstParam(); p; p = unit->GetNextParam(p)) {
+	for (TUnit* unit = dev->GetFirstUnit(); unit; unit = unit->GetNext()) {
+		for (TParam * p = unit->GetFirstParam(); p; p = p->GetNext()) {
 			if (p->GetLuaScript()) {
 				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, i++));
 				param_info.push_back(ptr);

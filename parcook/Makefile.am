@@ -43,7 +43,6 @@ bin_PROGRAMS = \
 	      dbdmn \
 	      @DDEDMN@ \
 	      dpafdmn \
-	      dprdmn \
 	      execdmn \
 	      ipcinfo \
 	      k601dmn \
@@ -87,8 +86,6 @@ dpafdmn_SOURCES = dpafdmn.cc
 lbdmn_SOURCES = lbdmn.cc
 
 dbdmn_SOURCES = dbdmn.cc
-
-dprdmn_SOURCES = dprdmn.cc
 
 execdmn_SOURCES = execdmn.cc
 
@@ -154,7 +151,8 @@ prodmn_SOURCES = prodmn.cc
 prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 pythondmn_SOURCES = pythondmn.cc
-pythondmn_LDADD = $(LDADD) -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS) cfgdealer_handler.cpp
+pythondmn_LDADD = $(LDADD) cfgdealer_handler.cpp @XML_LIBS@ -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS)
+pythondmn_LDFLAGS = $(AM_CPPFLAGS) -I/usr/include/libxml2 
 
 snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
 snap7dmn_LDADD = $(LDADD) -lsnap7

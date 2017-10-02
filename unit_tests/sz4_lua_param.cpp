@@ -19,7 +19,7 @@ class IPKContainerMock1 : public mocks::IPKContainerMockBase {
 	TParam param;
 	TSzarpConfig config;
 public:
-	IPKContainerMock1() : param(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA) {
+	IPKContainerMock1() : param(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA) {
 		param.SetDataType(TParam::DOUBLE);
 		param.SetName(L"A:B:C");
 		param.SetLuaScript((const unsigned char*) 
@@ -71,8 +71,8 @@ class IPKContainerMock2 : public mocks::IPKContainerMockBase {
 	TParam param2;
 	TSzarpConfig config;
 public:
-	IPKContainerMock2() : param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL),
-				param2(NULL, NULL, std::wstring(), TParam::LUA_VA, TParam::P_LUA)
+	IPKContainerMock2() : param(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL),
+				param2(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA)
 	 {
 		param.SetDataType(TParam::SHORT);
 		param.SetName(L"A:B:C");

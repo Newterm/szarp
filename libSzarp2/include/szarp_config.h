@@ -35,7 +35,7 @@
 #endif
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <tr1/unordered_map>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
@@ -44,6 +44,7 @@
 #include <set>
 
 #include <stdio.h>
+#include <stdexcept>
 #include <assert.h>
 #include <libxml/tree.h>
 #ifndef NO_LUA
@@ -52,9 +53,11 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/any.hpp>
 
 #include "szbase/szbdefines.h"
 #include <libxml/xmlreader.h>
+#include "config_info.h"
 
 #define BAD_ORDER -1.0
 
@@ -64,8 +67,8 @@
 #define SZARP_NO_DATA -32768
 
 class TDevice;
-class TRadio;
 class TUnit;
+class IPCParamInfo;
 class TParam;
 class TSendParam;
 class TValue;
@@ -86,53 +89,57 @@ class TCheckException : public std::exception {
 	{ return "Invalid params.xml definition. See log for more informations."; }
 };
 
+namespace szarp {
+
+/**
+ * Substitues wildcards in param name.
+ * @param name name with possible wildcards
+ * @param ref reference name
+ * @return absolute name
+ */
+std::wstring substituteWildcards(const std::wstring& name, const std::wstring& ref);
+
+} // namespace szarp
+
+class SzarpConfigInfo: public TAttribHolder {
+public:
+	virtual ~SzarpConfigInfo();
+	virtual const std::wstring& GetPrefix() const = 0;
+	virtual IPCParamInfo* getIPCParamByName(const std::wstring& name) const = 0;
+	virtual TParam* GetFirstParam() const = 0;
+	virtual TDevice* GetFirstDevice() const = 0;
+	virtual TDevice* DeviceById(int id) const = 0;
+	virtual unsigned GetConfigId() const = 0;
+	virtual void SetConfigId(unsigned) = 0;
+	virtual size_t GetFirstParamIpcInd(const TDevice&) const = 0;
+	virtual const std::vector<size_t> GetSendIpcInds(const TDevice&) const = 0;
+
+	virtual TUnit* createUnit(TDevice* parent) = 0;
+	virtual TParam* createParam(TUnit*) = 0;
+};
+
 /** SZARP system configuration */
-class TSzarpConfig {
+class TSzarpConfig: public SzarpConfigInfo {
 public:
 	/** 
 	 * @brief constructs empty configuration. 
 	 */
 	TSzarpConfig();
-	virtual ~TSzarpConfig(void);
+	virtual ~TSzarpConfig();
 
 	/**
 	 * @return title of configuration.
 	 */
 	const std::wstring& GetTitle();
-
-	const std::wstring& GetDocumentationBaseURL();
-
 	const std::wstring& GetTranslatedTitle() { return !translatedTitle.empty() ? translatedTitle : title; }
-
-	const std::wstring& GetNativeLanguage() { return nativeLanguage; }
-
 	void SetTranslatedTitle(const std::wstring &t) { translatedTitle = t; }
-
-	/**
-	 * @param title set title of configuration.
-	 * @param prefix set prefix of configuration.
-	 */
-	void SetName(const std::wstring& title, const std::wstring& prefix);
 
 	/**
 	 * @return prefix of configuration
 	 * (NULL if this information is not available)
 	 */
-	const std::wstring& GetPrefix() const;
-	/**
-	 * @return read_freq attribute value
-	 */
-	int GetReadFreq() { return read_freq; }
-	/**
-	 * @return send_freq attribute value
-	 */
-	int GetSendFreq() { return send_freq; }
-	/**
-	 * Returns param with given number (IPC index).
-	 * @param ipc_ind index (from 0)
-	 * @return pointer to param, NULL when not found
-	 */
-	TParam *getParamByIPC(int ipc_ind);
+	const std::wstring& GetPrefix() const override;
+
 	/**
 	 * Return param with given name (searches in all params, including
 	 * defined and 'draw definable').
@@ -140,13 +147,8 @@ public:
 	 * @return pointer to param, NULL if not found
 	 */
 	TParam *getParamByName(const std::wstring& name) const;
-	/**
-	 * Return param with given base index (searches in all params, including
-	 * defined and 'draw definable').
-	 * @param base_ind base index of param to find
-	 * @return pointer to param, NULL if not found
-	 */
-	TParam *getParamByBaseInd(int base_ind);
+	IPCParamInfo* getIPCParamByName(const std::wstring& name) const override;
+
 	/**
 	 * Loads config information from XML file.
 	 * @param path to input file
@@ -186,29 +188,10 @@ public:
 	 */
 	int PrepareDrawDefinable();
 	/**
-	 * Generate XML version of configuration file. Before using this method
-	 * XML library should be initilized.
-	 * @return pointer to created XML document, NULL on error
-	 */
-	xmlDocPtr generateXML(void);
-	/**
-	 * Saves XML version of configuration to a file.
-	 * @param path file to create
-	 * @return number of bytes written or -1 on error
-	 */
-	int saveXML(const std::wstring& path);
-	/**
 	 * Returns pointer to first param in config.
 	 * @return pointer to first param, NULL if there are no params
 	 */
-	TParam * GetFirstParam() const;
-	/**
-	 * Return pointer to next param after given. Iterates all params in all
-	 * devices and also defined.
-	 * @param p current param
-	 * @return pointer to param after current, NULL if current is last
-	 */
-	TParam * GetNextParam(TParam* p) const;
+	TParam * GetFirstParam() const override;
 
 	/** @return pointer to first defined param, NULL if no one exists */
 	TParam* GetFirstDefined() { return defined; }
@@ -221,23 +204,14 @@ public:
 	 * from 1)
 	 * @return pointer to device with given id.
 	 */
-	TDevice* DeviceById(int id);
-
-	/** @return number of all defined params (all with not null 'formula'
-	 * attribute and defined) */
-	int GetAllDefinedCount();
-
-	/** @return the biggest base index value among all params, -1 if no
-	 * params with base index exist; base index is always non-negative,
-	 * index of first param is 0 */
-	int GetMaxBaseInd();
+	TDevice* DeviceById(int id) const override;
 
 	/** @return number of devices */
 	int GetDevicesCount();
 
 	/** @return number of all params in devices (without defined and
 	 * 'draw definable') */
-	int GetParamsCount();
+	int GetParamsCount() const;
 
 	/** @return number of defined params */
 	int GetDefinedCount();
@@ -248,91 +222,23 @@ public:
 	/** @return first element of devices list, NULL if no one exists */
 	TDevice* GetFirstDevice() const { return devices; }
 
-	/** adds new device at the end of devices list */
-	TDevice* AddDevice(TDevice *d);
-	/** @return next list element after given, NULL if 'd' is last on list
-	 */
-	TDevice* GetNextDevice(const TDevice* d) const;
 	/** @return title of first raport */
 	std::wstring GetFirstRaportTitle();
 	/** @return title of next raport */
 	std::wstring GetNextRaportTitle(const std::wstring& cur);
 	/** @return first raport item with given title */
 	TRaport* GetFirstRaportItem(const std::wstring& title);
-	/** @return next raport item with title same as that of current item */
-	TRaport* GetNextRaportItem(TRaport* cur);
-
-	/** Adds new defined param. */
-	void AddDefined(TParam *p);
-
-	/** Removes defined param. */
-	void RemoveDrawDefinable(TParam *p);
-
-	/** Adds new draw-definable param. */
-	void AddDrawDefinable(TParam *p);
-
-	/**
-	 * Substitues wildcards in param name.
-	 * @param name name with possible wildcards
-	 * @param ref reference name
-	 * @return absolute name
-	 */
-	std::wstring absoluteName(const std::wstring& name, const std::wstring& ref);
-
-	/**
-	 * Check if configuration is valid. Basicly calls all check* functions
-	 */
-	bool checkConfiguration();
-
-	/**
-	 * Check if formulas are well defined
-	 */
-	bool checkFormulas();
-
-	/**
-	 * Check if formulas are correct in mean of lua syntax
-	 */
-	bool checkLuaSyntax(TParam *);
-	bool compileLuaFormula(lua_State *, const char *, const char *);
-
-	/**
-	 * Check if formulas are correct in mean of SZARP optimalization
-	 */
-	bool optimizeLuaParam(TParam *);
-
-	/** Checks if repetitions of parameters names in params.xml occurred
-	 * @param quiet if equal 1 do not print anything to standard output
-	 * @return 0 if there is no repetitions or 1 if there are some
-	 */
-	bool checkRepetitions(int quiet = 0);
-
-	/**
-	 * Check if sends are ok -- this means if every send has valid param
-	 */
-	bool checkSend();
-
-	/** Configrures default summer seasons limit (if seasons are not already configured*/
-	void ConfigureSeasonsLimits();
 
 	/** @return object representing seasons limit's
 	 * NULL if no seasons configuration is present*/
 	const TSSeason* GetSeasons() const;
 
-	/** TODO: comment */
-	const std::wstring& GetPSAdress() { return ps_address; }
-
-	/** TODO: comment */
-	const std::wstring& GetPSPort() { return ps_port; }
-
 	unsigned GetConfigId() const { return config_id; }
 
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 
-	TDevice* createDevice(const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring());
-
-	TRadio* createRadio(TDevice* parent, wchar_t _id = 0, TUnit* _units = NULL);
-
-	TUnit* createUnit(TRadio* parent, wchar_t _id = 0, int _type = 0, int _subtype = 0);
+	TUnit* createUnit(TDevice* parent) override;
+	TParam* createParam(TUnit* parent) override;
 
 	void UseNamesCache();
 
@@ -343,19 +249,8 @@ public:
 	const std::vector<size_t> GetSendIpcInds(const TDevice &d) const;
 
 protected:
-	/**
-	 * Adds new defined parameter. Adds parameter with given formula at
-	 * and of defined params table.
-	 * @param formula formula in IPK format, only pointer is passed (string
-	 * is not copied)
-	 * @return number of parameter (from 0)
-	 */
-	int AddDefined(const std::wstring &formula);
-
 	unsigned config_id;
 			/**< Configuration unique numbe id */
-	int read_freq;	/**< Param reading frequency (in seconds) */
-	int send_freq;
 			/**< Param send frequency (in seconds) */
 	TDevice *devices;
 			/**< List of devices info */
@@ -364,133 +259,47 @@ protected:
 	TParam *drawdefinable;
 			/**< List of DRAW 2.1 'definable' parameters */
 	std::wstring title;	/**< Configuration title */
-
 	std::wstring translatedTitle;
 
 	std::wstring prefix;	/**< configuration prefix*/
 
-	std::wstring nativeLanguage;
-
-	std::wstring documentation_base_url;
-
 	TSSeason *seasons;/**< Summer seasons configuration*/
-
-	std::wstring ps_address; /**< Parameter Setting server address */
-
-	std::wstring ps_port;	/**< Parameter Setting server port*/
-
-	size_t device_counter; /**< numer of created TDevice objects */
-
-	size_t radio_counter; /**< numer of created TRadio objects */
 
 	size_t unit_counter; /**< numer of created TUnit objects */
 
 	bool use_names_cache; /**< flag, if set std::map will be used for fast searching params by name */
 
-	std::map<std::wstring, TParam *> params_map; /**< map for params search by name */
+	std::unordered_map<std::wstring, TParam *> params_map; /**< map for params search by name */
 };
 
-
 /** Device description */
-class TDevice {
+class TDevice: public TAttribHolder, public TNodeList<TDevice> {
 public:
-	TDevice(size_t _number, TSzarpConfig *parent, const std::wstring& _daemon = std::wstring(), const std::wstring& _path = std::wstring(),
-			int _speed = -1, int _stop = -1, int _protocol = -1,
-			const std::wstring& _options = std::wstring(), bool _parcookDevice = true);
+	TDevice(TSzarpConfig *parent);
 	/** Destroy whole list. */
 	~TDevice();
-	/**
-	 * Generates XML node with device info.
-	 * @return created XML node, NULL on error
-	 */
-	xmlNodePtr generateXMLNode(void);
-	/**
-	 * Searches for unit with given identifier within line.
-	 * @param id unit identifier
-	 * @param uniq if not 0, method checks if there's only one unit with
-	 * given id
-	 * @return unit found, NULL if unit is not found or uniq is not 0 and
-	 * there are more units with given id
-	 */
-	TUnit* searchUnitById(const wchar_t id, int uniq);
-	/** @return index of device, from 0 */
-	int GetNum();
+
 	/** @return number of params in device */
 	int GetParamsCount();
-	/** @return path to device daemon */
-	const std::wstring& GetDaemon()
+
+	/** numer of units within line (or device in case of dummy radio
+	 * object */
+	int GetUnitsCount();
+	/** @return pointer to first unit in radio line, after proper
+	 * initialization should not be NULL */
+	TUnit* GetFirstUnit() const
 	{
-		return daemon;
+		return units;
 	}
-	/** @return path to device */
-	const std::wstring& GetPath() {
-		return path;
-	}
-	/** @return port speed (in bauds) */
-	int GetSpeed() {
-		return speed;
-	}
-	/** @return number of stop bits (1 or 2), -1 if attribute is not
-	 * defined */
-	int GetStopBits()
-	{
-		return stop;
-	}
-	/** @return protocol version id (0 or 1), -1 if attribute is not
-	 * defined */
-	int GetProtocol()
-	{
-		return protocol;
-	}
-	/** @return pointer to first radio object, after proper initialization
-	 * should not be NULL */
-	TRadio * const GetFirstRadio() const
-	{
-		return radios;
-	}
-	/** Add radio to device */
-	TRadio* AddRadio(TRadio* r);
-	/** @return next list element, NULL if current is last */
-	TDevice* GetNext() const {
-		return next;
-	}
-	/**
-	 * @param radio pointer to current radio object
-	 * @return pointer to next radio object after current, NULL if no more
-	 * are available
-	 */
-	TRadio* GetNextRadio(TRadio *radio);
-	/** @return number of radios in device (after proper initializations
-	 * should be grater then 0) */
-	int GetRadiosCount();
+
+	/** Add new unit */
+	TUnit* AddUnit(TUnit* unit);
+
 	/** @return pointer to parent TSzarpConfig object */
-	TSzarpConfig* GetSzarpConfig() const
+	SzarpConfigInfo* GetSzarpConfig() const
 	{
 		return parentSzarpConfig;
 	}
-	/** @return true 1 if it's simplified RS-232, without units
-	 * addresing or some other device, which need special
-	 * value in line<x>.cfg. This value can be accessed by GetSpecial()
-	 * method. */
-	bool IsSpecial() {
-		return special;
-	}
-	/** @return special value
-	 * @see IsSpecial */
-	int GetSpecial()
-	{
-		return special_value;
-	}
-	/** @return options attribute may be empty */
-	const std::wstring& GetOptions() {
-		return options;
-	}
-	/**
-	 * Appends new device at end of list.
-	 * @param d new element to append to list
-	 * @return pointer to appended element (d)
-	 */
-	TDevice* Append(TDevice* d);
 	/**
 	 * Loads information parsed from XML file.
 	 * @param node XML node with device configuration info
@@ -504,10 +313,7 @@ public:
 	int parseXML(xmlTextReaderPtr reader);
 	/** Returns true if the device sends data to parcook via
          * shared memory */
-	bool isParcookDevice() const { return parcookDevice; }
 
-	void configureDeviceTimeval(long int);
-	struct timeval getDeviceTimeval() const { return deviceTimeval; }
 protected:
 	/**
 	 * Returns num'th param from device line.
@@ -516,195 +322,65 @@ protected:
 	 */
 	TParam *getParamByNum(int num);
 
-	size_t number;
-
 	TSzarpConfig *parentSzarpConfig;
 			/**< Pointer to SzarpConfig object. */
-	std::wstring daemon;	/**< Path to daemon responsible for the line, if NULL
-			  default should be used */
-	std::wstring path;	/**< Path to Unix device, if NULL default should be
-			  used (usually /dev/ttyX[n], when [n] is the device
-			  number */
-	int speed;	/**< Speed (in bauds), if <= 0, default should be used*/
-	int stop;	/**< Stop bits, if < 0, default should be used */
-	int protocol;	/**< Protocol, if < 0 then default should be used */
-	int special;	/**< 1 if it's simplified RS-232, without units
-			  addresing or some other device, which need special
-			  value in line<x>.cfg. This value is holded in
-			  special_value attribute. */
-	int special_value;
-			/**< Special, non-standard value from first line of
-			 * line<x>.cfg. */
-	std::wstring options;	/**< Aditional parameters for line daemon, not interpreted. */
-	TRadio *radios;	/**< List of radio modems. If there are no radio
-			  modems, array contains one dummy TRadio object, which
-			  holds comm. units description. */
-	TDevice *next;
-			/**< Next list element */
-	bool parcookDevice; /**< Do parcook need to send params from this device to meaner4. */
-	struct timeval deviceTimeval;
+	TUnit *units;
 };
 
-/**
- * Description of radio line
- */
-class TRadio {
+class UnitInfo: public TAttribHolder {
 public:
-	TRadio(size_t _number, TDevice *parent, wchar_t _id = 0, TUnit* _units = NULL) :
-		number(_number), parentDevice(parent), id(_id), units(_units), next(NULL)
-	{ }
-	/** Destroys whole list. */
-	~TRadio();
-	/**
-	 * Generates XML node with radio modem info.
-	 * @return created XML node, NULL on error
-	 */
-	xmlNodePtr generateXMLNode(void);
-	/**
-	 * Searches for unit with given identifier.
-	 * @param c unit's id
-	 * @return pointer to unit found, NULL if not found
-	 */
-	TUnit* unitById(wchar_t c);
-	/** @return id attribute - identifier of radio line, NULL if it's not a
-	 * really radio modem, just a dummy object - container for
-	 * communication units */
-	wchar_t GetId()
-	{
-		return id;
-	}
-	/** @return next list element, NULL current is last */
-	TRadio* GetNext()
-	{
-		return next;
-	}
-	/** @return pointer to parent TDevice object */
-	TDevice* GetDevice() const
-	{
-		return parentDevice;
-	}
-	/** numer of units within radio line (or device in case of dummy radio
-	 * object */
-	int GetUnitsCount();
-	/** @return pointer to first unit in radio line, after proper
-	 * initialization should not be NULL */
-	TUnit* GetFirstUnit()
-	{
-		return units;
-	}
-	/** @param current current radio line
-	 * @return pointer to next radio line after current, NULL if current is
-	 * last */
-	TUnit* GetNextUnit(TUnit* current);
-	/** Add new unit */
-	TUnit* AddUnit(TUnit* unit);
-	/** Appends new element to the end of list.
-	 * @param unit new element to append
-	 * @return pointer to appended element
-	 */
-	TRadio* Append(TRadio* unit);
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlNodePtr node);
-	/** Parses XML node (current set in reader)
-	 * @param reader XML reader set on  "radio"
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlTextReaderPtr reader);
-protected:
-	size_t number;
-	TDevice *parentDevice;
-			/**< Pointer to parent device object. */
-	wchar_t id;	/**< Identifier used by radio modem, NULL if it's
-			  a dummy object (@see TDevice) */
-	TUnit *units;	/**< List of communications units */
-	TRadio* next;	/**< Next list element */
+	virtual ~UnitInfo() {}
+	virtual size_t GetSenderMsgType() const = 0;
+	virtual size_t GetParamsCount() const = 0;
+	virtual size_t GetSendParamsCount() const = 0;
 };
+
 
 /**
  * Description of communication unit.
  */
-class TUnit {
+class TUnit: public UnitInfo, public TNodeList<TUnit> {
 public:
-	TUnit(size_t _number, TRadio *parent, wchar_t _id = 0, int _t = 0, int _st = 0,
-			int _bs = 0, const std::wstring& _n = std::wstring()) :
-		number(_number), parentRadio(parent), id(_id), type(_t), subtype(_st),
-		bufsize(_bs), name(_n), params(NULL), sendParams(NULL), next(NULL)
-	{ }
-	/** Deletes whole list */
-	~TUnit();
-	/**
-	 * Generates XML node with communication unit info.
-	 * @return created XML node, NULL on error
-	 */
-	xmlNodePtr generateXMLNode(void);
-	/** @return id of unit (one ASCII character) */
-	wchar_t GetId()
-	{
-		return id;
-	}
-	/** @return unit's raport type */
-	int GetType()
-	{
-		return type;
-	}
-	/** @return unit's raport subtype */
-	int GetSubType()
-	{
-		return subtype;
-	}
-	/** @return pointer to next list element, NULL if current is last */
-	TUnit* GetNext() {
-		return next;
-	}
+	TUnit(size_t unit_no, TDevice *parent): send_msg_type(unit_no + 256L), parentDevice(parent), params(NULL), sendParams(NULL) { }
+
+	// implementation of UnitInfo
 	/** @return number of params in unit */
-	int GetParamsCount() const;
+	size_t GetParamsCount() const override;
 	/** @return number of send params in unit */
-	int GetSendParamsCount() const;
-	/** @return size of av. buffer */
-	int GetBufSize()
-	{
-		return bufsize;
+	size_t GetSendParamsCount() const override;
+	size_t GetSenderMsgType() const override {
+		return send_msg_type;
 	}
+
+	int GetUnitNo() const { return send_msg_type - 256L; }
+
+	/** @return id of unit (one ASCII character) */
+	// [deprecated]
+	wchar_t GetId() const;
+
 	/** @return pointer to first send param in unit, may be NULL */
 	TSendParam* GetFirstSendParam()
 	{
 		return sendParams;
 	}
-	/** @param current current send param
-	 * @return pointer to next send param after current, NULL if current is
-	 * last or NULL */
-	TSendParam* GetNextSendParam(TSendParam* current);
+
+	/** @returns pointer to first param in unit, NULL if no one exists */
 	/**
 	 * Adds param to unit (at last position).
 	 * @param p param to add
 	 */
 	void AddParam(TParam* p);
-	/**
-	 * Adds send param to unit (at last position).
-	 * @param sp param to add
-	 */
 	void AddParam(TSendParam* sp);
+
 	/** @return pointer to containing device object */
 	TDevice* GetDevice() const;
 	/** @return pointer to main TSzarpConfig object */
-	TSzarpConfig* GetSzarpConfig() const;
-	/**
-	 * Appends unit at end of units list.
-	 * @param unit unit to append
-	 * @return pointer to appended element (u)
-	 */
-	TUnit* Append(TUnit* unit);
-	/** @returns pointer to first param in unit, NULL if no one exists */
+	SzarpConfigInfo* GetSzarpConfig() const;
 	TParam* GetFirstParam()
 	{
 		return params;
 	}
-	/** @return pointer to next param after given, NULL if given is last */
-	TParam* GetNextParam(TParam* param);
+
 	/**
 	 * Loads information parsed from XML file.
 	 * @param node XML node with device configuration info
@@ -716,38 +392,13 @@ public:
 	 * @return 0 on success, 1 on error
 	 */
 	int parseXML(xmlTextReaderPtr node);
-	/** @return pointer to parent radio object */
-	TRadio* GetRadio()
-	{
-		return parentRadio;
-	}
-	/** @return additional name associated with the unit*/
-	const std::wstring& GetUnitName();
 
-	const std::wstring& GetTranslatedUnitName();
-
-	void SetTranslatedUnitName(const std::wstring& s);
-
-	long GetSenderMsgType() const
-	{
-		return number + 256L;
-	}
 protected:
-	size_t number;
+	size_t send_msg_type;
 
-	TRadio *parentRadio;
-			/**< Pointer to parent TRadio object. */
-	wchar_t id;/**< Ascii character - line identifier */
-	int type;	/**< Raport type */
-	int subtype;	/**< Raport subtype */
-	int bufsize;	/**< Size of buffer for averages counting */
-	std::wstring name;     /**< Name of the unit(optional)*/
-	std::wstring translated_name; /**< Translated name of the unit(optional)*/
+	TDevice *parentDevice;
 	TParam *params;
-			/**< List of input params */
 	TSendParam *sendParams;
-			/**< List of output parameters */
-	TUnit *next;
 };
 
 /**
@@ -763,79 +414,186 @@ namespace LuaExec {
 };
 
 #endif
+#endif
 
-#endif
-class TParam {
+class Sz4ParamInfo: public TAttribHolder {
 public:
-	typedef enum { NONE, RPN, DEFINABLE
+	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, LAST_DATA_TYPE = DOUBLE} DataType;
+	virtual DataType GetDataType() const { return _data_type; }
+	virtual void SetDataType(DataType data_type) { _data_type = data_type; }
+
+	typedef enum { SECOND = 0, NANOSECOND, LAST_TIME_TYPE  = NANOSECOND } TimeType; 
+	virtual TimeType GetTimeType() const { return _time_type; }
+	virtual void SetTimeType(TimeType time_type) { _time_type = time_type; }
+
+protected:
+
+	DataType _data_type{ SHORT };
+	TimeType _time_type{ SECOND };
+};
+
+class IPCParamInfo: public Sz4ParamInfo {
+public:
+	virtual ~IPCParamInfo() {}
+
+	virtual const std::wstring& GetName() const { return _name; }
+	virtual void SetName(const std::wstring& name) { _name = name; }
+
+	int GetPrec() const { return getAttribute<int>("prec", 0); }
+	void SetPrec(int prec) { storeAttribute("prec", std::to_string(prec)); }
+
+protected:
+	std::wstring _name;
+};
+
+enum class FormulaType {
+	NONE, RPN, DEFINABLE
 #ifndef NO_LUA
-		, LUA_VA, LUA_AV, LUA_IPC
+	, LUA_VA, LUA_AV, LUA_IPC
 #endif
-		} FormulaType;
-	typedef enum { P_REAL, P_COMBINED, P_DEFINABLE
+};
+
+enum class ParamType {
+	REAL, COMBINED, DEFINABLE
 #ifndef NO_LUA
-		, P_LUA
+	, LUA
 #endif
-		} ParamType;
+};
+
+
+// TODO: add visitors for LUA/RPN/DEFINABLE formulas and make then separate classes with normal interfaces
+class ParamFormulaInfo: public IPCParamInfo {
+public:
+	ParamFormulaInfo(TUnit *parent, TSzarpConfig *parentSC = NULL, const std::wstring& formula = std::wstring(), FormulaType ftype = FormulaType::NONE, ParamType ptype = ParamType::REAL):
+	    _parentUnit(parent), _parentSzarpConfig(parentSC), _formula(formula), _ftype(ftype), _param_type(ptype) {}
+	virtual ~ParamFormulaInfo();
+
+public:
+	void PrepareDefinable();
+
+	/** @return pointer to parent unit object, NULL for defined params */
+	TUnit* GetParentUnit() { return _parentUnit; }
+
+	void SetParentSzarpConfig(TSzarpConfig *parentSzarpConfig) { _parentSzarpConfig = parentSzarpConfig; }
+
+	TSzarpConfig *GetSzarpConfig() const;
+
+	/** @return param's ipc index (is equal to index among all params, including
+	 * defined and drawdefinable) */
+	unsigned int GetIpcInd();
+
+	const std::wstring& GetFormula() { return _formula; }
+	double calculateConst(const std::wstring& _formula);
+
+	void SetFormula(const std::wstring& f, FormulaType type = FormulaType::RPN);
+	const std::wstring&  GetDrawFormula() throw(TCheckException);
+	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr) throw(TCheckException);
+
+	ParamType GetType() { return _param_type; }
+	FormulaType GetFormulaType() const { return _ftype; }
+	void SetFormulaType(FormulaType type);
+
+	TParam ** GetFormulaCache() { return &(_f_cache[0]); }
+	int GetNumParsInFormula() { return _f_cache.size(); }
+	bool IsNUsed() { return _f_N; }
+	bool IsConst() { return (ParamType::REAL != _param_type) && _f_const; };
+	double GetConstValue() { return _f_const_value; };
+	int IsDefinable() { return ParamType::REAL != _param_type
+#ifndef NO_LUA
+		       	&& ParamType::LUA != _param_type
+#endif
+				; }
+	void CheckForNullFormula();
+
+#ifndef NO_LUA
+	const unsigned char* GetLuaScript() const;
+
+	void SetLuaParamRef(int ref);
+
+	int GetLuaParamReference() const;
+
+	void SetLuaStartDateTime(time_t start_time_t) { _lua_start_date_time = start_time_t; }
+
+	time_t GetLuaStartDateTime() const { return _lua_start_date_time; }
+
+	time_t GetLuaStartOffset() const { return _lua_start_offset; }
+
+	time_t GetLuaEndOffset() const { return _lua_end_offset; }
+
+	void SetLuaScript(const unsigned char* script);
+
+#if LUA_PARAM_OPTIMISE
+	LuaExec::Param* GetLuaExecParam();
+
+	void SetLuaExecParam(LuaExec::Param *param);
+#endif 
+#endif
 
 	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, UINT, USHORT, LAST_DATA_TYPE = USHORT} DataType;
 
-	typedef enum { SECOND = 0, NANOSECOND, LAST_TIME_TYPE  = NANOSECOND } TimeType; 
+// Set by TParam
+protected:
+	TUnit* _parentUnit;
+	TSzarpConfig* _parentSzarpConfig;
 
-	typedef enum { 	SZ4_NONE,
-			SZ4_REAL,
-			SZ4_COMBINED,
-			SZ4_DEFINABLE,
-			SZ4_LUA,
-			SZ4_LUA_OPTIMIZED } Sz4ParamType;
-	
+	std::wstring _formula;
+	FormulaType _ftype;
+	ParamType _param_type{ ParamType::REAL };
+
+	std::wstring	_parsed_formula;    /**< parsed formula for definable calculating */
+	std::vector<TParam *> _f_cache;	    /**< formula cache */
+
+	double _f_const_value; /**< const value if formula is const */
+
+	bool _prepared; /**< flag - is definalbe param prepared */
+	bool _f_const; /**< flag - is formula const */
+	bool _f_N;	    /**< flag - if 1 - N function i formula */
+
+#ifndef NO_LUA
+	unsigned char* _script{ NULL };
+
+	int _lua_function_reference{ LUA_NOREF };
+
+	time_t _lua_start_date_time { -1 };
+	time_t _lua_start_offset{ 0 };
+	time_t _lua_end_offset { 0 };
+
+#if LUA_PARAM_OPTIMISE
+	LuaExec::Param* _opt_lua_param{ nullptr };
+#endif
+#endif
+
+};
+
+enum class Sz4ParamType {
+	NONE,
+	REAL,
+	COMBINED,
+	DEFINABLE,
+	LUA,
+	LUA_OPTIMIZED
+};
+
+
+class TParam: public ParamFormulaInfo, public TNodeList<TParam> {
+public:
+
 	TParam(TUnit *parent,
 		TSzarpConfig *parentSC = NULL,
 		const std::wstring& formula = std::wstring(),
-		FormulaType ftype = NONE,
-		ParamType ptype = P_REAL) :
-	    _parentUnit(parent),
-	    _parentSzarpConfig(parentSC),
-	    _name(),
+		FormulaType ftype = FormulaType::NONE,
+		ParamType ptype = ParamType::REAL) :
+		ParamFormulaInfo(parent, parentSC, formula, ftype, ptype),
 	    _shortName(),
 	    _drawName(),
 	    _unit(),
 	    _values(NULL),
-	    _prec(0),
-		_has_forbidden(false),
-		_forbidden_val(SZARP_NO_DATA),
 	    _baseInd(-1),
 	    _inbase(0),
-	    _formula(formula),
-	    _ftype(ftype),
-	    _param_type(ptype),
-	    _parsed_formula(),
-	    _prepared(false),
-	    _f_const(false),
-	    _f_N(false),
-	    _is_new_def(false),
 	    _raports(NULL),
 	    _draws(NULL),
-	    _next(NULL),
 	    _szbase_name(),
-	    _psc(false),
-	    _period(SZBASE_DATA_SPAN),
-#ifndef NO_LUA
-	    _script(NULL),
-	    _lua_function_reference(LUA_NOREF),
-            _lua_start_date_time(-1),
-	    _lua_start_offset(0),
-	    _lua_end_offset(0),
-#if LUA_PARAM_OPTIMISE
-	    _opt_lua_param(NULL),
-#endif
-#endif
-	    _sum_unit(),
-	    _meter_par(false),
-	    _sum_divisor(6.),
-	    _dataType(SHORT),
-	    _timeType(SECOND),
-	    _sz4ParamType(SZ4_NONE)
+	    _psc(false)
 	{ }
 
 	/** Deletes whole list. */
@@ -848,15 +606,6 @@ public:
 			TValue *values, int prec = 0, int baseInd = -1,
 			int inbase = -1,
 			short forbidden_val = SZARP_NO_DATA);
-
-	/**
-	 * Generates XML node with param info.
-	 * @return created XML node, NULL on error
-	 */
-	xmlNodePtr generateXMLNode(void);
-
-	/** @return name attribute, always non NULL */
-	const std::wstring& GetName() {	return _name; }
 
 	std::wstring GetGlobalName() const;
 
@@ -892,77 +641,14 @@ public:
 	/** @return name of params draw name, can be NULL */
 	const std::wstring& GetDrawName() { return _drawName; }
 
-	/** @return pointer to parent unit object, NULL for defined params */
-	TUnit* GetParentUnit() { return _parentUnit; }
+	// [deprecated]
+	std::wstring GetSumUnit() { return L""; }
 
-	/** @return pointer to param's formula (may be NULL) */
-	const std::wstring& GetFormula() { return _formula; }
+	// [deprecated]
+	bool IsMeterParam() const { return getAttribute("is_meter", false); }
 
-	const std::wstring& GetSumUnit() { return _sum_unit; }
-
-	bool IsMeterParam() const { return _meter_par; }
-
-	const double& GetSumDivisor() { return _sum_divisor; }
-
-	/**
-	 * Sets params formula to given string. Old formula is deleted.
-	 * @param f new formula
-	 * @param type type of new formula
-	 */
-	void SetFormula(const std::wstring& f, FormulaType type = RPN);
-
-	/** @return pointer to string with formula in definable.cfg format
-	 * do not free it - its handled iternaly by TParam object.
-	 * (may be NULL) */
-	const std::wstring&  GetDrawFormula() throw(TCheckException);
-	/**
-	 * Returns parameter's RPN formula in parcook.cfg format (with comment).
-	 * @return newly allocated string with formula in parcook format
-	 */
-	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr) throw(TCheckException);
-
-	/** @return type of formula (RPN, DEFINABLE or NONE) */
-	FormulaType GetFormulaType() { return _ftype; }
-
-        /** Sets type of formula (RPN, DEFINABLE or NONE) */
-        void SetFormulaType(FormulaType type);
-
-	/** @return type of parameter */
-	ParamType GetType() { return _param_type; }
-
-	/** @return cache of params used in formula */
-	TParam ** GetFormulaCache() { return &(_f_cache[0]); }
-
-	/** @return number of params used in formula */
-	int GetNumParsInFormula() { return _f_cache.size(); }
-
-	/** @return 1 if N fuction in formula */
-	bool IsNUsed() { return _f_N; }
-
-	bool IsConst() { return (TParam::P_REAL != _param_type) && _f_const; };
-
-	double GetConstValue() { return _f_const_value; };
-
-	/** @return 1 if parameter is definable */
-	int IsDefinable() { return TParam::P_REAL != _param_type
-#ifndef NO_LUA
-		       	&& TParam::P_LUA != _param_type
-#endif
-				; }
-
-	/** @return 1 if definable param should be calculated in new way */
-	bool IsNewDefinable() { return _is_new_def; }
-
-	/** Set param as new defnable. Takes effect only for definable parameters */
-	void SetNewDefinable(bool is_new_def);
-
-	/** @return param's ipc index (is equal to index among all params, including
-	 * defined and drawdefinable) */
-	unsigned int GetIpcInd();
-
-	/** @return param's index in base (non-negative, starting with 0),
-	 * negative if param in not writen to codebase base */
-	int GetBaseInd() { return _baseInd; }
+	// [deprecated]
+	const double GetSumDivisor() { return 6.; }
 
 	/** @return for param with real base index it returns base index, for others it
 	 * returns IPC index
@@ -991,20 +677,11 @@ public:
 	 */
 	void SetBaseInd(int index);
 
-
-	/** @return representation presition (number of digits after comma) for
-	 * integer params (non-negative), 0 for non-integer values */
-	int GetPrec() {	return _prec; }
-
 	/** @return whether has limits */
-	short GetForbidden() const { return _forbidden_val; }
+	short GetForbidden() const { return getAttribute<short>("forbidden", SZARP_NO_DATA); }
 
 	/** @return whether has a forbidden value */
-	bool HasForbidden() const { return _has_forbidden; }
-
-	/** @return sets presition (number of digits after comma) for
-	 * integer params (non-negative), 0 for non-integer values */
-	void SetPrec(int prec) { _prec = prec; }
+	bool HasForbidden() const { return hasAttribute("forbidden"); }
 
 	/** @return pointer to the first element of possible param values list,
 	 * NULL for integer parameters */
@@ -1037,56 +714,23 @@ public:
 	 * value according to paramater precision. */
 	SZB_FILE_TYPE ToIPCValue(SZBASE_TYPE value);
 
-	/** If params formula is NULL, set it to "null " string. Used for
-	 * defined params, to simplify null formulas handling.
-	 * TODO: if (formula == NULL) formula = strdup("null ") */
-	void CheckForNullFormula();
-
-	/*
-	 * Initializes param not defined in PTT.act (without name).
-	 * @param id unknown param identifier, must be uniq
-	 */
-	void ConfigureUnknown(int id);
-
 	/**
 	 * Returns n-th element of params list.
 	 * @param n number of param to search, if 0 current is returned
 	 * @param global if true, global search is activated (through all
-	 * devices, radios, lines and defined params)
+	 * devices, units and defined params)
 	 * @return pointer to param found, NULL if not found
 	 */
 	TParam* GetNthParam(int n, bool global = false);
-
-	/** Append param to the end of params list.
-	 * @param p param to append
-	 * @return pointer to appended element */
-	TParam* Append(TParam* p);
-
-	/** Directly sets given param as next in the params list*/
-	void SetNext(TParam *p);
-
-	/** @return pointer to containing radio object, NULL for defined
-	 * parameters */
-	TRadio* GetRadio();
 
 	/** @return pointer to containing device object, NULL for defined
 	 * parameters */
 	TDevice* GetDevice() const;
 
-	/** @return pointer to main TSzarpConfig object */
-	TSzarpConfig* GetSzarpConfig() const;
+	int parseXML(xmlNodePtr node) override;
+	int parseXML(xmlTextReaderPtr node) override;
 
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlNodePtr node);
-	/** Parses XML node (current set in reader)
-	 * @param reader XML reader set on "param"
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlTextReaderPtr node);
+	int processAttributes() override;
 
 	/**
 	 * Get next param in list.
@@ -1094,7 +738,7 @@ public:
 	 * devices, radios, lines and defined params)
 	 * @return next params list element, NULL if current element is last
 	 */
-	TParam* GetNext(bool global = false);
+	TParam* GetNextGlobal() const;
 
 	/**
 	 * Adds raport info to param.
@@ -1125,49 +769,8 @@ public:
 	 */
 	TDraw* AddDraw(TDraw* draw);
 
-	/** Prepares data for definable calculation. */
-	void PrepareDefinable() throw(TCheckException);
-
-#ifndef NO_LUA
-	const unsigned char* GetLuaScript() const;
-
-	void SetLuaParamRef(int ref);
-
-	int GetLuaParamReference() const;
-
-	void SetLuaStartDateTime(time_t start_time_t) { _lua_start_date_time = start_time_t; }
-
-	time_t GetLuaStartDateTime() const { return _lua_start_date_time; }
-
-	time_t GetLuaStartOffset() const { return _lua_start_offset; }
-
-	time_t GetLuaEndOffset() const { return _lua_end_offset; }
-
-	void SetLuaScript(const unsigned char* script);
-
-#if LUA_PARAM_OPTIMISE
-	LuaExec::Param* GetLuaExecParam();
-
-	void SetLuaExecParam(LuaExec::Param *param);
-#endif 
-#endif
-	void SetName(const std::wstring& name) { assert (_name == std::wstring()); _name = name; }
-	/** Get parameter writting period. */
-	time_t GetPeriod() { return  _period; }
-	/** Set parameter writting period. */
-	void SetPeriod(time_t period) { _period = period <= 0 ? SZBASE_DATA_SPAN : period; }
 	bool GetPSC() { return _psc; }
 	void SetPSC(bool psc) { _psc = psc; }
-
-	void SetParentSzarpConfig(TSzarpConfig *parentSzarpConfig) { _parentSzarpConfig = parentSzarpConfig; }
-
-	DataType GetDataType() const { return _dataType; }
-
-	void SetDataType(DataType dataType) { _dataType = dataType; }
-
-	TimeType GetTimeType() const { return _timeType; }
-
-	void SetTimeType(TimeType timeType) { _timeType = timeType; }
 
 	Sz4ParamType GetSz4Type() const { return _sz4ParamType; }
 
@@ -1183,13 +786,7 @@ public:
 
 	static bool IsHourSumUnit(const std::wstring& unit);
 protected:
-	TUnit * _parentUnit;  /**< Pointer to parent TUnit object (NULL for defined). */
 
-	TSzarpConfig * _parentSzarpConfig;
-			/**< Pointer to main TSzarpConfig object (needed for
-			 * definable parameters, which don't have parentUnit.*/
-
-	std::wstring _name;	    /**< Full name */
 	std::wstring _translatedName;	    /**< Full name */
 	std::wstring _shortName;  /**< Short name */
 	std::wstring _translatedShortName;  /**< Short name */
@@ -1199,11 +796,6 @@ protected:
 
 	TValue * _values;   /**< List of possible values defintions, NULL if it's
 			      an integer parameter */
-
-	int _prec;	/**< Precision for integer parameters, for others should be 0 */
-
-	bool _has_forbidden;
-	short _forbidden_val; // value to treat as NO_DATA
 
 	int _baseInd;	/**< Index of parameter in data base. Must be uniq among
 			  all params. For params not saved in data base should
@@ -1217,74 +809,16 @@ protected:
 
 	unsigned _configId;
 
-	std::wstring _formula;    /**< NULL if it's an oridinary parameter, formula
-			      for defined parameters. */
-
-	FormulaType _ftype;  /**< Type of formula, NONE, RPN or DEFINABLE */
-
-	ParamType _param_type;	/**< Type of parameter: P_REAL, P_COMBINED, P_DEFINABLE */
-
-	std::wstring	_parsed_formula;    /**< parsed formula for definable calculating */
-	std::vector<TParam *> _f_cache;	    /**< formula cache */
-
-	double _f_const_value; /**< const value if formula is const */
-
-	bool _prepared; /**< flag - is definalbe param prepared */
-	bool _f_const; /**< flag - is formula const */
-	bool _f_N;	    /**< flag - if 1 - N function i formula */
-	bool _is_new_def;    /**< flag - if 1 param should be calculated in new way */
-
 	TRaport	* _raports;	/**< List of raports for param */
 	TDraw * _draws;		/**< List of draws for param */
-
-	TParam* _next;	/**< Next list element */
 
 	std::wstring _szbase_name;	/**< Name of parameter converted to szbase format.
 				  May be empty - will get converted on next call to
 				  GetSzbaseName(). */
 
-	/** Calculate Value of const param */
-	double calculateConst(const std::wstring& _formula);
 	bool _psc; /**< marks if parameter can be set by psc */
 
-	/** Period of writting parameter to the database */
-	time_t _period;
-
-#ifndef NO_LUA
-	unsigned char* _script;		/**<lua script describing param*/
-
-	int _lua_function_reference;
-				/**<lua param function reference*/
-
-	time_t _lua_start_date_time;
-				/**<lua param end time offset*/
-	time_t _lua_start_offset;
-				/**<lua param start time offset*/
-	time_t _lua_end_offset;
-				/**<lua param end time offset*/
-
-#if LUA_PARAM_OPTIMISE
-	LuaExec::Param* _opt_lua_param;
-#endif
-
-#endif
-	/** unit that shall be used to display summaried values of this params*/
-	std::wstring _sum_unit;
-
-	/** parameter is taken from a meter (always take it's latest value) */
-	bool _meter_par;
-
-	/** summaried values of this param shall be divided by this factor*/
-	double _sum_divisor;
-
-	/** this parameter data type*/
-	DataType _dataType;
-
-	/** this parameter time type, i.e. resolution*/
-	TimeType _timeType;
-
-	/** parameter type as classified by Sz4 code*/
-	Sz4ParamType _sz4ParamType;
+	Sz4ParamType _sz4ParamType{ Sz4ParamType::NONE };
 };
 
 /**
@@ -1571,11 +1105,7 @@ public:
 	 */
 	void Configure(const std::wstring& paramName, int value, int repeat, TProbeType type,
 			int sendNoData);
-	/**
-	 * Generates XML node with param info.
-	 * @return created XML node, NULL on error
-	 */
-	xmlNodePtr generateXMLNode(void);
+
 	/**
 	 * @returns n-th param's list element after 'this'.
 	 */
@@ -1675,7 +1205,6 @@ public:
 	 */
 	static TValue *createValue(int prec);
 
-	xmlNodePtr generateXMLNode(void);
 	/**
 	 * Appends value to at end of list.
 	 * @param v value to append
@@ -1822,14 +1351,10 @@ public:
 	@return 0 if node was successfully parsed, 0 otherwise*/
 	int parseXML(xmlTextReaderPtr reader);
 
-	/**generates XML node describing seasons
-	 * @return xml node ptr*/
-	xmlNodePtr generateXMLNode() const;
-
 	bool CheckSeason(const Season& season, int month, int day) const;
 
 private:
-	typedef std::tr1::unordered_map<int, Season> tSeasons;
+	typedef std::unordered_map<int, Season> tSeasons;
 	/**list of seasons*/
 	tSeasons seasons;
 	/**default season definition used if no season is explicitly given for given year*/
@@ -1840,7 +1365,7 @@ private:
 /**Synchronized IPKs container*/
 class IPKContainer {
 	class UnsignedStringHash {
-		std::tr1::hash<std::string> m_hasher;
+		std::hash<std::string> m_hasher;
 		public:
 		size_t operator() (const std::basic_string<unsigned char>& v) const {
 			return m_hasher((const char*) v.c_str());
@@ -1849,10 +1374,10 @@ class IPKContainer {
 
 	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
 	 UTF-8 encoded param names are used by LUA formulas*/
-	typedef std::tr1::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
+	typedef std::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
 	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
 	is to avoid frequent conversions between two encodings*/
-	typedef std::tr1::unordered_map<std::wstring, TParam* > hash_type;
+	typedef std::unordered_map<std::wstring, TParam* > hash_type;
 
 	hash_type m_params;
 
@@ -1863,7 +1388,7 @@ class IPKContainer {
 	/**Szarp data directory*/
 	boost::filesystem::wpath szarp_data_dir;
 
-	typedef std::tr1::unordered_map<std::wstring, TSzarpConfig*> CM;
+	typedef std::unordered_map<std::wstring, TSzarpConfig*> CM;
 
 	struct ConfigAux {
 		unsigned _maxParamId;
@@ -1871,7 +1396,7 @@ class IPKContainer {
 		unsigned _configId;
 	};
 
-	typedef std::tr1::unordered_map<std::wstring, ConfigAux> CAUXM;
+	typedef std::unordered_map<std::wstring, ConfigAux> CAUXM;
 
 	/**Szarp system directory*/
 	boost::filesystem::wpath szarp_system_dir;
@@ -1891,7 +1416,7 @@ class IPKContainer {
 
 	static IPKContainer* _object;
 
-	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
+	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
 
 	/**Adds configuration to the the container
 	 * @param prefix configuration prefix
@@ -1937,7 +1462,7 @@ public:
 	 * @return loaded config object, NULL if error occured during configuration load*/
 	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
 
-	std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams();
+	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams();
 
 	/**@return the container object*/
 	static IPKContainer* GetObject();
@@ -1952,7 +1477,7 @@ public:
 class TDictionary {
 private:
 	typedef std::pair<std::wstring, std::wstring> ENTRY;
-	typedef std::map<std::wstring, std::vector<ENTRY> > DT;
+	typedef std::unordered_map<std::wstring, std::vector<ENTRY> > DT;
 	DT m_dictionary;
 
 	std::wstring m_dictionary_path;
@@ -1995,6 +1520,7 @@ public:
 	 * @param  local flag - use local names in tags
 	 */
 	XMLWrapper(xmlTextReaderPtr &_r, bool local = false);
+
 	/**
 	 * Set list of ignored tags.
 	 * @param i_list pointer to list of ignored tags. The last position of list have to be 0.

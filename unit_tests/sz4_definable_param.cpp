@@ -16,10 +16,9 @@ public:
 namespace {
 
 class IPKContainerMock1 : public mocks::IPKContainerMockBase {
-	TSzarpConfig config;
 	TParam* param;
 public:
-	IPKContainerMock1() : param(new TParam(NULL, &config, L"1", TParam::DEFINABLE, TParam::P_DEFINABLE)) {
+	IPKContainerMock1() : param(new TParam(NULL, &m_config, L"1", FormulaType::DEFINABLE, ParamType::DEFINABLE)) {
 		param->SetDataType(TParam::DOUBLE);
 		param->SetName(L"A:B:C1");
 		AddParam(param);
@@ -67,8 +66,8 @@ class IPKContainerMock2 : public mocks::IPKContainerMockBase {
 	TParam* param;
 	TParam* param2;
 public:
-	IPKContainerMock2() : param(new TParam(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL)),
-				param2(new TParam(NULL, NULL, L"(A:B:C) 1 +", TParam::DEFINABLE, TParam::P_DEFINABLE))
+	IPKContainerMock2() : param(new TParam(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL)),
+				param2(new TParam(NULL, NULL, L"(A:B:C) 1 +", FormulaType::DEFINABLE, ParamType::DEFINABLE))
 	 {
 		param->SetDataType(TParam::SHORT);
 		param->SetName(L"A:B:C");

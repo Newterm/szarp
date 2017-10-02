@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
 			std::wcerr << "Parameter '" << arguments.params[i] << "' not found in IPK\n\n";;
 			return 1;
 		}
-		if (!p->IsInBase() && !p->GetType() == TParam::P_COMBINED) {
+		if (!p->IsInBase() && p->GetType() != ParamType::COMBINED) {
 			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base and in not combined param\n\n";;
 			return 1;
 		}
@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
 		TParam *p = params[i];
 		std::vector<std::pair<time_t, double> > vals = remove_nodata(szb, p, arguments.start, arguments.end);
 		double pw = pow(10.0, p->GetPrec());
-		if (p->GetType() == TParam::P_COMBINED)
+		if (p->GetType() == ParamType::COMBINED)
 			save_combined_param(pw, p, vals, szb);
 		else
 			save_real_param(pw, p, vals, szb);

@@ -107,6 +107,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/ipk/tdevice.cc \
 	@srcdir@/ipk/tdraw.cc \
 	@srcdir@/ipk/tparam.cc \
+	@srcdir@/ipk/param_formula_info.cpp \
 	@srcdir@/ipk/tradio.cc \
 	@srcdir@/ipk/traport.cc \
 	@srcdir@/ipk/tsendparam.cc \

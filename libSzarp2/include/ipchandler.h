@@ -40,24 +40,9 @@
  */
 class IPCHandler {
 public:
-	/**
-	 * @param cfg pointer to daemon config info */
+	IPCHandler(DaemonConfigInfo* cfg);
 
-	template <typename Config>
-	IPCHandler(const Config& cfg): units(cfg.GetUnits())
-	{
-		const auto& ipc_info = cfg.GetIPCInfo();
-		single = cfg.GetSingle();
-		line_no = cfg.GetLineNumber();
-		m_params_count = cfg.GetParamsCount();
-		m_sends_count = cfg.GetSendsCount();
-
-		if (!single) {
-			InitIPC(ipc_info);
-		}
-	}
-
-	void InitIPC(const basedmn::IPCInfo&);
+	void InitIPC(const IPCInfo&);
 
 	/**
 	* Get data from sender.
@@ -70,7 +55,7 @@ public:
 	void GoParcook();
 
 protected:
-	const std::vector<basedmn::UnitInfo>& units;
+	const std::vector<UnitInfo*>& units;
 
 	int m_shm_d;
 	int m_sem_d;

@@ -149,4 +149,3 @@ void zmqhandler::receive() {
 
 	} while (true);
 }
-

@@ -441,13 +441,13 @@ std::string SzbaseWrapper::add_param( const std::string& param
 		_formula.replace( i , param.size() , new_name );
 	}
 
-	TParam::FormulaType formula_type = TParam::NONE;
+	FormulaType formula_type = FormulaType::NONE;
 	if( type == "av" )
-		formula_type = TParam::LUA_AV;
+		formula_type = FormulaType::LUA_AV;
 	else if( type == "va" )
-		formula_type = TParam::LUA_VA;
+		formula_type = FormulaType::LUA_VA;
 
-	auto tparam = new TParam(NULL, NULL, L"", formula_type, TParam::P_LUA);
+	auto tparam = new TParam(NULL, NULL, L"", formula_type, ParamType::LUA);
 	tparam->SetName(new_param_name);
 	tparam->SetPrec(prec);
 	tparam->SetTimeType(TParam::NANOSECOND); ///XXX:

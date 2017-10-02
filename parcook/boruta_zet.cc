@@ -196,7 +196,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	virtual int configure(TUnit* unit, short* read, short *send);
 	static void timeout_cb(int fd, short event, void *zet_proto_impl);
 };
 
@@ -212,7 +212,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	virtual int configure(TUnit* unit, short* read, short *send);
 };
 
 class zet_proto_serial : public zet_proto_impl, public serial_client_driver {
@@ -227,7 +227,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
+	virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc);
 };
 
 void zet_proto_impl::set_no_data() {
@@ -354,22 +354,22 @@ void zet_proto_impl::scheduled(struct bufferevent* bufev, int fd) {
 	send_query(bufev);
 }
 
-int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
+int zet_proto_impl::configure(TUnit* unit, short* read, short *send) {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
 	m_send_count = unit->GetSendParamsCount();
 	m_read = read;
 	m_send = send;
 	m_timeout_count = 0;
-	std::string plc;
-	if (get_xml_extra_prop(node, "plc", plc))
+	std::string plc = unit->getAttribute<std::string>("extra:plc", "");
+	if (plc.empty())
 		return 1;
 	if (plc == "sk") {
 		m_plc_type = SK;
 	} else if (plc == "zet") {
 		m_plc_type = ZET;
 	} else {
-		m_log.log(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
+		m_log.log(0, "Invalid value of plc attribute %s, line:%d", plc.c_str(), unit->GetUnitNo());
 		return 1;
 	}
 	TSendParam *sp = unit->GetFirstSendParam();
@@ -423,8 +423,8 @@ void zet_proto_tcp::data_ready(struct bufferevent* bufev, int fd) {
 	zet_proto_impl::data_ready(bufev, fd);
 }
 
-int zet_proto_tcp::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
-	return zet_proto_impl::configure(unit, node, read, send);
+int zet_proto_tcp::configure(TUnit* unit, short* read, short *send) {
+	return zet_proto_impl::configure(unit, read, send);
 }
 
 void zet_proto_serial::driver_finished_job() {
@@ -457,8 +457,8 @@ void zet_proto_serial::data_ready(struct bufferevent* bufev, int fd) {
 	zet_proto_impl::data_ready(bufev, fd);
 }
 
-int zet_proto_serial::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc) {
-	return zet_proto_impl::configure(unit, node, read, send);
+int zet_proto_serial::configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc) {
+	return zet_proto_impl::configure(unit, read, send);
 }
 
 serial_client_driver* create_zet_serial_client() {

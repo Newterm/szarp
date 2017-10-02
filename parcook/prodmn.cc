@@ -188,7 +188,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	m_cfg = cfg;
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
 		m_ipc = ipc_.release();
 	} catch(...) {
 		return 1;
@@ -237,7 +237,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	m_addr.sin_port = htons(atoi(c));
 	xmlFree(c);
 	i = 0;
-	for (TParam* p = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
+	for (TParam* p = cfg->GetDevice()->GetFirstUnit()->GetFirstParam();
 			p;
 			++i, p = p->GetNext()) {
 		char *expr;

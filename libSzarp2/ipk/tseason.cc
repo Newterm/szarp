@@ -240,56 +240,6 @@ int TSSeason::parseXML(xmlNodePtr node) {
 
 }
 
-xmlNodePtr TSSeason::generateXMLNode() const {
-#define ITOA(x) snprintf(buffer, sizeof(buffer), "%d", x)
-#define X (const xmlChar*) 
-
-	char buffer[30];
-	xmlNodePtr r = xmlNewNode(NULL, X"seasons");
-
-	ITOA(defs.month_start);
-	xmlSetProp(r, X"month_start", SC::A2U(buffer).c_str());
-
-	ITOA(defs.day_start);
-	xmlSetProp(r, X"day_start", SC::A2U(buffer).c_str());
-
-	ITOA(defs.month_end);
-	xmlSetProp(r, X"month_end", SC::A2U(buffer).c_str());
-
-	ITOA(defs.day_end);
-	xmlSetProp(r, X"day_end", SC::A2U(buffer).c_str());
-
-	for (tSeasons::const_iterator i = seasons.begin();
-			i != seasons.end();
-			++i) {
-
-		int year = i->first;
-		const Season& s = i->second;
-
-		xmlNodePtr n = xmlNewNode(NULL, X"season");
-
-		ITOA(year);
-		xmlSetProp(n, X"year", SC::A2U(buffer).c_str());
-
-		ITOA(s.month_start);
-		xmlSetProp(r, X"month_start", SC::A2U(buffer).c_str());
-
-		ITOA(s.day_start);
-		xmlSetProp(r, X"day_start", SC::A2U(buffer).c_str());
-
-		ITOA(s.month_end);
-		xmlSetProp(r, X"month_end", SC::A2U(buffer).c_str());
-
-		ITOA(s.day_end);
-		xmlSetProp(r, X"day_end", SC::A2U(buffer).c_str());
-
-		xmlAddChild(r, n);
-	}
-
-	return r;
-
-}
-
 bool TSSeason::CheckSeason(const Season &s, int month, int day) const {
 	bool result = false;
 

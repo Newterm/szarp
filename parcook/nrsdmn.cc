@@ -627,11 +627,10 @@ public:
 	 * @param read pointer to a data buffer whose values are copied into
 	 * parcook shared memory segment
 	 * @param pointer to a buffer holding values received from sender
-	 * @param direct if true the unit has not assigned an id
 	 * @param debug indicates if all data recived from and sent to unit
 	 * should be print to stdout*/
 	ZetUnit(TUnit *unit, short* read, short* send,
-			bool direct, bool debug, bool dump_hex);
+			bool debug, bool dump_hex);
 	/**Generates query that should be sent to a unit
 	 * @param query output parameter, points to a buffer with query,
 	 * it's caller responsiblity to relase this buffer
@@ -691,8 +690,6 @@ protected:
 					 shall be sent to a regulator.*/
 	size_t m_sends_count;		/**<size of buffer pointed by @see
 					m_send */
-	const bool m_direct;		/**<indicated if this unit has assigned
-					an address*/
 	char m_id;			/**<id(address) a of unit*/
 };
 
@@ -746,18 +743,18 @@ ZetUnit::AvgBuffer::~AvgBuffer()
 	}
 }
 
-ZetUnit::ZetUnit(TUnit *unit, short* read, short* send,
-		bool direct, bool debug, bool dump_hex) :
+ZetUnit::ZetUnit(TUnit *unit, short* read, short* send, bool debug, bool dump_hex) :
 	UnitExaminator(debug, dump_hex),
-	m_read(read), m_send(send), m_direct(direct)
+	m_read(read), m_send(send)
 {
-	if (!m_direct) {
-		m_id = unit->GetId();
-	}
+	m_id = unit->GetId();
+
 	m_read_count = unit->GetParamsCount();
 	m_sends_count = unit->GetSendParamsCount();
 
-	m_avg_buffer = new AvgBuffer(m_read_count, unit->GetBufSize());
+	auto avg_buf_size = unit->getAttribute<int>("bufsize", 1);
+
+	m_avg_buffer = new AvgBuffer(m_read_count, avg_buf_size);
 
 	m_nodata_send = new bool[m_sends_count];
 
@@ -777,39 +774,35 @@ void ZetUnit::GenerateQuery(char*& query, size_t& size)
 	short sender_checksum = 0;
 
 	FILE* query_buf = open_memstream(&query, &size);
-	if (!m_direct) {
-		fprintf(query_buf, "\x11\x02P%c", m_id);
-		sz_log(8, "Sending query to unit:%c", m_id);
-		if (m_debug) {
-			printf("Sending query to unit:%c\n", m_id);
-		}
-		bool sender_data = false;
-		for (size_t i = 0; i < m_sends_count; ++i) {
-			short value = m_send[i];
 
-			if (value == SZARP_NO_DATA &&
-					m_nodata_send[i] == false)
-				continue;
-
-			m_send[i] = SZARP_NO_DATA;
-			sender_data = true;
-
-			fprintf(query_buf, "%zu,%hd,", i, value);
-			sender_checksum += i + value;
-			sender_checksum &= 0xffff;
-			sz_log(8,"Setting send param no:%zu value:%hd\n",
-					i, value);
-		}
-		if (sender_data)  {
-			/* add checksum, strip trailing comma */
-			fprintf(query_buf, "%d,%hd",
-					SENDER_CHECKSUM_PARAM, sender_checksum);
-		}
-		fprintf(query_buf, "%s", msg_footer);
-	} else {
-		sz_log(8, "Sending query to unit with no address");
-		fprintf(query_buf, "\x11P\x0a");
+	fprintf(query_buf, "\x11\x02P%c", m_id);
+	sz_log(8, "Sending query to unit:%c", m_id);
+	if (m_debug) {
+		printf("Sending query to unit:%c\n", m_id);
 	}
+	bool sender_data = false;
+	for (size_t i = 0; i < m_sends_count; ++i) {
+		short value = m_send[i];
+
+		if (value == SZARP_NO_DATA &&
+				m_nodata_send[i] == false)
+			continue;
+
+		m_send[i] = SZARP_NO_DATA;
+		sender_data = true;
+
+		fprintf(query_buf, "%zu,%hd,", i, value);
+		sender_checksum += i + value;
+		sender_checksum &= 0xffff;
+		sz_log(8,"Setting send param no:%zu value:%hd\n",
+				i, value);
+	}
+	if (sender_data)  {
+		/* add checksum, strip trailing comma */
+		fprintf(query_buf, "%d,%hd",
+				SENDER_CHECKSUM_PARAM, sender_checksum);
+	}
+	fprintf(query_buf, "%s", msg_footer);
 
 	fclose(query_buf);
 
@@ -904,7 +897,7 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	}
 
 	int speed = cfg->GetSpeed();
-	int stopbits = cfg->GetNoConf() ? 1 : cfg->GetDevice()->GetStopBits();
+	int stopbits = cfg->GetNoConf() ? 1 : cfg->GetDevice()->GetFirstUnit()->getAttribute<int>("extra:stopbits", 1);
 	int wait_time;
 
 	int dumphex = cfg->GetDumpHex();
@@ -923,23 +916,21 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 			exit(1);
 		}
 		try {
-			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
 			m_ipc = ipc_.release();
 		} catch(...) {
 			exit(1);
 		}
 
 		TDevice* dev = cfg->GetDevice();
-		bool special = dev->IsSpecial();
 		short *read = m_ipc->m_read;
 		short *send = m_ipc->m_send;
 
-		TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
+		TUnit* unit = dev->GetFirstUnit();
 		for (int i = 0; unit; unit = unit->GetNext(), i++) {
 			ZetUnit *zet = new ZetUnit(unit,
 						read,
 						send,
-						special,
 						debug,
 						dumphex
 						);

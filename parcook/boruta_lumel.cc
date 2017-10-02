@@ -186,7 +186,7 @@ protected:
 public:
     lumel_serial_client();
     const char* driver_name() { return "lumel_driver"; }
-    virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration& spc);
+    virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc);
     virtual void connection_error(struct bufferevent *bufev);
     virtual void starting_new_cycle();
     virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -229,7 +229,7 @@ void lumel_serial_client::read_timer_event() {
     next_request();
 }
 
-int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
+int lumel_serial_client::configure(TUnit* unit, short* read, short *send, serial_port_configuration &spc) {
 
     m_read = read;
     m_read_count = unit->GetParamsCount();
@@ -241,8 +241,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	m_state = IDLE;
 
 	unsigned char id;
-	std::string _id;
-	get_xml_extra_prop(node, "id", _id, true);
+	std::string _id = unit->getAttribute<std::string>("extra:id", "");
 	if (_id.empty()) {
 		switch (unit->GetId()) {
 			case L'0'...L'9':
@@ -263,71 +262,48 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	}
 
 	if (id > 31) {
-	    m_log.log(0, "Unit id out of allowed range in unit element at line: %ld", xmlGetLineNo(node));
+	    m_log.log(0, "Unit id out of allowed range in unit element %d", unit->GetUnitNo());
 	    return 1;
 	}
 	m_unit_id = id;
 
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
-	xp_ctx->node = node;
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-
 	TParam* param = unit->GetFirstParam();
 	for (size_t i = 0; i < m_read_count ; i++) {
-		char *expr;
-		if (asprintf(&expr, ".//ipk:param[position()=%zu]", i + 1) == -1) {
-			sz_log(0, "error occured reading param");
-			return 1;
-		}
-		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		ASSERT(pnode);
-		free(expr);
 
-		std::string _addr;
-		if (get_xml_extra_prop(pnode, "address", _addr, false)) {
-		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		std::string _addr = param->getAttribute<std::string>("extra:address", "");
+		if (_addr.empty()) {
+		    m_log.log(0, "Invalid address attribute in param element at line: %ls", param->GetName().c_str());
 		    return 1;
 		}
 
 		char *e;
 		long l = strtol(_addr.c_str(), &e, 0);
 		if (*e != 0 || l < 0 || l > 0x32) {
-			m_log.log(0, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
+			m_log.log(0, "Invalid address attribute value: %ld (%ls), between 0 and 0x32", l, param->GetName().c_str());
 			return 1;
 		}
 		unsigned char addr = (unsigned char)l;
 		m_log.log(10, "lumel_serial_client::configure _addr: %ld, addr: %hhu", l, addr);
 
 		int prec = exp10(param->GetPrec());
-		std::string _prec;
-		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
-		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
-		    return 1;
-		}
-
+		std::string _prec = param->getAttribute<std::string>("extra:prec", "");
 		if (!_prec.empty()) {
 		    l = strtol(_prec.c_str(), &e, 0);
 		    if (*e != 0 || l < 0) {
-			    m_log.log(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
+			    m_log.log(0, "Invalid extra:prec attribute value: %ld (%ls)", l, param->GetName().c_str());
 			    return 1;
 		    }
 		    prec = exp10(l);
 		    m_log.log(10, "lumel_serial_client::configure _addr: %ld, prec: %d", l, addr);
 		}
 
-		std::string val_op;
-		if (get_xml_extra_prop(node, "val_op", val_op, true)) {
-		    m_log.log(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
-		    return 1;
-		}
+		std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 
 		lumel_register* reg = NULL;
 
 		if (val_op.empty()) {
 		    if (m_registers.find(addr) != m_registers.end()) {
-			m_log.log(0, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
+			m_log.log(0, "Already configured register with address (%hd) in param element %ls", addr, param->GetName().c_str());
 			return 1;
 		    }
 		    reg = new lumel_register(addr, &m_log);
@@ -350,7 +326,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 			m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 		    }
 		    else {
-			m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
+			m_log.log(0, "Unsupported val_op attribute value - %s, %ls", val_op.c_str(), param->GetName().c_str());
 			return 1;
 		    }
 		}

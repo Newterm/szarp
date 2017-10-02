@@ -163,7 +163,7 @@ std::tr1::tuple<TSzarpConfig*, szb_buffer_t*> SzbaseBase::GetConfigAndBuffer(TPa
 
 void SzbaseBase::maybeSetCancelHandle(TParam* p) {
 #ifndef NO_LUA
-	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
+	if (p->GetType() == ParamType::LUA && p->GetFormulaType() == FormulaType::LUA_AV) {
 		boost::mutex::scoped_lock datalock(m_mutex);
 		cancelHandle = new SzbCancelHandle();
 		cancelHandle->SetTimeout(60);
@@ -174,7 +174,7 @@ void SzbaseBase::maybeSetCancelHandle(TParam* p) {
 void SzbaseBase::releaseCancelHandle(TParam* p) {
 
 #ifndef NO_LUA
-	if (p->GetType() == TParam::P_LUA && p->GetFormulaType() == TParam::LUA_AV) {
+	if (p->GetType() == ParamType::LUA && p->GetFormulaType() == FormulaType::LUA_AV) {
 		boost::mutex::scoped_lock datalock(m_mutex);
 		delete cancelHandle;
 		cancelHandle = NULL;
@@ -745,31 +745,31 @@ sz4::param_info Sz4ApiBase::ParamInfoFromParam(TParam* p) {
 namespace {
 
 void dummy_prepare_sz4_param(TParam* param) {
-	if (param->GetSz4Type() != TParam::SZ4_NONE)
+	if (param->GetSz4Type() != Sz4ParamType::NONE)
 		return;
 
-	if (param->GetType() == TParam::P_REAL) {
-		param->SetSz4Type(TParam::SZ4_REAL);
+	if (param->GetType() == ParamType::REAL) {
+		param->SetSz4Type(Sz4ParamType::REAL);
 		return;
 	}
 
 	if (param->IsDefinable())
 		param->PrepareDefinable();
 
-	if (param->GetType() == TParam::P_COMBINED) {
-		param->SetSz4Type(TParam::SZ4_COMBINED);
+	if (param->GetType() == ParamType::COMBINED) {
+		param->SetSz4Type(Sz4ParamType::COMBINED);
 		param->SetDataType(TParam::INT);
 		return;
 	}
 
-	if (param->GetType() == TParam::P_DEFINABLE) {
-		param->SetSz4Type(TParam::SZ4_DEFINABLE);
+	if (param->GetType() == ParamType::DEFINABLE) {
+		param->SetSz4Type(Sz4ParamType::DEFINABLE);
 		param->SetDataType(TParam::DOUBLE);
 		return;
 	}
 
-	if (param->GetType() == TParam::P_LUA) {
-		param->SetSz4Type(TParam::SZ4_LUA);
+	if (param->GetType() == ParamType::LUA) {
+		param->SetSz4Type(Sz4ParamType::LUA);
 		param->SetDataType(TParam::DOUBLE);
 	}
 

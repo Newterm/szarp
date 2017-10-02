@@ -907,9 +907,9 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 	} else {
 		if (XMLCheckServerIP(xp_ctx, dev_num))
 			return 1;
-		m_unit_id = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetId() - L'0';
+		m_unit_id = cfg->GetDevice()->GetFirstUnit()->GetId() - L'0';
 		if (m_unit_id > 9) {
-			m_unit_id = 10 + (cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetId() - L'A');
+			m_unit_id = 10 + (cfg->GetDevice()->GetFirstUnit()->GetId() - L'A');
 		}
 	}
 
@@ -933,7 +933,7 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 
 	xmlXPathFreeContext(xp_ctx);
 
-	TParam *p = cfg->GetDevice()->GetFirstRadio()->
+	TParam *p = cfg->GetDevice()->
 		GetFirstUnit()->GetFirstParam();
 	ASSERT(p != NULL);
 	for (int i = 0; i < m_params_count; i++, p = p->GetNext()) {
@@ -941,7 +941,7 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 		m_params[i].prec = (int)lrint(exp10(p->GetPrec()));
 	}
 	if (m_sends_count > 0) { 
-		TSendParam *s = cfg->GetDevice()->GetFirstRadio()->
+		TSendParam *s = cfg->GetDevice()->
 			GetFirstUnit()->GetFirstSendParam();
 		ASSERT(s != NULL);
 		for (int i = 0; i < m_sends_count; i++, s = s->GetNext()) {
@@ -2112,9 +2112,9 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv))
 		return 1;
 	
-	mtcp = new ModbusTCP(cfg->GetDevice()->GetFirstRadio()->
+	mtcp = new ModbusTCP(cfg->GetDevice()->
 			GetFirstUnit()->GetParamsCount(),
-			cfg->GetDevice()->GetFirstRadio()->
+			cfg->GetDevice()->
 			GetFirstUnit()->GetSendParamsCount());
 	ASSERT(mtcp != NULL);
 	
@@ -2126,9 +2126,9 @@ int main(int argc, char *argv[])
 		printf("line number: %d\ndevice: %ls\nparams in: %d\nparams out %d\n", 
 				cfg->GetLineNumber(), 
 				cfg->GetDevice()->GetPath().c_str(), 
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount()				);
 		for (int i = 0; i < mtcp->m_params_count; i++)
 			printf("  IN:  addr %04x type %s prec %d\n",
@@ -2145,7 +2145,7 @@ int main(int argc, char *argv[])
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*m_cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-/** @file TCP server using observer pattern
+/** TCP server using observer pattern
  */
 
 class TcpServer;

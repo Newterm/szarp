@@ -25,6 +25,7 @@
 #include "protobuf/paramsvalues.pb.h"
 
 #include "szarp_config.h"
+#include "dmncfg.h"
 
 class zmqhandler {
 	zmq::socket_t m_sub_sock;
@@ -39,10 +40,7 @@ class zmqhandler {
 	void process_msg(szarp::ParamsValues& values);
 
 public:
-	template <typename Config, typename Device>
-	zmqhandler(
-		const Config& config,
-		const Device& device,
+	zmqhandler(DaemonConfigInfo* config,
 		zmq::context_t& context,
 		const std::string& sub_address,
 		const std::string& pub_address)
@@ -50,11 +48,11 @@ public:
 		m_sub_sock(context, ZMQ_SUB),
 		m_pub_sock(context, ZMQ_PUB) {
 
-		m_pubs_idx = config.GetFirstParamIpcInd(device);
+		m_pubs_idx = config->GetFirstParamIpcInd();
 
 		// Ignore units for sends
 		auto param_sent_no = 0;
-		for (const auto send_ipc_ind: config.GetSendIpcInds(device)) {
+		for (const auto send_ipc_ind: config->GetSendIpcInds()) {
 			m_send_map[send_ipc_ind] = param_sent_no++;
 		}
 
@@ -70,9 +68,6 @@ public:
 
 		m_sub_sock.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 	}
-
-	template <typename Config, typename Device, typename... Ts>
-	zmqhandler(const Config* config, const Device* device, Ts&&... args): zmqhandler(*config, *device, std::forward<Ts>(args)...) {}
 
 	template<class T, class V> void set_value(size_t i, const T& t, const V& value);
 	szarp::ParamValue& get_value(size_t i);

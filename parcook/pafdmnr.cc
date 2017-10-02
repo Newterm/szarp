@@ -563,7 +563,7 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	pafdmninfo = new DaemonClass((int)cfg->GetSingle(), (int)cfg->GetDiagno(), (int)cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount(), (char *) SC::S2A(cfg->GetDevice()->GetPath()).c_str());
+	pafdmninfo = new DaemonClass((int)cfg->GetSingle(), (int)cfg->GetDiagno(), (int)cfg->GetDevice()->GetFirstUnit()->GetParamsCount(), (char *) (cfg->GetDevice()->getAttribute("path").c_str()));
 
 	if (pafdmninfo->m_paramscount != NUMBER_OF_VALS){
 		sz_log(0, "amount of params must be %d",NUMBER_OF_VALS);
@@ -574,12 +574,12 @@ int main(int argc, char *argv[])
 	if (cfg->GetSingle()) {
 		printf("\
 line number: %d\n\
-device: %ls\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), pafdmninfo->m_paramscount);
+device: %s\n\
+params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c_str(), pafdmninfo->m_paramscount);
 	}
 	
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*cfg));
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
 		ipc = ipc_.release();
 	} catch(...) {
 		return 1;

@@ -1265,10 +1265,10 @@ bool WLKReader::read_record(std::ifstream& input_stream, boost::posix_time::ptim
 void WLKReader::pass_last_read_record_to_parcook(DaemonConfig *config, IPCHandler *ipc) {
     sz_log(5, "Passing read data to parcook");
 
-    if (config->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount() != read_params_number) {
-        sz_log(2, "Incorrect parameters number in configuration: got %d, expected %d", config->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount(), read_params_number);
+    if (config->GetDevice()->GetFirstUnit()->GetParamsCount() != read_params_number) {
+        sz_log(2, "Incorrect parameters number in configuration: got %d, expected %d", config->GetDevice()->GetFirstUnit()->GetParamsCount(), read_params_number);
 
-        for (int i = 0; i < config->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount(); i++)
+        for (int i = 0; i < config->GetDevice()->GetFirstUnit()->GetParamsCount(); i++)
             ipc->m_read[i] = SZARP_NO_DATA;
 
         return;
@@ -1572,7 +1572,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
 		IPCHandler *ipc;
 		try {
-			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(*config));
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(config));
 			ipc = ipc_.release();
 		} catch(...) {
             delete config;
@@ -1586,16 +1586,16 @@ When in SZARP line daemon mode, the following options are available:\n");
             sz_log(2, "Connected.");
 
         if (is_debug)
-            std::wcout << "WLK-reader daemon options:\n"
+            std::cout << "WLK-reader daemon options:\n"
                        << "\tParcook line number: " << config->GetLineNumber()
-                       << "\n\tDirectory to read from: " << config->GetDevice()->GetPath()
+                       << "\n\tDirectory to read from: " << config->GetDevice()->getAttribute("path")
                        << "\n\tParameters to report: " << ipc->m_params_count << "\n";
 
         sz_log(7, "Entering the main loop");
 
         while (true) {
-            std::wstringstream wlk_file_path;
-            wlk_file_path << config->GetDevice()->GetPath() << "/";
+            std::stringstream wlk_file_path;
+            wlk_file_path << config->GetDevice()->getAttribute("path") << "/";
 
             boost::gregorian::date_facet *facet(new boost::gregorian::date_facet("%Y-%m"));
             wlk_file_path.imbue(std::locale(wlk_file_path.getloc(), facet));
@@ -1604,9 +1604,9 @@ When in SZARP line daemon mode, the following options are available:\n");
 
             std::ifstream wlk_file;
 
-            sz_log(5, "Opening the data file %s", SC::S2A(wlk_file_path.str()).c_str());
+            sz_log(5, "Opening the data file %s", wlk_file_path.str().c_str());
 
-            wlk_file.open(SC::S2A(wlk_file_path.str()).c_str(), std::ios::in | std::ios::binary);
+            wlk_file.open(wlk_file_path.str().c_str(), std::ios::in | std::ios::binary);
 
             if (wlk_file.is_open()) {
                 WLKReader wlk_reader(config->GetXMLDevice());
@@ -1614,7 +1614,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                 if (wlk_reader.read_record(wlk_file, boost::posix_time::second_clock::local_time()))
                     wlk_reader.pass_last_read_record_to_parcook(config, ipc);
                 else
-                    for (int i = 0; i < config->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetParamsCount(); i++)
+                    for (int i = 0; i < config->GetDevice()->GetFirstUnit()->GetParamsCount(); i++)
                         ipc->m_read[i] = SZARP_NO_DATA;
                 
                 ipc->GoParcook();
