@@ -120,7 +120,6 @@ void Defdmn::executeScripts() {
 			if (connectToParcook) i->sendValueToParcook(m_ipc->m_read);
 		} catch (SzException &e) {
 			sz_log(0, "%s", e.what());
-			throw;
 		}
 	}
 }
