@@ -30,7 +30,6 @@ from logging.handlers import SysLogHandler
 import sys
 import signal
 from meanerbase import MeanerBase
-from heartbeat import create_hearbeat_param, create_meaner4_heartbeat_param
 
 FIRST_HEART_BEAT = 0
 NON_FIRST_HEART_BEAT = 1
@@ -52,9 +51,6 @@ class Meaner(MeanerBase):
 
 		self.saving_interval = interval
 		self.saving_time = 0
-
-		self.heartbeat_param = saveparam.SaveParam(create_hearbeat_param(), self.szbase_path)
-		self.meaner4_heartbeat_param = saveparam.SaveParam(create_meaner4_heartbeat_param(), self.szbase_path)
 
 		self.msgs = {}
 
@@ -101,10 +97,6 @@ class Meaner(MeanerBase):
 	def heartbeat(self, time):
 		if self.last_heartbeat is not None and self.last_heartbeat >= time:
 			return
-
-		self.heartbeat_param.process_value(
-			FIRST_HEART_BEAT if self.last_heartbeat is None else NON_FIRST_HEART_BEAT,
-			time)
 		self.last_heartbeat = time
 
 	def meaner4_next_heartbeat(self):
@@ -113,7 +105,6 @@ class Meaner(MeanerBase):
 	def meaner4_hearbeat(self, value):
 		value = 0 if self.last_heartbeat is None else 1
 		self.last_meaner4_heartbeat = int(time.time())
-		self.meaner4_heartbeat_param.process_value(value, self.last_meaner4_heartbeat)
 
 	def loop(self):
 		while not force_interrupt:
