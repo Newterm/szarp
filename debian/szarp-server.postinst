@@ -68,6 +68,10 @@ case "$1" in
 	fi;
 	PREFIX=$RET;
 
+	if [ ! -e /opt/szarp/iks/iks-server.ini ]; then
+		echo -e "base_live_cache_retention = 3600\n\n[ $PREFIX ]\ntype = szbase\nbase = $PREFIX\nhub_url = tcp://127.0.0.1:56662" > /opt/szarp/iks/iks-server.ini
+	fi
+
 	/opt/szarp/bin/config_deb Konfiguracja /opt/szarp/$PREFIX $PREFIX
 	ln -sf /opt/szarp/$PREFIX/szarp.cfg /etc/szarp/szarp.cfg
 	ln -sfn /opt/szarp/$PREFIX /etc/szarp/default
