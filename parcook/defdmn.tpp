@@ -143,7 +143,6 @@ public:
 
 		lua_pushnumber(lua, (double) sz4::getTimeNow<sz4::nanosecond_time_t>());
 		lua_pushnumber(lua, SZARP_PROBE_TYPE::PT_SEC10);
-		lua_pushnumber(lua, 1);
 
 		int ret = lua_pcall(lua, 3, 1, 0);
 		if (ret != 0) throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + lua_tostring(lua, -1));
