@@ -22,8 +22,6 @@ import lxml
 import lxml.etree
 import param
 
-LOG_PARAM_COUNT=250
-
 IPK_NAMESPACE='http://www.praterm.com.pl/SZARP/ipk'
 
 class IPK:
@@ -46,13 +44,5 @@ class IPK:
 
 		param_map = {}
 		for p in self.params:
-			param_map[p.param_name] = p	
-
-	def adjust_param_index(self, index):
-		if index < self.device_params_count:
-			return (False, index)
-		elif index < self.device_params_count + LOG_PARAM_COUNT:
-			return (True, None)
-		else:
-			return (False, index - LOG_PARAM_COUNT)
+			param_map[p.param_name] = p
 
