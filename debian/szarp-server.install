@@ -6,3 +6,4 @@
 ../services/prober.service /lib/systemd/system/
 ../services/probes-server.service /lib/systemd/system/
 ../services/szarp-server.target /lib/systemd/system/
+/usr/bin/szlist

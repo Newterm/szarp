@@ -1,0 +1,3 @@
+#!/bin/bash
+
+systemctl list-dependencies szarp-server.target
