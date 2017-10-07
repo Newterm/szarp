@@ -46,7 +46,7 @@
 
 using namespace std;
 
-TDevice::TDevice(TSzarpConfig *parent)
+TDevice::TDevice(TSzarpConfig *parent):
 	parentSzarpConfig(parent),
 	units(NULL)
 {}
@@ -101,7 +101,6 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 				if (u->parseXML(reader))
 					return 1;
 			}
-			break;
 		} else
 		if (xw.IsTag("device")) {
 			break;
@@ -109,6 +108,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		else {
 			xw.XMLErrorNotKnownTag("device");
 		}
+
+		if (!xw.NextTag()) return 1;
 	}
 
 	return 0;

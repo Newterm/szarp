@@ -103,7 +103,6 @@ std::wstring substituteWildcards(const std::wstring& name, const std::wstring& r
 
 class SzarpConfigInfo: public TAttribHolder {
 public:
-	virtual ~SzarpConfigInfo();
 	virtual const std::wstring& GetPrefix() const = 0;
 	virtual IPCParamInfo* getIPCParamByName(const std::wstring& name) const = 0;
 	virtual TParam* GetFirstParam() const = 0;
@@ -113,9 +112,6 @@ public:
 	virtual void SetConfigId(unsigned) = 0;
 	virtual size_t GetFirstParamIpcInd(const TDevice&) const = 0;
 	virtual const std::vector<size_t> GetSendIpcInds(const TDevice&) const = 0;
-
-	virtual TUnit* createUnit(TDevice* parent) = 0;
-	virtual TParam* createParam(TUnit*) = 0;
 };
 
 /** SZARP system configuration */
@@ -237,8 +233,8 @@ public:
 
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 
-	TUnit* createUnit(TDevice* parent) override;
-	TParam* createParam(TUnit* parent) override;
+	TUnit* createUnit(TDevice* parent);
+	TParam* createParam(TUnit* parent);
 
 	void UseNamesCache();
 
@@ -327,95 +323,6 @@ protected:
 	TUnit *units;
 };
 
-class UnitInfo: public TAttribHolder {
-public:
-	virtual ~UnitInfo() {}
-	virtual size_t GetSenderMsgType() const = 0;
-	virtual size_t GetParamsCount() const = 0;
-	virtual size_t GetSendParamsCount() const = 0;
-};
-
-
-/**
- * Description of communication unit.
- */
-class TUnit: public UnitInfo, public TNodeList<TUnit> {
-public:
-	TUnit(size_t unit_no, TDevice *parent): send_msg_type(unit_no + 256L), parentDevice(parent), params(NULL), sendParams(NULL) { }
-
-	// implementation of UnitInfo
-	/** @return number of params in unit */
-	size_t GetParamsCount() const override;
-	/** @return number of send params in unit */
-	size_t GetSendParamsCount() const override;
-	size_t GetSenderMsgType() const override {
-		return send_msg_type;
-	}
-
-	int GetUnitNo() const { return send_msg_type - 256L; }
-
-	/** @return id of unit (one ASCII character) */
-	// [deprecated]
-	wchar_t GetId() const;
-
-	/** @return pointer to first send param in unit, may be NULL */
-	TSendParam* GetFirstSendParam()
-	{
-		return sendParams;
-	}
-
-	/** @returns pointer to first param in unit, NULL if no one exists */
-	/**
-	 * Adds param to unit (at last position).
-	 * @param p param to add
-	 */
-	void AddParam(TParam* p);
-	void AddParam(TSendParam* sp);
-
-	/** @return pointer to containing device object */
-	TDevice* GetDevice() const;
-	/** @return pointer to main TSzarpConfig object */
-	SzarpConfigInfo* GetSzarpConfig() const;
-	TParam* GetFirstParam()
-	{
-		return params;
-	}
-
-	/**
-	 * Loads information parsed from XML file.
-	 * @param node XML node with device configuration info
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlNodePtr node);
-	/** Parses XML node (current set in reader)
-	 * @param reader XML reader set on "unit"
-	 * @return 0 on success, 1 on error
-	 */
-	int parseXML(xmlTextReaderPtr node);
-
-protected:
-	size_t send_msg_type;
-
-	TDevice *parentDevice;
-	TParam *params;
-	TSendParam *sendParams;
-};
-
-/**
- * Single input parameter description
- */
-
-#ifndef NO_LUA
-
-#if LUA_PARAM_OPTIMISE
-
-namespace LuaExec {
-	class Param;
-};
-
-#endif
-#endif
-
 class Sz4ParamInfo: public TAttribHolder {
 public:
 	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, LAST_DATA_TYPE = DOUBLE} DataType;
@@ -439,12 +346,130 @@ public:
 	virtual const std::wstring& GetName() const { return _name; }
 	virtual void SetName(const std::wstring& name) { _name = name; }
 
-	int GetPrec() const { return getAttribute<int>("prec", 0); }
-	void SetPrec(int prec) { storeAttribute("prec", std::to_string(prec)); }
+	virtual int GetPrec() const { return getAttribute<int>("prec", 0); }
+	virtual void SetPrec(int prec) { storeAttribute("prec", std::to_string(prec)); }
+
+	virtual unsigned int GetIpcInd() const = 0;
 
 protected:
 	std::wstring _name;
 };
+
+
+class SendParamInfo: public TAttribHolder {
+public:
+	virtual IPCParamInfo* GetParamToSend() const = 0;
+
+	/* constant value to be sent instead of real param value */
+	virtual int GetValue() const { return getAttribute<int>("value", SZARP_NO_DATA); }
+	virtual const std::wstring& GetParamName() const = 0;
+};
+
+
+class UnitInfo: public TAttribHolder {
+public:
+	virtual ~UnitInfo() {}
+	virtual size_t GetSenderMsgType() const = 0;
+	virtual size_t GetParamsCount() const = 0;
+	virtual size_t GetSendParamsCount() const = 0;
+
+	virtual std::vector<IPCParamInfo*> GetParams() const = 0;
+	virtual std::vector<SendParamInfo*> GetSendParams() const = 0;
+
+	virtual SzarpConfigInfo* GetSzarpConfig() const = 0;
+
+	virtual wchar_t GetId() const = 0;
+	virtual int GetUnitNo() const = 0;
+};
+
+
+/**
+ * Description of communication unit.
+ */
+class TUnit: public UnitInfo, public TNodeList<TUnit> {
+	static constexpr auto SHM_MSG_OFFSET = 256L;
+
+public:
+	TUnit(size_t unit_no, TDevice *parent, TSzarpConfig* ipk): parentSzarpConfig(ipk), send_msg_type(unit_no + TUnit::SHM_MSG_OFFSET), parentDevice(parent), params(NULL), sendParams(NULL) { }
+	~TUnit();
+
+	// implementation of UnitInfo
+	/** @return number of params in unit */
+	size_t GetParamsCount() const override;
+	/** @return number of send params in unit */
+	size_t GetSendParamsCount() const override;
+	size_t GetSenderMsgType() const override {
+		return send_msg_type;
+	}
+
+	int GetUnitNo() const override { return send_msg_type - TUnit::SHM_MSG_OFFSET; }
+
+	/** @return id of unit (one ASCII character) */
+	// [deprecated]
+	wchar_t GetId() const override;
+
+	/** @return pointer to first send param in unit, may be NULL */
+	TSendParam* GetFirstSendParam() const
+	{
+		return sendParams;
+	}
+
+	std::vector<IPCParamInfo*> GetParams() const override;
+
+	std::vector<SendParamInfo*> GetSendParams() const override;
+
+	/** @returns pointer to first param in unit, NULL if no one exists */
+	/**
+	 * Adds param to unit (at last position).
+	 * @param p param to add
+	 */
+	void AddParam(TParam* p);
+	void AddParam(TSendParam* sp);
+
+	/** @return pointer to containing device object */
+	TDevice* GetDevice() const;
+	/** @return pointer to main TSzarpConfig object */
+	SzarpConfigInfo* GetSzarpConfig() const override;
+	TParam* GetFirstParam() const
+	{
+		return params;
+	}
+
+	/**
+	 * Loads information parsed from XML file.
+	 * @param node XML node with device configuration info
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlNodePtr node);
+	/** Parses XML node (current set in reader)
+	 * @param reader XML reader set on "unit"
+	 * @return 0 on success, 1 on error
+	 */
+	int parseXML(xmlTextReaderPtr node);
+
+protected:
+	TSzarpConfig* parentSzarpConfig;
+	size_t send_msg_type;
+
+	TDevice *parentDevice;
+	TParam *params;
+	TSendParam *sendParams;
+};
+
+/**
+ * Single input parameter description
+ */
+
+#ifndef NO_LUA
+
+#if LUA_PARAM_OPTIMISE
+
+namespace LuaExec {
+	class Param;
+};
+
+#endif
+#endif
 
 enum class FormulaType {
 	NONE, RPN, DEFINABLE
@@ -470,6 +495,7 @@ public:
 
 public:
 	void PrepareDefinable();
+	unsigned int GetIpcInd() const;
 
 	/** @return pointer to parent unit object, NULL for defined params */
 	TUnit* GetParentUnit() { return _parentUnit; }
@@ -478,16 +504,12 @@ public:
 
 	TSzarpConfig *GetSzarpConfig() const;
 
-	/** @return param's ipc index (is equal to index among all params, including
-	 * defined and drawdefinable) */
-	unsigned int GetIpcInd();
-
 	const std::wstring& GetFormula() { return _formula; }
 	double calculateConst(const std::wstring& _formula);
 
 	void SetFormula(const std::wstring& f, FormulaType type = FormulaType::RPN);
-	const std::wstring&  GetDrawFormula() throw(TCheckException);
-	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr) throw(TCheckException);
+	const std::wstring&  GetDrawFormula();
+	std::wstring GetParcookFormula(bool ignoreIndexes = false, std::vector<std::wstring>* ret_params_list = nullptr);
 
 	ParamType GetType() { return _param_type; }
 	FormulaType GetFormulaType() const { return _ftype; }
@@ -1082,18 +1104,16 @@ public:
  */
 typedef enum {PROBE, MIN, MIN10, HOUR, DAY} TProbeType;
 
+
 /**
  * Single output parameter descritpion.
  */
-class TSendParam {
+class TSendParam: public SendParamInfo, public TNodeList<TSendParam> {
 public:
 	TSendParam(TUnit *parent) :
 		parentUnit(parent), configured(0),
-		paramName(L""), value(0), repeat(0), type(PROBE),
-		sendNoData(0), next(NULL)
+		paramName(L""), type(PROBE)
 	{ }
-	/** Delete whole list. */
-	~TSendParam();
 	/**
 	 * Initializes param with data. Sets 'configured' attribute to 1.
 	 * @param paramName name of param to send (NULL if constant will be
@@ -1117,20 +1137,15 @@ public:
 	}
 	/** @return name of param to send, empty string if constant value should be
 	 * sent */
-	const std::wstring& GetParamName() const
+	const std::wstring& GetParamName() const override
 	{
 		return paramName;
 	}
-	/** @return constant value to send
-	 * @see GetParamName */
-	int GetValue()
-	{
-		return value;
-	}
+
 	/** @return repeat rate for param */
 	int GetRepeatRate()
 	{
-		return repeat;
+		return getAttribute<int>("repeat", 1);
 	}
 	/** @return type of data to send (probe, min etc.) */
 	TProbeType GetProbeType()
@@ -1140,29 +1155,28 @@ public:
 	/** @return 1 if SZARP_NO_DATA value should be send, 0 if not */
 	int GetSendNoData()
 	{
-		return sendNoData;
+		return hasAttribute("send_no_data")? 1 : 0;
 	}
-	/** @return next list element, NULL if current is last */
-	TSendParam* GetNext()
-	{
-		return next;
+
+	IPCParamInfo* GetParamToSend() const override {
+		if (hasAttribute("param")) return nullptr;
+		if (paramName.empty() || parentUnit == nullptr) return nullptr;
+		return parentUnit->GetSzarpConfig()->getIPCParamByName(paramName);
 	}
-	/** Append param to the end of params list.
-	 * @param p param to append
-	 * @return pointer to appended element */
-	TSendParam* Append(TSendParam* p);
+
 	/**
 	 * Loads information parsed from XML file.
 	 * @param node XML node with device configuration info
 	 * @return 0 on success, 1 on error
 	 */
-	int parseXML(xmlNodePtr node);
+	int parseXML(xmlNodePtr node) override;
 	/**
 	 * Loads information parsed from XML file.
 	 * @param reader XML reader set on "send"
 	 * @return 0 on success, 1 on error
 	 */
-	int parseXML(xmlTextReaderPtr reader);
+	int parseXML(xmlTextReaderPtr reader) override;
+	int processAttributes() override;
 protected:
 	TUnit *parentUnit;
 			/**< Pointer to parent TUnit object. */
@@ -1170,14 +1184,8 @@ protected:
 			  0 if it's empty */
 	std::wstring paramName;
 			/**< Name of input param. empty for constant values. */
-	int value;	/**< Value to send if param attribute is NULL. */
-	int repeat;	/**< Repeat rate for param. */
 	TProbeType type;
 			/**< Type of data to send. */
-	int sendNoData; /**< Should we send SZARP_NO_DATA if param value is
-			  not available? */
-	TSendParam* next;
-			/**< Next list element. */
 };
 
 /**

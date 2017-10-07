@@ -55,7 +55,7 @@ public:
 	void GoParcook();
 
 protected:
-	const std::vector<UnitInfo*>& units;
+	const std::vector<UnitInfo*> units;
 
 	int m_shm_d;
 	int m_sem_d;

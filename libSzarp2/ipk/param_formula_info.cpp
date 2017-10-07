@@ -25,7 +25,7 @@
 #include "szbase/szbname.h"
 
 unsigned int
-ParamFormulaInfo::GetIpcInd()
+ParamFormulaInfo::GetIpcInd() const
 {
     SzarpConfigInfo *s = _parentSzarpConfig;
     assert(s != NULL);
@@ -77,7 +77,7 @@ ParamFormulaInfo::~ParamFormulaInfo() {
 }
 
 const std::wstring&
-ParamFormulaInfo::GetDrawFormula() throw(TCheckException)
+ParamFormulaInfo::GetDrawFormula()
 {
 	if( _ftype != FormulaType::DEFINABLE || _formula.empty() ) {
 		_parsed_formula.clear();
@@ -428,7 +428,7 @@ ParamFormulaInfo::PrepareDefinable()
 }
 
 std::wstring
-ParamFormulaInfo::GetParcookFormula(bool ignoreIndexes, std::vector<std::wstring>* ret_params_list) throw(TCheckException)
+ParamFormulaInfo::GetParcookFormula(bool ignoreIndexes, std::vector<std::wstring>* ret_params_list)
 {
 	if( _ftype != FormulaType::RPN )
 		return std::wstring();

@@ -22,7 +22,27 @@ int TAttribHolder::parseXML(xmlNodePtr node) {
 }
 
 int TAttribHolder::parseXML(xmlTextReaderPtr reader) {
-	return parseXML(xmlTextReaderCurrentNode(reader));
+	return TAttribHolder::parseXML(xmlTextReaderCurrentNode(reader));
+}
+
+int TAttribHolder::parseXML(const boost::property_tree::wptree& tree) {
+	auto attrs = tree.get_child(L"<xmlattr>");
+	for (const auto& attr: attrs) {
+		auto attr_name = SC::S2A(attr.first);
+		size_t sep_pos = attr_name.find_first_of(":");
+		if (sep_pos != std::string::npos) {
+			auto ns_prefix = attr_name.substr(0, sep_pos);
+			if (ns_prefix == "extra") {}
+			else if (ns_prefix == "modbus" || ns_prefix == "iec" || ns_prefix == "k601" || ns_prefix ==  "exec" || ns_prefix == "mbus") {
+				//deprecated prefixes
+				attr_name = "extra"+attr_name.substr(sep_pos);
+			}
+		}
+
+		storeAttribute(attr_name, SC::S2A(attr.second.data()));
+	}
+
+	return processAttributes();
 }
 
 template <>

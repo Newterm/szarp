@@ -70,9 +70,9 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("param")) {
 			if (xw.IsBeginTag() || ( xw.IsEndTag() && !xw.IsEmptyTag()) ) {
 				if (params == NULL)
-					p = params = GetSzarpConfig()->createParam(this);
+					p = params = parentSzarpConfig->createParam(this);
 				else
-					p = p->Append(GetSzarpConfig()->createParam(this));
+					p = p->Append(parentSzarpConfig->createParam(this));
 				if (p->parseXML(reader))
 					return 1;
 			}
@@ -111,9 +111,9 @@ int TUnit::parseXML(xmlNodePtr node)
 	for (auto ch = node->children; ch; ch = ch->next) {
 		if (!strcmp((char *)ch->name, "param")) {
 			if (params == NULL)
-				p = params = GetSzarpConfig()->createParam(this);
+				p = params = parentSzarpConfig->createParam(this);
 			else
-				p = p->Append(GetSzarpConfig()->createParam(this));
+				p = p->Append(parentSzarpConfig->createParam(this));
 			if (p->parseXML(ch))
 				return 1;
 		} else if (!strcmp((char *)ch->name, "send")) {
@@ -175,12 +175,30 @@ wchar_t TUnit::GetId() const
 	return SC::A2S(getAttribute("id"))[0];
 }
 
+std::vector<IPCParamInfo*> TUnit::GetParams() const {
+	std::vector<IPCParamInfo*> ret;
+	ret.reserve(GetParamsCount());
+	for (auto p = GetFirstParam(); p != nullptr; p = p->GetNext()) {
+		ret.push_back(p);
+	}
+
+	return ret;
+}
+
+std::vector<SendParamInfo*> TUnit::GetSendParams() const {
+	std::vector<SendParamInfo*> ret;
+	ret.reserve(GetSendParamsCount());
+	for (auto p = GetFirstSendParam(); p != nullptr; p = p->GetNext()) {
+		ret.push_back(p);
+	}
+
+	return ret;
+}
+
+
 
 TUnit::~TUnit()
 {
-	auto next = GetNext();
-	if (next) delete next;
-
 	delete params;
 	delete sendParams;
 }

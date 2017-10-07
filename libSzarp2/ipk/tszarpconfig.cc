@@ -167,11 +167,10 @@ TSzarpConfig::~TSzarpConfig()
 	if( drawdefinable ) delete drawdefinable;
 	if( seasons )       delete seasons      ;
 }
-SzarpConfigInfo::~SzarpConfigInfo() {}
 
 TUnit* TSzarpConfig::createUnit(TDevice* parent)
 {
-	return new TUnit(unit_counter++, parent);
+	return new TUnit(unit_counter++, parent, this);
 }
 
 const std::wstring&
@@ -342,7 +341,6 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 
     unsigned char *c = NULL;
     int i;
-    int ret = 1;
     TDevice *td = NULL;
     TParam *p = NULL;
     xmlNodePtr node, ch;
@@ -419,9 +417,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     if (seasons == NULL)
 	    seasons = new TSSeason();
 
-    ret = 0;
-
-	return ret;
+	return 0;
 }
 
 int

@@ -233,7 +233,7 @@ protected:
 
 	void InitUnits(TUnit* unit);
 	
-private:
+protected:
 	IPCInfo ipc_info;
 
 	std::string m_daemon_name;	/**< name of daemon, used for logging and
