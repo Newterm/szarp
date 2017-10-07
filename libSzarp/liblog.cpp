@@ -123,22 +123,23 @@ void sz_logdone(void) {
 }
 
 void sz_log(int level, const char * msg_format, ...) {
-	std::atomic_signal_fence(std::memory_order_relaxed);
-	std::lock_guard<std::mutex> lock(log_mutex);
 	va_list fmt_args;
 	va_start(fmt_args, msg_format);
-
-	char str[256];
-	vsnprintf(str, 255, msg_format, fmt_args);
-
-	szlog::log() << szlog::PriorityForLevel(level) << std::string(str) << szlog::flush;
-
+	vsz_log(level, msg_format, fmt_args);
 	va_end(fmt_args);
 }
 
 
 void vsz_log(int level, const char * msg_format, va_list fmt_args) {
-	sz_log(level, msg_format, fmt_args);
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> lock(log_mutex);
+
+	char *l;
+	if (vasprintf(&l, msg_format, fmt_args) != -1) {
+		szlog::log() << szlog::PriorityForLevel(level) << std::string(std::move(l)) << szlog::flush;
+	}
+
+	if (l) free(l);
 }
 
 namespace szlog {

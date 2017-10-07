@@ -24,7 +24,13 @@ public:
 			("base,b", po::value<std::string>(), "Base to read configuration from")
 			("override,D", po::value<std::vector<std::string>>()->multitoken(), "Override default arguments (-Dparam=val)");
 
-		return desc;
+		po::options_description log_desc{"Logger Options"};
+		log_desc.add_options()
+			("debug,d", po::value<unsigned int>(), "Enables verbose logging")
+			("log_file", po::value<std::string>(), "Specifies file to log into")
+			("logger", po::value<std::string>(), "Specifies logger type (journald, file, cout)");
+
+		return desc.add(log_desc);
 	}
 
 	void parse(const po::parsed_options& parsed_opts, const po::variables_map& vm) const override {
@@ -35,19 +41,6 @@ public:
 	}
 };
 
-
-class LoggerOptions: public ArgsHolder {
-public:
-	po::options_description get_options() const override {
-		po::options_description desc{"Options"};
-		desc.add_options()
-			("debug,d", po::value<unsigned int>(), "Enables verbose logging")
-			("log_file", po::value<std::string>(), "Enables verbose logging")
-			("logger", po::value<std::string>(), "Specifies logger type (journald, file, cout)");
-
-		return desc;
-	}
-};
 
 class IgnoreRemainigOptions: public ArgsHolder {
 public:
@@ -104,11 +97,16 @@ class CmdLineParser {
 
 public:
 	CmdLineParser(const std::string& name): name(name), vm() {}
+	CmdLineParser(CmdLineParser&&) = default;
+	CmdLineParser& operator=(CmdLineParser&&) = default;
+
+	CmdLineParser(const CmdLineParser&) = default;
+	CmdLineParser& operator=(const CmdLineParser&) = default;
 
 	template <typename... As>
 	void parse(int argc, const char ** argv, const ArgsHolder& main_args, const As&... as);
 
-	template <typename T>
+	template <typename T = std::string>
 	boost::optional<T> get(const std::string& arg) const { if (vm.count(arg) > 0) return vm[arg].as<T>(); else return boost::none; }
 
 	bool has(const std::string& arg) const { return vm.count(arg) != 0; }
