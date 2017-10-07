@@ -60,6 +60,35 @@ void set_param_time(szarp::ParamValue* value, const sz4::nanosecond_time_t& t) {
 
 }
 
+zmqhandler::zmqhandler(DaemonConfigInfo* config,
+	zmq::context_t& context,
+	const std::string& sub_address,
+	const std::string& pub_address)
+	:
+	m_sub_sock(context, ZMQ_SUB),
+	m_pub_sock(context, ZMQ_PUB) {
+
+	m_pubs_idx = config->GetFirstParamIpcInd();
+
+	// Ignore units for sends
+	auto param_sent_no = 0;
+	for (const auto send_ipc_ind: config->GetSendIpcInds()) {
+		m_send_map[send_ipc_ind] = param_sent_no++;
+	}
+
+	m_send.resize(param_sent_no);
+
+	m_pub_sock.connect(pub_address.c_str());
+	if (m_send.size())
+		m_sub_sock.connect(sub_address.c_str());
+
+	int zero = 0;
+	m_pub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+	m_sub_sock.setsockopt(ZMQ_LINGER, &zero, sizeof(zero));
+
+	m_sub_sock.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+}
+
 void zmqhandler::process_msg(szarp::ParamsValues& values) {
 	for (int i = 0; i < values.param_values_size(); i++) {
 		const szarp::ParamValue& param_value = values.param_values(i);

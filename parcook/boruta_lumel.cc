@@ -272,7 +272,7 @@ int lumel_serial_client::configure(TUnit* unit, short* read, short *send, serial
 
 		std::string _addr = param->getAttribute<std::string>("extra:address", "");
 		if (_addr.empty()) {
-		    m_log.log(0, "Invalid address attribute in param element at line: %ls", param->GetName().c_str());
+		    m_log.log(0, "Invalid address attribute in param: %ls", param->GetName().c_str());
 		    return 1;
 		}
 

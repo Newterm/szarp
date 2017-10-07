@@ -534,7 +534,7 @@ int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_
 	for (auto param = unit->GetFirstParam(); param != nullptr; param = param->GetNext(), ++i) {
 		std::string _pnu = param->getAttribute<std::string>("extra:parameter-number", "");
 		if (_pnu.empty()) {
-			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param no %d", i);
+			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param %ls", param->GetName().c_str());
 			return 1;
 		}
 
@@ -543,13 +543,13 @@ int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_
 
 		std::string _prec = param->getAttribute<std::string>("extra:prec", "");
 		if (_prec.empty()) {
-			m_log.log(0, "Invalid extra:prec attribute in param element no %d", i);
+			m_log.log(0, "Invalid extra:prec attribute in param %ls", param->GetName().c_str());
 			return 1;
 		}
 
 		const int l = boost::lexical_cast<int>(_prec);
 		if (l < 0 || ( l > SCALING_BOUNDARY && l != SCALING_PREC)) {
-			m_log.log(0, "Invalid extra:prec attribute value: %d in param no %d", l, i);
+			m_log.log(0, "Invalid extra:prec attribute value: %d in param %ls", l, param->GetName().c_str());
 			m_log.log(0, "If conversion-index is negative put it absolute value to prec attribute (not extra:prec)");
 			return 1;
 		}
@@ -566,7 +566,7 @@ int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_
 		std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 		if (val_op.empty()) {
 			if (m_registers.find(pnu) != m_registers.end()) {
-				m_log.log(0, "Already configured register with extra:parameter-number (%hd) in param element no %d", pnu, i);
+				m_log.log(0, "Already configured register with extra:parameter-number (%hd) in param %ls", pnu, param->GetName().c_str());
 				return 1;
 			}
 			fc_register *reg = new fc_register(pnu, &m_log);
@@ -590,7 +590,7 @@ int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_
 				m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 			}
 			else {
-				m_log.log(0, "Unsupported extra:val_op attribute value - %s, param %d", val_op.c_str(), i);
+				m_log.log(0, "Unsupported extra:val_op attribute value - %s, param %ls", val_op.c_str(), param->GetName().c_str());
 				return 1;
 			}
 		}

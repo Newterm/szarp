@@ -150,9 +150,8 @@ iecdmn_LDADD = $(LDADD)
 prodmn_SOURCES = prodmn.cc
 prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-pythondmn_SOURCES = pythondmn.cc
-pythondmn_LDADD = $(LDADD) cfgdealer_handler.cpp @XML_LIBS@ -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS)
-pythondmn_LDFLAGS = $(AM_CPPFLAGS) -I/usr/include/libxml2 
+pythondmn_SOURCES = pythondmn.cc cfgdealer_handler.cpp
+pythondmn_LDADD = -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS) $(LDADD)
 
 snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
 snap7dmn_LDADD = $(LDADD) -lsnap7
