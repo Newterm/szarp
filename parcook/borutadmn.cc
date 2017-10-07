@@ -117,6 +117,8 @@
 #include "borutadmn.h"
 #include "daemonutils.h"
 
+#include "cfgdealer_handler.h"
+
 bool g_debug = false;
 
 static const time_t RECONNECT_ATTEMPT_DELAY = 10;
@@ -161,7 +163,7 @@ int set_nonblock(int fd) {
 	return 0;
 }
 
-int get_serial_port_config(TUnit* u, serial_port_configuration &spc) {
+int get_serial_port_config(UnitInfo* u, serial_port_configuration &spc) {
 	std::string path = u->getAttribute("extra:path");
 	spc.path = path;
 
@@ -196,7 +198,7 @@ int get_serial_port_config(TUnit* u, serial_port_configuration &spc) {
 		return 1;
 	}
 
-	std::string char_size = u->getAttribute<std::string>("char_size", "8");
+	std::string char_size = u->getAttribute<std::string>("extra:char_size", "8");
 	if (char_size == "8") {
 		dolog(10, "Serial port configuration, setting 8 bit char size");
 		spc.char_size = serial_port_configuration::CS_8;
@@ -405,7 +407,7 @@ void tcp_proxy_2_serial_client::starting_new_cycle() {
 	m_serial_client->starting_new_cycle();
 }
 
-int tcp_proxy_2_serial_client::configure(TUnit* unit, short* read, short *send) {
+int tcp_proxy_2_serial_client::configure(UnitInfo* unit, short* read, short *send) {
 	serial_port_configuration spc;
 	if (get_serial_port_config(unit, spc)) {
 		dolog(1, "tcp_proxy_2_serial_client: failed to get serial port settings for tcp_proxy_2_serial_client");
@@ -439,11 +441,11 @@ protocols::protocols() {
 	m_serial_client_factories["fc"] = create_fc_serial_client;
 }
 
-std::string protocols::get_proto_name(TUnit* u) {
+std::string protocols::get_proto_name(UnitInfo* u) {
 	return u->getAttribute<std::string>("extra:proto");
 }
 
-tcp_client_driver* protocols::create_tcp_client_driver(TUnit* u) {
+tcp_client_driver* protocols::create_tcp_client_driver(UnitInfo* u) {
 	std::string proto = get_proto_name(u);
 	if (proto.empty())
 		return NULL;
@@ -466,7 +468,7 @@ tcp_client_driver* protocols::create_tcp_client_driver(TUnit* u) {
 	}
 }
 
-serial_client_driver* protocols::create_serial_client_driver(TUnit* u) {
+serial_client_driver* protocols::create_serial_client_driver(UnitInfo* u) {
 	std::string proto = get_proto_name(u);
 	if (proto.empty())
 		return NULL;
@@ -478,7 +480,7 @@ serial_client_driver* protocols::create_serial_client_driver(TUnit* u) {
 	return i->second();
 }
 
-tcp_server_driver* protocols::create_tcp_server_driver(TUnit* u) {
+tcp_server_driver* protocols::create_tcp_server_driver(UnitInfo* u) {
 	std::string proto = get_proto_name(u);
 	if (proto.empty())
 		return NULL;
@@ -490,7 +492,7 @@ tcp_server_driver* protocols::create_tcp_server_driver(TUnit* u) {
 	return i->second();
 }
 
-serial_server_driver* protocols::create_serial_server_driver(TUnit* u) {
+serial_server_driver* protocols::create_serial_server_driver(UnitInfo* u) {
 	std::string proto = get_proto_name(u);
 	if (proto.empty())
 		return NULL;
@@ -623,11 +625,8 @@ void client_manager::connection_established_cb(size_t connection) {
 	schedule_timer(connection);
 }
 
-int client_manager::build_timer(TUnit* u) {
-	if (!u->hasAttribute("extra:inter-unit-delay"))
-		return 1;
-
-	int inter_unit_delay = u->getAttribute<int>("extra:inter-unit-delay");
+int client_manager::build_timer(UnitInfo* u) {
+	int inter_unit_delay = u->getAttribute<int>("extra:inter-unit-delay", 0);
 
 	dolog(2, "Inter unit query delay %d", inter_unit_delay);
 
@@ -678,10 +677,10 @@ void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
 	evtimer_add(&timer, &tv); 
 }
 				
-int tcp_client_manager::get_address(TUnit* u, std::pair<std::string, short> &addr) {
+int tcp_client_manager::get_address(UnitInfo* u, std::pair<std::string, short> &addr) {
 	try {
-		addr.first = u->getAttribute<std::string>("tcp-address");
-		addr.second = u->getAttribute<short>("tcp-port");
+		addr.first = u->getAttribute<std::string>("extra:tcp-address");
+		addr.second = u->getAttribute<short>("extra:tcp-port");
 	} catch (...) {
 		return 1;
 	}
@@ -780,7 +779,7 @@ void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
-int tcp_client_manager::configure(TUnit *unit, short* read, short* send, protocols& _protocols) {
+int tcp_client_manager::configure(UnitInfo* unit, short* read, short* send, protocols& _protocols) {
 	std::pair<std::string, short> addr;
 	if (get_address(unit, addr))
 		return 1;
@@ -958,7 +957,7 @@ void serial_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 			m_serial_connections.at(conn_no).fd);
 }
 
-int serial_client_manager::configure(TUnit *unit, short* read, short* send, protocols &_protocols) {
+int serial_client_manager::configure(UnitInfo* unit, short* read, short* send, protocols &_protocols) {
 	serial_port_configuration spc;
 	if (get_serial_port_config(unit, spc))
 		return 1;
@@ -1007,7 +1006,7 @@ void serial_client_manager::connection_error_cb(serial_connection* c) {
 	client_manager::connection_error_cb(c->conn_no);		
 }
 
-int serial_server_manager::configure(TUnit *unit, short* read, short* send, protocols &_protocols) {
+int serial_server_manager::configure(UnitInfo* unit, short* read, short* send, protocols &_protocols) {
 	serial_port_configuration spc;
 	if (get_serial_port_config(unit, spc))
 		return 1;
@@ -1114,7 +1113,7 @@ void tcp_server_manager::close_connection(struct bufferevent* bufev) {
 	bufferevent_free(bufev);
 }
 
-int tcp_server_manager::configure(TUnit *unit, short* read, short* send, protocols &_protocols) {
+int tcp_server_manager::configure(UnitInfo* unit, short* read, short* send, protocols &_protocols) {
 	tcp_server_driver* driver = _protocols.create_tcp_server_driver(unit);
 	if (driver == NULL)		
 		return 1;
@@ -1207,8 +1206,7 @@ do_accept:
 
 int boruta_daemon::configure_ipc() {
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
-		m_ipc = ipc_.release();
+		m_ipc = new IPCHandler(m_cfg);
 	} catch(...) {
 		return 1;
 	}
@@ -1230,14 +1228,12 @@ int boruta_daemon::configure_events() {
 
 int boruta_daemon::configure_units() {
 	int i, ret;
-	TUnit* u;
+	UnitInfo* u;
 
 	short *read = m_ipc->m_read;
 	short *send = m_ipc->m_send;
 	protocols _protocols;
-	for (i = 0, u = m_cfg->GetDevice()->GetFirstUnit();
-			u;
-			++i, u = u->GetNext()) {
+	for (auto u: m_cfg->GetUnits()) {
 		std::string mode = u->getAttribute<std::string>("extra:mode");
 
 		bool server;
@@ -1285,14 +1281,51 @@ struct evdns_base* boruta_daemon::get_evdns_base() {
 	return m_evdns_base;
 }
 
+class BorutadmnArgs: public ArgsHolder {
+public:
+	po::options_description get_options() const override {
+		po::options_description desc{"Pythondmn arguments"};
+		desc.add_options()
+			("single,s", "Forbid writing via IPC")
+			("use-cfgdealer", "Enables configuring via config dealer")
+			("cfgdealer-address", po::value<std::string>()->default_value("tcp://localhost:5555"), "Config dealer's address")
+			("device-no", po::value<unsigned int>(), "Device number in config file")
+			("device-path", po::value<std::string>(), "Device path (ip address or serial dev file)");
+
+		return desc;
+	}
+
+	void add_positional_options(po::positional_options_description& p_opts) const override {
+		p_opts.add("device-no", 1);
+		p_opts.add("device-path", 1);
+	}
+
+	void parse(const po::parsed_options&, const po::variables_map& vm) const override {
+		if (vm.count("device-no") == 0) throw std::runtime_error("Device number not specified! Cannot process!");
+		if (vm.count("device-path") == 0) throw std::runtime_error("Device path not specified! Cannot process!");
+	}
+};
+
+
 int boruta_daemon::configure(int *argc, char *argv[]) {
 	if (int ret = configure_events())
 		return ret;
 
-	m_cfg = new DaemonConfig("borutadmn");
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
-		return 101;
-	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
+	ArgsManager args_mgr("borutadmn");
+	args_mgr.parse(*argc, argv, DefaultArgs(), BorutadmnArgs());
+	args_mgr.initLibpar();
+
+	if (args_mgr.has("use-cfgdealer")) {
+		m_cfg = new ConfigDealerHandler(args_mgr);
+		g_debug = m_cfg->GetSingle();
+	} else {
+		auto d_cfg = new DaemonConfig("borutadmn");
+		if (d_cfg->Load(args_mgr, nullptr, 0, m_event_base))
+			return 101;
+		m_cfg = d_cfg;
+		g_debug = d_cfg->GetDiagno() || d_cfg->GetSingle();
+	}
+
 
 	if (configure_ipc())
 		return 102;

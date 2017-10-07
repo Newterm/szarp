@@ -187,9 +187,10 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 
 	try {
-		if (m_read != nullptr)
+		if (m_read != nullptr) {
 			m_read[index] = py::extract<int>(val);
-		sz_log(9, "ipc::set_read setting value %zu to %d", index, m_read[index]);
+			sz_log(9, "ipc::set_read setting value %zu to %d", index, m_read[index]);
+		}
 	} catch (py::error_already_set const &) {
 		sz_log(9, "ipc::set_read extract error, setting %zu to NO_DATA", index);
 		if (m_read != nullptr)
@@ -453,7 +454,7 @@ public:
 		desc.add_options()
 			("single,s", "Forbid writing via IPC")
 			("use-cfgdealer", "Enables configuring via config dealer")
-			("cfgdealer-address", po::value<std::string>()->default_value("localhost:5555"), "Config dealer's address")
+			("cfgdealer-address", po::value<std::string>()->default_value("tcp://localhost:5555"), "Config dealer's address")
 			("no-parcook", "Do not connect to parcook.")
 			("device-no", po::value<unsigned int>(), "Device number in config file")
 			("device-path", po::value<std::string>()->default_value("/dev/null"), "Device path attribute");

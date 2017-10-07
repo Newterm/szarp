@@ -190,7 +190,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc);
+	virtual int configure(UnitInfo* unit, short* read, short *send, serial_port_configuration& spc);
 	static void timeout_cb(int fd, short event, void *fp210_driver);
 };
 
@@ -314,7 +314,7 @@ void fp210_driver::scheduled(struct bufferevent* bufev, int fd) {
 	send_flow_query(bufev);
 }
 
-int fp210_driver::configure(TUnit* unit, short* read, short *send, serial_port_configuration &spc) {
+int fp210_driver::configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc) {
 	if (!unit->hasAttribute("extra:id"))
 		return 1;
 	m_id = unit->getAttribute<int>("extra:id");
@@ -325,9 +325,10 @@ int fp210_driver::configure(TUnit* unit, short* read, short *send, serial_port_c
 		return 1;
 	}
 	m_read = read;
-	TParam *fp = unit->GetFirstParam();
-	m_flow_prec = pow10(fp->GetPrec());
-	m_sum_prec = pow10(fp->GetNext()->GetPrec());
+
+	auto fp = unit->GetParams().begin();
+	m_flow_prec = pow10((*fp)->GetPrec());
+	m_sum_prec = pow10((*(++fp))->GetPrec());
 
 	evtimer_set(&m_timer, timeout_cb, this);
 	event_base_set(m_event_base, &m_timer);

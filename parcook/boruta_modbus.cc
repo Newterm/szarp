@@ -455,15 +455,15 @@ protected:
 	int get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
 	int get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
 
-	virtual void pushValOp(parcook_modbus_val_op* op, IPCParamInfo* param);
+	virtual void pushValOp(parcook_modbus_val_op* op, TAttribHolder* param);
 
-	int configure_int_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_bcd_register(IPCParamInfo* param, TSendParam* sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_long_float_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_double_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal2_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal3_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_param(SzarpConfigInfo *sc, IPCParamInfo* p, TSendParam *sp, bool send);
+	int configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_param(TAttribHolder*, IPCParamInfo* param, bool send);
 
 	const char* error_string(const unsigned char& error);
 
@@ -485,8 +485,8 @@ public:
 
 	bool register_val_expired(time_t time);
 	virtual int initialize();
-	int configure_unit(TUnit* u);
-	int configure(TUnit *unit, short *read, short *send);
+	int configure_unit(UnitInfo* u);
+	int configure(UnitInfo* unit, short *read, short *send);
 	void finished_cycle();
 	void starting_new_cycle();
 };
@@ -519,7 +519,7 @@ public:
 	tcp_server();
 	const char* driver_name() { return "modbus_tcp_server"; }
 	virtual void frame_parsed(TCPADU &adu, struct bufferevent* bufev);
-	virtual int configure(TUnit* unit, short *read, short *send);
+	virtual int configure(UnitInfo* unit, short *read, short *send);
 	virtual int initialize();
 	virtual void connection_error(struct bufferevent* bufev);
 	virtual void data_ready(struct bufferevent* bufev);
@@ -578,7 +578,7 @@ protected:
 	virtual void terminate_connection() = 0;
 
 public:
-	int configure(TUnit *unit, short *read, short *send);
+	int configure(UnitInfo* unit, short *read, short *send);
 	void pdu_received(unsigned char u, PDU &pdu);
 	virtual int initialize();
 };
@@ -600,7 +600,7 @@ public:
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void finished_cycle();
 	virtual void starting_new_cycle();
-	virtual int configure(TUnit* unit, short* read, short *send);
+	virtual int configure(UnitInfo* unit, short* read, short *send);
 	virtual void timeout();
 };
 
@@ -637,7 +637,7 @@ protected:
 	virtual void write_timer_event();
 public:
 	serial_parser(serial_connection_handler *serial_handler, driver_logger* log);
-	virtual int configure(TUnit* unit, serial_port_configuration &spc) = 0;
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc) = 0;
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
 	virtual void write_finished(struct bufferevent *bufev);
@@ -671,7 +671,7 @@ public:
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
-	virtual int configure(TUnit* unit, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc);
 
 	static const int max_frame_size = 256;
 };
@@ -695,7 +695,7 @@ public:
 	serial_ascii_parser(serial_connection_handler *serial_handler, driver_logger* log);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	virtual int configure(TUnit* unit, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc);
 };
 
 class modbus_serial_client : public serial_connection_handler, public serial_client_driver, public modbus_client {
@@ -713,7 +713,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc);
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev);
 	virtual void error(ERROR_CONDITION error);
 	virtual struct event_base* get_event_base();
@@ -730,7 +730,7 @@ class serial_server : public modbus_unit, public serial_connection_handler, publ
 public:
 	serial_server();
 	const char* driver_name() { return "modbus_serial_server"; }
-	virtual int configure(TUnit *unit, short *read, short *send, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, short *read, short *send, serial_port_configuration &spc);
 	virtual int initialize();
 	virtual void frame_parsed(SDU &sdu, struct bufferevent* bufev);
 	virtual struct bufferevent* get_buffer_event();
@@ -1293,7 +1293,7 @@ bool modbus_unit::register_val_expired(time_t time) {
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
 modbus_unit::~modbus_unit() {}
 
-void modbus_unit::pushValOp(parcook_modbus_val_op* op, IPCParamInfo* param) {
+void modbus_unit::pushValOp(parcook_modbus_val_op* op, TAttribHolder* param) {
 	if (m_check_forbidden && param->hasAttribute("forbidden")) {
 		m_parcook_ops.push_back(new forbidden_proxy(op, param->getAttribute<short>("forbidden")));
 	} else {
@@ -1301,7 +1301,7 @@ void modbus_unit::pushValOp(parcook_modbus_val_op* op, IPCParamInfo* param) {
 	}
 }
 
-int modbus_unit::configure_int_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
@@ -1318,7 +1318,7 @@ int modbus_unit::configure_int_register(IPCParamInfo* param, TSendParam *sparam,
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(IPCParamInfo* param, TSendParam* sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
 		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
@@ -1414,7 +1414,7 @@ int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsi
 	return 0;
 }
 
-int modbus_unit::configure_double_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	unsigned short addrs[4];
 
 	FLOAT_ORDER float_order;
@@ -1488,7 +1488,7 @@ int modbus_unit::configure_double_register(IPCParamInfo* param, TSendParam *spar
 	return 0;
 }
 
-int modbus_unit::configure_long_float_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");
 	if (val_type.empty())
 		return 1;
@@ -1534,7 +1534,7 @@ int modbus_unit::configure_long_float_register(IPCParamInfo* param, TSendParam *
 	return 0;
 }
 
-int modbus_unit::configure_decimal2_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	bool is_lsw;
 	unsigned short msw, lsw;
 	modbus_register* regs[2];
@@ -1575,7 +1575,7 @@ int modbus_unit::configure_decimal2_register(IPCParamInfo* param, TSendParam *sp
 	return 0;
 }
 
-int modbus_unit::configure_decimal3_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	if (send) {
 		m_log.log(0, "Unsupported decimal3 value type for send param %ls, exiting!", param->GetName().c_str());
 		return 1;
@@ -1616,74 +1616,62 @@ int modbus_unit::configure_decimal3_register(IPCParamInfo* param, TSendParam *sp
 	return 0;
 }
 
-int modbus_unit::configure_param(SzarpConfigInfo* sc, IPCParamInfo* p, TSendParam *sp, bool send) { 
+int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
 	unsigned short addr;
-	long l = p->getAttribute<long>("extra:address", -1);
+	long l = el->getAttribute<long>("extra:address", -1);
 	if (l < 0 || l > 65535) {
-		m_log.log(0, "Invalid address attribute value: %ld (%ls), between 0 and 65535", l, p->GetName().c_str());
+		m_log.log(0, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
 		return 1;
 	} 
 
 	addr = l;
 
 	REGISTER_TYPE rt;
-	auto reg_type_attr = p->getAttribute<std::string>("extra:register_type", "");
+	auto reg_type_attr = el->getAttribute<std::string>("extra:register_type", "holding_register");
 	if (reg_type_attr == "holding_register")
 		rt = HOLDING_REGISTER;
 	else if (reg_type_attr == "input_register")
 		rt = INPUT_REGISTER;
 	else {
-		m_log.log(0, "Unsupported register type, %ls, should be either input_register or holding_register", p->GetName().c_str());
+		m_log.log(0, "Unsupported register type, should be either input_register or holding_register");
 		return 1;
 	}
 
-	std::string val_type = p->getAttribute<std::string>("extra:val_type", "");
+	std::string val_type = el->getAttribute<std::string>("extra:val_type", "");
 	if (val_type.empty())
 		return 1;
 
-	IPCParamInfo *param = NULL; 
-	int prec_e = 0;
+	int prec_e;
 	if (send) {
-		if (!sp->GetParamName().empty()) {
-			param = sc->getIPCParamByName(sp->GetParamName());
-			if (param == NULL) {
-				m_log.log(0, "parameter with name '%s' not found",
-						SC::S2L(sp->GetParamName()).c_str());
-				return 1;
-			}
-			prec_e = p->getAttribute("extra:prec", param->GetPrec());
-		} else {
-			prec_e = p->getAttribute("extra:prec", 0);
-				
-		}
+		prec_e = el->getAttribute("extra:prec", param? param->GetPrec() : 0);
 	} else {
-		param = p;
-		prec_e = p->GetPrec();
+		prec_e = param->GetPrec();
 	}
+
 	int prec = exp10(prec_e);
 
 	int ret;
 	if (val_type == "integer") {
-		ret = configure_int_register(param, sp, prec, addr, send, rt);
+		ret = configure_int_register(param, prec, addr, send, rt);
 	} else if (val_type == "bcd") {
-		ret = configure_bcd_register(param, sp, prec, addr, send, rt);
+		ret = configure_bcd_register(param, prec, addr, send, rt);
 	} else if (val_type == "long" || val_type == "float") {
-		ret = configure_long_float_register(param, sp, prec, addr, send, rt);
+		ret = configure_long_float_register(param, prec, addr, send, rt);
 	} else if (val_type == "double") {
-		ret = configure_double_register(param, sp, prec, addr, send, rt);
+		ret = configure_double_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal2") {
-		ret = configure_decimal2_register(param, sp, prec, addr, send, rt);
+		ret = configure_decimal2_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal3") {
-		ret = configure_decimal3_register(param, sp, prec, addr, send, rt);
+		ret = configure_decimal3_register(param, prec, addr, send, rt);
 	} else {
-		m_log.log(0, "Unsupported value type:%s, for param %ls", val_type.c_str(), param->GetName().c_str());
+		m_log.log(0, "Unsupported value type: %s");
 		ret = 1;
 	}
 
 	return ret;
 }
 
-int modbus_unit::configure_unit(TUnit* u) {
+int modbus_unit::configure_unit(UnitInfo* u) {
 	std::string _id = u->getAttribute<std::string>("extra:id", "");
 	if (_id.empty()) {
 		switch (u->GetId()) {
@@ -1709,26 +1697,24 @@ int modbus_unit::configure_unit(TUnit* u) {
 		m_log.log(7, "Daemon will check forbidden values");
 	}
 
-	int i = 0, j = 0;
-	auto sp = u->GetFirstSendParam();
-	for (auto p = u->GetFirstParam(); i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
-		if (i == u->GetParamsCount())
-			j = 0;
-		bool send = j != i;
-
-		if (configure_param(u->GetSzarpConfig(), p, sp, send))
+	for (auto p: u->GetParams()) {
+		if (configure_param(p, p, false)) {
+			m_log.log(0, "Error in param %ls", p->GetName().c_str());
 			return 1;
-
-		if (send)
-			sp = sp->GetNext();
-		else
-			p = p->GetNext();
-
+		}
 	}
+
+	for (auto p: u->GetSendParams()) {
+		if (configure_param(p, p->GetParamToSend(), true)) {
+			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
-int modbus_unit::configure(TUnit *unit, short *read, short *send) {
+int modbus_unit::configure(UnitInfo* unit, short *read, short *send) {
 	bool default_used;
 	if (get_float_order(unit, MSWLSW, default_used, m_float_order))
 		return 1;
@@ -1883,7 +1869,7 @@ void tcp_server::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
 		m_parsers[bufev]->send_adu(adu.trans_id, adu.unit_id, adu.pdu, bufev);
 }
 
-int tcp_server::configure(TUnit* unit, short *read, short *send) {
+int tcp_server::configure(UnitInfo* unit, short *read, short *send) {
 	if (modbus_unit::configure(unit, read, send))
 		return 1;
 	std::string ips_allowed = unit->getAttribute<std::string>("extra:tcp-allowed", "");
@@ -1986,7 +1972,7 @@ void modbus_client::schedule_send_query() {
 		case READING_FROM_PEER:
 		case WRITING_TO_PEER:
 			evtimer_add(&m_next_query_timer, &tv);
-			m_log.log(10, "schedule next query in %dms", wait_ms);
+			m_log.log(10, "schedule next query in %u ms", wait_ms);
 			break;
 		default:
 			break;
@@ -2151,7 +2137,7 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	}
 }
 
-int modbus_client::configure(TUnit *unit, short *read, short *send) {
+int modbus_client::configure(UnitInfo* unit, short *read, short *send) {
 	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
 
 	m_query_interval_ms = unit->getAttribute("extra:query-interval", 0);
@@ -2261,7 +2247,7 @@ void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
 		drain_buffer(bufev);
 }
 
-int modbus_tcp_client::configure(TUnit* unit, short* read, short *send) {
+int modbus_tcp_client::configure(UnitInfo* unit, short* read, short *send) {
 	if (modbus_client::configure(unit, read, send))
 		return 1;
 
@@ -2320,7 +2306,7 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 		drain_buffer(bufev);
 }
 
-int modbus_serial_client::configure(TUnit* unit, short* read, short *send, serial_port_configuration &spc) {
+int modbus_serial_client::configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc) {
 	if (modbus_client::configure(unit, read, send))
 		return 1;
 
@@ -2480,7 +2466,7 @@ serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, 
 	reset();
 }
 
-int serial_rtu_parser::configure(TUnit* unit, serial_port_configuration &spc) {
+int serial_rtu_parser::configure(UnitInfo* unit, serial_port_configuration &spc) {
 	m_delay_between_chars = unit->getAttribute("extra:out-intra-character-delay", 0);
 	if (m_delay_between_chars == 0)
 		m_log->log(10, "Serial port configuration, delay between chars not given (or 0) assuming no delay");
@@ -2751,7 +2737,7 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	bufferevent_write(bufev, const_cast<char*>("\n"), 1);
 }
 
-int serial_ascii_parser::configure(TUnit* unit, serial_port_configuration &spc) {
+int serial_ascii_parser::configure(UnitInfo* unit, serial_port_configuration &spc) {
 	m_delay_between_chars = unit->getAttribute("extra:read-timeout", 0);
 	if (m_timeout == 0) {
 		m_timeout = 1000000;
@@ -2769,7 +2755,7 @@ void serial_ascii_parser::reset() {
 
 serial_server::serial_server() : modbus_unit(this) {}
 
-int serial_server::configure(TUnit *unit, short *read, short *send, serial_port_configuration &spc) {
+int serial_server::configure(UnitInfo *unit, short *read, short *send, serial_port_configuration &spc) {
 	if (modbus_unit::configure(unit, read, send))
 		return 1;
 	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "");

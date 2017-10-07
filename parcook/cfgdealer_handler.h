@@ -1,84 +1,129 @@
 #ifndef CONFIGDEALERHANDLER__H__
 #define CONFIGDEALERHANDLER__H__
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-
-#include "../libSzarp/include/argsmgr.h"
 #include "../libSzarp2/include/config_info.h"
 
-namespace basedmn {
+#include "../libSzarp/include/argsmgr.h"
+#include "dmncfg.h"
+
+#include <sys/time.h>
+#include <unordered_map>
 
 namespace pt = boost::property_tree;
 
-class ConfigDealerHandler {
-	struct DeviceInfo {
-		std::vector<UnitInfo> units;
+class ConfigDealerHandler: public DaemonConfigInfo {
+	class CParam: public IPCParamInfo {
+		unsigned int ipc_ind;
 
-		size_t first_ipc_param_ind{ 0 };
-		size_t device_no{ 1 };
+	public:
+		CParam(unsigned _ind): ipc_ind(_ind) {}
+		CParam(const boost::property_tree::wptree&, size_t);
+		unsigned int GetIpcInd() const override { return ipc_ind; }
 
-		size_t params_count{ 0 };
-		size_t sends_count{ 0 };
+	};
 
-		pt::ptree attrs;
+	class CSend: public SendParamInfo {
+		ConfigDealerHandler* parent;
+		std::wstring sent_param_name;
+		
+	public:
+		CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree&);
 
-		DeviceInfo(const pt::ptree& conf, size_t _device_no);
-		DeviceInfo() {}
+		IPCParamInfo* GetParamToSend() const {
+			if (sent_param_name.empty()) {
+				return nullptr;
+			} else {
+				if (parent == nullptr) return nullptr;
+				return parent->GetParamToSend(sent_param_name);
+			}
+		}
+
+		const std::wstring& GetParamName() const override {
+			return sent_param_name;
+		}
+
+	};
+
+	class CUnit: public UnitInfo {
+	public:
+		CUnit(ConfigDealerHandler* parent, const boost::property_tree::wptree&, size_t inds_offset);
+
+		size_t GetSenderMsgType() const { return unit_no + 256L; }
+		size_t GetParamsCount() const { return params.size(); }
+		size_t GetSendParamsCount() const { return sends.size(); }
+
+		SzarpConfigInfo* GetSzarpConfig() const { return nullptr; }
+
+		wchar_t GetId() const { return SC::A2S(getAttribute<std::string>("id", "1"))[0]; }
+		int GetUnitNo() const { return unit_no; }
+
+		std::vector<IPCParamInfo*> GetParams() const { return params; }
+		std::vector<SendParamInfo*> GetSendParams() const { return sends; }
+
+	private:
+		size_t unit_no;
+
+		std::vector<IPCParamInfo*> params;
+		std::vector<SendParamInfo*> sends;
 	};
 
 public:
 	ConfigDealerHandler(const ArgsManager&);
 
-	std::string GetPrintableDeviceXMLString() const {
-		std::ostringstream oss;
-		pt::xml_parser::write_xml(oss, conf_tree);
-		return std::move(oss.str());
-	}
-
-	bool GetSingle() const { return single; }
-
-	size_t GetParamsCount() const { return device.params_count; }
-
-	size_t GetSendsCount() const { return device.sends_count; }
-
-	size_t GetLineNumber() const { return device.device_no; }
-
-	const std::string& GetIPKPath() const { return ipk_path; }
-
-
-	struct timeval GetDeviceTimeval() const {
-		struct timeval tv;
-		tv.tv_sec = 10;
-		tv.tv_usec = 0;
-		return tv;
-	}
-
-	const ConfigDealerHandler& GetIPK() const { return *this; }
-
-	size_t GetDevice() const { return device.device_no; }
-
-	size_t GetFirstParamIpcInd(size_t) const { return device.first_ipc_param_ind; }
-
-	std::vector<size_t> GetSendIpcInds(size_t device_no) const { return std::move(std::vector<size_t>{}); }
-
-	const std::vector<UnitInfo>& GetUnits() const { return device.units; }
-
-	const IPCInfo& GetIPCInfo() const { return ipc_info; }
-
 private:
-	bool single;
+	void parseArgs(const ArgsManager&);
+	void parseDevice(const boost::property_tree::wptree&);
+	void parseSentParam(const boost::property_tree::wptree&);
 
-	std::string cfgdealer_address;
-	std::string ipk_path;
+public:
 
-	DeviceInfo device;
+	IPCParamInfo* GetParamToSend(const std::wstring& name) { return sent_params[name]; }
+
+	virtual std::vector<UnitInfo*> GetUnits() const { return units; }
+	virtual const IPCInfo& GetIPCInfo() const { return ipc_info; }
+	virtual bool GetSingle() const { return single; }
+	virtual std::string GetIPKPath() const { return IPKPath; }
+	virtual int GetLineNumber() const { return device_no; }
+
+	virtual size_t GetParamsCount() const { 
+		size_t count = 0;
+		for (const auto& u: units) {
+			count += u->GetParamsCount();
+		}
+		return count;
+	}
+
+	virtual size_t GetSendsCount() const {
+		size_t count = 0;
+		for (const auto& u: units) {
+			count += u->GetSendParamsCount();
+		}
+		return count;
+	}
+
+	virtual size_t GetFirstParamIpcInd() const { return ipc_offset; }
+	virtual std::vector<size_t> GetSendIpcInds() const { return sends_inds; }
+
+	virtual std::string GetPrintableDeviceXMLString() const { return device_xml; }
+
+	// TODO
+	virtual timeval GetDeviceTimeval() const { return timeval{10, 0}; }
+
+protected:
 	IPCInfo ipc_info;
 
-	pt::ptree conf_tree;
+	std::vector<UnitInfo*> units;
+	std::vector<size_t> sends_inds;
+	size_t params_count;
+	std::unordered_map<std::wstring, IPCParamInfo*> sent_params;
 
+	size_t ipc_offset;
+	std::string device_xml;
+
+	// ArgsMgr info
+	size_t device_no;
+	std::string IPKPath;
+	bool single;
 };
-
-} // namespace basedmn
 
 #endif

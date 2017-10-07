@@ -257,7 +257,7 @@ public:
 
 	const char* driver_name() { return "wmtp_driver"; }
 
-	virtual int configure(TUnit* unit, short* read, short *send);
+	virtual int configure(UnitInfo* unit, short* read, short *send);
 	
 	virtual void connection_error(struct bufferevent *bufev);
 
@@ -458,7 +458,7 @@ bool wmtp_driver::read_line(struct bufferevent* bufev) {
 	return false;
 }
 
-int wmtp_driver::configure(TUnit* unit, short* read, short *send) {
+int wmtp_driver::configure(UnitInfo* unit, short* read, short *send) {
 	// read address
 	m_address = unit->getAttribute<std::string>("extra:address", "");
 	if (m_address.empty())
@@ -474,7 +474,7 @@ int wmtp_driver::configure(TUnit* unit, short* read, short *send) {
 	
 	// read requested params
 	unsigned int offset_in_shared_memory = 0;
-	for (auto param = unit->GetFirstParam(); param != nullptr; param = param->GetNext()) {
+	for (auto param: unit->GetParams()) {
 		std::string param_name = param->getAttribute<std::string>("extra:name", "");
 		if (param_name.empty()) {
 			m_log.log(0, "No extra:name in param %ls", param->GetName().c_str());

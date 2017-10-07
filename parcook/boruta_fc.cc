@@ -328,7 +328,7 @@ public:
 	void starting_new_cycle() override;
 	void data_ready(struct bufferevent *bufev, int fd) override;
 	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, short *read, short *send, serial_port_configuration& spc) override;
+	int configure(UnitInfo* unit, short *read, short *send, serial_port_configuration& spc) override;
 	void scheduled(struct bufferevent *bufev, int fd) override;
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto_impl);
@@ -507,7 +507,7 @@ struct event_base *fc_proto_impl::get_event_base()
 	return m_event_base;
 }
 
-int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_configuration& spc)
+int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_port_configuration& spc)
 {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
@@ -530,8 +530,10 @@ int fc_proto_impl::configure(TUnit *unit, short *read, short *send, serial_port_
 	m_extra_id = l + 128;
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
-	size_t i = 1;
-	for (auto param = unit->GetFirstParam(); param != nullptr; param = param->GetNext(), ++i) {
+	size_t i = 0;
+	for (auto param: unit->GetParams()) {
+		++i;
+
 		std::string _pnu = param->getAttribute<std::string>("extra:parameter-number", "");
 		if (_pnu.empty()) {
 			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param %ls", param->GetName().c_str());

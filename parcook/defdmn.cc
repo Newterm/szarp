@@ -266,6 +266,8 @@ float ChooseFun(float funid, float *parlst)
 
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
+	if (str == NULL)
+		return luaL_error(lua, "Invalid param name");
 
 	double result = Defdmn::IPCParamValue(str);
 
@@ -277,7 +279,7 @@ int ipc_value(lua_State *lua) {
 int sz4base_value(lua_State *lua) {
 	const char* param_name = luaL_checkstring(lua, 1);
 	if (param_name == NULL) 
-		luaL_error(lua, "Invalid param name");
+		return luaL_error(lua, "Invalid param name");
 
 	auto time = sz4::make_nanosecond_time((double) lua_tonumber(lua, 2), 0);
 	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int) lua_tonumber(lua, 3)));

@@ -1,44 +1,29 @@
 #include "cfgdealer_handler.h"
 #include "zmq.hpp"
-
-namespace basedmn {
-
-ConfigDealerHandler::DeviceInfo::DeviceInfo(const pt::ptree& conf, size_t _device_no) {
-	device_no = _device_no;
-	for (const auto& unit_conf: conf) {
-		if (unit_conf.first != "unit") continue;
-
-		units.push_back(UnitInfo(unit_conf.second));
-		params_count += units.back().params_count;
-		sends_count += units.back().sends_count;
-	}
-
-	attrs = conf.get_child("<xmlattr>");
-	first_ipc_param_ind = attrs.get<size_t>("initial_param_no");
-}
+#include <boost/property_tree/xml_parser.hpp>
 
 
-ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
-	/* libpar params */
-
-	ipk_path = *args_mgr.get<std::string>("IPK");
-
-	cfgdealer_address = *args_mgr.get<std::string>("cfgdealer-address");
-
-	ipc_info = std::move(IPCInfo{
+void ConfigDealerHandler::parseArgs(const ArgsManager& args_mgr) {
+	ipc_info = IPCInfo{
 		*args_mgr.get<std::string>("parcook_path"),
 		*args_mgr.get<std::string>("linex_cfg")
-	});
+	};
 
+	device_no = *args_mgr.get<unsigned int>("device-no");
+	IPKPath = *args_mgr.get<std::string>("IPK");
 	single = args_mgr.has("single");
+}
+
+ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
+	parseArgs(args_mgr);
+
 	zmq::context_t context(1);
 	zmq::socket_t socket(context, ZMQ_REQ);
 
-	socket.connect ("tcp://localhost:5555");
-	// cfgdealer_address
+	auto cfgdealer_address = args_mgr.get<std::string>("cfgdealer-address").get_value_or("tcp://localhost:5555");
+	socket.connect(cfgdealer_address.c_str());
 	
-	auto d_no = *args_mgr.get<unsigned int>("device-no");
-	auto d_str = std::to_string(d_no);
+	auto d_str = std::to_string(device_no);
 	zmq::message_t request (d_str.size());
 	memcpy(request.data(), d_str.c_str(), d_str.size());
 	socket.send (request);
@@ -46,17 +31,72 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	//  Get the reply.
 	zmq::message_t reply;
 	socket.recv (&reply);
-	std::string&& conf_str{std::move((char*) reply.data()), reply.size()};
+	std::string conf_str{std::move((char*) reply.data()), reply.size()};
 	std::cout << "Received " << conf_str << std::endl;
 
-	conf_tree;
-	std::istringstream ss(std::move(conf_str));
-	pt::read_xml(ss, conf_tree);
+	std::wistringstream ss(SC::A2S(std::move(conf_str)));
+	boost::property_tree::wptree conf_tree;
+	boost::property_tree::read_xml(ss, conf_tree);
 
-	for (const auto& device_conf: conf_tree.get_child("params")) {
-		if (device_conf.first != "device") continue;
-		device = std::move(DeviceInfo(device_conf.second, d_no));
+	for (const auto& params_child: conf_tree.get_child(L"params")) {
+		if (params_child.first == L"device") {
+			parseDevice(params_child.second);
+		} else if (params_child.first == L"sends") {
+			for (const auto& sends_child: params_child.second) {
+				if (sends_child.first == L"param") {
+					parseSentParam(sends_child.second);
+				}
+			}
+		}
 	}
 }
 
-} // namespace basedmn
+void ConfigDealerHandler::parseDevice(const boost::property_tree::wptree& device) {
+	device_xml = SC::S2A(device.data());
+	ipc_offset = device.get<int>(L"<xmlattr>.initial_param_no") - 1;
+	// TODO: configure timeval
+	for (const auto& unit_conf: device) {
+		if (unit_conf.first == L"unit") {
+			units.push_back(new CUnit(this, unit_conf.second, ipc_offset + params_count));
+			params_count += units.back()->GetParamsCount();
+		}
+	}
+}
+
+void ConfigDealerHandler::parseSentParam(const boost::property_tree::wptree& send) {
+	IPCParamInfo* param = new CParam(send, send.get<size_t>(L"<xmlattr>.ipc_ind"));
+	sent_params[param->GetName()] = param;
+	sends_inds.push_back(param->GetIpcInd());
+}
+
+
+ConfigDealerHandler::CUnit::CUnit(ConfigDealerHandler* parent, const boost::property_tree::wptree& conf, size_t offset) {
+	TAttribHolder::parseXML(conf);
+	unit_no = getAttribute<size_t>("unit_no");
+
+	params.reserve(conf.count(L"param"));
+	sends.reserve(conf.count(L"send"));
+
+	size_t param_no = offset;
+	for (const auto& param_conf: conf) {
+		if (param_conf.first == L"param") {
+			params.push_back(new CParam(param_conf.second, param_no++));
+		} else if (param_conf.first == L"send") {
+			sends.push_back(new CSend(parent, param_conf.second));
+		}
+	}
+}
+
+
+ConfigDealerHandler::CParam::CParam(const boost::property_tree::wptree& conf, size_t _ipc_ind): ipc_ind(_ipc_ind) {
+	TAttribHolder::parseXML(conf);
+	SetName(conf.get<std::wstring>(L"<xmlattr>.name"));
+}
+
+
+ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree& conf): parent(_parent) {
+	TAttribHolder::parseXML(conf);
+	sent_param_name = SC::A2S(getAttribute("param"));
+}
+
+

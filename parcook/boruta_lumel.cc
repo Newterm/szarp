@@ -186,7 +186,7 @@ protected:
 public:
     lumel_serial_client();
     const char* driver_name() { return "lumel_driver"; }
-    virtual int configure(TUnit* unit, short* read, short *send, serial_port_configuration& spc);
+    virtual int configure(UnitInfo* unit, short* read, short *send, serial_port_configuration& spc);
     virtual void connection_error(struct bufferevent *bufev);
     virtual void starting_new_cycle();
     virtual void scheduled(struct bufferevent* bufev, int fd);
@@ -229,7 +229,7 @@ void lumel_serial_client::read_timer_event() {
     next_request();
 }
 
-int lumel_serial_client::configure(TUnit* unit, short* read, short *send, serial_port_configuration &spc) {
+int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc) {
 
     m_read = read;
     m_read_count = unit->GetParamsCount();
@@ -267,8 +267,7 @@ int lumel_serial_client::configure(TUnit* unit, short* read, short *send, serial
 	}
 	m_unit_id = id;
 
-	TParam* param = unit->GetFirstParam();
-	for (size_t i = 0; i < m_read_count ; i++) {
+	for (auto param: unit->GetParams()) {
 
 		std::string _addr = param->getAttribute<std::string>("extra:address", "");
 		if (_addr.empty()) {

@@ -431,6 +431,8 @@ struct tm tmbuf;
 int lua_ipc_value(lua_State *lua) {
 
 	const char* param = luaL_checkstring(lua, 1);
+	if (param == NULL)
+		return luaL_error(lua, "Invalid param name");
 
 	lua_pushstring(lua, lua_ipc_table_key);
 	lua_gettable(lua, LUA_REGISTRYINDEX);
@@ -438,7 +440,7 @@ int lua_ipc_value(lua_State *lua) {
 
 	PH::iterator i = ph->find(SC::U2S((unsigned char*)param));
 	if (i == ph->end())
-		luaL_error(lua, "Param %s not found in IPC values", param);
+		return luaL_error(lua, "Param %s not found in IPC values", param);
 
 	double result = i->second;
 	lua_pushnumber(lua, result);
@@ -1407,19 +1409,14 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 		LinesInfo[i].ParTotal = d->GetParamsCount();
 		LinesInfo[i].daemon =  d->getAttribute("daemon");
 
-		LinesInfo[i].device = d->getAttribute("path");
+		LinesInfo[i].device = d->getAttribute<std::string>("path", "");
 
-		auto _speed = d->getAttribute<int>("speed");
-		auto _opts = d->getAttribute("options");
-		if (_speed >= 0) {
-			std::stringstream ss; 
-			ss << _speed << " " << _opts;
-			LinesInfo[i].options = ss.str();
-		} else {
-			std::stringstream ss; 
-			ss << _opts;
-			LinesInfo[i].options = ss.str();
-		}
+		auto _opts = d->getAttribute<std::string>("options", "");
+
+		std::stringstream ss; 
+		ss << _opts;
+		LinesInfo[i].options = ss.str();
+
 		LanchDaemon(i, linedmnpat);
 		i++;
 	} /* for each line daemon */
@@ -1841,11 +1838,11 @@ int main(int argc, char *argv[])
 		go_daemon();
 	}
 
-	loginit_cmdline(log_level, logfile, &argc, argv);
-	sz_log(0, "parcook: started");
-
 	/* load configuration, start daemons */
 	ParseCfg(ipk, linedmnpat);
+
+	loginit_cmdline(log_level, logfile, &argc, argv);
+	sz_log(0, "parcook: started");
 
 	atexit(Rmipc);
 

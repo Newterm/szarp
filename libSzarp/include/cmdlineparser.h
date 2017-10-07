@@ -68,7 +68,7 @@ public:
 			("cfgdealer-address", po::value<std::string>()->default_value("localhost:5555"), "Config dealer's address")
 			("sniff", po::value<bool>()->default_value(false), "Do not initiate transmision, sniff traffic")
 			("scan", po::value<std::string>(), "range of ID to use from config (e.g. 1-7)")
-			("speen", po::value<unsigned int>(), "Port communication speed")
+			("speed", po::value<unsigned int>(), "Port communication speed")
 			("noconf", po::value<bool>()->default_value(false), "Do not load configuration")
 			("askdelay", po::value<unsigned int>(), "Sets delay between queries to different units")
 			("dumphex", po::value<bool>()->default_value(false), "Print trasmitted bytes in hex-terminal format")
