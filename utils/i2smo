@@ -260,7 +260,7 @@ def check_params_xmlschema():
 		try:
 			xsd.assertValid(params)
 		except BaseException as ex:
-			add_note(xsd.error_log)
+			printerr(xsd.error_log)
 	except Exception as e:
 		printerr(e)
 

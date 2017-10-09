@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  SZARP (C) 2002 Paweł Pałucha
-  pawel@praterm.com.pl
-
   DTD for SZARP params configuration file.
-
-  $Id: ipk-params.rng 6723 2009-05-15 13:52:04Z reksio $
 -->
 
 <grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
@@ -1117,12 +1112,12 @@
 		<element name="define" ns="http://www.praterm.com.pl/SZARP/ipk">
 			<ref name="attlist.define"/>
 			<interleave>
-				<optional>
+				<zeroOrMore>
 					<ref name="script"/>
-				</optional>
-				<optional>
+				</zeroOrMore>
+				<zeroOrMore>
 					<ref name="doc"/>
-				</optional>
+				</zeroOrMore>
 			</interleave>
 		</element>
 	</define>
@@ -1435,7 +1430,10 @@
 			<attribute name="val_type" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
 				<choice>
 					<value>byte</value>
+					<value>short</value>
+					<value>ushort</value>
 					<value>integer</value>
+					<value>uinteger</value>
 					<value>real</value>
 					<value>float</value>
 					<value>long</value>
