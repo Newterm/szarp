@@ -404,6 +404,13 @@ void ParamEdit::OnOK(wxCommandEvent &e) {
 }
 
 void ParamEdit::OnCancel(wxCommandEvent & event) {
+	int answer = wxMessageBox(_("Are you sure you want to close this window?"), _("Cancel window"),
+		wxYES_NO | wxICON_WARNING, this);
+	if(answer == wxNO)
+	{
+		return;
+	}
+
 	if (IsModal())
 		EndModal(wxID_CANCEL);
 	else {
