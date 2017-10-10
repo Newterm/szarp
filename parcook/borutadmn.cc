@@ -1316,8 +1316,9 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 	args_mgr.initLibpar();
 
 	if (args_mgr.has("use-cfgdealer")) {
+		szlog::init(args_mgr);
 		m_cfg = new ConfigDealerHandler(args_mgr);
-		g_debug = m_cfg->GetSingle();
+		g_debug = m_cfg->GetSingle() || args_mgr.has("diagno");
 	} else {
 		auto d_cfg = new DaemonConfig("borutadmn");
 		if (d_cfg->Load(args_mgr, nullptr, 0, m_event_base))

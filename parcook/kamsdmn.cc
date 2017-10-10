@@ -46,6 +46,7 @@
 #include "atcconn.h"
 #include "daemonutils.h"
 #include "custom_assert.h"
+#include "cfgdealer_handler.h"
 
 #ifndef SZARP_NO_DATA
 #define SZARP_NO_DATA -32768
@@ -59,52 +60,6 @@
 #define RESTART_INTERVAL_MS 15000
 
 bool single;
-
-void dolog(int level, const char * fmt, ...)
-	__attribute__ ((format (printf, 2, 3)));
-
-
-void dolog(int level, const char * fmt, ...) {
-	va_list fmt_args;
-
-	if (single) {
-		char *l;
-		va_start(fmt_args, fmt);
-		int res = vasprintf(&l, fmt, fmt_args);
-		(void)res;
-		va_end(fmt_args);
-
-		std::cout << l << std::endl;
-		sz_log(level, "%s", l);
-		free(l);
-	} else {
-		va_start(fmt_args, fmt);
-		vsz_log(level, fmt, fmt_args);
-		va_end(fmt_args);
-	}
-}
-
-xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
-	xmlChar *c;
-	char *e;
-	int res = asprintf(&e, "./@%s", prop);
-	(void)res;
-	ASSERT(e != nullptr);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
-	free(e);
-	return c;
-}
-
-xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
-	xmlChar *c;
-	char *e;
-	int res = asprintf(&e, "./@extra:%s", prop);
-	(void)res;
-	ASSERT(e != nullptr);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
-	free(e);
-	return c;
-}
 
 /** Daemon reading data from heatmeters.
  * Can use either a SerialPort (if 'path' is declared in params.xml)
@@ -159,13 +114,6 @@ public:
 	void StartDo();
 
 protected:
-	void ConfigureTcpDataPort(const xmlXPathContextPtr& xp_ctx, int default_value);
-	void ConfigureTcpCmdPort(const xmlXPathContextPtr& xp_ctx, int default_value);
-
-	/** Return attribute value or default value of XML elements. */
-	int get_int_attr_def(const xmlXPathContextPtr& xp_ctx,
-		const char* name, int default_value);
-
 	/** Schedule next state machine step */
 	void ScheduleNext(unsigned int wait_ms=0);
 
@@ -178,7 +126,7 @@ protected:
 	/** Sets NODATA and changes state to RESTART */
 	void SetRestart()
 	{
-		dolog(10, "%s: SetRestart", m_id.c_str());
+		sz_log(10, "%s: SetRestart", m_id.c_str());
 		m_state = RESTART;
 		for (int i = 0; i < m_ipc->m_params_count; i++) {
 			m_ipc->m_read[i] = SZARP_NO_DATA;
@@ -218,7 +166,7 @@ protected:
 	}
 
 protected:
-	DaemonConfig *m_daemon_conf;
+	DaemonConfigInfo *m_daemon_conf;
 	IPCHandler *m_ipc;
 
 	CommunicationState m_state;	/**< state of communication state machine */
@@ -253,7 +201,7 @@ protected:
 void kams_daemon::StartDo() {
 	evtimer_set(&m_ev_timer, TimerCallback, this);
 	event_base_set(m_event_base, &m_ev_timer);
-	dolog(10, "%s: Creating connection...", m_id.c_str());
+	sz_log(10, "%s: Creating connection...", m_id.c_str());
 	try {
 		if (m_ip.compare("") != 0) {
 			if (m_use_atc) {
@@ -271,10 +219,10 @@ void kams_daemon::StartDo() {
 			port->Init(m_path);
 		}
 		m_connection->AddListener(this);
-		dolog(10, "%s: Opening connection...", m_id.c_str());
+		sz_log(10, "%s: Opening connection...", m_id.c_str());
 		m_connection->Open();
 	} catch (SerialPortException &e) {
-		dolog(0, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
+		sz_log(0, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
 		SetRestart();
 		ScheduleNext(RESTART_INTERVAL_MS);
 	}
@@ -284,7 +232,7 @@ void kams_daemon::StartDo() {
 void kams_daemon::OpenFinished(const BaseConnection* conn)
 {
 	std::string info = m_id + ": connection established.";
-	dolog(2, "%s: %s", m_id.c_str(), info.c_str());
+	sz_log(2, "%s: %s", m_id.c_str(), info.c_str());
 	m_state = SET_COMM_WRITE;
 	ScheduleNext();
 }
@@ -302,7 +250,7 @@ void kams_daemon::Do()
 	unsigned int wait_ms = 0;
 	switch (m_state) {
 		case SET_COMM_WRITE:
-			dolog(10, "%s: SET_COMM_WRITE", m_id.c_str());
+			sz_log(10, "%s: SET_COMM_WRITE", m_id.c_str());
 			SelectSerialMode(MODE_B300);
 			m_read_buffer.clear();
 			m_chars_written = 0;
@@ -310,11 +258,11 @@ void kams_daemon::Do()
 			wait_ms = 2000;
 			break;
 		case WRITE:
-			dolog(10, "%s: WRITE", m_id.c_str());
+			sz_log(10, "%s: WRITE", m_id.c_str());
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				sz_log(0, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written == 3) {
@@ -324,11 +272,11 @@ void kams_daemon::Do()
 			wait_ms = 50;
 			break;
 		case REPEAT_WRITE:
-			dolog(10, "%s: REPEAT_WRITE", m_id.c_str());
+			sz_log(10, "%s: REPEAT_WRITE", m_id.c_str());
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				sz_log(0, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written < 3) {
@@ -339,15 +287,15 @@ void kams_daemon::Do()
 			}
 			break;
 		case SET_COMM_READ:
-			dolog(10, "%s: SET_COMM_READ", m_id.c_str());
+			sz_log(10, "%s: SET_COMM_READ", m_id.c_str());
 			SelectSerialMode(m_read_mode);
 			m_state = READ;
 			wait_ms = m_wait_for_data_ms;
-			dolog(10, "%s: waiting for data, wait time = %dms", m_id.c_str(),
+			sz_log(10, "%s: waiting for data, wait time = %dms", m_id.c_str(),
 				m_wait_for_data_ms);
 			break;
 		case READ:
-			dolog(10, "%s: READ", m_id.c_str());
+			sz_log(10, "%s: READ", m_id.c_str());
 			try {
 				ProcessResponse();
 				wait_ms = m_query_interval_ms;
@@ -357,12 +305,12 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (NoDataException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				sz_log(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
 			} catch (KamsDmnException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				sz_log(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 1000;
 				m_state = SET_COMM_WRITE;
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
@@ -370,19 +318,19 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				sz_log(0, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
 			}
 			break;
 		case RESTART:
-			dolog(10, "%s: RESTART", m_id.c_str());
+			sz_log(10, "%s: RESTART", m_id.c_str());
 			try {
 				m_connection->Close();
 				m_connection->Open();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
+				sz_log(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
 					m_ipc->m_read[i] = SZARP_NO_DATA;
 				}
@@ -429,7 +377,7 @@ void kams_daemon::WriteChar()
 
 void kams_daemon::ReadError(const BaseConnection *conn, short event)
 {
-	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
+	sz_log(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
 	m_connection->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
@@ -550,7 +498,7 @@ void kams_daemon::ScheduleNext(unsigned int wait_ms)
 {
 	const struct timeval tv = ms2timeval(wait_ms);
 	evtimer_add(&m_ev_timer, &tv);
-	dolog(10, "%s: ScheduleNext in %dms", m_id.c_str(), wait_ms);
+	sz_log(10, "%s: ScheduleNext in %dms", m_id.c_str(), wait_ms);
 }
 
 void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
@@ -559,140 +507,83 @@ void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
 }
 
 void kams_daemon::ReadConfig(int argc, char **argv) {
-	xmlInitParser();
-	LIBXML_TEST_VERSION
-	xmlLineNumbersDefault(1);
+	ArgsManager args_mgr("kamsdmn");
+	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.initLibpar();
 
-	m_daemon_conf = new DaemonConfig("kamsdmn");
-	ASSERT(m_daemon_conf != nullptr);
-	if (m_daemon_conf->Load(&argc, argv)) {
-		throw KamsDmnException("Cannot load configuration");
+	if (args_mgr.has("use-cfgdealer")) {
+		szlog::init(args_mgr);
+		m_daemon_conf = new ConfigDealerHandler(args_mgr);
+	} else {
+		auto d_cfg = new DaemonConfig("kamsdmn");
+		if (d_cfg->Load(args_mgr, nullptr, 0, m_event_base))
+			throw KamsDmnException("Could not load configuraion");
+		m_daemon_conf = d_cfg;
 	}
-	if (m_daemon_conf->GetDevice()->
-			GetFirstUnit()->GetParamsCount()
-			!= NUMBER_OF_VALS) {
+
+	if (m_daemon_conf->GetParamsCount() != NUMBER_OF_VALS) {
 		throw KamsDmnException("Incorrect number of parameters: " +
-				std::to_string(m_daemon_conf->GetDevice()->
-				GetFirstUnit()->GetParamsCount()) +
+				std::to_string(m_daemon_conf->GetParamsCount())
 				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_daemon_conf));
-		m_ipc = ipc_.release();
-	} catch(...) {
-		throw KamsDmnException("ERROR!: Could not initialize IPC");
+		m_ipc = new IPCHandler(m_daemon_conf);
+	} catch(const std::exception& e) {
+		throw SzException("ERROR!: Could not initialize IPC, reason was: " + std::string(e.what()));
 	}
 
-	if (m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno())
+	if (m_daemon_conf->GetSingle() || args_mgr.get<int>("debug").get_value_or(2) > 8)
 		m_query_interval_ms = 3000;
 	else
 		m_query_interval_ms = 280 * 1000;	/* for saving heatmeter battery */
 
 
-	xmlDocPtr doc;
-
-	/* get config data */
-	doc = m_daemon_conf->GetXMLDoc();
-	ASSERT(doc != nullptr);
-
-	/* prepare xpath */
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(doc);
-	ASSERT(xp_ctx != nullptr);
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
-			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	(void)ret;
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
-			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	ASSERT(ret == 0);
-
-	xp_ctx->node = m_daemon_conf->GetXMLDevice();
-
-	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
-	if (c == nullptr) {
-		xmlChar *atc_ip = get_device_node_extra_prop(xp_ctx, "atc-ip");
-		if (atc_ip == nullptr) {
-			xmlChar *path = get_device_node_prop(xp_ctx, "path");
-			if (path == nullptr) {
-				throw KamsDmnException("ERROR!: neither IP nor device path "
-						"has been specified");
-			}
-			m_path.assign((const char*)path);
-			xmlFree(path);
-			m_id = m_path;
-		} else {
-			m_ip.assign((const char*)atc_ip);
-			xmlFree(atc_ip);
-			ConfigureTcpDataPort(xp_ctx, AtcConnection::DEFAULT_DATA_PORT);
-			ConfigureTcpCmdPort(xp_ctx, AtcConnection::DEFAULT_CONTROL_PORT);
-			m_id = m_ip + ":" + std::to_string(m_data_port);
-			m_use_atc = true;
-		}
-	} else {
-		m_ip.assign((const char*)c);
-		xmlFree(c);
-		ConfigureTcpDataPort(xp_ctx, SerialAdapter::DEFAULT_DATA_PORT);
-		ConfigureTcpCmdPort(xp_ctx, SerialAdapter::DEFAULT_CMD_PORT);
+	auto device = m_daemon_conf->GetDeviceInfo();
+	if (device->hasAttribute("extra:tcp-ip")) {
+		m_ip = device->getAttribute("extra:tcp-ip");
+		m_data_port = device->getAttribute<int>("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
+		m_cmd_port = device->getAttribute<int>("extra:tcp-cmd-port", SerialAdapter::DEFAULT_CMD_PORT);
 		m_id = m_ip + ":" + std::to_string(m_data_port);
-	}
-	single = m_daemon_conf->GetSingle() || m_daemon_conf->GetDiagno();
-}
-
-void kams_daemon::ConfigureTcpDataPort(const xmlXPathContextPtr& xp_ctx, int default_value)
-{
-	m_data_port = get_int_attr_def(xp_ctx, "tcp-data-port", default_value);
-}
-
-void kams_daemon::ConfigureTcpCmdPort(const xmlXPathContextPtr& xp_ctx, int default_value)
-{
-	m_cmd_port = get_int_attr_def(xp_ctx, "tcp-cmd-port", default_value);
-}
-
-int kams_daemon::get_int_attr_def(const xmlXPathContextPtr& xp_ctx,
-	const char* name, int default_value)
-{
-	xmlChar* str_value = get_device_node_extra_prop(xp_ctx, name);
-	if (str_value == nullptr) {
-		dolog(2, "Unspecified '%s', assuming default: %hu", name, default_value);
-		return default_value;
+	} else if (device->hasAttribute("extra:atc-ip")) {
+		m_ip = device->getAttribute("extra:atc-ip");
+		m_data_port = device->getAttribute<int>("extra:tcp-data-port", AtcConnection::DEFAULT_DATA_PORT);
+		m_cmd_port = device->getAttribute<int>("extra:tcp-cmd-port", AtcConnection::DEFAULT_CONTROL_PORT);
+		m_id = m_ip + ":" + std::to_string(m_data_port);
+		m_use_atc = true;
+	} else if (device->hasAttribute("path")) {
+		m_path = device->getAttribute("path");
+		m_id = m_path;
+	} else  {
+		throw KamsDmnException("ERROR!: neither IP nor device path has been specified");
 	}
 
-	int value = 0;
-	try {
-		value = std::stoi((char*)str_value);
-	} catch(const std::logic_error& e) {
-		xmlFree(str_value);
-		throw KamsDmnException("ERROR!: Invalid " + std::string(name) + " value: "
-			+ std::string((char*)str_value));
-	}
-	xmlFree(str_value);
-	return value;
+	single = m_daemon_conf->GetSingle() || args_mgr.get<int>("debug") >= 8;
 }
-
 
 int main(int argc, char *argv[])
 {
 	kams_daemon daemon;
 
 	try {
-		dolog(10, "Reading config");
+		sz_log(10, "Reading config");
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
-		dolog(0, "Exception occured:");
-		dolog(0, "%s", e.what());
+		sz_log(0, "Exception occured:");
+		sz_log(0, "%s", e.what());
 		exit(1);
 	}
-	dolog(10, "Starting daemon");
+
+	sz_log(10, "Starting daemon");
 
 	try {
 		daemon.StartDo();
 	} catch (SzException &e) {
-		dolog(0, "FATAL!: daemon killed by exception: %s", e.what());
+		sz_log(0, "FATAL!: daemon killed by exception: %s", e.what());
 		exit(1);
 	} catch (...) {
-		dolog(0, "FATAL!: daemon killed by unknown exception");
+		sz_log(0, "FATAL!: daemon killed by unknown exception");
 		exit(1);
 	}
-	dolog(0, "FATAL!: abnormal termination of event loop");
+	sz_log(0, "FATAL!: abnormal termination of event loop");
 }

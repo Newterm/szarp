@@ -51,11 +51,13 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	}
 }
 
-void ConfigDealerHandler::parseDevice(const boost::property_tree::wptree& device) {
-	device_xml = SC::S2A(device.data());
-	ipc_offset = device.get<int>(L"<xmlattr>.initial_param_no") - 1;
+void ConfigDealerHandler::parseDevice(const boost::property_tree::wptree& device_conf) {
+	device_xml = SC::S2A(device_conf.data());
+	ipc_offset = device_conf.get<int>(L"<xmlattr>.initial_param_no") - 1;
+	device = new CDevice();
+	device->parseXML(device_conf);
 	// TODO: configure timeval
-	for (const auto& unit_conf: device) {
+	for (const auto& unit_conf: device_conf) {
 		if (unit_conf.first == L"unit") {
 			units.push_back(new CUnit(this, unit_conf.second, ipc_offset + params_count));
 			params_count += units.back()->GetParamsCount();

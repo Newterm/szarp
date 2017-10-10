@@ -31,7 +31,9 @@
 
 class DaemonConfigInfo {
 public:
+	virtual ~DaemonConfigInfo() {}
 	virtual std::vector<UnitInfo*> GetUnits() const = 0;
+	virtual DeviceInfo* GetDeviceInfo() const = 0;
 	virtual const IPCInfo& GetIPCInfo() const = 0;
 	virtual bool GetSingle() const = 0;
 	virtual std::string GetIPKPath() const = 0;
@@ -129,6 +131,7 @@ public:
 	 * was not loaded at user's request or CloseIPK was called.
 	 */
 	TDevice* GetDevice() const;
+	DeviceInfo* GetDeviceInfo() const override { return GetDevice(); }
 	struct timeval GetDeviceTimeval() const { return m_timeval; }
 
 	/** Return XML document containing only this device data

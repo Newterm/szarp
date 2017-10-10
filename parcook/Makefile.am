@@ -94,14 +94,14 @@ execdmn_SOURCES = execdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
-kamsdmn_SOURCES = kamsdmn.cc
+kamsdmn_SOURCES = kamsdmn.cc cfgdealer_handler.cpp
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
 
 mbrtudmn_SOURCES = mbrtudmn.cc
 
-k601dmn_SOURCES = k601dmn.cc k601-prop-plugin.h
+k601dmn_SOURCES = k601dmn.cc cfgdealer_handler.cpp k601-prop-plugin.h
 k601dmn_LDADD = $(LDADD) $(DL)
 
 pafdmn_SOURCES = pafdmn.cc

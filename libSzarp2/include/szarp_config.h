@@ -268,8 +268,10 @@ protected:
 	std::unordered_map<std::wstring, TParam *> params_map; /**< map for params search by name */
 };
 
+class DeviceInfo: public TAttribHolder {};
+
 /** Device description */
-class TDevice: public TAttribHolder, public TNodeList<TDevice> {
+class TDevice: public DeviceInfo, public TNodeList<TDevice> {
 public:
 	TDevice(TSzarpConfig *parent);
 	/** Destroy whole list. */

@@ -67,6 +67,8 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 		std::vector<SendParamInfo*> sends;
 	};
 
+	class CDevice: public DeviceInfo {};
+
 public:
 	ConfigDealerHandler(const ArgsManager&);
 
@@ -79,13 +81,14 @@ public:
 
 	IPCParamInfo* GetParamToSend(const std::wstring& name) { return sent_params[name]; }
 
-	virtual std::vector<UnitInfo*> GetUnits() const { return units; }
-	virtual const IPCInfo& GetIPCInfo() const { return ipc_info; }
-	virtual bool GetSingle() const { return single; }
-	virtual std::string GetIPKPath() const { return IPKPath; }
-	virtual int GetLineNumber() const { return device_no; }
+	std::vector<UnitInfo*> GetUnits() const override { return units; }
+	DeviceInfo* GetDeviceInfo() const override { return device; }
+	const IPCInfo& GetIPCInfo() const override { return ipc_info; }
+	bool GetSingle() const override { return single; }
+	std::string GetIPKPath() const override { return IPKPath; }
+	int GetLineNumber() const override { return device_no; }
 
-	virtual size_t GetParamsCount() const { 
+	size_t GetParamsCount() const override { 
 		size_t count = 0;
 		for (const auto& u: units) {
 			count += u->GetParamsCount();
@@ -93,7 +96,7 @@ public:
 		return count;
 	}
 
-	virtual size_t GetSendsCount() const {
+	size_t GetSendsCount() const override {
 		size_t count = 0;
 		for (const auto& u: units) {
 			count += u->GetSendParamsCount();
@@ -101,18 +104,19 @@ public:
 		return count;
 	}
 
-	virtual size_t GetFirstParamIpcInd() const { return ipc_offset; }
-	virtual std::vector<size_t> GetSendIpcInds() const { return sends_inds; }
+	size_t GetFirstParamIpcInd() const override { return ipc_offset; }
+	std::vector<size_t> GetSendIpcInds() const override { return sends_inds; }
 
-	virtual std::string GetPrintableDeviceXMLString() const { return device_xml; }
+	std::string GetPrintableDeviceXMLString() const override { return device_xml; }
 
 	// TODO
-	virtual timeval GetDeviceTimeval() const { return timeval{10, 0}; }
+	timeval GetDeviceTimeval() const override { return timeval{10, 0}; }
 
 protected:
 	IPCInfo ipc_info;
 
 	std::vector<UnitInfo*> units;
+	DeviceInfo* device;
 	std::vector<size_t> sends_inds;
 	size_t params_count;
 	std::unordered_map<std::wstring, IPCParamInfo*> sent_params;

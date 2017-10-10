@@ -370,8 +370,6 @@ class Daemon {
 				}
 
 				ul->ipc = new IPCHandler(cfg);
-				if (ul->ipc->Init())
-					throw Exception("Error connecting to parcook");
 				ul->param_buf = ul->ipc->m_read;
 				
 				/*Assign part of a buffer for each unit*/
@@ -876,10 +874,10 @@ class Daemon {
 		}
 
 		TDevice* dev = dc->GetDevice();
-		if (!sp->Open(SC::S2A(dev->GetPath()).c_str(),
-				dev->getAttribute("speed"),
-				dev->getAttribute("extra:stopbits"))) {
-			sz_log(0,"Unable to open serial port %s.",dev->getAttribute("path"));
+		if (!sp->Open(dev->getAttribute("path").c_str(),
+				dev->getAttribute<int>("speed"),
+				dev->getAttribute<int>("extra:stopbits"))) {
+			sz_log(0,"Unable to open serial port %s.",dev->getAttribute("path").c_str());
 			exit(1);
 		}
 
