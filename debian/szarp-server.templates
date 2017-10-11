@@ -12,7 +12,7 @@ _Description: Shall I create szbase catalog?
 
 Template: szarp/szbase_type
 Type: select
-Choices: sz4, sz3
+Choices: sz4, sz3, sz3+sz4
 Default: sz4
 _Description: Database type
  Select the SZARP database type to use.
