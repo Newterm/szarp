@@ -35,8 +35,8 @@
 #ifdef __arm__
 	typedef double float_sum_type;
 #else
-	#include <boost/multiprecision/float128.hpp>
-	typedef boost::multiprecision::float128 float_sum_type;
+	// use mpf 128 once it can read scientific notation
+	typedef double float_sum_type;
 #endif
 
 
