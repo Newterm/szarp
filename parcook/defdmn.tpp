@@ -70,11 +70,15 @@ class BaseParamImpl: public DefParamBase {
 public:
 	BaseParamImpl(TParam* param, size_t index): DefParamBase(param, index), val(0), t() {}
 	void setZmqVal(zmqhandler& zmq) const override {
-		zmq.set_value(index, sz4::getTimeNow<time_type>(), val);
+		// val is a double, as we are using them in RPNs and LUAs regardless if data_type
+		if (val == sz4::no_data<double>())
+			zmq.set_value(index, sz4::getTimeNow<time_type>(), sz4::no_data<data_type>());
+		else
+			zmq.set_value(index, sz4::getTimeNow<time_type>(), static_cast<data_type>(val));
 	}
 
 	void sendValueToParcook(short* read) const override {
-		data_type val_to_parcook = val;
+		data_type val_to_parcook = static_cast<data_type>(val);
 
 		for (int i = this->param->GetPrec(); i > 0; i--) {
 			val_to_parcook*= 10;
@@ -85,11 +89,11 @@ public:
 	}
 
 	void setVal(double d) override { // copy the value
-		val = (data_type) d;
+		val = d;
 	}
 
 private:
-	data_type val;
+	double val;
 	mutable time_type t;
 
 };
@@ -143,12 +147,22 @@ public:
 
 		lua_pushnumber(lua, (double) sz4::getTimeNow<sz4::nanosecond_time_t>());
 		lua_pushnumber(lua, SZARP_PROBE_TYPE::PT_SEC10);
-		lua_pushnumber(lua, 1);
 
-		int ret = lua_pcall(lua, 3, 1, 0);
-		if (ret != 0) throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + lua_tostring(lua, -1));
+		int ret = lua_pcall(lua, 2, 1, 0);
+		if (ret != 0) {
+			auto msg = lua_tostring(lua, -1);
+			lua_pop(lua, -1);
 
-		double result = lua_isnil(lua, -1)? sz4::no_data<v>() : lua_tonumber(lua, -1);
+			this->setVal(sz4::no_data<double>());
+			this->setZmqVal(zmq);
+
+			throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + std::string(". Reason: ") + msg);
+		}
+
+		double result = lua_isnil(lua, -1)? sz4::no_data<double>() : lua_tonumber(lua, -1);
+		lua_pop(lua, -1);
+
+		sz_log(10, "Value calculated for param %ls is %f.", this->param->GetName().c_str(), result);
 
 		this->setVal(result);
 		this->setZmqVal(zmq);
@@ -185,7 +199,7 @@ public:
 		int NullFormula = 0;
 		int p_no = 0;
 		float val_op = 0.0f; 
-		this->setVal(sz4::no_data<v>());
+		this->setVal(sz4::no_data<double>());
 
 		CalculNoData = 0;
 
@@ -368,11 +382,11 @@ public:
 						if (sp-- < 2)
 							break;
 						if (CalculNoData)
-							this->setVal(SZARP_NO_DATA);
+							this->setVal(sz4::no_data<double>());
 						else if (NullFormula)
 							break;
 						else if (nodata[sp-1]) {
-							this->setVal(SZARP_NO_DATA);
+							this->setVal(sz4::no_data<double>());
 						} else 
 							this->setVal(stack[sp - 1]);
 						break;
