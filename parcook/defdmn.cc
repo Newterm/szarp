@@ -184,11 +184,12 @@ void Defdmn::configure(int* argc, char** argv) {
 	char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 
 	Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
-	m_zmq.reset(new zmqhandler(m_cfg.get(), *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
+	m_zmq.reset(new zmqhandler(m_cfg.get(), context, sub_address, pub_address)); // TODO: in single publish on another address
 	sz_log(2, "ZMQ initialized successfully");
 
 	registerLuaFunctions();
 
+	size_t i = 0;
 	for (TUnit* unit = dev->GetFirstUnit(); unit; unit = unit->GetNext()) {
 		for (TParam * p = unit->GetFirstParam(); p; p = p->GetNext()) {
 			if (p->GetLuaScript()) {

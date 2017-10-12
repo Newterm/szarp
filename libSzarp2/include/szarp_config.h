@@ -327,7 +327,7 @@ protected:
 
 class Sz4ParamInfo: public TAttribHolder {
 public:
-	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, LAST_DATA_TYPE = DOUBLE} DataType;
+	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, UINT, USHORT, LAST_DATA_TYPE = USHORT} DataType;
 	virtual DataType GetDataType() const { return _data_type; }
 	virtual void SetDataType(DataType data_type) { _data_type = data_type; }
 
@@ -552,8 +552,6 @@ public:
 	void SetLuaExecParam(LuaExec::Param *param);
 #endif 
 #endif
-
-	typedef enum { SHORT = 0, INT, FLOAT, DOUBLE, UINT, USHORT, LAST_DATA_TYPE = USHORT} DataType;
 
 // Set by TParam
 protected:

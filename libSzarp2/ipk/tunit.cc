@@ -64,7 +64,7 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 
 
 	if (!xw.NextTag())
-		return 1;
+		throw std::runtime_error(std::string("Unexpected end of tags in unit no ") + std::to_string(GetUnitNo()));
 
 	for (;;) {
 		if (xw.IsTag("param")) {
@@ -73,8 +73,7 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 					p = params = parentSzarpConfig->createParam(this);
 				else
 					p = p->Append(parentSzarpConfig->createParam(this));
-				if (p->parseXML(reader))
-					return 1;
+				p->parseXML(reader);
 			}
 		} else
 		if (xw.IsTag("unit")) {
@@ -86,15 +85,14 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 					sp = sendParams = new TSendParam(this);
 				else
 					sp = sp->Append(new TSendParam(this));
-				if (sp->parseXML(reader))
-					return 1;
+				sp->parseXML(reader);
 			}
 		}
 		else {
 			xw.XMLErrorNotKnownTag("unit");
 		}
 		if (!xw.NextTag())
-			return 1;
+			throw std::runtime_error(std::string("Unexpected end of tags in unit no ") + std::to_string(GetUnitNo()));
 	}
 
 	return 0;
@@ -114,15 +112,13 @@ int TUnit::parseXML(xmlNodePtr node)
 				p = params = parentSzarpConfig->createParam(this);
 			else
 				p = p->Append(parentSzarpConfig->createParam(this));
-			if (p->parseXML(ch))
-				return 1;
+			p->parseXML(ch);
 		} else if (!strcmp((char *)ch->name, "send")) {
 			if (sendParams == NULL)
 				sp = sendParams = new TSendParam(this);
 			else
 				sp = sp->Append(new TSendParam(this));
-			if (sp->parseXML(ch))
-				return 1;
+			sp->parseXML(ch);
 		}
 	}
 	return 0;

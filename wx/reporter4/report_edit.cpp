@@ -38,14 +38,14 @@
 #include "../common/cconv.h"
 
 int param_filter(TParam *p) {
-	TParam::FormulaType ft = p->GetFormulaType();
+	FormulaType ft = p->GetFormulaType();
 
 	int ret = 1;
 
-	if (ft == TParam::NONE 
-			|| ft == TParam::RPN
-			|| ft == TParam::LUA_IPC
-			|| (ft == TParam::DEFINABLE && p->GetType() == ParamType::COMBINED))
+	if (ft == FormulaType::NONE 
+			|| ft == FormulaType::RPN
+			|| ft == FormulaType::LUA_IPC
+			|| (ft == FormulaType::DEFINABLE && p->GetType() == ParamType::COMBINED))
 		ret = 0;
 
 	return ret;

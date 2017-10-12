@@ -308,7 +308,7 @@ public:
 	void data_ready(struct bufferevent *bufev, int fd) override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, serial_port_configuration& spc);
+	int configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc);
 	void configure_ushort_register (unsigned int pnu);
 	void configure_uinteger_register (unsigned int pnu);
 	void configure_integer_register (unsigned int pnu);
@@ -505,7 +505,7 @@ struct event_base *fc_proto::get_event_base()
 	return m_event_base;
 }
 
-int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, serial_port_configuration& spc)
+int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc)
 {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
@@ -513,78 +513,41 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 	m_read = read;
 	m_send = send;
 
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
-	xp_ctx->node = node;
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
+	const long long nanosec_conv_factor = 1000000000;
+	m_expiration_time = unit->getAttribute<int>("extra:nodata-timeout", 60) * nanosec_conv_factor;
 
-	m_expiration_time = 0;
-	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, true)) {
-		m_log.log(0, "Invalid extra:nodata-timeout specified, error");
-		return 1;
-	}
-	if (!m_expiration_time) {
-		m_log.log(7, "extra:nodata-timeout not specified, assuming 1 minute data expiration");
-		m_expiration_time = 60;
-	}
-	m_expiration_time *= 1000000000;
-
-	std::string _extra_id;
-	if (get_xml_extra_prop(node, "id", _extra_id)) {
-		m_log.log(0, "Invalid or missing extra:id attribute in param element at line: %ld", xmlGetLineNo(node));
-		return 1;
-	}
-
-	const int l = boost::lexical_cast<int>(_extra_id);
+	auto l = unit->getAttribute<int>("extra:id", -1);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (line %ld)", l, xmlGetLineNo(node));
+		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
 		return 1;
 	}
 	/* ADR is address + 128 */
 	m_extra_id = l + 128;
 	m_log.log(10, "configure extra:id: %02X", m_extra_id);
 
-	for(unsigned int i = 0; i < m_read_count; ++i) {
-		char *expr;
-		if(asprintf(&expr, ".//ipk:param[position()=%d]", i+1) == -1) {
-			m_log.log(0, "Error occured when finding param");
+	for(auto param: unit->GetParams()) {
+		try {
+			const unsigned int pnu = param->getAttribute<unsigned>("extra:parameter-number");
+			m_log.log(10, "configure extra:parameter-number: %d", pnu);
 
-		}
-		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		free(expr);
+			std::string val_type = param->getAttribute<std::string>("extra:val_type");
+			if (val_type == "ushort") {
+				configure_ushort_register(pnu);
+			}
+			else if (val_type == "uinteger") {
+				configure_uinteger_register(pnu);
+			}
+			else if (val_type == "integer") {
+				configure_integer_register(pnu);
+			}
+			else {
+				m_log.log(0, "Unsupported value type: %s, for param %ls", val_type.c_str(), param->GetName().c_str());
+				return 1;
+			}
 
-		if (pnode == NULL)
-			throw std::runtime_error("Error occured when getting parameter node");
-
-		std::string _pnu;
-		m_log.log(10, "extra:param %s", _pnu.c_str());
-		if (get_xml_extra_prop(pnode, "parameter-number", _pnu, false)) {
-			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param element at line %ld", xmlGetLineNo(pnode));
-			return 1;
-		}
-
-		const unsigned int pnu = boost::lexical_cast<unsigned int>(_pnu);
-		m_log.log(10, "configure extra:parameter-number: %d", pnu);
-
-		std::string val_type;
-		if (get_xml_extra_prop(pnode, "val_type", val_type, true)) {
-			m_log.log(0, "Invalid extra:val_type attribute in param element at line: %ld", xmlGetLineNo(pnode));
-			return 1;
-		}
-
-		if (val_type == "ushort") {
-			configure_ushort_register(pnu);
-		}
-		else if (val_type == "uinteger") {
-			configure_uinteger_register(pnu);
-		}
-		else if (val_type == "integer") {
-			configure_integer_register(pnu);
-		}
-		else {
-			m_log.log(0, "Unsupported value type: %s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
-			return 1;
+		} catch(const std::exception& e) {
+			m_log.log(0, "Error while configuring param %ls", param->GetName().c_str());
+			throw;
 		}
 	}
 

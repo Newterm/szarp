@@ -549,7 +549,7 @@ wxString ParamEdit::GetFormula() {
 	return m_formula_input->GetText();
 }
 
-TParam::FormulaType ParamEdit::GetFormulaType() {
+FormulaType ParamEdit::GetFormulaType() {
 	return m_formula_type_choice->GetSelection() == 0 ? FormulaType::LUA_VA : FormulaType::LUA_AV;
 }
 

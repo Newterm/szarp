@@ -263,6 +263,8 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 	TAttribHolder::parseXML(reader);
 
+	size_t device_no = 0;
+
 	for (;;) {
 		if (xw.IsTag("params")) {
 			if (xw.IsBeginTag()) {
@@ -288,12 +290,19 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 		} else
 		if (xw.IsTag("device")) {
 			if (xw.IsBeginTag()) {
+				++device_no;
+
 				if (devices == NULL)
 					devices = td = new TDevice(this);
 				else
 					td = td->Append(new TDevice(this));
 				assert(devices != NULL);
-				td->parseXML(reader);
+				try {
+					td->parseXML(reader);
+				} catch(const std::exception& e) {
+					sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+					return 1;
+				}
 			}
 		} else
 		if (xw.IsTag("defined")) {
@@ -344,6 +353,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
     TDevice *td = NULL;
     TParam *p = NULL;
     xmlNodePtr node, ch;
+	size_t device_no = 0;
 
     node = doc->children;
 	if (!node || SC::U2A(node->name) != "params") {
@@ -365,13 +375,20 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 
     for (i = 0, ch = node->children; ch; ch = ch->next) {
 	if (!strcmp((char *) ch->name, "device")) {
+		++device_no;
+
 	    if (devices == NULL)
 		devices = td = new TDevice(this);
 	    else
 		td = td->Append(new TDevice(this));
 	    assert(devices != NULL);
-	    if (td->parseXML(ch))
-		return 1;
+
+		try {
+			td->parseXML(ch);
+		} catch(const std::exception& e) {
+			sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+			return 1;
+		}
 	}
 	else if (!strcmp((char *) ch->name, "defined")) {
 	    for (xmlNodePtr ch2 = ch->children; ch2; ch2 = ch2->next)

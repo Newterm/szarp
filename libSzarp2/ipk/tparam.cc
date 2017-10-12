@@ -137,7 +137,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 	bool isFormula = false;
 
 	if (!xw.NextTag())
-		return 1;
+		throw std::runtime_error(std::string("Unexpected end of tags in param") + SC::S2A(GetName()));
 
 	for (;;) {
 		if (xw.IsTag("raport")) {
@@ -306,7 +306,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			xw.XMLErrorNotKnownTag("param");
 		}
 		if (!xw.NextTag())
-			return 1;
+			throw std::runtime_error(std::string("Unexpected end of tags in param") + SC::S2A(GetName()));
 	}
 
 	if (!hasAttribute("prec") && !_values) {
@@ -318,8 +318,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 
 int TParam::processAttributes() {
 	if (!hasAttribute("name")) {
-		sz_log(0, "No attribute name in param! Cannot continue!");
-		return 1;
+		throw std::runtime_error("No attribute name in param! Cannot continue!");
 	}
 
     _name = SC::A2S(getAttribute("name"));
@@ -330,15 +329,18 @@ int TParam::processAttributes() {
 	auto data_type_attr = getAttribute<std::string>("data_type", "short");
 	if (data_type_attr == "short") {
 		_data_type = SHORT;
+	} else if (data_type_attr == "ushort") {
+		_data_type = USHORT;
 	} else if (data_type_attr == "float") {
 		_data_type = FLOAT;
 	} else if (data_type_attr == "double") {
 		_data_type = DOUBLE;
-	} else if (data_type_attr == "int") {
+	} else if (data_type_attr == "int" || data_type_attr == "integer") {
 		_data_type = INT;
+	} else if (data_type_attr == "uint" || data_type_attr == "uinteger") {
+		_data_type = UINT;
 	} else {
-		sz_log(0, (std::string("Unknown data_type attribute in param ")+SC::S2A(GetName())).c_str());
-		return 1;
+		throw std::runtime_error(std::string("Unknown data_type attribute in param ")+SC::S2A(GetName()));
 	}
 	
 	auto time_type_attr = getAttribute<std::string>("time_type", "second");
@@ -347,8 +349,7 @@ int TParam::processAttributes() {
 	} else if (time_type_attr == "nanosecond") {
 		_time_type = NANOSECOND;
 	} else {
-		sz_log(0, (std::string("Unknown time_type attribute in param ")+SC::S2A(GetName())).c_str());
-		return 1;
+		throw std::runtime_error(std::string("Unknown time_type attribute in param ")+SC::S2A(GetName()));
 	}
 
 	auto base_ind_attr = getAttribute<std::string>("base_ind", "auto");
@@ -364,18 +365,17 @@ int TParam::processAttributes() {
 int
 TParam::parseXML(xmlNodePtr node)
 {
+	if (TAttribHolder::parseXML(node)) return 1;
+
 #define NOATR(p, n) \
 {\
-	sz_log(1, "XML parsing error: attribute '%s' in node '%s' not found (line %ld)", n, SC::U2A(p->name).c_str(), xmlGetLineNo(p)); \
-	return 1; \
+	throw std::runtime_error(std::string("Attribute ") +SC::U2A(p->name)+ std::string(" not found int param ") + SC::S2A(GetName()));\
 }
 #define NEEDATR(p, n) \
 	if (c) xmlFree(c); \
 	c = xmlGetNoNsProp(p, (xmlChar *)n); \
 	if (!c) NOATR(p, n);
 #define X (xmlChar*)
-
-	if (TAttribHolder::parseXML(node)) return 1;
 
     if (_parentSzarpConfig)
 		_parentSzarpConfig->AddParamToNamesCache(this);
@@ -428,8 +428,7 @@ TParam::parseXML(xmlNodePtr node)
     }
 
     if (!hasAttribute("prec") && !_values) {
-		sz_log(0, (std::string("No precision attribute in param") + SC::S2A(GetName())).c_str());
-		return 1;
+		throw std::runtime_error(std::string("No precision attribute in param") + SC::S2A(GetName()));
     }
 
     for (ch = node->children; ch; ch = ch->next)
@@ -437,12 +436,10 @@ TParam::parseXML(xmlNodePtr node)
 	    break;
 
     if (ch == NULL) {
-	if (_parentUnit)
-	    return 0;
-sz_log(1,
-	    "XML file error: no definition for defined parameter found (line %ld)",
-	    xmlGetLineNo(node));
-	return 1;
+		if (_parentUnit)
+			return 0;
+
+		throw std::runtime_error(std::string("No definition for defined parameter found in param") + SC::S2A(GetName()));
     }
 
     _param_type = ParamType::REAL;
@@ -466,10 +463,7 @@ sz_log(1,
 	else if (!strcmp((char*)c, "ipc"))
 		_ftype = FormulaType::LUA_IPC;
 	else {
-	    sz_log(1,
-	    	"XML file error: unknown value for 'lua_formula' attribute (line %ld)",
-	    	xmlGetLineNo(node));
-	    return 1;
+		throw std::runtime_error(std::string("Unknown value for 'lua_formula' attribute in param") + SC::S2A(GetName()));
 	}
 
 	if (_ftype == FormulaType::LUA_VA || _ftype == FormulaType::LUA_AV) {
@@ -515,10 +509,7 @@ sz_log(1,
 	}
 
     else { // unknown type
-sz_log(1,
-	    "XML file error: unknown value for 'type' attribute (line %ld)",
-	    xmlGetLineNo(node));
-	return 1;
+		throw std::runtime_error(std::string("unknown value for 'type' attribute in param") + SC::S2A(GetName()));
     }
 
 #ifndef NO_LUA
@@ -528,12 +519,11 @@ sz_log(1,
 	    break;
 
     if (cld != NULL) {
-	if (cld->children != NULL) {
-	    _script = xmlNodeListGetString(cld->doc, cld->children, 1);
-	} else {
-	    sz_log(1, "Parse error, line (%ld), LUA definable param has no child element named script", xmlGetLineNo(ch));
-	    return 1;
-	}
+		if (cld->children != NULL) {
+			_script = xmlNodeListGetString(cld->doc, cld->children, 1);
+		} else {
+			throw std::runtime_error(std::string("LUA definable param has no child element named script in param") + SC::S2A(GetName()));
+		}
     }
 
     if (_param_type == ParamType::LUA)

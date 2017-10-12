@@ -66,8 +66,7 @@ int TDevice::parseXML(xmlNodePtr node)
 				u = u->Append(parentSzarpConfig->createUnit(this));
 			}
 			assert(u != NULL);
-			if (u->parseXML(ch))
-				return 1;
+			u->parseXML(ch);
 		}
 	return 0;
 }
@@ -87,7 +86,7 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 	}
 
 	if (!xw.NextTag())
-		return 1;
+		throw std::runtime_error("Unexpected end of tags in device");
 
 	for (;;) {
 		if (xw.IsTag("unit")) {
@@ -98,8 +97,7 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 					u = u->Append(parentSzarpConfig->createUnit(this));
 				}
 				assert (u != NULL);
-				if (u->parseXML(reader))
-					return 1;
+				u->parseXML(reader);
 			}
 		} else
 		if (xw.IsTag("device")) {
@@ -109,7 +107,8 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 			xw.XMLErrorNotKnownTag("device");
 		}
 
-		if (!xw.NextTag()) return 1;
+		if (!xw.NextTag())
+			throw std::runtime_error("Unexpected end of tags in device");
 	}
 
 	return 0;

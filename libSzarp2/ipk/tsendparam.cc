@@ -57,8 +57,7 @@ int TSendParam::processAttributes() {
 	else if (type_attr == "day")
 		type = DAY;
 	else {
-		sz_log(0, "Invalid probe type in send param %ls", paramName.c_str());
-		return 1;
+		throw std::runtime_error(std::string("Invalid probe type in send param") + SC::S2A(paramName));
 	}
 
 	configured = hasAttribute("param") || hasAttribute("value");

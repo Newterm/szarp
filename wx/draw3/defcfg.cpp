@@ -558,7 +558,7 @@ DefinedParam::DefinedParam(wxString base_prefix,
 				wxString unit,
 				wxString formula,
 				int prec,
-				TParam::FormulaType type,
+				FormulaType type,
 				time_t start_time,
 				bool network_param) {
 
@@ -934,7 +934,7 @@ wxString DefinedParam::GetFormula() {
 	return m_formula;
 }
 
-TParam::FormulaType DefinedParam::GetFormulaType() {
+FormulaType DefinedParam::GetFormulaType() {
 	return m_type;
 }
 
@@ -958,7 +958,7 @@ void DefinedParam::SetFormula(wxString formula) {
 	m_formula = formula;
 }
 
-void DefinedParam::SetFormulaType(TParam::FormulaType type) {
+void DefinedParam::SetFormulaType(FormulaType type) {
 	m_type = type;
 }
 

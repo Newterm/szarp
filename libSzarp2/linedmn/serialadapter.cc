@@ -1,6 +1,9 @@
 #include "serialadapter.h"
 #include <linux/serial_reg.h>
 
+const int SerialAdapter::DEFAULT_DATA_PORT;
+const int SerialAdapter::DEFAULT_CMD_PORT;
+
 SerialAdapter::SerialAdapter(struct event_base* base,
 		bool enable_fifo, bool server_CN2500)
 	:
