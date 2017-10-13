@@ -142,7 +142,7 @@ borutadmn_z_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DA
 
 sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)
 
-sbusdmn_SOURCES = sbusdmn.cc
+sbusdmn_SOURCES = sbusdmn.cc cfgdealer_handler.cpp
 
 ddedmn_SOURCES = ddedmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++

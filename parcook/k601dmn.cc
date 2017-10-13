@@ -242,8 +242,10 @@ void KamstrupInfo::parseXML(DaemonConfigInfo * cfg)
 	for (auto i = 0; i < m_params_count; i++) {
 		auto latch = false;
 		for (auto j = 0; j < i; j++) {
-			if (m_params[i].reg == registers[j])
+			if (m_params[i].reg == registers[j]) {
 				latch = true;
+				break;
+			}
 		}
 
 		if (!latch) {
@@ -447,15 +449,14 @@ protected:
 
 void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
-	sz_log(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
+	sz_log(0, "%s: ReadError, closing connection..", m_id.c_str());
 	m_serial_port->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
 }
 
 void K601Daemon::SetConfigurationFinished(const BaseConnection *conn) {
-	std::string info = m_id + ": SetConfigurationFinished.";
-	sz_log(2, "%s: %s", m_id.c_str(), info.c_str());
+	sz_log(2, "%s: SetConfigurationFinished", m_id.c_str());
 	m_state = SEND;
 	m_curr_register = 0;
 	ScheduleNext();
@@ -692,7 +693,7 @@ void K601Daemon::Do()
 				m_serial_port->Close();
 				m_serial_port->Open();
 			} catch (SerialPortException &e) {
-				sz_log(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
+				sz_log(0, "%s: Restart failed: %s", m_id.c_str(), e.what());
 				SetNoData();
 				ipc->GoParcook();
 				wait_ms = RESTART_INTERVAL_MS;

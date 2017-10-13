@@ -9,6 +9,7 @@
 #include <libxml/xmlreader.h>
 #include "conversion.h"
 #include <sstream>
+#include <boost/optional.hpp>
 
 namespace pt = boost::property_tree;
 
@@ -27,21 +28,27 @@ public:
 	// throws
 	template <typename RT = std::string>
 	RT getAttribute(std::string attr_name) const {
-		auto attr = attrs.find(attr_name);
-		if (attr != attrs.end()) {
-			return boost::lexical_cast<RT>(attr->second);
-		}
+		auto opt = getOptAttribute<RT>(attr_name);
+		if (opt) return *opt;
 
 		throw std::runtime_error("Attribute "+attr_name+" not present! Cannot continue!");
 	}
 
 	template <typename RT>
 	RT getAttribute(std::string attr_name, const RT& fallback) const {
+		return getOptAttribute<RT>(attr_name).get_value_or(fallback);
+	}
+
+	template <typename RT>
+	boost::optional<RT> getOptAttribute(std::string attr_name) const {
 		try {
-			return getAttribute<RT>(attr_name);
-		} catch(...) {
-			return fallback;
-		}
+			auto attr = attrs.find(attr_name);
+			if (attr != attrs.end()) {
+				return boost::lexical_cast<RT>(attr->second);
+			}
+		} catch(...) {}
+
+		return boost::none;
 	}
 
 	bool hasAttribute(std::string attr_name) const {

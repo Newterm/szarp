@@ -137,7 +137,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 	bool isFormula = false;
 
 	if (!xw.NextTag())
-		throw std::runtime_error(std::string("Unexpected end of tags in param") + SC::S2A(GetName()));
+		throw std::runtime_error(std::string("Unexpected end of tags in param ") + SC::S2A(GetName()));
 
 	for (;;) {
 		if (xw.IsTag("raport")) {
@@ -306,7 +306,7 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 			xw.XMLErrorNotKnownTag("param");
 		}
 		if (!xw.NextTag())
-			throw std::runtime_error(std::string("Unexpected end of tags in param") + SC::S2A(GetName()));
+			throw std::runtime_error(std::string("Unexpected end of tags in param ") + SC::S2A(GetName()));
 	}
 
 	if (!hasAttribute("prec") && !_values) {
@@ -428,7 +428,7 @@ TParam::parseXML(xmlNodePtr node)
     }
 
     if (!hasAttribute("prec") && !_values) {
-		throw std::runtime_error(std::string("No precision attribute in param") + SC::S2A(GetName()));
+		throw std::runtime_error(std::string("No precision attribute in param ") + SC::S2A(GetName()));
     }
 
     for (ch = node->children; ch; ch = ch->next)
@@ -439,7 +439,7 @@ TParam::parseXML(xmlNodePtr node)
 		if (_parentUnit)
 			return 0;
 
-		throw std::runtime_error(std::string("No definition for defined parameter found in param") + SC::S2A(GetName()));
+		throw std::runtime_error(std::string("No definition for defined parameter found in param ") + SC::S2A(GetName()));
     }
 
     _param_type = ParamType::REAL;
@@ -463,7 +463,7 @@ TParam::parseXML(xmlNodePtr node)
 	else if (!strcmp((char*)c, "ipc"))
 		_ftype = FormulaType::LUA_IPC;
 	else {
-		throw std::runtime_error(std::string("Unknown value for 'lua_formula' attribute in param") + SC::S2A(GetName()));
+		throw std::runtime_error(std::string("Unknown value for 'lua_formula' attribute in param ") + SC::S2A(GetName()));
 	}
 
 	if (_ftype == FormulaType::LUA_VA || _ftype == FormulaType::LUA_AV) {
@@ -509,7 +509,7 @@ TParam::parseXML(xmlNodePtr node)
 	}
 
     else { // unknown type
-		throw std::runtime_error(std::string("unknown value for 'type' attribute in param") + SC::S2A(GetName()));
+		throw std::runtime_error(std::string("unknown value for 'type' attribute in param ") + SC::S2A(GetName()));
     }
 
 #ifndef NO_LUA
@@ -522,7 +522,7 @@ TParam::parseXML(xmlNodePtr node)
 		if (cld->children != NULL) {
 			_script = xmlNodeListGetString(cld->doc, cld->children, 1);
 		} else {
-			throw std::runtime_error(std::string("LUA definable param has no child element named script in param") + SC::S2A(GetName()));
+			throw std::runtime_error(std::string("LUA definable param has no child element named script in param ") + SC::S2A(GetName()));
 		}
     }
 
