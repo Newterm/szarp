@@ -14,7 +14,7 @@ AM_CPPFLAGS = \
 	-I@srcdir@/../../../libSzarp2/include \
 	@XML_CFLAGS@ @XSLT_CFLAGS@ @LUA_CFLAGS@
 
-LIBSZARP=../../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
+LIBSZARP=../../../libSzarp/libSzarp.la
 LIBSZARP2=../../../libSzarp2/libSzarp2.la
 
 LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \

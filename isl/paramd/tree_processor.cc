@@ -70,7 +70,7 @@ char *TreeProcessor::processXML(xmlNodePtr node, int *code, const char* attribut
 	/* check if it's request for attrribute */
 	xmlOutputBufferPtr out_buf = xmlAllocOutputBuffer(NULL);
 	if (out_buf == NULL) {
-		sz_log(0, "cannot allocate xml output buffer");
+		sz_log(1, "cannot allocate xml output buffer");
 		*code = 500;
 		return NULL;
 	}
@@ -160,7 +160,7 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 
 	xmlOutputBufferPtr out_buf = xmlAllocOutputBuffer(NULL);
 	if (out_buf == NULL) {
-		sz_log(0, "cannot allocate xml output buffer");
+		sz_log(1, "cannot allocate xml output buffer");
 		*code = 500;
 		return NULL;
 	}

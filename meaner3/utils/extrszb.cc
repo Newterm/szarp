@@ -213,11 +213,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 's':
 			if (arguments->year >= 0) {
-				sz_log(0, "Option -m cannot be used together with -s or -e.");
+				sz_log(1, "Option -m cannot be used together with -s or -e.");
 				argp_usage(state);
 			}
 			if (strptime(arg, arguments->date_format, &tm) == NULL) {
-				sz_log(0, "Failed to parse start date '%s'", arg);
+				sz_log(1, "Failed to parse start date '%s'", arg);
 				return -1;
 			}
 			tm.tm_isdst = -1;
@@ -225,11 +225,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 'e':
 			if (arguments->year >= 0) {
-				sz_log(0, "Option -m cannot be used together with -s or -e.");
+				sz_log(1, "Option -m cannot be used together with -s or -e.");
 				argp_usage(state);
 			}
 			if (strptime(arg, arguments->date_format, &tm) == NULL) {
-				sz_log(0, "Failed to parse end date '%s'", arg);
+				sz_log(1, "Failed to parse end date '%s'", arg);
 				return -1;
 			}
 			tm.tm_isdst = -1;
@@ -238,16 +238,16 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 'm':
 			if ((arguments->start_time >= 0) || 
 					(arguments->end_time >= 0)) {
-				sz_log(0, "Option -m cannot be used together with -s or -e.");
+				sz_log(1, "Option -m cannot be used together with -s or -e.");
 				argp_usage(state);
 			}
 			if (strlen(arg) != 6) {
-				sz_log(0, "Bad format for month: '%s', should be YYYYMM", arg);
+				sz_log(1, "Bad format for month: '%s', should be YYYYMM", arg);
 				return -1;
 			}
 			for (int i = 0; i < 6; i++)
 				if (!isdigit(arg[i])) {
-					sz_log(0, "Bad format for month, digit expected, got '%c' at position %d",
+					sz_log(1, "Bad format for month, digit expected, got '%c' at position %d",
 							arg[i], i + 1);
 					return ARGP_ERR_UNKNOWN;
 				}
@@ -277,7 +277,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 				arguments->probe = PT_CUSTOM;
 				arguments->probe_length = atoi(arg);
 				if (arguments->probe_length <= 0) {
-					sz_log(0, "Bad value for probe type (%s)", arg);
+					sz_log(1, "Bad value for probe type (%s)", arg);
 					return -1;
 				}
 			}
@@ -291,7 +291,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 'S' :
 			if (strlen(arg) != 1) {
-				sz_log(0, "Bad decimal separator '%s' - one character expected",
+				sz_log(1, "Bad decimal separator '%s' - one character expected",
 						arg);
 				return -1;
 			}
@@ -304,21 +304,21 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 'c':
 			if (arguments->openoffice || arguments->xml) {
-				sz_log(0, "Option -c cannot be used with -x or -O");
+				sz_log(1, "Option -c cannot be used with -x or -O");
 				return -1;
 			};
 			arguments->csv = 1;
 			break;
 		case 'X':
 			if (arguments->openoffice || arguments->xml) {
-				sz_log(0, "Option -X cannot be used with -x or -O");
+				sz_log(1, "Option -X cannot be used with -x or -O");
 				return -1;
 			};
 			arguments->sum = 1;
 			break;
 		case 'x':
 			if (arguments->openoffice || arguments->csv || arguments->sum) {
-				sz_log(0, "Option -x cannot be used with -c, -d, -X or -O");
+				sz_log(1, "Option -x cannot be used with -c, -d, -X or -O");
 				return -1;
 			};
 			arguments->xml = 1;
@@ -328,14 +328,14 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 'O':
 			if (arguments->xml || arguments->csv || arguments->sum) {
-				sz_log(0, "Option -O cannot be used with -c, -d, -X or -x");
+				sz_log(1, "Option -O cannot be used with -c, -d, -X or -x");
 				return -1;
 			};
 			arguments->openoffice = 1;
 			break;
 		case 'd':
 			if (arguments->openoffice || arguments->xml) {
-				sz_log(0, "Option -d cannot be used with -x or -O");
+				sz_log(1, "Option -d cannot be used with -x or -O");
 				return -1;
 			};
 			arguments->csv = 1;
@@ -367,7 +367,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case ARGP_KEY_END:
 			arguments->params_count += state->arg_num;
 			if (arguments->params_count < 1) {
-				sz_log(0, "Error: no parameters to extract");
+				sz_log(1, "Error: no parameters to extract");
 				argp_usage(state);
 				return -1;
 			}
@@ -492,13 +492,13 @@ int main(int argc, char* argv[])
 	if (err != 0)
 		return err;
 	if (arguments.openoffice && !arguments.output) {
-		sz_log(0, "Option -O requires also -o.");
+		sz_log(1, "Option -O requires also -o.");
 		return 1;
 	}
 	if (arguments.year < 0) {
 		/* check start and end date */
 		if ((arguments.start_time < 0) || (arguments.end_time < 0)) {
-			sz_log(0, "Option -m or both -s and -e are required");
+			sz_log(1, "Option -m or both -s and -e are required");
 			return 1;
 		}
 	}
@@ -518,7 +518,7 @@ int main(int argc, char* argv[])
 	
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
-		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
+		sz_log(1, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
 	}
 
@@ -531,7 +531,7 @@ int main(int argc, char* argv[])
 	} else {
 		Szbase::Init(SC::L2S(szarp_data_root), NULL);
 		if (arguments.prober_address) {
-			sz_log(0, "Prober address: %s", arguments.prober_address);
+			sz_log(1, "Prober address: %s", arguments.prober_address);
 			Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
 				SC::L2S(arguments.prober_address),
 				arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");
@@ -553,7 +553,7 @@ int main(int argc, char* argv[])
 				arguments.month, arguments.probe_length);
 	if ((err = extr->SetParams(arguments.params))
 			> 0) {
-		sz_log(0, "Parameter with name '%s' can not be read", 
+		sz_log(1, "Parameter with name '%s' can not be read", 
 				SC::U2A(SC::S2U(arguments.params[err - 1].name)).c_str());
 		return 1;
 	}
@@ -565,7 +565,7 @@ int main(int argc, char* argv[])
 		if (arguments.output != NULL) {
 			output = fopen(arguments.output, "w");
 			if (output == NULL) {
-				sz_log(0, "Error creating output file '%s', errno %d",
+				sz_log(1, "Error creating output file '%s', errno %d",
 						arguments.output, errno);
 				return 1;
 			}
@@ -602,31 +602,31 @@ int main(int argc, char* argv[])
 		case SzbExtractor::ERR_OK :
 			break;
 		case SzbExtractor::ERR_NOIMPL :
-			sz_log(0, "Error: function not implemented");
+			sz_log(1, "Error: function not implemented");
 			break;
 		case SzbExtractor::ERR_CANCEL :
-			sz_log(0, "Error: extraction canceled by user");
+			sz_log(1, "Error: extraction canceled by user");
 			break;
 		case SzbExtractor::ERR_XMLWRITE :
-			sz_log(0, "Error: XMLWriter error, program or libxml2 bug");
+			sz_log(1, "Error: XMLWriter error, program or libxml2 bug");
 			break;
 		case SzbExtractor::ERR_SYSERR :
 			perror("Error: system error");
 			break;
 		case SzbExtractor::ERR_ZIPCREATE :
-			sz_log(0, "Error: cannot create zip file");
+			sz_log(1, "Error: cannot create zip file");
 			break;
 		case SzbExtractor::ERR_ZIPADD :
-			sz_log(0, "Error: error adding content to zip file");
+			sz_log(1, "Error: error adding content to zip file");
 			break;
 		case SzbExtractor::ERR_LOADXSL :
-			sz_log(0, "Error: error loading XSLT stylesheet");
+			sz_log(1, "Error: error loading XSLT stylesheet");
 			break;
 		case SzbExtractor::ERR_TRANSFORM :
-			sz_log(0, "Error: error applying XSL stylesheet");
+			sz_log(1, "Error: error applying XSL stylesheet");
 			break;
 		default:
-			sz_log(0, "Error: unknown error (bug?)");
+			sz_log(1, "Error: unknown error (bug?)");
 			break;
 	}
 	

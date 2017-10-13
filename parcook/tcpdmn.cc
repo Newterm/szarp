@@ -247,7 +247,7 @@ int TCPServer::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 	long l;
 
 	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-port",	dev_num) == -1) {
-			sz_log(0, "error occured reading tcp:tcp-port");
+			sz_log(1, "error occured reading tcp:tcp-port");
 			free(e);
 			return 1;
 	}
@@ -260,14 +260,14 @@ int TCPServer::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for tcp-port, number expected",
+		sz_log(1, "incorrect value '%s' for tcp-port, number expected",
 				SC::U2A(c).c_str());
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 0xFFFF)) {
-		sz_log(0, "value '%ld' for tcp-port outside range [1..%d]",
+		sz_log(1, "value '%ld' for tcp-port outside range [1..%d]",
 				l, 0xFFFF);
 		return 1;
 	}
@@ -282,7 +282,7 @@ int TCPServer::XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num)
 	xmlChar *c;
 
 	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-ip", dev_num) == -1) {
-		sz_log(0, "error occured reading tcp:tcp-ip");
+		sz_log(1, "error occured reading tcp:tcp-ip");
 		free(e);
 		return 1;
 	}
@@ -293,7 +293,7 @@ int TCPServer::XMLCheckIP(xmlXPathContextPtr xp_ctx, int dev_num)
 	if (c != NULL) {
 		int ret = inet_aton((char *)c, &m_ip);
 		if (ret == 0) {
-			sz_log(0, "incorrect IP address '%s'", c);
+			sz_log(1, "incorrect IP address '%s'", c);
 			return 1;
 		} else {
 			sz_log(2, "IP address to connecto to: '%s'", c);
@@ -309,7 +309,7 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 	xmlChar *c;
 
 	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:tcp-keepalive", dev_num) == -1) {
-		sz_log(0, "Error reading tcp:nodata-timeout");
+		sz_log(1, "Error reading tcp:nodata-timeout");
 		free(e);
 		return 1;
 	}
@@ -327,7 +327,7 @@ int TCPServer::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 		m_keepalive = 0;
 		sz_log(5, "setting TCP Keep-Alive options to \"no\"");
 	} else {
-		sz_log(0, "tcp-keepalive=\"%s\" found, \"yes\" or \"no\" exptected",
+		sz_log(1, "tcp-keepalive=\"%s\" found, \"yes\" or \"no\" exptected",
 				SC::U2A(c).c_str());
 		xmlFree(c);
 		return 1;
@@ -344,7 +344,7 @@ int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	long l;
 
 	if (asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@tcp:nodata-timeout", dev_num) == -1) {
-		sz_log(0, "Error reading tcp:nodata-timeout");
+		sz_log(1, "Error reading tcp:nodata-timeout");
 		free(e);
 		return 1;
 	}
@@ -358,14 +358,14 @@ int TCPServer::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for tcp:nodata-timeout for device %d -  integer expected",
+		sz_log(1, "incorrect value '%s' for tcp:nodata-timeout for device %d -  integer expected",
 					SC::U2A(c).c_str(), dev_num);
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 600)) {
-		sz_log(0, "value '%ld' for tcp:nodata-timeout for device %d outside expected range [1..600]",
+		sz_log(1, "value '%ld' for tcp:nodata-timeout for device %d outside expected range [1..600]",
 				l, dev_num);
 		return 1;
 	}
@@ -427,14 +427,14 @@ int TCPServer::Connect()
 	ASSERT(m_socket < 0);
 	m_socket = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_socket < 0) {
-		sz_log(0, "socket() failed, errno %d (%s)",
+		sz_log(1, "socket() failed, errno %d (%s)",
 				errno, strerror(errno));
 		return -1;
 	}
 	int ret = setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE,
 			&m_keepalive, sizeof(m_keepalive));
 	if (ret < 0) {
-		sz_log(0, "setsockopt() failed, errno %d (%s)",
+		sz_log(1, "setsockopt() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_socket);
 		m_socket = -1;
@@ -446,7 +446,7 @@ int TCPServer::Connect()
 	addr.sin_addr.s_addr = m_ip.s_addr;
 	ret = connect(m_socket, (struct sockaddr *) &addr, sizeof(addr));
 	if (ret < 0) {
-		sz_log(0, "connect() failed, errno %d (%s)",
+		sz_log(1, "connect() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_socket);
 		m_socket = -1;
@@ -469,7 +469,7 @@ int TCPServer::Send(int timeout)
 	}
 	char *outbuf;
 	if(asprintf(&outbuf, "\x11\x02P%c\x03", m_id) == -1) {
-		sz_log(0, "error occured on writing out buffor");
+		sz_log(1, "error occured on writing out buffor");
 		close(m_socket);
 		m_socket = -1;
 		return -1;
@@ -587,7 +587,7 @@ again:
 		} else {
 			if (m_single)
 				printf("Reading data error: %s\n", strerror(errno));
-			sz_log(0, "Reading data error: %s\n", strerror(errno));
+			sz_log(1, "Reading data error: %s\n", strerror(errno));
 			close(m_socket);
 			m_socket = -1;
 			return 1;
@@ -620,7 +620,7 @@ again:
 	if (tokc - 5 != m_params_count ) {
 		if (m_single)
 			printf("Incorrect number of params (%d expected)\n", m_params_count);
-		sz_log(0, "Incorrect number of params (got %d, %d expected)\n", tokc - 5, m_params_count);
+		sz_log(1, "Incorrect number of params (got %d, %d expected)\n", tokc - 5, m_params_count);
 		goto error;
 	}
 

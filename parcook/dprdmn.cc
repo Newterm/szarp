@@ -858,8 +858,8 @@ class Daemon {
 					if (buf[buf_pos] == '\n') {
 						buf[buf_pos + 1] = 0;
 						buf_pos = 0;
-						//log(0,"Got something which resembles packet");
-						//log(0,"Buf:%s",buf);
+						//log(1,"Got something which resembles packet");
+						//log(1,"Buf:%s",buf);
 						return buf;
 					}
 					buf_pos++;
@@ -938,7 +938,7 @@ class Daemon {
 				packet = sp->Readline();
 			}
 			catch (Exception e) {
-				sz_log(0,"Error while reading data from port:%s", e.what.c_str());
+				sz_log(1,"Error while reading data from port:%s", e.what.c_str());
 				if (err_count++ > 100) {
 					sz_log(0, "Too many port reading erros, exiting");
 					exit(1);
@@ -977,8 +977,10 @@ int main(int argc,char *argv[]) {
 	Daemon *daemon;
 
 	cfg = new DaemonConfig("dprdmn");
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading config, exiting");
 		return 1;
+	}
 
 	daemon = new Daemon(cfg);
 	daemon->Go();

@@ -43,7 +43,7 @@ bool InitLogging(int *argc, char **argv, const char* progname) {
 
 	loglevel = sz_loginit(loglevel, logfile);
 	if (loglevel < 0) {
-		sz_log(0, "%s: cannot initalize log '%s', errno %d",
+		sz_log(1, "%s: cannot initalize log '%s', errno %d",
 		       argv[0], logfile, errno);
 		return false;
 	}

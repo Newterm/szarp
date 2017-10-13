@@ -245,7 +245,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 
 	if (formula.empty()) {
 		szb_definable_error = 1;
-		sz_log(0, "Invalid, NULL formula");
+		sz_log(1, "Invalid, NULL formula");
 		return nan("");
 	}
 
@@ -255,19 +255,19 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 	
 			// check stack size
 			if (sp >= stack_size) {
-				sz_log(0,
+				sz_log(1,
 					"Nastapilo przepelnienie stosu przy liczeniu formuly %ls",
 					formula.c_str());
 				return nan("");
 			}
 	
 			if (it >= param_cnt) {
-				sz_log(0, "FATAL: in szb_definable_calculate: it > param_cnt");
-				sz_log(0, " param: %ls", param->GetName().c_str());
-				sz_log(0, " formula: %ls", formula.c_str());
-				sz_log(0, " it: %d, param_cnt: %d, num: %d",
+				sz_log(1, "FATAL: in szb_definable_calculate: it > param_cnt");
+				sz_log(1, " param: %ls", param->GetName().c_str());
+				sz_log(1, " formula: %ls", formula.c_str());
+				sz_log(1, " it: %d, param_cnt: %d, num: %d",
 					it, param_cnt, param->GetNumParsInFormula());
-				sz_log(0, " chptr: %ls", chptr);
+				sz_log(1, " chptr: %ls", chptr);
 				return std::numeric_limits<double>::quiet_NaN();
 			}
 	
@@ -311,7 +311,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 
 					// check stack size
 					if (stack_size <= sp) {
-						sz_log(0,
+						sz_log(1,
 							"Przepelnienie stosu dla formuly %ls, w funkcji '!'",
 							formula.c_str());
 						return nan("");
@@ -338,7 +338,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 				case L'#':
 					// check stack size
 					if (stack_size <= sp) {
-						sz_log(0,
+						sz_log(1,
 							"Przepelnienie stosu dla formuly %ls, przy odkladaniu stalej: %lf",
 							formula.c_str(), wcstod(++chptr, &end_ptr));
 						return nan("");
@@ -459,7 +459,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 				case L'X':
 					// check stack size
 					if (stack_size <= sp) {
-						sz_log(0,
+						sz_log(1,
 							"Przepelnienie stosu dla formuly %ls, w funkcji X",
 							formula.c_str());
 						return nan("");
@@ -475,7 +475,7 @@ szb_definable_calculate(double * stack, int stack_size, const double** cache, TP
 							break;
 						}
 					} else {
-						sz_log(0,
+						sz_log(1,
 							"Przepelnienie stosu dla formuly %ls, w funkcji S",
 							formula.c_str());
 						return nan("");

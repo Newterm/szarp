@@ -52,7 +52,7 @@ void ProxyLoc::fwd_connect()
 void ProxyLoc::get_response( const std::string& line )
 {
 	if( line.empty() || !(line[0] == 'k') )
-		sz_log(0, "Error in forwarding connection, invalid line: '%s'", line.c_str());
+		sz_log(1, "Error in forwarding connection, invalid line: '%s'", line.c_str());
 
 	conn_line = remote->on_line_received( std::bind(&ProxyLoc::write_line,this,p::_1) );
 }

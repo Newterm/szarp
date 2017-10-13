@@ -639,7 +639,7 @@ sz_log(1,
 				}
 
 				if (star_date_time == boost::posix_time::not_a_date_time) {
-					sz_log(0, "XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\" (line %ld)",
+					sz_log(1, "XML file error: lua_start_date_time attribute has invalid value - expected format \"YYYY-MM-DD hh:mm\" (line %ld)",
 						xmlGetLineNo(ch));
 				} else {
 					struct tm t = to_tm(star_date_time);

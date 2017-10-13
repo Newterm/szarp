@@ -311,18 +311,18 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		tokenize_d(&m_buffer[0], &toks, &tokc, "\r");
 		if (tokc < 3) {
 			tokenize_d(NULL, &toks, &tokc, NULL);
-			m_log.log(0, "Unable to parse response from ZET/SK, it is invalid");
+			m_log.log(1, "Unable to parse response from ZET/SK, it is invalid");
 			throw std::invalid_argument("Wrong response format");
 		}
 		size_t params_count = tokc - 5;
 		if (params_count != m_read_count) {
-			m_log.log(0, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
+			m_log.log(1, "Invalid number of values received, expected: %zu, got: %zu", m_read_count, params_count);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong number or values");
 		}
 		char id = toks[2][0];
 		if (id != m_id) {
-			m_log.log(0, "Invalid id in response, expected: %c, got: %c", m_id, id);
+			m_log.log(1, "Invalid id in response, expected: %c, got: %c", m_id, id);
 			tokenize_d(NULL, &toks, &tokc, NULL);
 			throw std::invalid_argument("Wrong id in response");
 		}
@@ -337,7 +337,7 @@ void zet_proto_impl::data_ready(struct bufferevent* bufev, int fd) {
 		if (checksum != atoi(toks[tokc-1])) {
 			m_log.log(4, "ZET/SK driver, wrong checksum");
 			tokenize_d(NULL, &toks, &tokc, NULL);
-			m_log.log(0, "Wrong checksum expected: %c, got: %c", m_id, id);
+			m_log.log(1, "Wrong checksum expected: %c, got: %c", m_id, id);
 			throw std::invalid_argument("Wrong checksum");
 		}
 		for (size_t i = 0; i < m_read_count; i++)
@@ -369,7 +369,7 @@ int zet_proto_impl::configure(TUnit* unit, xmlNodePtr node, short* read, short *
 	} else if (plc == "zet") {
 		m_plc_type = ZET;
 	} else {
-		m_log.log(0, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Invalid value of plc attribute %s, line:%ld", plc.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
 	TSendParam *sp = unit->GetFirstSendParam();

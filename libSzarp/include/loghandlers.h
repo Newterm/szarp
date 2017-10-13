@@ -8,6 +8,10 @@
 #include <condition_variable>
 #include <list>
 
+#ifndef MINGW32
+#include <systemd/sd-journal.h>
+#endif
+
 namespace szlog {
 
 enum str_mod { endl, flush, block };
@@ -21,7 +25,8 @@ std::string format_date(tm* localtime_t);
 
 class LogHandler {
 public:
-	virtual void log(std::string&& msg, szlog::priority = szlog::priority::INFO) const = 0;
+	virtual void log(const std::string& msg, szlog::priority = szlog::priority::INFO) const = 0;
+	virtual void log(const char* msg, szlog::priority = szlog::priority::INFO) const = 0;
 	virtual ~LogHandler() {}
 
 	virtual void reinit() = 0;
@@ -31,15 +36,8 @@ class COutLogger: public LogHandler {
 	mutable std::mutex _msg_mutex;
 
 public:
-	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override {
-		std::atomic_signal_fence(std::memory_order_relaxed);
-		std::lock_guard<std::mutex> lock(_msg_mutex);
-		auto now = std::chrono::system_clock::now();
-		auto in_time_t = std::chrono::system_clock::to_time_t(now);
-		auto localtime_t = std::localtime(&in_time_t);
-
-		std::cout << format_date(localtime_t) << " " << msg_priority_for_level(p) << msg << std::endl;
-	}
+	void log(const std::string& msg, szlog::priority p = szlog::priority::INFO) const override;
+	void log(const char* msg, szlog::priority p = szlog::priority::INFO) const override;
 
 	void reinit() override {
 		_msg_mutex.unlock();
@@ -48,17 +46,13 @@ public:
 
 class JournaldLogger: public LogHandler {
 	mutable std::mutex _msg_mutex;
-
-	const std::string get_priority_prefix(szlog::priority p) const {
-		return "<"+std::to_string(p)+">";
-	}
+	std::string name;
 
 public:
-	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override {
-		std::atomic_signal_fence(std::memory_order_relaxed);
-		std::lock_guard<std::mutex> lock(_msg_mutex);
-		std::cout << get_priority_prefix(p) << " " << msg << std::endl;
-	}
+	JournaldLogger(const std::string& _name): name(_name) {}
+
+	void log(const std::string& msg, szlog::priority p = szlog::priority::INFO) const override;
+	void log(const char* msg, szlog::priority p = szlog::priority::INFO) const override;
 
 	void reinit() override {
 		_msg_mutex.unlock();
@@ -71,7 +65,8 @@ public:
 	~FileLogger() override;
 
 	void reinit() override;
-	void log(std::string&& msg, szlog::priority p = szlog::priority::INFO) const override;
+	void log(const std::string& msg, szlog::priority p = szlog::priority::INFO) const override;
+	void log(const char* msg, szlog::priority p = szlog::priority::INFO) const override;
 
 private:
 	mutable std::list<std::tuple<szlog::priority, std::string>> msg_q;

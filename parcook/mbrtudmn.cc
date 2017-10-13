@@ -458,7 +458,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	else if (strcmp(str, "disable") == 0)
 		CheckCRC = DISABLE;
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "invalid modbus:CheckCRC attribute (must be 'enable' or 'disable'), line %ld",
 		    xmlGetLineNo(unit_node));
 		free (str) ;
@@ -476,7 +476,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	else if (strcmp(str, "no") == 0)
 		zerond = NO;
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "invalid modbus:zerond attribute (must be 'yes' or 'no'), line %ld",
 		    xmlGetLineNo(unit_node));
 		free (str) ;
@@ -494,7 +494,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	else if (strcmp(str, "lsbmsb") == 0)
 		FloatOrder = LSBMSB;
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "invalid modbus:FloatOrder attribute (must be 'msblsb' or 'lsbmsb'), line %ld",
 		    xmlGetLineNo(unit_node));
 		return 5 ;
@@ -511,7 +511,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	else if (strcmp(str, "lsbmsb") == 0)
 		LongOrder = LSBMSB;
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "invalid modbus:LongOrder attribute (must be 'msblsb' or 'lsbmsb'), line %ld",
 		    xmlGetLineNo(unit_node));
 		return 6 ;
@@ -522,7 +522,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	char *tmp;
 	m_id = strtol(str, &tmp, 0);
 	if (tmp[0] != 0) {
-		sz_log(0, "error parsing modbus:id attribute ('%s'), line %ld",
+		sz_log(1, "error parsing modbus:id attribute ('%s'), line %ld",
 		    str, xmlGetLineNo(unit_node));
 		free(str);
 		return 9;
@@ -539,7 +539,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 		DelayBetweenChars = strtol(str, &tmp, 0);
 		if (tmp[0] != 0) {
-			sz_log(0, "error parsing modbus:DelayBetweenChars attribute ('%s'), line %ld",
+			sz_log(1, "error parsing modbus:DelayBetweenChars attribute ('%s'), line %ld",
 		    	str, xmlGetLineNo(unit_node));
 			free(str);
 			return 10;
@@ -556,7 +556,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 	else{
 		ReceiveTimeout = strtol(str, &tmp, 0);
 		if (tmp[0] != 0) {
-			sz_log(0, "error parsing modbus:receiveTimeout attribute ('%s'), line %ld",
+			sz_log(1, "error parsing modbus:receiveTimeout attribute ('%s'), line %ld",
 			    str, xmlGetLineNo(unit_node));
 			free(str);
 			return 11;
@@ -574,7 +574,7 @@ int ModbusUnit::parseUnitConfig(xmlNodePtr unit_node, xmlNodePtr device_node)
 
 		SendDelay = strtol(str, &tmp, 0);
 		if (tmp[0] != 0) {
-			sz_log(0, "error parsing modbus:SendDelay attribute ('%s'), line %ld",
+			sz_log(1, "error parsing modbus:SendDelay attribute ('%s'), line %ld",
 			    str, xmlGetLineNo(unit_node));
 			free(str);
 			return 12;
@@ -645,7 +645,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 				} else if (!strcmp(str, "lsb")){
 					extra = FLOAT_LSB;
 				} else {
-					sz_log(0,
+					sz_log(1,
 					    "unknown extra '%s' for attribute modbus:extra - should be 'msb' or 'lsb' or none (line %ld)",
 					    str, xmlGetLineNo(node));
 					free(str);
@@ -658,7 +658,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 						    BAD_CAST
 						    (IPKEXTRA_NAMESPACE_STRING));
 			if (str == NULL) {
-				sz_log(0,
+				sz_log(1,
 				    "attribute modebus:function not found (line %ld)",
 				    xmlGetLineNo(node));
 				free(str);
@@ -667,7 +667,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 
 			function = strtol(str, &tmp, 0);
 			if (tmp[0] != 0) {
-				sz_log(0,
+				sz_log(1,
 				    "error parsing modebus:function attribute value ('%s') - line %ld",
 				    str, xmlGetLineNo(node));
 				free(str);
@@ -675,7 +675,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 			}
 			free(str);
 			if ((function < 0) || (function > 0x10)) {
-				sz_log(0,
+				sz_log(1,
 				    "modebus:function is not compatible with MODBUS standard (line %ld)",
 				    xmlGetLineNo(node));
 				return 1;
@@ -688,7 +688,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 					    BAD_CAST
 					    (IPKEXTRA_NAMESPACE_STRING));
 		if (str == NULL) {
-			sz_log(0,
+			sz_log(1,
 			    "attribute modebus:address not found (line %ld)",
 			    xmlGetLineNo(node));
 			free(str);
@@ -696,7 +696,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 		}
 		addr = strtol(str, &tmp, 0);
 		if (tmp[0] != 0) {
-			sz_log(0,
+			sz_log(1,
 			    "error parsing modebus:address attribute value ('%s') - line %ld",
 			    str, xmlGetLineNo(node));
 			free(str);
@@ -704,7 +704,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 		}
 		free(str);
 		if (addr > MB_MAX_ADDRESS) {
-			sz_log(0,
+			sz_log(1,
 			    "modebus:address attribute value to big (line %ld)",
 			    xmlGetLineNo(node));
 			return 1;
@@ -715,7 +715,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 					    BAD_CAST
 					    (IPKEXTRA_NAMESPACE_STRING));
 		if (str == NULL) {
-			sz_log(0,
+			sz_log(1,
 			    "attribute modebus:val_type not found (line %ld)",
 			    xmlGetLineNo(node));
 			free(str);
@@ -731,7 +731,7 @@ int ModbusUnit::parseParams(xmlNodePtr unit, DaemonConfig * cfg, ModbusMode mode
 		} else if (!strcmp(str, "bcd")) {
 			type = MB_TYPE_BCD;
 		} else {
-			sz_log(0,
+			sz_log(1,
 			    "unknown value '%s' for attribute modbus:val_type - should be 'bcd', 'integer', 'long' or 'float' (line %ld)",
 			    str, xmlGetLineNo(node));
 			free(str);
@@ -1500,7 +1500,7 @@ int ModbusUnit::SlaveReply(int fd)
 
 			SendErrorPacket(fd, iErrorFrame);
 /*
-			sz_log(0,
+			sz_log(1,
 			    "Error in MB_F_RHR function - Invalid Data Address");
 */
 			return SLAVE_SEND_ERROR;
@@ -1744,7 +1744,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	else if (!xmlStrcmp(c, BAD_CAST "slave"))
 		m_mode = MB_MODE_SLAVE;
 	else {
-		sz_log(0, "Invalid modbus mode");
+		sz_log(1, "Invalid modbus mode");
 		return false;
 	}
 	xmlFree(c);
@@ -1761,7 +1761,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 		}else if (!xmlStrcmp(c, BAD_CAST "EVEN")){
 			m_parity = EVEN;
 		}else{
-			sz_log(0, "Unknown modbus:parity attribute %s",  (char *)c);
+			sz_log(1, "Unknown modbus:parity attribute %s",  (char *)c);
 			return false;
 		}
 	}
@@ -1776,7 +1776,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 		}else if (!xmlStrcmp(c, BAD_CAST "2")){
 			m_stop_bits = 2;
 		}else{
-			sz_log(0, "Unknown modbus:StopBits attribute %s",  (char *)c);
+			sz_log(1, "Unknown modbus:StopBits attribute %s",  (char *)c);
 			return false;
 		}
 	}
@@ -1798,7 +1798,7 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	for (; unit; unit = unit->GetNext()) {
 	  char *expr;
 		if(asprintf(&expr, ".//ipk:unit[position()=%zu]", unit_num + 1) == -1) {
-			sz_log(0, "error occured reading unit");
+			sz_log(1, "error occured reading unit");
 			return 1;
 		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx);
@@ -1829,12 +1829,12 @@ bool ModbusLine::ParseConfig(DaemonConfig *cfg, IPCHandler *ipc) {
 	if (m_mode == MB_MODE_SLAVE &&
 			unit_num > 1) {
 
-		sz_log(0, "Configuration error - daemon is in slave mode and more than one unit is present in configuration, exiting");
+		sz_log(1, "Configuration error - daemon is in slave mode and more than one unit is present in configuration, exiting");
 		return false;
 	}
 
 	if (unit_num == 0) {
-		sz_log(0, "No units defined");
+		sz_log(1, "No units defined");
 		return false;
 	}
 
@@ -1936,7 +1936,7 @@ void ModbusLine::Go() {
 			     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
 	if (m_fd == -1) {
-		sz_log(0, "Failed to open port, exiting");
+		sz_log(1, "Failed to open port, exiting");
 		return;
 	}
 
@@ -1947,7 +1947,7 @@ void ModbusLine::Go() {
 				     m_cfg->GetDevice()->GetSpeed(), 8, m_stop_bits, m_parity);
 
 		if (m_fd == -1) {
-			sz_log(0, "Failed to init port, doing nothing");
+			sz_log(1, "Failed to init port, doing nothing");
 			goto finish_cycle;
 		}
 
@@ -1985,14 +1985,17 @@ int main(int argc, char *argv[])
 
 	ModbusLine modbus;
 
-	ipc = new IPCHandler(cfg);
-	if (ipc->Init()) {
-		sz_log(0, "Initialization of IPC failed");
+	try {
+		ipc = new IPCHandler(cfg);
+	} catch(const std::exception& e) {
+		sz_log(0, "Error initializing IPC: %s", e.what());
 		return 1;
 	}
 
-	if (modbus.ParseConfig(cfg, ipc) == false)
+	if (modbus.ParseConfig(cfg, ipc) == false) {
+		sz_log(0, "Error parsing configuration, exiting");
 		return 1;
+	}
 
 	if ((cfg->GetSingle() == 1) || (cfg->GetDiagno() == 1))
 		fprintf(stderr,"DEBUG[]: DAEMON STARTED\n");

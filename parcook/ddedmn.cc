@@ -214,7 +214,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 
 	xmlChar* _uri = xmlGetNsProp(xdev, BAD_CAST("uri"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (_uri== 0) {
-		dolog(0, "Error, attribute dde:uri missing in device definition, line(%ld)", xmlGetLineNo(xdev));
+		dolog(1, "Error, attribute dde:uri missing in device definition, line(%ld)", xmlGetLineNo(xdev));
 		return 1;
 	}
 	m_uri = (char*) _uri;
@@ -249,7 +249,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
 		if (_topic == 0) {
-			dolog(0, "Error, attribute dde:topic missing in param definition, (line %ld)", xmlGetLineNo(n));
+			dolog(1, "Error, attribute dde:topic missing in param definition, (line %ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -258,7 +258,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 			
 		if (_item == 0) {
-			dolog(0, "Error, attribute dde:item missing in param definition, (line %ld)", xmlGetLineNo(n));
+			dolog(1, "Error, attribute dde:item missing in param definition, (line %ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -269,7 +269,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 				BAD_CAST("type"), 
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (_type == NULL) {
-			dolog(0, "Error, missing parameter type specification (dde:type) in line(%ld)", xmlGetLineNo(n));
+			dolog(1, "Error, missing parameter type specification (dde:type) in line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -283,7 +283,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 		else if (!xmlStrcmp(_type, BAD_CAST "string"))
 			val_type = DDEParam::STRING;
 		else {
-			dolog(0, "Error, invalid parameter type specification (dde:type) in line(%ld), only 'integer', 'float', 'short_float' and 'string' supported", xmlGetLineNo(n));
+			dolog(1, "Error, invalid parameter type specification (dde:type) in line(%ld), only 'integer', 'float', 'short_float' and 'string' supported", xmlGetLineNo(n));
 			xmlFree(_type);
 			return 1;
 		}
@@ -308,7 +308,7 @@ int DDEDaemon::Configure(DaemonConfig *cfg) {
 			if (!xmlStrcmp(_word, BAD_CAST "lsw")) {
 				lsw = true;
 			} else if (xmlStrcmp(_word, BAD_CAST "msw")) {
-				dolog(0, "Error, invalid dde:word attribute in line %ld, must be 'lsw' or 'msw'",
+				dolog(1, "Error, invalid dde:word attribute in line %ld, must be 'lsw' or 'msw'",
 						xmlGetLineNo(n));
 				xmlFree(_word);
 				return 1;
@@ -389,7 +389,7 @@ XMLRPC_REQUEST DDEDaemon::SendRequest(XMLRPC_REQUEST request) {
 	free(request_string);
 
 	if (response_string == NULL) {
-		dolog(0, "Failed to fetch data from %s", m_http.GetErrorStr());
+		dolog(1, "Failed to fetch data from %s", m_http.GetErrorStr());
 		return NULL;	
 	}
 
@@ -435,7 +435,7 @@ template <typename T> bool DDEDaemon::ConvertValue(XMLRPC_VALUE i, const std::st
 			}
 			break;
 		default:
-			dolog(0, "Unsupported value value received for topic: %s, item: %s - %d", topic.c_str(), item.c_str(), XMLRPC_GetValueType(i));
+			dolog(1, "Unsupported value value received for topic: %s, item: %s - %d", topic.c_str(), item.c_str(), XMLRPC_GetValueType(i));
 			return false;
 	}
 	dolog(10, "Got value: %d", ret);
@@ -480,7 +480,7 @@ void DDEDaemon::ParseResponse(XMLRPC_REQUEST response) {
 			} else if (dde.type == DDEParam::FLOAT
 					|| dde.type == DDEParam::SHORT_FLOAT) {
 				if (i == NULL) {
-					dolog(0, "Not enough params in response from spy!", 0);
+					dolog(1, "Not enough params in response from spy!", 0);
 					break;
 				}
 				uint16_t val2;
@@ -534,14 +534,18 @@ void DDEDaemon::Run() {
 int main(int argc, char *argv[]) {
 	DaemonConfig* cfg = new DaemonConfig("ddedmn");
 
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
+	}
 
 	g_single = cfg->GetSingle() || cfg->GetDiagno();
 
 	DDEDaemon dded;	
-	if (dded.Configure(cfg))
+	if (dded.Configure(cfg)) {
+		sz_log(0, "Error parsing xml, exiting.");
 		return 1;
+	}
 
 	dded.Run();
 }

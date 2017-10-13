@@ -72,13 +72,13 @@ int Server::start(void)
 
 	socknum = socket(AF_INET, SOCK_STREAM, 0);
 	if (socknum < 0) {
-		sz_log(0, "cannot create socket, errno %d", errno);
+		sz_log(1, "cannot create socket, errno %d", errno);
 		return -1;
 	}
 	if (setsockopt(socknum, SOL_SOCKET, SO_REUSEADDR,
           &on, sizeof(on)) < 0) {
 		close(socknum);
-		sz_log(0, "cannot set socket option, errno %d", errno);
+		sz_log(1, "cannot set socket option, errno %d", errno);
 		return -1;
 	}
 
@@ -88,14 +88,14 @@ int Server::start(void)
 
 	if (bind(socknum, (struct sockaddr *)&sin, sizeof(sin))) {
 		close(socknum);
-		sz_log(0, "bind() error, errno %d", errno);
+		sz_log(1, "bind() error, errno %d", errno);
 		return -1;
 	}
 
 	 snamelen = sizeof(sname);
 	 if (getsockname(socknum, (struct sockaddr *)&sname, &snamelen)) {
 		close(socknum);
-		sz_log(0, "getsockname() error, errno %d", errno);
+		sz_log(1, "getsockname() error, errno %d", errno);
 		return -1;
 	 }
 	 switch(sname.sin_family) {
@@ -106,13 +106,13 @@ int Server::start(void)
 			break;
 		default:
 			close(socknum);
-			sz_log(0, "unknown address family %d", sname.sin_family);
+			sz_log(1, "unknown address family %d", sname.sin_family);
 			return -1;
 	 }
 
  	if (listen(socknum, 1) < 0) {
 		close(socknum);
-		sz_log(0, "listen() error, errno %d", errno);
+		sz_log(1, "listen() error, errno %d", errno);
 		return -1;
 	}
 
@@ -120,7 +120,7 @@ int Server::start(void)
 	while (1) {
 		nsocknum = accept(socknum, (struct sockaddr *)&cin, &cinlen);
 		if (accept < 0) {
-			sz_log(0, "accept() error, errno %d", errno);
+			sz_log(1, "accept() error, errno %d", errno);
 		} else {
 			sz_log(10, "connection accepted!");
 			ch->handle(nsocknum, cin.sin_addr.s_addr);
@@ -216,7 +216,7 @@ int ConnectionHandler::handle(int sock_num, uint32_t addr)
 	Connection *conn;
 
 	if (!is_allowed(addr)) {
-		sz_log(0, "Connection from address %s refused",
+		sz_log(1, "Connection from address %s refused",
 				inet_ntoa(*(struct in_addr *)&addr));
 		close(sock_num);
 		return -1;
@@ -863,10 +863,10 @@ void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh, bool 
 				}
 
 				server->start(); // never returns
-				sz_log(0, "http server exiting on error");
+				sz_log(1, "http server exiting on error");
 				throw std::runtime_error("server exited");
 			case -1 : //error
-				sz_log(0, "fork() error");
+				sz_log(1, "fork() error");
 				throw std::runtime_error("fork() failed");
 			default : // parent, free memory
 				delete server;

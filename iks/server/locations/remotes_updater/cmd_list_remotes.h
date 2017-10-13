@@ -51,7 +51,7 @@ public:
 					  address, port );
 
 		} catch( const bp::ptree_error& e ) {
-			sz_log(0 , "CmdListRemotesSnd: Received invalid message (%s): %s", line.c_str(), e.what());
+			sz_log(1 , "CmdListRemotesSnd: Received invalid message (%s): %s", line.c_str(), e.what());
 			return;
 		}
 	}

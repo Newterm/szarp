@@ -505,7 +505,7 @@ int ModbusTCP::XMLCheckMode(xmlXPathContextPtr xp_ctx, int dev_num)
 	else if (!xmlStrcmp(c, BAD_CAST "client"))
 		m_type = CLIENT;
 	else {
-		sz_log(0, "tpc-mode '%s' found, the only supported types are 'server' and 'client'",
+		sz_log(1, "tpc-mode '%s' found, the only supported types are 'server' and 'client'",
 				c);
 		xmlFree(c);
 		return 1;
@@ -529,14 +529,14 @@ int ModbusTCP::XMLCheckPort(xmlXPathContextPtr xp_ctx, int dev_num)
 		return 1;
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for tcp-port, number expected",
+		sz_log(1, "incorrect value '%s' for tcp-port, number expected",
 				SC::U2A(c).c_str());
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 0xFFFF)) {
-		sz_log(0, "value '%ld' for tcp-port outside range [1..%d]",
+		sz_log(1, "value '%ld' for tcp-port outside range [1..%d]",
 				l, 0xFFFF);
 		return 1;
 	}
@@ -572,7 +572,7 @@ int ModbusTCP::XMLCheckAllowedIP(xmlXPathContextPtr xp_ctx, int dev_num)
 		for (int i = 0; i < tokc; i++) {
 			int ret = htonl(inet_aton(toks[i], &m_allowed_ip[i]));
 			if (ret == 0) {
-				sz_log(0, "incorrect IP address '%s'", toks[i]);
+				sz_log(1, "incorrect IP address '%s'", toks[i]);
 				return 1;
 			} else {
 				sz_log(5, "IP address '%s' allowed", toks[i]);
@@ -601,14 +601,14 @@ int ModbusTCP::XMLCheckServerIP(xmlXPathContextPtr xp_ctx, int dev_num) {
 		m_server_ip = (struct in_addr*) calloc(1, sizeof(struct in_addr));
 		int ret = inet_aton((char*)c, m_server_ip);
 		if (ret == 0) {
-			sz_log(0, "incorrect IP address '%s'", c);
+			sz_log(1, "incorrect IP address '%s'", c);
 			xmlFree(c);
 			return 1;
 		}
 		// free memory
 		xmlFree(c);
 	} else {
-		sz_log(0, "server adddress not given in client mode");
+		sz_log(1, "server adddress not given in client mode");
 		return 1;
 	}
 	return 0;
@@ -635,7 +635,7 @@ int ModbusTCP::XMLCheckKeepAlive(xmlXPathContextPtr xp_ctx, int dev_num)
 		m_keepalive = 0;
 		sz_log(5, "setting TCP Keep-Alive options to \"no\"");
 	} else {
-		sz_log(0, "tcp-keepalive=\"%s\" found, \"yes\" or \"no\" exptected",
+		sz_log(1, "tcp-keepalive=\"%s\" found, \"yes\" or \"no\" exptected",
 				SC::U2A(c).c_str());
 		xmlFree(c);
 		return 1;
@@ -661,14 +661,14 @@ int ModbusTCP::XMLCheckServerTimeout(xmlXPathContextPtr xp_ctx,
 
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for modbus:tcp-timeout for device %d -  integer expected",
+		sz_log(1, "incorrect value '%s' for modbus:tcp-timeout for device %d -  integer expected",
 					SC::U2A(c).c_str(), dev_num); 
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 600)) {
-		sz_log(0, "value '%ld' for modbus:tcp-timeout for device %d outside expected range [1..600]", 
+		sz_log(1, "value '%ld' for modbus:tcp-timeout for device %d outside expected range [1..600]", 
 				l, dev_num);
 		return 1;
 	}
@@ -696,14 +696,14 @@ int ModbusTCP::XMLCheckNodataTimeout(xmlXPathContextPtr xp_ctx,
 	
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for modbus:nodata-timeout for device %d -  integer expected",
+		sz_log(1, "incorrect value '%s' for modbus:nodata-timeout for device %d -  integer expected",
 					(char *)c, dev_num); 
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if ((l < 1) || (l > 600)) {
-		sz_log(0, "value '%ld' for modbus:nodata-timeout for device %d outside expected range [1..600]", 
+		sz_log(1, "value '%ld' for modbus:nodata-timeout for device %d outside expected range [1..600]", 
 				l, dev_num);
 		return 1;
 	}
@@ -731,7 +731,7 @@ int ModbusTCP::XMLCheckNodataValue(xmlXPathContextPtr xp_ctx,
 	
 	f = strtof((char *)c, &e);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for modbus:nodata-value for device %d -  float expected",
+		sz_log(1, "incorrect value '%s' for modbus:nodata-value for device %d -  float expected",
 					SC::U2A(c).c_str(), dev_num); 
 		xmlFree(c);
 		return 1;
@@ -764,7 +764,7 @@ int ModbusTCP::XMLCheckFloatOrder(xmlXPathContextPtr xp_ctx, int dev_num)
 		m_float_order = FLOAT_ORDER_LSWMSW;
 		sz_log(5, "setting FloatOrder to LSWMSW");
 	} else {
-		sz_log(0, "FloatOrder=\"%s\" found, \"msblsb\" or \"lsbmsb\" exptected",
+		sz_log(1, "FloatOrder=\"%s\" found, \"msblsb\" or \"lsbmsb\" exptected",
 				SC::U2A(c).c_str());
 		xmlFree(c);
 		return 1;
@@ -800,7 +800,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 			return 1;
 		l = strtol((char *)c, &e, 0);
 		if ((*c == 0) || (*e != 0)) {
-			sz_log(0, "incorrect value '%s' for modbus:address for device %d, %sparameter %d -  number expected",
+			sz_log(1, "incorrect value '%s' for modbus:address for device %d, %sparameter %d -  number expected",
 					SC::U2A(c).c_str(), dev_num, 
 					i != j ? "send " : "", 
 					i + 1);
@@ -809,7 +809,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 		}
 		xmlFree(c);
 		if ((l < 0) || (l > MB_MAX_ADDRESS)) {
-			sz_log(0, "modbus:address value outside range [0..%x] (device %d, %sparameter %d)",
+			sz_log(1, "modbus:address value outside range [0..%x] (device %d, %sparameter %d)",
 					MB_MAX_ADDRESS, 
 					dev_num, 
 					i != j ? "send " : "", 
@@ -832,7 +832,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 		} else if (!xmlStrcmp(c, BAD_CAST "float")) {
 			arr[i].type = MB_TYPE_FLOAT;
 		} else {
-			sz_log(0, "incorrect value '%s' for modbus:val_type for device %d, %sparameter %d -  \"integer\" or \"float\" expected",
+			sz_log(1, "incorrect value '%s' for modbus:val_type for device %d, %sparameter %d -  \"integer\" or \"float\" expected",
 					SC::U2A(c).c_str(), dev_num, 
 					i != j ? "send " : "", 
 					i + 1);
@@ -859,7 +859,7 @@ int ModbusTCP::XMLLoadParams(xmlXPathContextPtr xp_ctx, int dev_num)
 		} else if (!xmlStrcmp(c, BAD_CAST "MSW")) {
 			arr[i].op = MSW;
 		} else if (xmlStrcmp(c, BAD_CAST "NONE")) {
-			sz_log(0, "incorrect value '%s' for modbus:val_op for device %d, parameter %d -  \"LSW\" or \"MSW\" or \"NONE\" expected",
+			sz_log(1, "incorrect value '%s' for modbus:val_op for device %d, parameter %d -  \"LSW\" or \"MSW\" or \"NONE\" expected",
 					SC::U2A(c).c_str(), dev_num, 
 					i + 1);
 			xmlFree(c);
@@ -948,7 +948,7 @@ int ModbusTCP::ParseConfig(DaemonConfig * cfg)
 			ASSERT(s != NULL);
 			p = cfg->GetIPK()->getParamByName(s->GetParamName());
 			if (p == NULL) {
-				sz_log(0, "parameter with name '%ls' not found (send parameter %d for device %d)",
+				sz_log(1, "parameter with name '%ls' not found (send parameter %d for device %d)",
 				s->GetParamName().c_str(), i + 1, dev_num);
 				return 1;
 			}
@@ -987,11 +987,11 @@ int ModbusTCP::CreateRegisters()
 		}
 	}
 	if (max < 0) {
-		sz_log(0, "CreateRegisters(): No correct modbus address found");
+		sz_log(1, "CreateRegisters(): No correct modbus address found");
 		return 1;
 	}
 	if (max >= MB_MAX_ADDRESS) {
-		sz_log(0, "CreateRegisters(): Modbus address 0x%x to big",
+		sz_log(1, "CreateRegisters(): Modbus address 0x%x to big",
 				max);
 		return 1;
 	}
@@ -1021,7 +1021,7 @@ int ModbusTCP::CheckRegisters()
 			case MB_TYPE_FLOAT:
 				if (arr[i].op != MSW) {
 					if (m_registers[arr[i].addr + 1]) {
-						sz_log(0, "CheckRegisters(): double use of register address 0x%x",
+						sz_log(1, "CheckRegisters(): double use of register address 0x%x",
 								arr[i].addr + 1);
 						return 1;
 					}
@@ -1033,7 +1033,7 @@ int ModbusTCP::CheckRegisters()
 				/* no break ! */;
 			case MB_TYPE_INT :
 				if (m_registers[arr[i].addr]) {
-					sz_log(0, "CheckRegisters(): double use of register address 0x%x",
+					sz_log(1, "CheckRegisters(): double use of register address 0x%x",
 							arr[i].addr);
 					return 1;
 				}
@@ -1076,14 +1076,14 @@ int ModbusTCP::StartServer()
 	m_listen_socket = socket(PF_INET, SOCK_STREAM, 0);
 	m_last_tcp_event = time(NULL);
 	if (m_listen_socket < 0) {
-		sz_log(0, "socket() failed, errno %d (%s)",
+		sz_log(1, "socket() failed, errno %d (%s)",
 				errno, strerror(errno));
 		return 1;
 	}
 	ret = setsockopt(m_listen_socket, SOL_SOCKET, SO_KEEPALIVE, 
 			&m_keepalive, sizeof(m_keepalive));
 	if (ret < 0) {
-		sz_log(0, "setsockopt() failed, errno %d (%s)",
+		sz_log(1, "setsockopt() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_socket);
 		m_listen_socket = -1;
@@ -1105,7 +1105,7 @@ int ModbusTCP::StartServer()
 		break;
 	}
 	if (ret < 0) {
-		sz_log(0, "bind() failed, errno %d (%s)",
+		sz_log(1, "bind() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_socket);
 		m_listen_socket = -1;
@@ -1113,7 +1113,7 @@ int ModbusTCP::StartServer()
 	}
 	ret = listen(m_listen_socket, 1);
 	if (ret < 0) {
-		sz_log(0, "listen() failed, errno %d (%s)",
+		sz_log(1, "listen() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_socket);
 		m_listen_socket = -1;
@@ -1556,13 +1556,13 @@ int ModbusTCP::Connect(int timeout) {
 
 	m_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_socket < 0) {
-		sz_log(0, "Socket error: %d(%s)", errno, strerror(errno));
+		sz_log(1, "Socket error: %d(%s)", errno, strerror(errno));
 		return 1;
 	}
 	
 	int flags = fcntl(m_socket, F_GETFL);
 	if (flags < 0) {
-		sz_log(0, "fcntl error: %d(%s)", errno, strerror(errno));
+		sz_log(1, "fcntl error: %d(%s)", errno, strerror(errno));
 		goto error;
 	}
 
@@ -1570,7 +1570,7 @@ int ModbusTCP::Connect(int timeout) {
 
 	flags |= O_NONBLOCK;
 	if (fcntl(m_socket, F_SETFL, flags) < 0) {
-		sz_log(0, "fcntl error: %d(%s)", errno, strerror(errno));
+		sz_log(1, "fcntl error: %d(%s)", errno, strerror(errno));
 		goto error;
 	}
 
@@ -1604,15 +1604,15 @@ int ModbusTCP::Connect(int timeout) {
 				if (ret == -1) {
 					if (errno == EINTR)
 						continue;
-					sz_log(0, "Error while connecting to server: %d(%s)", errno, strerror(errno));
+					sz_log(1, "Error while connecting to server: %d(%s)", errno, strerror(errno));
 					goto error;
 				} else if (ret == 0) {
-					sz_log(0, "Timeout while waiting for connection to server");
+					sz_log(1, "Timeout while waiting for connection to server");
 					goto error;
 				} else 
 					connected = true;
 			} else {
-				sz_log(0, "Error while connecting to server: %d(%s)", errno, strerror(errno));
+				sz_log(1, "Error while connecting to server: %d(%s)", errno, strerror(errno));
 				goto error;
 			}
 		}
@@ -1684,11 +1684,11 @@ int ModbusTCP::ReadMessage(int timeout)
 		m_trans_id = buf[0];
 		sz_log(10, "Transaction id: %d", m_trans_id);
 		if (buf[1] != 0) {
-			sz_log(0, "Bad protocol identifier in frame from client (0x%x)", buf[1]);
+			sz_log(1, "Bad protocol identifier in frame from client (0x%x)", buf[1]);
 			goto error;
 		}
 		if (buf[2] <= 0) {
-			sz_log(0, "Frame length to small (%d)", buf[2]);
+			sz_log(1, "Frame length to small (%d)", buf[2]);
 			goto error;
 		} else {
 			sz_log(10, "Frame length: %d", buf[2]);
@@ -1701,7 +1701,7 @@ int ModbusTCP::ReadMessage(int timeout)
 			sz_log(10, "All data received OK");
 			return 0;
 		} else {
-			sz_log(0, "Error receiving data, errno %d (%s)",
+			sz_log(1, "Error receiving data, errno %d (%s)",
 					errno, strerror(errno));
 			goto error;
 		}
@@ -2109,8 +2109,10 @@ int main(int argc, char *argv[])
 	cfg = new DaemonConfig("mbtcpdmn");
 	ASSERT(cfg != NULL);
 	
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting");
 		return 1;
+	}
 	
 	mtcp = new ModbusTCP(cfg->GetDevice()->GetFirstRadio()->
 			GetFirstUnit()->GetParamsCount(),
@@ -2119,6 +2121,7 @@ int main(int argc, char *argv[])
 	ASSERT(mtcp != NULL);
 	
 	if (mtcp->ParseConfig(cfg)) {
+		sz_log(0, "Error parsing configuration, exiting");
 		return 1;
 	}
 
@@ -2144,10 +2147,11 @@ int main(int argc, char *argv[])
 			       mtcp->m_sends[i].prec);
 	}
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		ipc = new IPCHandler(m_cfg);
+	} catch(const std::exception& e) {
+		sz_log(0, "Error initializing IPC: %s", e.what());
+		return 1;
 	}
 
 	if (atexit(exit_handler)) {

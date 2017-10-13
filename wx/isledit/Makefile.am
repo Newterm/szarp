@@ -16,7 +16,7 @@ AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFL
 	-I@srcdir@/../common \
 	-DPREFIX=\"@prefix@\"
 
-LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
+LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la 
 LIBWXCOMMON=../common/libwxcommon.la
 

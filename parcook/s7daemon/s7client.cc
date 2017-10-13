@@ -16,7 +16,7 @@ bool S7Client::ConfigureFromXml( xmlNodePtr& node )
 
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (prop == NULL) {
-		sz_log(0, "No attribute address given in line %ld", xmlGetLineNo(node));
+		sz_log(1, "No attribute address given in line %ld", xmlGetLineNo(node));
 		return false;
 	}
 	_address = std::string((char*)prop);
@@ -64,7 +64,7 @@ S7QueryMap::S7Param S7Client::ConfigureParamFromXml( unsigned long int idx, xmlN
 	/* db_type */
 	prop = xmlGetNsProp(node, BAD_CAST("db_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute db_type given for param in line %ld",
+		sz_log(1, "No attribute db_type given for param in line %ld",
 			       	xmlGetLineNo(node));
 		return S7QueryMap::S7Param();
 	}
@@ -74,7 +74,7 @@ S7QueryMap::S7Param S7Client::ConfigureParamFromXml( unsigned long int idx, xmlN
 	/* address */
 	prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute address given for param in line %ld",
+		sz_log(1, "No attribute address given for param in line %ld",
 			       	xmlGetLineNo(node));
 		return  S7QueryMap::S7Param();
 	}
@@ -84,7 +84,7 @@ S7QueryMap::S7Param S7Client::ConfigureParamFromXml( unsigned long int idx, xmlN
 	/* val_type */
 	prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute val_type given for param in line %ld",
+		sz_log(1, "No attribute val_type given for param in line %ld",
 			       	xmlGetLineNo(node));
 		return S7QueryMap::S7Param();
 	}
@@ -96,14 +96,14 @@ S7QueryMap::S7Param S7Client::ConfigureParamFromXml( unsigned long int idx, xmlN
 		/*bit number*/
 		prop = xmlGetNsProp(node, BAD_CAST("number"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (NULL == prop) {
-			sz_log(0, "No attribute number given for param in line %ld",
+			sz_log(1, "No attribute number given for param in line %ld",
 					xmlGetLineNo(node));
 			return S7QueryMap::S7Param();
 		}
 		number = boost::lexical_cast<int>((char*)prop);
 		xmlFree(prop);
 		if (number < 0 || number > 7) {
-			sz_log(0, "Bit number must be from [0,7]");
+			sz_log(1, "Bit number must be from [0,7]");
 			return S7QueryMap::S7Param();
 		}
 	}
