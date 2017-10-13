@@ -94,7 +94,7 @@ void ProtocolLocation::parse_line( const std::string& line )
 	std::string data( gap2.end() , line.end() );
 
 	if( cmd_name == "e" ) {
-		sz_log(0, "Got error from client (no. %d): %s" , cmd_id , data.c_str());
+		sz_log(1, "Got error from client (no. %d): %s" , cmd_id , data.c_str());
 		erase_cmd( cmd_id );
 	} else if( cmd_name == "r" || cmd_name == "k"  ) {
 		if( !commands.count(cmd_id) ) {
@@ -140,7 +140,7 @@ void ProtocolLocation::new_cmd( Command* cmd , const std::string& tag , id_t id 
 					std::bind(&ProtocolLocation::send_response,this,p::_1,p::_2,p::_3) );
 		} else {
 			/** This should never happen */
-			sz_log(0, "Invalid id generated");
+			sz_log(1, "Invalid id generated");
 			return;
 		}
 	}
@@ -192,14 +192,14 @@ id_t ProtocolLocation::generate_id()
 void ProtocolLocation::send_cmd( Command* cmd )
 {
 	if( !protocol ) {
-		sz_log(0, "Tried to send command without protocol set.");
+		sz_log(1, "Tried to send command without protocol set.");
 		return;
 	}
 
 	auto tag = protocol->tag_from_cmd(cmd);
 
 	if( tag.empty() ) {
-		sz_log(0, "Tried to send command not implemented in this protocol.");
+		sz_log(1, "Tried to send command not implemented in this protocol.");
 		return;
 	}
 

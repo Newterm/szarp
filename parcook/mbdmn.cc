@@ -1104,7 +1104,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 
 		c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (c == NULL) {
-			dolog(0, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
+			dolog(1, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
 			return 1;
 		}
 
@@ -1112,7 +1112,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		char *e;	
 		long l = strtol((char*)c, &e, 0);
 		if (*e != 0 || l < 0 || l > 65535) {
-			dolog(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
+			dolog(1, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
 			return 1;
 		} 
 		xmlFree(c);
@@ -1125,7 +1125,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		else if (!strcmp(c, "input_register"))
 			rt = INPUT_REGISTER;
 		else {
-			dolog(0, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
+			dolog(1, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
 			return 1;
 		}
 		xmlFree(c);
@@ -1141,7 +1141,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		if (send) {
 			param = m_cfg->GetIPK()->getParamByName(sp->GetParamName());
 			if (param == NULL) {
-				dolog(0, "parameter with name '%ls' not found (send parameter %d)",
+				dolog(1, "parameter with name '%ls' not found (send parameter %d)",
 						sp->GetParamName().c_str(), j + 1);
 				return 1;
 			}
@@ -1162,7 +1162,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		} else if (!strcmp(c, "bcd")) {
 			m_registers[id][addr] = new modbus_register(this);
 			if (send) {
-				dolog(0, "Unsupported bcd value type for send param no. %d", j + 1);
+				dolog(1, "Unsupported bcd value type for send param no. %d", j + 1);
 				return 1;
 			}
 			vop = new bcd_parcook_modbus_val_op(m_registers[id][addr]);
@@ -1181,7 +1181,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 					dolog(5, "Setting lswmsw for next param");
 					float_order = LSWMSW;
 				} else {
-					dolog(0, "Invalid float order specification: %s, %ld", (char*)c, xmlGetLineNo(node));
+					dolog(1, "Invalid float order specification: %s, %ld", (char*)c, xmlGetLineNo(node));
 					return 1;
 				}
 			}
@@ -1219,7 +1219,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				other_reg = msw;
 				is_lsw = true;
 			} else {
-				dolog(0, "Unsupported val_op attribute value - %s, line %ld", (char*) c2, xmlGetLineNo(node));
+				dolog(1, "Unsupported val_op attribute value - %s, line %ld", (char*) c2, xmlGetLineNo(node));
 				return 1;
 			}
 			xmlFree(c2);
@@ -1241,7 +1241,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 				} else if (!xmlStrcmp(combined_str, BAD_CAST "LSW")) {
 					combined_lsw = true;
 				} else {
-					dolog(0, "Unsupported combined attribute value - %s, line %ld", (char*) combined_str, xmlGetLineNo(node));
+					dolog(1, "Unsupported combined attribute value - %s, line %ld", (char*) combined_str, xmlGetLineNo(node));
 					return 1;
 				}
 
@@ -1294,7 +1294,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 					dolog(7, "Parcook param %s no(%zu), mapped to unit: %lc, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
 						SC::S2A(param->GetName()).c_str(), m_parcook_ops.size(), u->GetId(), addr, is_lsw ? "lsw" : "msw", lsw, msw);
 				} else {
-					dolog(0, "Unsupported long value type for send param no. %d, exiting!", j + 1);
+					dolog(1, "Unsupported long value type for send param no. %d, exiting!", j + 1);
 					return 1;
 				}
 			}
@@ -1334,7 +1334,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		dolog(5, "Setting lswmsw float order");
 		m_float_order = LSWMSW;
 	} else {
-		dolog(0, "Invalid float order specification: %s", c);
+		dolog(1, "Invalid float order specification: %s", c);
 		return 1;
 	}
 	xmlFree(c);
@@ -1347,7 +1347,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		try {
 			m_expiration_time = boost::lexical_cast<time_t>((char*) c);
 		} catch (boost::bad_lexical_cast) {
-			dolog(0, "Invalid value for nodata-timeout %s(line: %ld), exiting", c, xmlGetLineNo(xp_ctx->node));
+			dolog(1, "Invalid value for nodata-timeout %s(line: %ld), exiting", c, xmlGetLineNo(xp_ctx->node));
 			return 1;
 		}
 	}
@@ -1361,7 +1361,7 @@ int modbus_daemon::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 		char *e;
 		m_nodata_value = strtof((char*)c , &e);
 		if (*e) {
-			dolog(0, "Invalid nodata value: %s, configuration invalid", (char*) c);
+			dolog(1, "Invalid nodata value: %s, configuration invalid", (char*) c);
 			return 1;
 		}
 		dolog(9, "Using %f as nodata value", m_nodata_value);
@@ -1426,14 +1426,14 @@ int set_nonblock(int fd) {
 
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to get socket flags");
+		dolog(1, "set_nonblock: Unable to get socket flags");
 		return -1;
 	}
 
 	flags |= O_NONBLOCK;
 	flags = fcntl(fd, F_SETFL, flags);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to set socket flags");
+		dolog(1, "set_nonblock: Unable to set socket flags");
 		return -1;
 	}
 
@@ -1615,7 +1615,7 @@ int tcp_server::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ctx) {
 			struct in_addr allowed_ip;
 			int ret = inet_aton(toks[i], &allowed_ip);
 			if (ret == 0) {
-				dolog(0, "incorrect IP address '%s'", toks[i]);
+				dolog(1, "incorrect IP address '%s'", toks[i]);
 				return 1;
 			} else {
 				dolog(5, "IP address '%s' allowed", toks[i]);
@@ -1644,14 +1644,14 @@ int tcp_server::initialize() {
 
 	m_listen_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_listen_fd == -1) {
-		dolog(0, "socket() failed, errno %d (%s)", errno, strerror(errno));
+		dolog(1, "socket() failed, errno %d (%s)", errno, strerror(errno));
 		return 1;
 	}
 
 	ret = setsockopt(m_listen_fd, SOL_SOCKET, SO_REUSEADDR, 
 			&on, sizeof(on));
 	if (ret == -1) {
-		dolog(0, "setsockopt() failed, errno %d (%s)",
+		dolog(1, "setsockopt() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
 		m_listen_fd = -1;
@@ -1674,7 +1674,7 @@ int tcp_server::initialize() {
 		break;
 	}
 	if (ret == -1) {
-		dolog(0, "bind() failed, errno %d (%s)",
+		dolog(1, "bind() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
 		m_listen_fd = -1;
@@ -1683,7 +1683,7 @@ int tcp_server::initialize() {
 
 	ret = listen(m_listen_fd, 1);
 	if (ret == -1) {
-		dolog(0, "listen() failed, errno %d (%s)",
+		dolog(1, "listen() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(m_listen_fd);
 		m_listen_fd = -1;
@@ -1952,11 +1952,11 @@ int tcp_client_connection::configure(DaemonConfig *cfg, xmlXPathContextPtr xp_ct
 	xmlChar *c;
 	c = get_device_node_prop(xp_ctx, "tcp-address");
 	if (c == NULL) {
-		dolog(0, "missing server's addres");
+		dolog(1, "missing server's addres");
 		return 1;
 	}
 	if (inet_aton((char*) c, &m_connection.addr.sin_addr) == 0) {
-		dolog(0, "incorrect server's IP address '%s'", (char*) c);
+		dolog(1, "incorrect server's IP address '%s'", (char*) c);
 		return 1;
 	}
 	xmlFree(c);
@@ -1993,7 +1993,7 @@ void tcp_client_connection::connect() {
 	}
 
 	if (set_nonblock(m_connection.fd)) {
-		dolog(1, "Failed to set non blocking mode on socket");
+		dolog(0, "Failed to set non blocking mode on socket");
 		exit(1);
 	}
 
@@ -2007,7 +2007,7 @@ do_connect:
 	} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 		m_connect_waiting = true;
 	} else {
-		dolog(0, "Failed to connect: %s", strerror(errno));
+		dolog(1, "Failed to connect: %s", strerror(errno));
 		m_modbus_client->connection_failed();
 		return;
 	}
@@ -2289,7 +2289,7 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 		dolog(10, "Serial port configuration, odd parity");
 		spc.parity = serial_port_configuration::ODD;
 	} else {
-		dolog(0, "Unsupported parity %s, confiugration invalid!!!", (char*) parity);
+		dolog(1, "Unsupported parity %s, confiugration invalid!!!", (char*) parity);
 		return 1;	
 	}
 	xmlFree(parity);
@@ -2305,7 +2305,7 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 		dolog(10, "Serial port configuration, setting two stop bits");
 		spc.stop_bits = 2;
 	} else {
-		dolog(0, "Unsupported number of stop bits %s, confiugration invalid!!!", (char*) stop_bits);
+		dolog(1, "Unsupported number of stop bits %s, confiugration invalid!!!", (char*) stop_bits);
 		return 1;
 	}
 	xmlFree(stop_bits);
@@ -2336,7 +2336,7 @@ int get_serial_config(xmlXPathContextPtr xp_ctx, DaemonConfig* cfg, serial_port_
 int open_serial_port(serial_port_configuration& spc) {
 	int fd = open(spc.path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
 	if (fd == -1) {
-		dolog(0, "Failed do open port: %s, error: %s", spc.path.c_str(), strerror(errno));
+		dolog(1, "Failed do open port: %s, error: %s", spc.path.c_str(), strerror(errno));
 		return -1;
 	}
 	
@@ -2514,7 +2514,7 @@ void serial_server::close_connection() {
 bool serial_server::open_connection() {
 	m_fd = open_serial_port(m_spc);
 	if (m_fd == -1) {
-		dolog(0, "Failed to open serial port, initialization failed. exiting");
+		dolog(1, "Failed to open serial port, initialization failed. exiting");
 		return false;
 	}
 
@@ -2582,7 +2582,7 @@ int configure_daemon_mode(xmlXPathContextPtr xp_ctx, DaemonConfig *cfg, modbus_d
 	int ret = 0;
 	xmlChar* mode = get_device_node_prop(xp_ctx, "daemon-mode");
 	if (mode == NULL) {
-		dolog(0, "Unspecified driver mode, configuration not vaild, exiting!");
+		dolog(1, "Unspecified driver mode, configuration not vaild, exiting!");
 		return 1;
 	}
 
@@ -2597,7 +2597,7 @@ int configure_daemon_mode(xmlXPathContextPtr xp_ctx, DaemonConfig *cfg, modbus_d
 	} else if (!xmlStrcmp(mode, BAD_CAST "serial-client")) {
 		*dmn = new modbus_client(new serial_client_connection());
 	} else {
-		dolog(0, "Unknown mode: %s, exiting", (char*) mode);
+		dolog(1, "Unknown mode: %s, exiting", (char*) mode);
 		ret = 1;
 	}
 	xmlFree(mode);
@@ -2656,11 +2656,15 @@ int main(int argc, char *argv[]) {
 	g_debug = cfg->GetDiagno() || cfg->GetSingle();
 
 	modbus_daemon *daemon;
-	if (configure_daemon(&daemon, cfg))
+	if (configure_daemon(&daemon, cfg)) {
+		sz_log(0, "Error while configuring daemon, exiting.");
 		return 1;
+	}
 
-	if (daemon->initialize())
+	if (daemon->initialize()) {
+		sz_log(0, "Error while configuring daemon, exiting.");
 		return 1;
+	}
 
 	dolog(2, "Starting Modbus Daemon");
 

@@ -262,7 +262,7 @@ int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, ser
 	}
 
 	if (id > 31) {
-	    m_log.log(0, "Unit id out of allowed range in unit element %d", unit->GetUnitNo());
+	    m_log.log(1, "Unit id out of allowed range in unit element %d", unit->GetUnitNo());
 	    return 1;
 	}
 	m_unit_id = id;
@@ -271,14 +271,14 @@ int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, ser
 
 		std::string _addr = param->getAttribute<std::string>("extra:address", "");
 		if (_addr.empty()) {
-		    m_log.log(0, "Invalid address attribute in param: %ls", param->GetName().c_str());
+		    m_log.log(1, "Invalid address attribute in param: %ls", param->GetName().c_str());
 		    return 1;
 		}
 
 		char *e;
 		long l = strtol(_addr.c_str(), &e, 0);
 		if (*e != 0 || l < 0 || l > 0x32) {
-			m_log.log(0, "Invalid address attribute value: %ld (%ls), between 0 and 0x32", l, param->GetName().c_str());
+			m_log.log(1, "Invalid address attribute value: %ld (%ls), between 0 and 0x32", l, param->GetName().c_str());
 			return 1;
 		}
 		unsigned char addr = (unsigned char)l;
@@ -289,7 +289,7 @@ int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, ser
 		if (!_prec.empty()) {
 		    l = strtol(_prec.c_str(), &e, 0);
 		    if (*e != 0 || l < 0) {
-			    m_log.log(0, "Invalid extra:prec attribute value: %ld (%ls)", l, param->GetName().c_str());
+			    m_log.log(1, "Invalid extra:prec attribute value: %ld (%ls)", l, param->GetName().c_str());
 			    return 1;
 		    }
 		    prec = exp10(l);
@@ -297,12 +297,11 @@ int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, ser
 		}
 
 		std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
-
 		lumel_register* reg = NULL;
 
 		if (val_op.empty()) {
 		    if (m_registers.find(addr) != m_registers.end()) {
-			m_log.log(0, "Already configured register with address (%hd) in param element %ls", addr, param->GetName().c_str());
+			m_log.log(1, "Already configured register with address (%hd) in param element %ls", addr, param->GetName().c_str());
 			return 1;
 		    }
 		    reg = new lumel_register(addr, &m_log);
@@ -325,7 +324,7 @@ int lumel_serial_client::configure(UnitInfo* unit, short* read, short *send, ser
 			m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 		    }
 		    else {
-			m_log.log(0, "Unsupported val_op attribute value - %s, %ls", val_op.c_str(), param->GetName().c_str());
+			m_log.log(1, "Unsupported val_op attribute value - %s, %ls", val_op.c_str(), param->GetName().c_str());
 			return 1;
 		    }
 		}

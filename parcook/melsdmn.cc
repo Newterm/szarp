@@ -95,7 +95,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 
 		if (_address == 0) {
-			sz_log(0, "Error, attribute mels:address missing in param definition, line(%ld)", xmlGetLineNo(n));
+			sz_log(1, "Error, attribute mels:address missing in param definition, line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -103,7 +103,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 		unsigned address = strtoul((char*)_address, &endptr, 0);
 		if (*endptr != 0) {
 			xmlFree(_address);
-			sz_log(0, "Error, invalid value of parameter mels:addres in param definition, line(%ld)", xmlGetLineNo(n));
+			sz_log(1, "Error, invalid value of parameter mels:addres in param definition, line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 		xmlFree(_address);
@@ -113,7 +113,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 			
 		if (_address_type == 0) {
-			sz_log(0, "Error, attribute mels:address_type missing in param definition, line(%ld)", xmlGetLineNo(n));
+			sz_log(1, "Error, attribute mels:address_type missing in param definition, line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -121,7 +121,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 				&& xmlStrcmp(_address_type, BAD_CAST "standard")
 				&& xmlStrcmp(_address_type, BAD_CAST "extended")) {
 			xmlFree(_address_type);
-			sz_log(0, "Error, invalid value of mels:address_type in param definition, line(%ld)", xmlGetLineNo(n));
+			sz_log(1, "Error, invalid value of mels:address_type in param definition, line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -132,7 +132,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 				BAD_CAST("val_type"), 
 				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (_type == NULL) {
-			sz_log(0, "Error, missing parameter type specification (mels:val_type) in line(%ld)", xmlGetLineNo(n));
+			sz_log(1, "Error, missing parameter type specification (mels:val_type) in line(%ld)", xmlGetLineNo(n));
 			return 1;
 		}
 
@@ -144,7 +144,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 		else if (!xmlStrcmp(_type, BAD_CAST "integer"))
 			val_type = MelsParam::INTEGER;
 		else {
-			sz_log(0, "Error, invalid parameter type specification (mels:val_type) in line(%ld), only 'integer' and 'float' supported", xmlGetLineNo(n));
+			sz_log(1, "Error, invalid parameter type specification (mels:val_type) in line(%ld), only 'integer' and 'float' supported", xmlGetLineNo(n));
 			xmlFree(_type);
 			return 1;
 		}
@@ -156,7 +156,7 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 			if (!send_param->GetParamName().empty()) {
 				param = cfg->GetIPK()->getParamByName(send_param->GetParamName());
 				if (param == NULL) {
-					sz_log(0, "parameter with name '%ls' not found (send parameter %d for device %d)",
+					sz_log(1, "parameter with name '%ls' not found (send parameter %d for device %d)",
 						send_param->GetParamName().c_str(), i + 1, cfg->GetLineNumber());
 					return 1;
 				}
@@ -192,14 +192,15 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 int main(int argc, char *argv[]) {
 	DaemonConfig* cfg = new DaemonConfig("melsdmn");
 
-
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
+	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
-		ipc = ipc_.release();
+		ipc = new IPCHandler(m_cfg);
 	} catch(...) {
+		sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 		return 1;
 	}
 
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]) {
         asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
         void *plugin = dlopen(plugin_path, RTLD_LAZY);
         if (plugin == NULL) {
-		sz_log(0,
+		sz_log(1,
 				"Cannot load %s library: %s",
 				plugin_path, dlerror());
 		exit(1);
@@ -224,8 +225,10 @@ int main(int argc, char *argv[]) {
 	*log_function = &sz_log;
 
 	MELSDaemonInterface* mels = createMELS();
-	if (ConfigureMELS(mels, cfg, ipc))
+	if (ConfigureMELS(mels, cfg, ipc)) {
+		sz_log(0, "Error while configuring, exiting.");
 		return 1;
+	}
 
 	while (true) {
 		sz_log(6, "Beginning parametr fetching loop");
@@ -244,7 +247,7 @@ int main(int argc, char *argv[]) {
 			}
 
 		} catch (SerialException &e) {
-			sz_log(0, "Serial port error %s", e.what());
+			sz_log(1, "Serial port error %s", e.what());
 		}
 
 		ipc->GoParcook();

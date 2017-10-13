@@ -3,7 +3,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
-#include <iostream>
+#include "liblog.h"
 
 namespace po = boost::program_options;
 
@@ -20,7 +20,7 @@ public:
 		po::options_description desc{"Options"};
 		desc.add_options()
 			("help,h", "Print this help messages")
-			("version,v", "Output version")
+			("version,V", "Output version")
 			("base,b", po::value<std::string>(), "Base to read configuration from")
 			("override,D", po::value<std::vector<std::string>>()->multitoken(), "Override default arguments (-Dparam=val)");
 
@@ -107,7 +107,13 @@ public:
 	void parse(int argc, const char ** argv, const ArgsHolder& main_args, const As&... as);
 
 	template <typename T = std::string>
-	boost::optional<T> get(const std::string& arg) const { if (vm.count(arg) > 0) return vm[arg].as<T>(); else return boost::none; }
+	boost::optional<T> get(const std::string& arg) const {
+		if (vm.count(arg) > 0) {
+			return vm[arg].as<T>();
+		}
+		
+		return boost::none;
+	}
 
 	bool has(const std::string& arg) const { return vm.count(arg) != 0; }
 
@@ -139,7 +145,7 @@ void CmdLineParser::parse(int argc, const char ** argv, const ArgsHolder& main_a
 
 		_parse(parsed_opts, vm, main_args, as...);
 	} catch(po::error& e) { 
-		std::cerr << "Options parse error: " << e.what() << std::endl << std::endl; 
+		sz_log(0, "Options parse error: %s", e.what());
 		exit(1);
 	}
 }

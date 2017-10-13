@@ -566,7 +566,7 @@ int main(int argc, char *argv[])
 	pafdmninfo = new DaemonClass((int)cfg->GetSingle(), (int)cfg->GetDiagno(), (int)cfg->GetDevice()->GetFirstUnit()->GetParamsCount(), (char *) (cfg->GetDevice()->getAttribute("path").c_str()));
 
 	if (pafdmninfo->m_paramscount != NUMBER_OF_VALS){
-		sz_log(0, "amount of params must be %d",NUMBER_OF_VALS);
+		sz_log(1, "amount of params must be %d",NUMBER_OF_VALS);
 		delete pafdmninfo;
 		return 1;
 	}

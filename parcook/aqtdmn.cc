@@ -764,7 +764,7 @@ int AqtBus::parseDevice(xmlNodePtr node)
 				    BAD_CAST("refresh"),
 				    BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		    "warning: attribute aqtdmn:refresh not found in device element, line %ld",
 		    xmlGetLineNo(node));
 		m_refresh = 12 ;
@@ -778,7 +778,7 @@ int AqtBus::parseDevice(xmlNodePtr node)
 				    BAD_CAST("energy"),
 				    BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		    "warning: atribute aqtdmn:energy mode not found in device element, line %ld",
 		    xmlGetLineNo(node));
 		m_energy = ENERGY_READ;
@@ -792,7 +792,7 @@ int AqtBus::parseDevice(xmlNodePtr node)
 			free(str);
 		}
 	else {
-		sz_log(0,
+		sz_log(1,
 		    "warning: attribute aqtdmn:energy (must be 'calculated' or 'read'), line %ld",
 		    xmlGetLineNo(node));
 		m_energy = ENERGY_READ;
@@ -822,13 +822,16 @@ int main(int argc, char *argv[])
 	value=0;	
 	cfg = new DaemonConfig("aqtdmn");
 
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
 	aqtinfo = new AqtBus(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount());
 
-	if (aqtinfo->parseDevice(cfg->GetXMLDevice()))
+	if (aqtinfo->parseDevice(cfg->GetXMLDevice())) {
+		sz_log(0, "Error parsing xml, exiting.");
 		return 1;
+	}
 
 	if (cfg->GetSingle()) {
 		printf("\
@@ -843,13 +846,13 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 	
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
-		ipc = ipc_.release();
+		ipc = new IPCHandler(cfg);
 	} catch(...) {
+		sz_log(0, "Error parsing xml, exiting.");
 		return 1;
 	}
 	if (ipc->m_params_count!=N_OF_PARAMS){
-		sz_log(2, "Error in configuration. Check Params.xml");
+		sz_log(0, "Error in configuration, exiting.");
 		return 1;
 	}
 	

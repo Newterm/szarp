@@ -125,7 +125,7 @@ void Sets::from_params_xml( boost::property_tree::ptree& ptree  ) throw(xml_pars
 					(*map)[name].first = order;
 					max_order = std::max(order,max_order);
 				} catch( boost::bad_lexical_cast& e ) {
-					sz_log(0, "Invalid prior in set %s", name.c_str() );
+					sz_log(1, "Invalid prior in set %s", name.c_str() );
 				}
 			}
 			(*map)[name].second.push_back( std::make_pair( "" , child ) );

@@ -56,17 +56,11 @@ std::mutex log_mutex;
 
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY)
 {
-	szlog::logger->set_log_treshold(level);
-	std::string pname = "";
+	szlog::log().set_log_treshold(level);
 	if (logfile) {
-		pname = std::string(logfile);
-		if (!pname.empty()) {
-			szlog::logger->set_logger<szlog::FileLogger>(std::string(logfile));
-		} else {
-			szlog::logger->set_logger<szlog::JournaldLogger>();
-		}
+		szlog::log().set_logger<szlog::JournaldLogger>(std::string(logfile));
 	} else {
-		szlog::logger->set_logger<szlog::JournaldLogger>();
+		szlog::log().set_logger<szlog::COutLogger>();
 	}
 
 	return level;
@@ -74,23 +68,21 @@ int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[],
 
 namespace szlog {
 
-void init(const ArgsManager& args_mgr) {
+void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	auto log_type = args_mgr.get<std::string>("logger");
 	if (log_type) {
 		if (*log_type == "cout") {
-			logger->set_logger<COutLogger>();
+			log().set_logger<COutLogger>();
 		} else if (*log_type == "journald" || args_mgr.get<bool>("no-daemon").get_value_or(false) || args_mgr.get<bool>("no_daemon").get_value_or(false)) {
-			logger->set_logger<JournaldLogger>();
+			log().set_logger<JournaldLogger>(logtag);
 		} else if (*log_type == "file") {
-			auto logfile_opt = args_mgr.get<std::string>("log_file");
-			if (logfile_opt) {
-				logger->set_logger<FileLogger>(*logfile_opt);
-			} else {
-				logger->set_logger<COutLogger>();
-			}
+			auto logfile_opt = args_mgr.get<std::string>("log_file").get_value_or(logtag);
+			log().set_logger<FileLogger>(logfile_opt);
 		} else {
-			logger->set_logger<COutLogger>();
+			log().set_logger<COutLogger>();
 		}
+	} else {
+		log().set_logger<JournaldLogger>(logtag);
 	}
 
 	auto log_level = args_mgr.get<int>("log_level").get_value_or(2);
@@ -98,7 +90,16 @@ void init(const ArgsManager& args_mgr) {
 	// if debug is specified, use it
 	log_level = args_mgr.get<unsigned int>("debug").get_value_or(log_level);
 
-	logger->set_log_treshold(log_level);
+	log().set_log_treshold(log_level);
+}
+
+void Logger::log(std::shared_ptr<LogEntry> msg) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	if (msg->_p > treshold) return;
+	if (_logger)
+		_logger->log(msg->_str.str(), msg->_p);
+	else
+		std::cout << msg->_str.str() << std::endl;
 }
 
 }
@@ -106,16 +107,12 @@ void init(const ArgsManager& args_mgr) {
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY, void *) {
 	if (logname != NULL) {
 		auto pname = std::string(logname);
-		if (!pname.empty()) {
-			szlog::logger->set_logger<szlog::FileLogger>(pname);
-		} else {
-			szlog::logger->set_logger<szlog::JournaldLogger>();
-		}
+		szlog::log().set_logger<szlog::JournaldLogger>(pname);
 	} else {
-		szlog::logger->set_logger<szlog::JournaldLogger>();
+		szlog::log().set_logger<szlog::COutLogger>();
 	}
 
-	szlog::logger->set_log_treshold(level);
+	szlog::log().set_log_treshold(level);
 	return level;
 }
 
@@ -123,7 +120,7 @@ void sz_logdone(void) {
 }
 
 void sz_log(int level, const char * msg_format, ...) {
-	if (level > szlog::logger->get_log_treshold()) return;
+	if (level > szlog::log().get_log_treshold()) return;
 
 	va_list fmt_args;
 	va_start(fmt_args, msg_format);
@@ -136,11 +133,16 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(log_mutex);
 
-	if (level > szlog::logger->get_log_treshold()) return;
+	if (level > szlog::log().get_log_treshold()) return;
 
 	char *l;
 	if (vasprintf(&l, msg_format, fmt_args) != -1) {
-		szlog::log() << szlog::PriorityForLevel(level) << std::string(std::move(l)) << szlog::flush;
+		auto log_impl = szlog::log().get_logger();
+		if (log_impl) {
+			log_impl->log(l, szlog::PriorityForLevel(level));
+		} else {
+			szlog::log() << szlog::PriorityForLevel(level) << l << szlog::flush;
+		}
 	}
 
 	if (l) free(l);

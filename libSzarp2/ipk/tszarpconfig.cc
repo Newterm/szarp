@@ -186,12 +186,12 @@ TSzarpConfig::GetPrefix() const
 }
 
 int
-TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
+TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& _prefix) {
 
 	xmlDocPtr doc;
 	int ret;
 
-	this->prefix = prefix;
+	prefix = _prefix;
 
 	xmlLineNumbersDefault(1);
 	doc = xmlParseFile(SC::S2A(path).c_str());
@@ -206,9 +206,9 @@ TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
 }
 
 int
-TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix)
+TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& _prefix)
 {
-	this->prefix = prefix;
+	prefix = _prefix;
 	xmlTextReaderPtr reader = xmlNewTextReaderFilename(SC::S2A(path).c_str());
 
 	if (NULL == reader) {
@@ -447,7 +447,7 @@ TSzarpConfig::PrepareDrawDefinable()
 		try {
 			p->PrepareDefinable();
 		} catch( TCheckException& e ) {
-			sz_log(0,"Invalid drawdefinable formula %s", SC::S2L(p->GetName()).c_str());
+			sz_log(1,"Invalid drawdefinable formula %s", SC::S2L(p->GetName()).c_str());
 		}
 	p = p->GetNext();
     }

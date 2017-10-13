@@ -125,7 +125,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 
 		delay = strtol(str, &tmp, 10);
 		if ((tmp[0] != 0)) {
-			sz_log(0,
+			sz_log(1,
 			       "error parsing npozytondmn:delay attribute ('%s'), line %ld",
 			       str, xmlGetLineNo(node));
 			free(str);
@@ -139,7 +139,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 				       BAD_CAST("voltage_factor"),
 				       BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		       "attribute npozytondmn:voltage_factor not found in device element, line %ld",
 		       xmlGetLineNo(node));
 		free(str);
@@ -148,7 +148,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 
 	voltage_factor = strtol(str, &tmp, 10);
 	if ((tmp[0] != 0)) {
-		sz_log(0,
+		sz_log(1,
 		       "error parsing npozytondmn:voltage_factor attribute ('%s'), line %ld",
 		       str, xmlGetLineNo(node));
 		free(str);
@@ -161,7 +161,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 				       BAD_CAST("current_factor"),
 				       BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		       "attribute npozytondmn:current_factor not found in device element, line %ld",
 		       xmlGetLineNo(node));
 		free(str);
@@ -170,7 +170,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 
 	current_factor = strtol(str, &tmp, 10);
 	if ((tmp[0] != 0)) {
-		sz_log(0,
+		sz_log(1,
 		       "error parsing npozytondmn:current_factor attribute ('%s'), line %ld",
 		       str, xmlGetLineNo(node));
 		free(str);
@@ -191,7 +191,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 		else if (!strcasecmp (str, "EQM"))
 			type = T_EQM;
 		else {
-			sz_log(0,
+			sz_log(1,
 			       "error parsing npozytondmn:type attribute ('%s'), line %ld",
 			       str, xmlGetLineNo(node));
 			free(str);
@@ -205,7 +205,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 				       BAD_CAST("interface"),
 				       BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		       "attribute npozytondmn:interface not found in device element, line %ld",
 		       xmlGetLineNo(node));
 		free(str);
@@ -219,7 +219,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 	} else if (!strcasecmp(str, "currloop")) {
 		interface = C_CURRLOOP;
 	} else {
-		sz_log(0,
+		sz_log(1,
 		       "error parsing npozytondmn:interface attribute ('%s'), line %ld it should be opto|rs485|currloop",
 		       str, xmlGetLineNo(node));
 		free(str);
@@ -230,7 +230,7 @@ int parseXMLDevice(xmlNodePtr node, NPozytonDataInterface * data)
 				   BAD_CAST("codes"),
 				   BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		       "attribute npozytondmn:codes not found in device element, line %ld",
 		       xmlGetLineNo(node));
 		free(str);
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
         asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
         void *plugin = dlopen(plugin_path, RTLD_LAZY);
         if (plugin == NULL) {
-		sz_log(0,
+		sz_log(1,
 				"Cannot load %s library: %s",
 				plugin_path, dlerror());
 		return 1;
@@ -288,12 +288,15 @@ int main(int argc, char *argv[])
 	}
 	*log_function = &sz_log;
 	dpozyton = createPozyton(params_count, cfg->GetSingle());
-	if (parseXMLDevice(cfg->GetXMLDevice(), dpozyton) != 0)
+	if (parseXMLDevice(cfg->GetXMLDevice(), dpozyton) != 0) {
+		sz_log(0, "Error parsing xml, exiting");
 		return 1;
+	}
 
 	Size = dpozyton->GoCodes();
 	if (Size < 0) {
 		free(dpozyton);
+		sz_log(0, "Error parsing xml, exiting");
 		return 1;
 	}
 
@@ -307,9 +310,9 @@ int main(int argc, char *argv[])
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
-		ipc = ipc_.release();
-	} catch(...) {
+		ipc = new IPCHandler(m_cfg);
+	} catch(const std::exception& e) {
+		sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 		return 1;
 	}
 

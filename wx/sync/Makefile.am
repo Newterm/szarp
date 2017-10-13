@@ -23,7 +23,7 @@ AM_CPPFLAGS = @GDK_CFLAGS@ @GTK_CFLAGS@ @WX_CXXFLAGS@ @XML_CFLAGS@ @RSYNC_CFLAGS
 	-I@srcdir@/../../libSzarp2/misc \
 	-DPREFIX=\"@prefix@\"
 
-LIBSZARP=../../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
+LIBSZARP=../../libSzarp/libSzarp.la
 LIBSZARP2=../../libSzarp2/libSzarp2.la
 LIBWXCOMMON=../common/libwxcommon.la
 

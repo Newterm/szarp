@@ -715,7 +715,7 @@ void Calcul(ushort n)
 	chptr = Equations.tab[n].c_str();
 	do {
 		if (sp >= SS) {
-			sz_log(0, "parcook: stack overflow after %td chars when calculating formula '%ls'",
+			sz_log(1, "parcook: stack overflow after %td chars when calculating formula '%ls'",
 					chptr - Equations.tab[n].c_str(), Equations.tab[n].c_str());
 			CalculNoData = 1;
 			return;
@@ -954,7 +954,7 @@ RETSIGTYPE Terminate(int sig)
 
 RETSIGTYPE CriticalHandler(int sig)
 {
-	sz_log(0, "parcook: signal %d caught, exiting, report to authors", sig);
+	sz_log(1, "parcook: signal %d caught, exiting, report to authors", sig);
 	/* restore default action, which is to abort */
 	signal(sig, SIG_DFL);
 	raise(sig);
@@ -968,7 +968,7 @@ RETSIGTYPE ChildDied(int sig)
 	if( pid == -1 )
 		sz_log(1, "Waiting for process on SIGCHLD: %s", strerror(errno));
 	else if( pid == 0 )
-		sz_log(0, "No process died after waiting on SIGCHLD: strange");
+		sz_log(1, "No process died after waiting on SIGCHLD: strange");
 	else
 		sz_log(WIFEXITED(stat) && !WEXITSTATUS(stat) ? 10 : 1,
 			"Process %i ended with code %i", pid, WEXITSTATUS(stat));
@@ -1417,6 +1417,10 @@ void ParseCfg(TSzarpConfig *ipk, char *linedmnpat)
 		ss << _opts;
 		LinesInfo[i].options = ss.str();
 
+		std::wstringstream wss; 
+		wss << d->GetOptions();
+		LinesInfo[i].options = wss.str();
+
 		LanchDaemon(i, linedmnpat);
 		i++;
 	} /* for each line daemon */
@@ -1495,7 +1499,7 @@ void calculate_lua_params(TSzarpConfig *ipk, PH& pv, std::vector<LuaParamInfo*>&
 	TParam* p = ipk->GetFirstParam();
 	for (int i = 0; i < VTlen; ++i) {
 		if (p == NULL) {
-			sz_log(0, "IPK error, number of params mismatch, exiting!");
+			sz_log(1, "IPK error, number of params mismatch, exiting!");
 			ASSERT(false);
 		}
 
@@ -1842,7 +1846,7 @@ int main(int argc, char *argv[])
 	ParseCfg(ipk, linedmnpat);
 
 	loginit_cmdline(log_level, logfile, &argc, argv);
-	sz_log(0, "parcook: started");
+	sz_log(1, "parcook: started");
 
 	atexit(Rmipc);
 
@@ -1894,8 +1898,10 @@ int main(int argc, char *argv[])
 	lua_pushlightuserdata(lua, &param_values);
 	lua_settable(lua, LUA_REGISTRYINDEX);
 
-	if (compile_scripts(ipk, pi) == false)
+	if (compile_scripts(ipk, pi) == false) {
+		sz_log(0, "Error compiling scripts, exiting");
 		return 1;
+	}
 
 #endif
 	sz_log(10, "Going main loop");
@@ -1915,7 +1921,7 @@ int main(int argc, char *argv[])
 	try {
 		socket.connect(parhub_address.c_str());
 	} catch (const zmq::error_t& exception) {
-		sz_log(1, "ZMQ socket connect failed: %d:'%s' on uri: '%s'", exception.num(),
+		sz_log(0, "ZMQ socket connect failed: %d:'%s' on uri: '%s'", exception.num(),
 			exception.what(), parhub_address.c_str());
 		throw;
 	}
@@ -1924,5 +1930,7 @@ int main(int argc, char *argv[])
 	while (1) 
 		MainLoop(ipk, param_values, pi, socket);
 	/* not reached */	
+
+	sz_log(0, "Unexpected exit");
 	return 0;
 }

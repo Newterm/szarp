@@ -7,6 +7,8 @@
 
 class ArgsManager {
 	std::string base_arg;
+	mutable bool libpar_initialized = false;
+
 public:
 	ArgsManager(const std::string& _name): name(_name), cmd(name) {}
 	ArgsManager(std::string&& _name): name(_name), cmd(name) {}
@@ -33,8 +35,10 @@ public:
 		parse(argc, const_cast<const char **>(argv), as...);
 	}
 
-	void initLibpar() {
-		const std::string SZARP_CFG = "/etc/szarp/szarp.cfg";
+	// this should be called from main thread (not mt-safe)
+	void initLibpar() const {
+		if (libpar_initialized) return;
+
 		if (!base_arg.empty()) {
 			#ifndef MINGW32
 				libpar_init_from_folder("/opt/szarp/"+base_arg+"/");
@@ -43,17 +47,20 @@ public:
 			#endif
 		} else {
 			#ifndef MINGW32
+				const std::string SZARP_CFG = "/etc/szarp/szarp.cfg";
 				libpar_init_with_filename(SZARP_CFG.c_str(), 0);
 			#else
 				throw std::runtime_error("Cannot initialize without base prefix");
 			#endif
 		}
+
+		libpar_initialized = true;
 	}
 
-	template <typename T = char*>
+	template <typename T = std::string>
 	boost::optional<T> get(const std::string& section, const std::string& arg) const;
 
-	template <typename T = char*>
+	template <typename T = std::string>
 	boost::optional <T> get(const std::string& arg) const { 
 		return get<T>(name, arg);
 	}
@@ -79,6 +86,10 @@ public:
 private:
 	// Getting -D... parameters from cmd line. This is for backward compatibility.
 	template <typename T>
+	boost::optional<T> get_cmdval(const std::string& arg) const;
+
+	// Getting -D... parameters from cmd line. This is for backward compatibility.
+	template <typename T>
 	boost::optional<T> get_overriden(const std::string& section, const std::string& arg) const;
 
 	// Getting parameters from cfg file (to refactor later on).
@@ -94,18 +105,25 @@ private:
 
 template <typename T>
 boost::optional<T> ArgsManager::get(const std::string& section, const std::string& arg) const { 
-	auto cmd_parser_ret = cmd.get<T>(arg);
-	if (cmd_parser_ret) {
-		try {
-			return *cmd_parser_ret;
-		} catch(...) {}
-	}
+	auto cmd_parser_ret = get_cmdval<T>(arg);
+	if (cmd_parser_ret) return *cmd_parser_ret;
 
 	auto ov_ret = get_overriden<T>(section, arg);
 	if (ov_ret) return *ov_ret;
 
 	auto lp_ret = get_libparval<T>(section, arg);
 	if (lp_ret) return *lp_ret;
+
+	return boost::none;
+}
+
+template <typename T>
+boost::optional<T> ArgsManager::get_cmdval(const std::string& arg) const {
+	if (cmd.vm.count(arg) > 0) {
+		try  {
+			return *cmd.get<T>(arg);
+		} catch(...) {}
+	}
 
 	return boost::none;
 }
@@ -121,7 +139,9 @@ boost::optional<T> ArgsManager::get_libparval(const std::string& section, const 
 	if (libpar_val == NULL) return boost::none;
 
 	try {
-		return cast_val<T>(std::string(libpar_val));
+		auto str_val = std::string(libpar_val);
+		free(libpar_val);
+		return cast_val<T>(str_val);
 	} catch(const boost::bad_lexical_cast& e) {
 		return boost::none;
 	}

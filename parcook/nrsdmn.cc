@@ -456,7 +456,7 @@ void UnitExaminator::ConfigExtraSpeed(DaemonConfig* cfg, int unit_num)
 	char *expr;
 	if (asprintf(&expr, ".//ipk:unit[position()=%d]/@extra:speed",
 			unit_num + 1) == -1) {
-		sz_log(0, "error occured reading extra:speed");
+		sz_log(1, "error occured reading extra:speed");
 		throw SerialException();
 	}
 	ASSERT(expr);
@@ -892,7 +892,7 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	bool debug = cfg->GetSingle() || cfg->GetDiagno();
 	const char *device_name = strdup(cfg->GetDevicePath());
 	if (!device_name) {
-		sz_log(0,"No device specified -- exiting");
+		sz_log(0, "No device specified -- exiting");
 		exit(1);
 	}
 
@@ -916,9 +916,9 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 			exit(1);
 		}
 		try {
-			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
-			m_ipc = ipc_.release();
-		} catch(...) {
+			m_ipc = new IPCHandler(m_cfg);
+		} catch(const std::exception& e) {
+			sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 			exit(1);
 		}
 
@@ -1028,7 +1028,7 @@ void Daemon::SuspendOperations() {
 
 	/*psetd didn't wake us up, continue anyway*/
 	if (stop_daemon) {
-		sz_log(0, "PSetd daemon did not wake as up after 3 minutes, resuming operations anyway");
+		sz_log(1, "PSetd daemon did not wake as up after 3 minutes, resuming operations anyway");
 		stop_daemon = 0;
 	} else
 		kill(psetd_pid, SIGUSR1);
@@ -1039,6 +1039,7 @@ int main(int argc, char *argv[]) {
 	DaemonConfig* cfg = new DaemonConfig("nrsdmn");
 
 	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting");
 		return 1;
 	}
 
@@ -1064,7 +1065,7 @@ int main(int argc, char *argv[]) {
 		}
 		daemon.Go();
 	} catch (std::exception&) {
-		sz_log(0, "Daemon died");
+		sz_log(1, "Daemon died");
 	}
 
 	return 1;

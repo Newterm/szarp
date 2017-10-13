@@ -64,7 +64,7 @@ XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix) {
 	xmlDocPtr doc = xmlParseFile(path);
 
 	if (doc == NULL) {
-		sz_log(0, "Could not load doc %s", path);
+		sz_log(1, "Could not load doc %s", path);
 		return NULL;
 	} 
 
@@ -75,7 +75,7 @@ XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix) {
 	xmlRelaxNGPtr rng_schema = xmlRelaxNGParse(pctx);
 	xmlRelaxNGFreeParserCtxt(pctx);
 	if (rng_schema == NULL) {
-		sz_log(0, "Could not load RelaxNG schema from file %s", schema_file);
+		sz_log(1, "Could not load RelaxNG schema from file %s", schema_file);
 		xmlFreeDoc(doc);
 		return NULL;
 	}
@@ -84,12 +84,12 @@ XMLUserDB* XMLUserDB::LoadXML(const char *path,const char *prefix) {
 	int ret = xmlRelaxNGValidateDoc(vctx, doc);
 	xmlRelaxNGFreeValidCtxt(vctx);
 	if (ret < 0) {
-		sz_log(0, "Internal libxml error while validating document %s", path);
+		sz_log(1, "Internal libxml error while validating document %s", path);
 		xmlFreeDoc(doc);
 		return NULL;
 	}
 	if (ret > 0) {
-		sz_log(0, "Error validating document %s, error ", BAD_CAST(xmlGetLastError()->message));
+		sz_log(1, "Error validating document %s, error ", BAD_CAST(xmlGetLastError()->message));
 		xmlFreeDoc(doc);
 		return NULL;
 	}

@@ -10,7 +10,7 @@ YACC=@YACC@
 
 LDADD = @LEXLIB@ @CURL_LIBS@ @XSLT_LIBS@ @XML_LIBS@ @LUA_LIBS@
 	@ZIP_FLAGS@ \
-	libSzarp2.la ../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
+	libSzarp2.la ../libSzarp/libSzarp.la
 
 AM_CPPFLAGS = @XML_CFLAGS@ @XSLT_CFLAGS@ @CURL_CFLAGS@ @LUA_CFLAGS@ \
 	@BOOST_CPPFLAGS@ @ZIP_CFLAGS@ \
@@ -37,11 +37,11 @@ szbtest_SOURCES = @srcdir@/szbase/szbtest.cc
 	cp $< $@
 
 lua_parser_test_INCLUDES = $(INCLUDES)
-lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@ libSzarp2.la
+lua_parser_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la
 lua_parser_test_SOURCES = @srcdir@/szarp_base_common/lua_parser_test.cc
 
 xmlreader_test_INCLUDES = $(INCLUDES)
-xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@ libSzarp2.la \
+xmlreader_test_LDADD = $(LDADD) ../libSzarp/libSzarp.la libSzarp2.la \
 	$(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) \
 	$(BOOST_REGEX_LIB) $(BOOST_DATE_TIME_LIB)  ../libSzarp/liblog.o
 xmlreader_test_SOURCES = @srcdir@/ipk/xmlreader_test.cc

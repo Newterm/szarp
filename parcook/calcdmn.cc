@@ -234,7 +234,7 @@ int DaemonClass::parseDevice(xmlNodePtr node)
 				    BAD_CAST("timeout"),
 				    BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		    "attribute calcdmn:timeout not found in device element, line %ld",
 		    xmlGetLineNo(node));
 		free(str);
@@ -249,7 +249,7 @@ int DaemonClass::parseDevice(xmlNodePtr node)
 				    BAD_CAST("refresh"),
 				    BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		    "attribute calcdmn:refresh not found in device element, line %ld",
 		    xmlGetLineNo(node));
 		free(str);
@@ -262,7 +262,7 @@ int DaemonClass::parseDevice(xmlNodePtr node)
 				    BAD_CAST("size"),
 				    BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (str == NULL) {
-		sz_log(0,
+		sz_log(1,
 		    "attribute calcdmn:size not found in device element, line %ld",
 		    xmlGetLineNo(node));
 		free(str);
@@ -296,7 +296,8 @@ int main(int argc, char *argv[])
 
 	cfg = new DaemonConfig("calcdmn");
 
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
 	calcinfo = new DaemonClass(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
@@ -317,8 +318,10 @@ int main(int argc, char *argv[])
 	}
 
 
-	if (calcinfo->parseDevice(cfg->GetXMLDevice()))
-	return 1;
+	if (calcinfo->parseDevice(cfg->GetXMLDevice())) {
+		sz_log(0, "Error parsing xml, exiting.");
+		return 1;
+	}
 
 
 	if (cfg->GetSingle()) {
@@ -330,9 +333,9 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
-		ipc = ipc_.release();
+		ipc = new IPCHandler(cfg);
 	} catch(...) {
+		sz_log(0, "Error parsing xml, exiting.");
 		return 1;
 	}
 

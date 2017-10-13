@@ -53,12 +53,12 @@ void IPCHandler::InitIPC(const IPCInfo& ipc_info)
 	const auto& linex_key = ipc_info.linex_path.c_str();
 	key = ftok(linex_key, line_no);
 	if (key == -1) {
-		sz_log(0, "ftok() error (path: %s), errno %d", linex_key, errno);
+		sz_log(1, "ftok() error (path: %s), errno %d", linex_key, errno);
 		throw std::runtime_error("ftok() error");
 	}
 	m_shm_d = shmget(key, sizeof(short) * m_params_count, 00600);
 	if (m_shm_d == -1) {
-		sz_log(0, "shmget() error (key: %08x), errno %d", key, errno);
+		sz_log(1, "shmget() error (key: %08x), errno %d", key, errno);
 		throw std::runtime_error("shmget() error");
 	}
 
@@ -71,12 +71,12 @@ void IPCHandler::InitIPC(const IPCInfo& ipc_info)
 	const auto& parcook_key = ipc_info.parcook_path.c_str();
 	key = ftok(parcook_key, SEM_PARCOOK);
 	if (key == -1) {
-		sz_log(0, "ftok('%s', SEM_PARCOOK), errno %d", parcook_key, errno);
+		sz_log(1, "ftok('%s', SEM_PARCOOK), errno %d", parcook_key, errno);
 		throw std::runtime_error("ftok() error");
 	}
 	m_sem_d = semget(key, SEM_LINE + 2 * line_no, 00600);
 	if (m_sem_d == -1) {
-		sz_log(0, "semget(%x, %d) error, errno %d", 
+		sz_log(1, "semget(%x, %d) error, errno %d", 
 				key, SEM_LINE + 2 * line_no, errno);
 		throw std::runtime_error("shmget() error");
 	}
@@ -86,12 +86,12 @@ void IPCHandler::InitIPC(const IPCInfo& ipc_info)
 
 	key = ftok(parcook_key, MSG_SET);
 	if (key == -1) {
-		sz_log(0, "ftok('%s', MSG_SET), errno %d", parcook_key, errno);
+		sz_log(1, "ftok('%s', MSG_SET), errno %d", parcook_key, errno);
 		throw std::runtime_error("ftok() error");
 	}
 	m_msgset_d = msgget(key, 00600);
 	if (m_msgset_d == -1) {
-		sz_log(0, "msgget() (MSG_SET) error, errno %d", errno);
+		sz_log(1, "msgget() (MSG_SET) error, errno %d", errno);
 		throw std::runtime_error("msgget() error");
 	}
 }

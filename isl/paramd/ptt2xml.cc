@@ -144,7 +144,7 @@ xmlNodePtr PTTLoader::create_node(xmlNodePtr parent, char *name)
 	for (n = parent->children; n; n = n->next) {
 		str = xmlGetProp(n, X"name");
 		if (!str) {
-			sz_log(0, "TREE not properly built");
+			sz_log(1, "TREE not properly built");
 			return NULL;
 		};
 		if (!strcmp((char *)str, (char *)(U(name)))) {
