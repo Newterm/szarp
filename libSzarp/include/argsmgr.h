@@ -6,18 +6,48 @@
 #include "cmdlineparser.h"
 
 class ArgsManager {
+	std::string base_arg;
 public:
 	ArgsManager(const std::string& _name): name(_name), cmd(name) {}
-	ArgsManager(std::string&& _name): name(std::move(_name)), cmd(name) {}
+	ArgsManager(std::string&& _name): name(_name), cmd(name) {}
+
+	ArgsManager& operator=(ArgsManager&& other) = default; 
+	ArgsManager(ArgsManager&& other) = default;
+
+	ArgsManager(const ArgsManager&) = default;
+	ArgsManager& operator=(const ArgsManager&) = default;
 
 	~ArgsManager() {
 		// Uncomment this once libpar is not used outside ArgsManager
 		//libpar_done();
 	}
 
-	void parse(int argc, const char ** argv, const std::vector<ArgsHolder*>& opt_args);
-	void parse(int argc, char ** argv, const std::vector<ArgsHolder*>& opt_args) {
-		parse(argc, const_cast<const char **>(argv), opt_args);
+	template <typename... As>
+	void parse(int argc, const char ** argv, const As&... as) {
+		cmd.parse(argc, argv, as...);
+		base_arg = cmd.get("base").get_value_or("");
+	}
+
+	template <typename... As>
+	void parse(int argc, char ** argv, const As&... as) {
+		parse(argc, const_cast<const char **>(argv), as...);
+	}
+
+	void initLibpar() {
+		const std::string SZARP_CFG = "/etc/szarp/szarp.cfg";
+		if (!base_arg.empty()) {
+			#ifndef MINGW32
+				libpar_init_from_folder("/opt/szarp/"+base_arg+"/");
+			#else
+				libpar_init_with_filename("%HOMEDRIVE%\\%HOMEPATH%\\.szarp\\"+base_arg+"\\config\\params.xml");
+			#endif
+		} else {
+			#ifndef MINGW32
+				libpar_init_with_filename(SZARP_CFG.c_str(), 0);
+			#else
+				throw std::runtime_error("Cannot initialize without base prefix");
+			#endif
+		}
 	}
 
 	template <typename T = char*>
@@ -49,6 +79,9 @@ private:
 	template <typename T>
 	boost::optional<T> get_libparval(const std::string& section, const std::string& arg) const;
 
+	template <typename RT>
+	RT cast_val(const std::string& at) const;
+
 	std::string name;
 	CmdLineParser cmd;
 };
@@ -56,7 +89,11 @@ private:
 template <typename T>
 boost::optional<T> ArgsManager::get(const std::string& section, const std::string& arg) const { 
 	auto cmd_parser_ret = cmd.get<T>(arg);
-	if (cmd_parser_ret) return *cmd_parser_ret;
+	if (cmd_parser_ret) {
+		try {
+			return *cmd_parser_ret;
+		} catch(...) {}
+	}
 
 	auto ov_ret = get_overriden<T>(section, arg);
 	if (ov_ret) return *ov_ret;
@@ -69,76 +106,65 @@ boost::optional<T> ArgsManager::get(const std::string& section, const std::strin
 
 template <typename T>
 boost::optional<T> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const { 
-	auto ret = get_libparval<std::string>(section, arg);
-	if (!ret) return boost::none;
+	char* libpar_val;
+	if (section.empty()) 
+		libpar_val = libpar_getpar(name.c_str(), arg.c_str(), 0);
+	else
+		libpar_val = libpar_getpar(section.c_str(), arg.c_str(), 0);
+	
+	if (libpar_val == NULL) return boost::none;
+
 	try {
-		auto val = boost::lexical_cast<T>(*ret);
-		return val;
+		return cast_val<T>(std::string(libpar_val));
 	} catch(const boost::bad_lexical_cast& e) {
 		return boost::none;
 	}
 }
-
-
-template <>
-boost::optional<const char*> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<const wchar_t*> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<char*> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<wchar_t*> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<std::string> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<const std::string> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<std::wstring> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
-
-template <>
-boost::optional<const std::wstring> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const;
 
 template <typename T>
 boost::optional<T> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const { 
-	auto ret = get_overriden<std::string>(section, arg);
-	if (!ret) return boost::none;
-	try {
-		auto val = boost::lexical_cast<T>(*ret);
-		return val;
-	} catch(const boost::bad_lexical_cast& e) {
-		return boost::none;
+	if (cmd.vm.count("override") > 0) {
+		auto overwritten_params = cmd.vm["override"].as<std::vector<std::string>>();
+		for (auto str: overwritten_params) {
+			auto eq_sign_pos = str.find_first_of("=");
+			if (str.substr(0,eq_sign_pos) == arg) {
+				try  {
+					return cast_val<T>(str.substr(eq_sign_pos+1));
+				} catch(const boost::bad_lexical_cast& e) {}
+			}
+		}
 	}
+
+	return boost::none;
 }
 
+template <typename RT>
+RT ArgsManager::cast_val(const std::string& v_str) const {
+	return boost::lexical_cast<RT>(v_str);
+}
 
 template <>
-boost::optional<const std::string> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+const char* ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<const std::wstring> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+char* ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<char*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+const wchar_t* ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<const char*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+wchar_t* ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<wchar_t*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+const std::string ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<const wchar_t*> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+std::string ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<std::string> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+const std::wstring ArgsManager::cast_val(const std::string& v_str) const;
 
 template <>
-boost::optional<std::wstring> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const;
+std::wstring ArgsManager::cast_val(const std::string& v_str) const;
 
 #endif
