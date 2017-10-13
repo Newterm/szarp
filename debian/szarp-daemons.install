@@ -34,6 +34,7 @@ opt/szarp/bin/borutadmn
 opt/szarp/bin/borutadmn_z
 opt/szarp/bin/pythondmn
 opt/szarp/bin/defdmn
+opt/szarp/bin/cfgdealer
 opt/szarp/lib/python/szbcache.py
 opt/szarp/lib/python/libpar.py
 opt/szarp/lib/python/probes_server.py

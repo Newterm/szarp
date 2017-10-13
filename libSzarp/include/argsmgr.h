@@ -125,12 +125,13 @@ template <typename T>
 boost::optional<T> ArgsManager::get_overriden(const std::string& section, const std::string& arg) const { 
 	if (cmd.vm.count("override") > 0) {
 		auto overwritten_params = cmd.vm["override"].as<std::vector<std::string>>();
-		auto found_it = std::find(overwritten_params.begin(), overwritten_params.end(), arg);
-		if (found_it != overwritten_params.end()) {
-			try {
-				auto val = cast_val<T>(*found_it);
-				return val;
-			} catch(const boost::bad_lexical_cast& e) {}
+		for (auto str: overwritten_params) {
+			auto eq_sign_pos = str.find_first_of("=");
+			if (str.substr(0,eq_sign_pos) == arg) {
+				try  {
+					return cast_val<T>(str.substr(eq_sign_pos+1));
+				} catch(const boost::bad_lexical_cast& e) {}
+			}
 		}
 	}
 

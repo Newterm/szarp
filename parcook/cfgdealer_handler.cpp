@@ -1,5 +1,6 @@
 #include "cfgdealer_handler.h"
 #include "zmq.hpp"
+#include "liblog.h"
 #include <boost/property_tree/xml_parser.hpp>
 
 
@@ -20,19 +21,30 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	zmq::context_t context(1);
 	zmq::socket_t socket(context, ZMQ_REQ);
 
+	int timeout_ms = args_mgr.get<int>("cfgdealer_connection_timeout").get_value_or(10000);
+	socket.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(timeout_ms));
+
+	// int delay = 1;
+	// socket.setsockopt(ZMQ_DELAY_ATTACH_ON_CONNECT, &delay, sizeof(delay));
+
 	auto cfgdealer_address = args_mgr.get<std::string>("cfgdealer-address").get_value_or("tcp://localhost:5555");
-	socket.connect(cfgdealer_address.c_str());
+	zmq_connect(socket, cfgdealer_address.c_str());
 	
 	auto d_str = std::to_string(device_no);
 	zmq::message_t request (d_str.size());
 	memcpy(request.data(), d_str.c_str(), d_str.size());
-	socket.send (request);
+
+	socket.send(request);
 
 	//  Get the reply.
 	zmq::message_t reply;
 	socket.recv (&reply);
+
 	std::string conf_str{std::move((char*) reply.data()), reply.size()};
-	std::cout << "Received " << conf_str << std::endl;
+	if (conf_str.empty()) {
+		sz_log(0, "Got no configuration from cfgdealer (is it running?).");
+		throw std::runtime_error("Got no configuration from cfgdealer (is it running?).");
+	}
 
 	std::wistringstream ss(SC::A2S(std::move(conf_str)));
 	boost::property_tree::wptree conf_tree;

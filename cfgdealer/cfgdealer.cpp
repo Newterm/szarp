@@ -41,7 +41,7 @@ void CfgDealer::prepare_configs(const ArgsManager& args_mgr) {
 	if (base) {
 		pt::read_xml(std::string("/opt/szarp/")+*base+std::string("/config/params.xml"), tree, pt::xml_parser::trim_whitespace | pt::xml_parser::no_comments, std::locale("pl_PL.UTF-8"));
 	} else {
-		pt::read_xml(std::string("/etc/szarp/default/params.xml"), tree, pt::xml_parser::trim_whitespace | pt::xml_parser::no_comments, std::locale("pl_PL.UTF-8"));
+		pt::read_xml(std::string("/etc/szarp/default/config/params.xml"), tree, pt::xml_parser::trim_whitespace | pt::xml_parser::no_comments, std::locale("pl_PL.UTF-8"));
 	}
 
 	no_devices = tree.get_child(L"params").count(L"device");
