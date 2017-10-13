@@ -1049,7 +1049,7 @@ fi
 
 # WX programs needs wxWidgets
 if test x$no_wx != xyes ; then
-        SUBDIRS="$SUBDIRS"
+        SUBDIRS="$SUBDIRS extern wx"
         DRAW3=draw3
         if test x$host_os != xmingw32 ; then
                 IPKEDIT=ipkedit
