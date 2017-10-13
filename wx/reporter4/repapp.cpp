@@ -112,13 +112,15 @@ bool repApp::ParseCMDLineOptions() {
 
 	libpar_init();
 
-	const char ** normal_argv;
+	char ** normal_argv;
 
 	try { 
-		normal_argv = new const char*[argc];
+		normal_argv = new char*[argc+1];
 		for (int i = 0; i < argc; ++i) {
+			normal_argv[i] = new char[strlen(argv[i])+1];
 			std::wstring warg(static_cast<wchar_t**>(argv)[i]);
-			normal_argv[i] = SC::S2A(warg).c_str();
+			std::string t_arg = SC::S2A(warg);
+			strcpy(normal_argv[i], t_arg.c_str());
 		}
 
 		po::store(po::parse_command_line(argc, normal_argv, desc), vm);
@@ -150,7 +152,7 @@ bool repApp::ParseCMDLineOptions() {
 			if (server != nullptr) {
 				m_server = std::string(server);
 			} else {
-				m_server = "127.0.0.1";
+				m_server = SC::S2A(m_base);
 			}
 		}
 

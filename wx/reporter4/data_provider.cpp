@@ -75,27 +75,29 @@ ParamObserver::ParamObserver(std::shared_ptr<sz4::iks> _base, ReportControllerBa
 }
 
 void ParamObserver::register_self() {
-	std::function<void(const error_code&)> error_callback = [this](const error_code& cb)
+	auto sthis = shared_from_this();
+	std::function<void(const error_code&)> error_callback = [sthis](const error_code& cb)
 		{
-			if (cb) onError(L"Error while subscribing on param");
+			if (cb) sthis->onError(L"Error while subscribing on param");
 		};
 
 	// call initial update
 	operator()();
-	base->register_observer(shared_from_this(), {pi}, error_callback);
+	base->register_observer(sthis, {pi}, error_callback);
 }
 
 void ParamObserver::deregister() {
-	std::function<void(const error_code&)> error_callback = [this](const error_code& cb){ /* ignore */ };
-	base->deregister_observer(shared_from_this(), {pi}, error_callback);
+	auto sthis = shared_from_this();
+	std::function<void(const error_code&)> error_callback = [sthis](const error_code& cb){ /* ignore */ };
+	base->deregister_observer(sthis, {pi}, error_callback);
 }
 
 void ParamObserver::operator()() {
 	using namespace std::chrono;
 	const sz4::second_time_t last_acceptable_time = duration_cast<seconds>(system_clock::now().time_since_epoch()).count() - DATA_TIMEOUT;
 
-	std::function<void(const error_code& cb, const sz4::second_time_t& time_found)> time_callback
-		= std::bind(&ParamObserver::getTime, this, std::placeholders::_1, std::placeholders::_2, pi);
+	auto sthis = shared_from_this();
+	std::function<void(const error_code& cb, const sz4::second_time_t& time_found)> time_callback = [sthis](const error_code& cb, const sz4::second_time_t& time_found) { sthis->getTime(cb, time_found); };
 
 	base->search_data_left(pi, (unsigned int) -1, last_acceptable_time, SZARP_PROBE_TYPE::PT_SEC, time_callback);
 }
@@ -104,7 +106,7 @@ void ParamObserver::onError(const std::wstring& error_msg) {
 	subscriber->onSubscriptionError(error_msg);
 }
 
-void ParamObserver::getData(const error_code& cb, const std::vector<data_type>& values, const sz4::param_info pi) {
+void ParamObserver::getData(const error_code& cb, const std::vector<data_type>& values) {
 	if (cb) {
 		onError(L"Error while getting data from server");
 		return;
@@ -115,14 +117,14 @@ void ParamObserver::getData(const error_code& cb, const std::vector<data_type>& 
 	}
 }
 
-void ParamObserver::getTime(const error_code& cb, const sz4::second_time_t& time_found, const sz4::param_info pi) {
+void ParamObserver::getTime(const error_code& cb, const sz4::second_time_t& time_found) {
 	if (cb) {
 		onError(L"Error while getting data time from server");
 		return;
 	}
 
-	std::function<void(const error_code& cb, const std::vector<data_type>&)> data_callback
-		= std::bind(&ParamObserver::getData, this, std::placeholders::_1, std::placeholders::_2, pi);
+	auto sthis = shared_from_this();
+	std::function<void(const error_code& cb, const std::vector<data_type>&)> data_callback = [sthis](const error_code& cb, const std::vector<data_type>& dt) { sthis->getData(cb, dt); };
 
 	base->get_weighted_sum(pi, sz4::time_just_before(time_found), time_found, SZARP_PROBE_TYPE::PT_SEC, data_callback);
 }

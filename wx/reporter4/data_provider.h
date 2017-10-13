@@ -51,8 +51,8 @@ public:
 	ParamObserver(std::shared_ptr<sz4::iks>, ReportControllerBase*, const sz4::param_info);
 	~ParamObserver() = default;
 
-	void getData(const boost::system::error_code&, const std::vector<data_type>&, const sz4::param_info);
-	void getTime(const boost::system::error_code&, const sz4::second_time_t&, const sz4::param_info);
+	void getData(const boost::system::error_code&, const std::vector<data_type>&);
+	void getTime(const boost::system::error_code&, const sz4::second_time_t&);
 
 	void onError(const std::wstring&);
 

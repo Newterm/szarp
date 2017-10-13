@@ -99,6 +99,10 @@ public:
 		treshold = p;
 	}
 
+	szlog::priority get_log_treshold() {
+		return treshold;
+	}
+
 	void set_log_treshold(int level) {
 		set_log_treshold(PriorityForLevel(level));
 	}
