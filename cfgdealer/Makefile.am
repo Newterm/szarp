@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 	-I@srcdir@/../libSzarp/include \
 	-I@srcdir@/../libSzarp2/include
 
-LIBSZARP=../libSzarp/libSzarp.la -lsystemd
+LIBSZARP=../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
 
 LDADD = @PTHREAD_CFLAGS@ $(LIBSZARP2) $(LIBSZARP) \
 	@BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ \

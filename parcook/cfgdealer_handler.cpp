@@ -28,7 +28,7 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	// socket.setsockopt(ZMQ_DELAY_ATTACH_ON_CONNECT, &delay, sizeof(delay));
 
 	auto cfgdealer_address = args_mgr.get<std::string>("cfgdealer-address").get_value_or("tcp://localhost:5555");
-	zmq_connect(socket, cfgdealer_address.c_str());
+	socket.connect(cfgdealer_address.c_str());
 	
 	auto d_str = std::to_string(device_no);
 	zmq::message_t request (d_str.size());
