@@ -54,7 +54,7 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 
 		SzarpConfigInfo* GetSzarpConfig() const { return nullptr; }
 
-		wchar_t GetId() const { return SC::A2S(getAttribute<std::string>("id", "1"))[0]; }
+		wchar_t GetId() const { return SC::L2S(getAttribute<std::string>("id", "1"))[0]; }
 		int GetUnitNo() const { return unit_no; }
 
 		std::vector<IPCParamInfo*> GetParams() const { return params; }

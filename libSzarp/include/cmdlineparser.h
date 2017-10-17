@@ -65,7 +65,7 @@ public:
 		desc.add_options()
 			("single,s", "Forbid writing via IPC")
 			("use-cfgdealer", "Enables configuring via config dealer")
-			("cfgdealer-address", po::value<std::string>()->default_value("localhost:5555"), "Config dealer's address")
+			("cfgdealer-address", po::value<std::string>()->default_value("tcp://localhost:5555"), "Config dealer's address")
 			("sniff", po::value<bool>()->default_value(false), "Do not initiate transmision, sniff traffic")
 			("scan", po::value<std::string>(), "range of ID to use from config (e.g. 1-7)")
 			("speed", po::value<unsigned int>(), "Port communication speed")

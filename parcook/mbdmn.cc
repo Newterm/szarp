@@ -1068,7 +1068,7 @@ int modbus_daemon::configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx) {
 		id = atoi(c);
 		xmlFree(c);
 	} else {
-		unsigned char _id = SC::A2U(u->getAttribute("id"))[0];
+		unsigned char _id = SC::L2U(u->getAttribute("id"))[0];
 		switch (_id) {
 			case L'0'...L'9':
 				id = _id - L'0';

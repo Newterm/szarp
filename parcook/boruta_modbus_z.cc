@@ -431,13 +431,15 @@ protected:
 	int get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
 	int get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw);
 
-	int configure_int_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_bcd_register(IPCParamInfo* param, TSendParam* sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_long_float_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_double_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal2_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal3_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_param(SzarpConfigInfo *sc, TParam* p, TSendParam *sp, bool send);
+	virtual void pushValOp(parcook_modbus_val_op* op, TAttribHolder* param);
+
+	int configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_param(TAttribHolder*, IPCParamInfo* param, bool send);
 	int configure_unit(TUnit* u);
 
 	const char* error_string(const unsigned char& error);
@@ -1264,12 +1266,17 @@ bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
 
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
 
-int modbus_unit::configure_int_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+void modbus_unit::pushValOp(parcook_modbus_val_op* op, TAttribHolder* param) {
+	m_parcook_ops.push_back(op);
+}
+
+int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
-	else 
-		m_parcook_ops.push_back(new short_parcook_modbus_val_op(m_registers[addr], &m_log));
+	else {
+		pushValOp(new short_parcook_modbus_val_op(m_registers[addr], &m_log), param);
+	}
 
 	if (!send)
 		m_received.insert(std::make_pair(rt, addr));
@@ -1280,13 +1287,13 @@ int modbus_unit::configure_int_register(IPCParamInfo* param, TSendParam *sparam,
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(IPCParamInfo* param, TSendParam* sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
 		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
 		return 1;
 	}
-	m_parcook_ops.push_back(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log));
+	pushValOp(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log), param);
 
 	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
 
@@ -1376,7 +1383,7 @@ int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsi
 	return 0;
 }
 
-int modbus_unit::configure_double_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	unsigned short addrs[4];
 
 	FLOAT_ORDER float_order;
@@ -1451,7 +1458,7 @@ int modbus_unit::configure_double_register(IPCParamInfo* param, TSendParam *spar
 	return 0;
 }
 
-int modbus_unit::configure_long_float_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");;
 	if (val_type.empty())
 		return 1;
@@ -1491,7 +1498,7 @@ int modbus_unit::configure_long_float_register(IPCParamInfo* param, TSendParam *
 	return 0;
 }
 
-int modbus_unit::configure_decimal2_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	unsigned short msw, lsw;
 	modbus_register* regs[2];
 	if (get_lsw_msw_reg(param, addr, lsw, msw))
@@ -1531,7 +1538,7 @@ int modbus_unit::configure_decimal2_register(IPCParamInfo* param, TSendParam *sp
 	return 0;
 }
 
-int modbus_unit::configure_decimal3_register(IPCParamInfo* param, TSendParam *sparam, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	if (send) {
 		m_log.log(0, "Unsupported decimal3 value type for send param line %ls, exiting!", param->GetName().c_str());
 		return 1;
@@ -1561,63 +1568,55 @@ int modbus_unit::configure_decimal3_register(IPCParamInfo* param, TSendParam *sp
 	return 0;
 }
 
-int modbus_unit::configure_param(SzarpConfigInfo* sc, TParam* p, TSendParam *sp, bool send) { 
+int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
 	unsigned short addr;
-	long l = p->getAttribute<long>("extra:address", -1);
+	long l = el->getAttribute<long>("extra:address", -1);
 	if (l < 0 || l > 65535) {
-		m_log.log(0, "Invalid address attribute value: %ld (%ls), between 0 and 65535", l, p->GetName().c_str());
+		m_log.log(0, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
 		return 1;
 	} 
+
 	addr = l;
 
 	REGISTER_TYPE rt;
-	auto reg_type_attr = p->getAttribute<std::string>("extra:register_type", "");
+	auto reg_type_attr = el->getAttribute<std::string>("extra:register_type", "holding_register");
 	if (reg_type_attr == "holding_register")
 		rt = HOLDING_REGISTER;
 	else if (reg_type_attr == "input_register")
 		rt = INPUT_REGISTER;
 	else {
-		m_log.log(0, "Unsupported register type, line %ls, should be either input_register or holding_register", p->GetName().c_str());
+		m_log.log(0, "Unsupported register type, should be either input_register or holding_register");
 		return 1;
 	}
 
-	std::string val_type = p->getAttribute<std::string>("extra:val_type", "");;
+	std::string val_type = el->getAttribute<std::string>("extra:val_type", "");
+	if (val_type.empty())
+		return 1;
 
-	IPCParamInfo *param = NULL; 
-	int prec_e = 0;
+	int prec_e;
 	if (send) {
-		if (!sp->GetParamName().empty()) {
-			param = sc->getIPCParamByName(sp->GetParamName());
-			if (param == NULL) {
-				m_log.log(0, "parameter with name '%s' not found",
-						SC::S2L(sp->GetParamName()).c_str());
-				return 1;
-			}
-			prec_e = p->getAttribute("extra:prec", param->GetPrec());
-		} else {
-			prec_e = p->getAttribute("extra:prec", 0);
-		}
+		prec_e = el->getAttribute("extra:prec", param? param->GetPrec() : 0);
 	} else {
-		param = p;
-		prec_e = p->GetPrec();
+		prec_e = param->GetPrec();
 	}
+
 	int prec = exp10(prec_e);
 
 	int ret;
 	if (val_type == "integer") {
-		ret = configure_int_register(p, sp, prec, addr, send, rt);
+		ret = configure_int_register(param, prec, addr, send, rt);
 	} else if (val_type == "bcd") {
-		ret = configure_bcd_register(p, sp, prec, addr, send, rt);
+		ret = configure_bcd_register(param, prec, addr, send, rt);
 	} else if (val_type == "long" || val_type == "float") {
-		ret = configure_long_float_register(p, sp, prec, addr, send, rt);
+		ret = configure_long_float_register(param, prec, addr, send, rt);
 	} else if (val_type == "double") {
-		ret = configure_double_register(p, sp, prec, addr, send, rt);
+		ret = configure_double_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal2") {
-		ret = configure_decimal2_register(p, sp, prec, addr, send, rt);
+		ret = configure_decimal2_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal3") {
-		ret = configure_decimal3_register(p, sp, prec, addr, send, rt);
+		ret = configure_decimal3_register(param, prec, addr, send, rt);
 	} else {
-		m_log.log(0, "Unsupported value type:%s, for param at line: %ls", val_type.c_str(), p->GetName().c_str());
+		m_log.log(0, "Unsupported value type: %s");
 		ret = 1;
 	}
 
@@ -1649,19 +1648,20 @@ int modbus_unit::configure_unit(TUnit* u) {
 		m_id = strtol(_id.c_str(), NULL, 0);
 	}
 
-	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
-		if (i == u->GetParamsCount())
-			j = 0;
-		bool send = j != i;
-
-		if (configure_param(u->GetSzarpConfig(), p, sp, send))
+	for (auto p: u->GetParams()) {
+		if (configure_param(p, p, false)) {
+			m_log.log(0, "Error in param %ls", p->GetName().c_str());
 			return 1;
-
-		if (send)
-			sp = sp->GetNext();
-		else
-			p = p->GetNext();
+		}
 	}
+
+	for (auto p: u->GetSendParams()) {
+		if (configure_param(p, p->GetParamToSend(), true)) {
+			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
+			return 1;
+		}
+	}
+
 	return 0;
 }
 

@@ -461,7 +461,7 @@ tcp_client_driver* protocols::create_tcp_client_driver(TUnit* unit) {
 	std::string proto = get_proto_name(unit);
 	if (proto.empty())
 		return NULL;
-	std::string use_tcp_2_serial_proxy = unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "");
+	std::string use_tcp_2_serial_proxy = unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no");
 
 	if (use_tcp_2_serial_proxy != "yes") {
 		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
