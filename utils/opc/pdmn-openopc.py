@@ -3,7 +3,7 @@
 #
 #  OPC Client for pythondmn based on OpenOPC project.
 #  http://openopc.sourceforge.net/
-#  requires python-pyro package 
+#  requires python-pyro package
 #
 #  Configuration example:
 #
@@ -14,7 +14,7 @@
 #	extra:opc_server="ArchestrA.FSGateway.2">
 #		<unit id="1" type="1" subtype="1" bufsize="1">
 #			<param
-#				name="Intouch:Generator:Ilość tagów"
+#				name="Intouch:Generator:Ilosc tagow"
 #				extra:item="INTOUCH.$SYS$ItemCount"
 #				extra:val_op="LSW"
 #				...
@@ -27,7 +27,7 @@
 #	extra:opc_server - name of server to send request
 #	extra:item - item to read
 #	extra:val_op - LSW/MSW (optional)
-	
+
 
 import sys
 import Pyro
@@ -48,7 +48,7 @@ hdlr = SysLogHandler(address='/dev/log', facility=SysLogHandler.LOG_DAEMON)
 formatter = logging.Formatter('%(filename)s: %(levelname)s: %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 class IPCdumy:
 	def __init__(self):
@@ -58,7 +58,7 @@ class IPCdumy:
 		return 2
 
 	def get_ipk_path(self):
-		return '/opt/szarp/szop/config/params.xml'
+		return '/opt/szarp/wloc-new/config/params.xml'
 
 	def set_read(self, ind, val):
 		if val is None:
@@ -115,6 +115,7 @@ class OpcDaemon(object):
 		self.opc_host = 'localhost'
 		self.pyro_connected = False
 		self.com_connected = False
+		self.success = False
 
 	def configure(self):
 		doc = etree.parse(self.ipk_path)
@@ -125,7 +126,7 @@ class OpcDaemon(object):
 		self.pyro_host = edev.get('{http://www.praterm.com.pl/SZARP/ipk-extra}pyro_host')
 		self.pyro_port = edev.get('{http://www.praterm.com.pl/SZARP/ipk-extra}pyro_port', 7766)
 		self.opc_server = edev.get('{http://www.praterm.com.pl/SZARP/ipk-extra}opc_server')
-			
+
 
 		for i, ep in enumerate(edev.xpath('p:unit[1]/p:param', namespaces=nsmap)):
 			item = ep.get('{http://www.praterm.com.pl/SZARP/ipk-extra}item')
@@ -135,7 +136,7 @@ class OpcDaemon(object):
 			p.scale = float(ep.get('{http://www.praterm.com.pl/SZARP/ipk-extra}scale', 1))
 			p.shift = float(ep.get('{http://www.praterm.com.pl/SZARP/ipk-extra}shift', 0))
 			self.params.append(p)
-	
+
 	def _update(self, row):
 		item = row[0]
 		status = row[2]
@@ -147,7 +148,7 @@ class OpcDaemon(object):
 			self.items[item] = v
 		else:
 			self.items[item] = None
-		
+
 
 	def do_read(self):
 		logger.info('Doing read')
@@ -159,8 +160,10 @@ class OpcDaemon(object):
 				self.com_connected = True
 
 			if not self.com_connected:
-				self.opc.connect(opc_server, opc_host)
+				self.opc.connect(self.opc_server, self.opc_host)
 				self.com_connected = True
+
+			self.success = True
 
 			data = self.opc.read(self.items.keys(),
 					group='opcdmn',
@@ -176,7 +179,6 @@ class OpcDaemon(object):
 				logger.debug(str(row))
 				self._update(row)
 
-						
 		except OpenOPC.TimeoutError, error_msg:
 			logger.error(error_msg[0])
 			self.success = False
@@ -189,7 +191,7 @@ class OpcDaemon(object):
 				self.com_connected = True
 			else:
 				self.com_connected = False
-		
+
 		except (Pyro.errors.ConnectionClosedError, Pyro.errors.ProtocolError), error_msg:
 			logger.error('Gateway Service: %s', error_msg)
 			self.success = False
@@ -203,15 +205,17 @@ class OpcDaemon(object):
 			logger.exception('IOError')
 			opc.close()
 			sys.exit(1)
-		
-		else:
-			success = True
 
+		else:
+			self.success = True
 
 	def go_parcook(self):
 		logger.info('Sending to parcook')
+		value = None
 		for p in self.params:
-			p.update_value(self.items[p.item])
+			if self.success:
+				value = self.items[p.item]
+			p.update_value(value)
 
 		ipc.go_parcook()
 
@@ -219,6 +223,8 @@ class OpcDaemon(object):
 
 
 def main():
+	ipc.autopublish_sz4()
+	ipc.force_sz4()
 	dmn = OpcDaemon(ipc.get_ipk_path(), ipc.get_line_number())
 	dmn.configure()
 
