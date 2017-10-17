@@ -37,8 +37,8 @@ import re
 import glob
 import unicodedata
 
-namespace = "{http://www.praterm.com.pl/SZARP/ipk}"
-namespace_extra = "{http://www.praterm.com.pl/SZARP/ipk-extra}"
+ns = { "ipk" : "http://www.praterm.com.pl/SZARP/ipk",
+		"extra" : "http://www.praterm.com.pl/SZARP/ipk-extra"}
 
 error_count = 0
 quiet = False
@@ -60,7 +60,7 @@ def add_note(msg):
 	note_list.append(msg)
 
 def add_ns(ns, param):
-	return ns + param
+	return "{" + ns + "}" + param
 
 def print_notes():
 	for note in note_list:
@@ -146,47 +146,47 @@ def get_isl_list():
 def parse_config_file():
 	config = params.getroot()
 	elements = list(config)
-	return elements
+	return config, elements
 
 def check_for_daemons():
 	"""
 	Testing - looking for custom daemons, looking for extra:param base in dbmdmn daemon
 	"""
-	md5sum_regex = re.compile(r"[a-f0-9]{32}")
-	daemon_regex = re.compile(r"(?<=\/opt\/szarp\/bin\/).*")
+	md5_map = {}
+	with open("/var/lib/dpkg/info/szarp-daemons.md5sums", "r") as md5file:
+		for line in md5file:
+			if "opt/szarp/bin" in line:
+				md5, daemon = line.split()
+				# md5_map["/opt/szarp/bin/iecdmn"] = md5
+				md5_map["/" + daemon] = md5
+
+	ignore_daemon = ['/bin/true', '/dev/null']
 	daemons_list = []
-	for device in elements:
-		for attr, value in device.items():
-			if attr == "daemon":
-				if not value in daemons_list:
-					daemons_list.insert(0,value)
-					md5sum_check = 0
-					if daemon_regex.search(value):
-						daemon = daemon_regex.search(value)
-					else:
-						continue
-					with open("/var/lib/dpkg/info/szarp-daemons.md5sums", "r") as md5file:
-						for line in md5file:
-							standard_daemon_md5sum = re.search(r"[a-f0-9]{32}.{16}" + daemon.group(0) , line)
-							if standard_daemon_md5sum is not None:
-								md5sum = md5sum_regex.search(line)
-								md5sum_check = md5sum.group(0)
-								break
-					try:
-						daemon_md5sum = hashlib.md5(open(value, 'rb').read()).hexdigest()
-					except:
-						daemon_md5sum = 0
-					if md5sum_check != daemon_md5sum is not None:
-						add_note("custom daemon found in " + value)
-				if os.path.basename(value).startswith("dbdmn"):
-					for unit in device:
-						for param in unit:
-							param_path = param.get(add_ns(namespace_extra, "param"))
-							if param_path is not None:
-								base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
-								base_path = "/opt/szarp/" + base
-								if not os.path.exists(base_path):
-									printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
+	for device in params_root.iter(add_ns(ns['ipk'], "device")):
+		daemon = device.get("daemon")
+		if daemon in ignore_daemon:
+			continue
+		if not daemon in daemons_list:
+			daemons_list.append(daemon)
+			md5sum_check = 0
+			try:
+				daemon_md5sum = hashlib.md5(open(daemon, 'rb').read()).hexdigest()
+				# search for given daemon md5sum in md5_map
+				md5_map.keys()[md5_map.values().index(daemon_md5sum)]
+			except ValueError:
+				add_note("custom daemon found in " + daemon)
+			except IOError:
+				printerr(daemon + " does not exist!")
+
+		if os.path.basename(daemon).startswith("dbdmn"):
+			for unit in device:
+				for param in unit:
+					param_path = param.get(add_ns(ns['extra'], "param"))
+					if param_path is not None:
+						base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
+						base_path = "/opt/szarp/" + base
+						if not os.path.exists(base_path):
+							printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
 
 def check_if_file_exist():
 	file_to_check = re.compile(r"\/opt\/szarp\/.")
@@ -200,8 +200,6 @@ def check_if_file_exist():
 						if device.get("daemon").endswith("testdmn") and attr == "path":
 							# the source data file may not exist at this moment
 							add_note("source data file for testdmn: '%s' does not exist" % value)
-						else:
-							printerr(value + " does not exist!")
 						not_found_files.append(value)
 
 def check_if_parameter_exist():
@@ -217,38 +215,62 @@ def check_if_parameter_exist():
 		isl_element = list(isl)
 		find_parameter_from_isl(isl_element, params_list, isl_file)
 
-param_list = []
+invalid_chars = set(['\\', '\"', '<', '>', '`', '~', '*'])
+def validate_parameter_name(param):
+	name = param.get("name")
+	components = name.split(":")
+	valid = True
+	if not len(components) in range(0,4):
+		printerr("Was looking for 1 or 2 separators in param name, found " +
+				str(len(components) - 1) + " (line " + str(param.sourceline) + ")") 
+		valid = False
+	for component in components:
+		if not component.strip():
+			printerr("Parameter name contains empty or whitestring name (line " +
+					str(param.sourceline) + ")")
+			valid = False
+		elif any(char in invalid_chars for char in component):
+			printerr("Parameter name contains invalid character (line "
+					+ str(param.sourceline) + ")") 
+			valid = False
+
+	return valid
+
+param_device = []
+send_device = []
 def get_parameters_from_device():
-	for device in elements:
-		if device.tag == add_ns(namespace, "device"):
-			for unit in device:
-				if unit.tag == add_ns(namespace, "unit"):
-					for param in unit:
-						if param.tag == add_ns(namespace, "param"):
-							param_list.append(param)
+	for device in params_root.iter(add_ns(ns['ipk'], "device")):
+		for unit in device.iter(add_ns(ns['ipk'], "unit")):
+			for param in unit.iter(add_ns(ns['ipk'], "param")):
+				if validate_parameter_name(param):
+					param_device.append(param)
+			for send in unit.iter(add_ns(ns['ipk'], "send")):
+				send_device.append(send)
 
+param_defined = []
 def get_parameters_from_defined():
-	for defined in elements:
-		if defined.tag == add_ns(namespace, "defined"):
-			for param in defined:
-				if param.tag == add_ns(namespace, "param"):
-					param_list.append(param)
+	for defined in params_root.iter(add_ns(ns['ipk'], "defined")):
+		for param in defined.iter(add_ns(ns['ipk'], "param")):
+			if validate_parameter_name(param):
+				param_defined.append(param)
 
+param_drawdefinable = []
 def get_parameters_from_drawdefinable():
-	for drawdefinable in elements:
-		if drawdefinable.tag == add_ns(namespace, "drawdefinable"):
-			for param in drawdefinable:
-				if param.tag == add_ns(namespace, "param"):
-					param_list.append(param)
+	for drawdefinable in params_root.iter(add_ns(ns['ipk'], "drawdefinable")):
+		for param in drawdefinable.iter(add_ns(ns['ipk'], "param")):
+			if validate_parameter_name(param):
+				param_drawdefinable.append(param)
 
-def check_no_base_ind():
+def get_param_list():
 	get_parameters_from_device()
 	get_parameters_from_defined()
-	for param in param_list:
+	get_parameters_from_drawdefinable()
+
+def check_no_base_ind():
+	for param in param_device + param_defined:
 		if param.get("base_ind") is None:
 			name = unicode_to_ascii(param.get("name"))
 			add_note("parameter '%s' no base_ind, won't be written to szbase (line %d)" % (name, param.sourceline))
-	get_parameters_from_drawdefinable()
 
 def check_params_xmlschema():
 	"""
@@ -270,70 +292,66 @@ def check_under_defined_elements():
 		RPN as attribute type of define element
 		lua_formula as forbidden attribute in defined parameter
 	"""
-	for defined in elements:
-		if defined.tag == add_ns(namespace, "defined"):
-			for param in defined:
-				for define in param:
-					if define.tag == add_ns(namespace, "define"):
-						for attr, value in define.items():
-							if attr == "type" and value != "RPN":
-								printerr('found "' + value + '" as defined formula type, expected "RPN" (line ' + str(define.sourceline) + ')')
-							if attr == "lua_formula":
-								printerr('found "' + attr + '" in defined parameter, use "formula" only (line "' + str(define.sourceline) + ')')
+	for param in param_defined:
+		define = param.find(add_ns(ns['ipk'], "define"))
+		if define is None:
+			continue
+		for attr, value in define.items():
+			if attr == "type" and value != "RPN":
+				printerr('found "' + value + '" as defined formula type, expected "RPN" (line ' + str(define.sourceline) + ')')
+			elif attr == "lua_formula":
+				printerr('found "' + attr + '" in defined parameter, use "formula" only (line "' + str(define.sourceline) + ')')
 
 def check_under_device_elements():
 	"""
 	Testing draw elements for: value min/max ratio, valuescace/minscale/maxscale
 		ratio
-	Testing send elements for: unit in param node, wrong order of send elements,
-		param or value in send element, attribue min/max, separated by comma or dot
+	Testing send elements for: param or value in send element, attribue min/max,
+		separated by comma or dot
 	"""
-	for device in elements:
-		if device.tag == add_ns(namespace, "device"):
-			for unit in device:
-				for element in unit:
-					if element.tag == add_ns(namespace, "param"):
-						for draw in element:
-							if draw.tag == add_ns(namespace, "draw"):
-								min_value = 0
-								max_value = 0
-								scale_value = 0
-								min_scale_value = 0
-								max_scale_value = 0
-								for attr, value in draw.items():
-									if attr == "min":
-										min_value = value
-									elif attr == "max":
-										max_value = value
-									elif attr == "scale":
-										scale_value = value
-									elif attr == "minscale":
-										min_scale_value = value
-									elif attr == "maxscale":
-										max_scale_value = value
-								if float(min_value) > float(max_value):
-									add_note("in element draw found wrong min/max ratio (line " + str(draw.sourceline) + ")")
-								if float(min_scale_value) > float(max_scale_value) > float(scale_value):
-									add_note("in element draw found wrong scale/minscale/maxscale ratio (line " + str(draw.sourceline) + ")")
-					elif element.tag == add_ns(namespace, "send"):
-						try:
-							if element.getnext().tag != add_ns(namespace, "send"):
-								add_note("found wrong order of 'send' elements (line " + str(element.sourceline) + ")")
-						except:
-							pass
-						try:
-							for attr, value in element.items():
-								found_param_or_value = False
-								if attr == "param" or attr == "value":
-									found_param_or_value = True
-									break
-								elif attr == "min" or attr == "max":
-									if "," in value:
-										printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(element.sourceline) + ")")
-							if found_param_or_value is False:
-								printerr("found send without param or value (line " + str(element.sourceline) + ")")
-						except:
-							pass
+	for param in param_device:
+
+		draw = param.find(add_ns(ns['ipk'], "draw"))
+		if draw is None:
+			continue
+		min_value = 0
+		max_value = 0
+		scale_value = 0
+		min_scale_value = 0
+		max_scale_value = 0
+		for attr, value in draw.items():
+			if attr == "min":
+				min_value = value
+			elif attr == "max":
+				max_value = value
+			elif attr == "scale":
+				scale_value = value
+			elif attr == "minscale":
+				min_scale_value = value
+			elif attr == "maxscale":
+				max_scale_value = value
+		if float(min_value) > float(max_value):
+			add_note("in element draw found wrong min/max ratio (line " + str(draw.sourceline) + ")")
+		if float(min_scale_value) > float(max_scale_value) > float(scale_value):
+			add_note("in element draw found wrong scale/minscale/maxscale ratio (line " + str(draw.sourceline) + ")")
+
+	send_req_keys = ['param', 'value']
+	for send in send_device:
+		if not any(key in send_req_keys for key in send.keys()):
+			printerr("found send without param or value (line " + str(send.sourceline) + ")")
+		send_param = send.get("param")
+		if send_param:
+			found = False
+			for param in param_device + param_defined:
+				if send_param in param.get("name"):
+					found = True
+					break
+			if not found:
+				printerr("could not find param " + send_param + " to send (line " +
+					str(send.sourceline) + ")")
+			elif attr == "min" or attr == "max":
+				if "," in value:
+					printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(send.sourceline) + ")")
 
 def find_parameter_from_isl(branch, params_list, isl_file):
 	"""
@@ -390,6 +408,7 @@ def prepare_param_name(param_name):
 	return "".join([ conv(x) for x in param_name ])
 
 def do_tests():
+	get_param_list()
 	check_params_xmlschema()
 	check_if_file_exist()
 	check_for_daemons()
@@ -426,6 +445,7 @@ process = Popen(command, stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 if stdout:
 	for note in stdout.strip().splitlines():
+		print note
 		add_note(note)
 if stderr:
 	for error in stderr.strip().splitlines():
@@ -435,7 +455,7 @@ if not quiet:
 	add_note("if configuration has changed: /etc/init.d/parstart restart")
 szarp_path, params_path = get_szarp_path()
 params = get_params_scheme()
-elements = parse_config_file()
+params_root, elements = parse_config_file()
 check_svn()
 do_tests()
 if args.additional_test:
