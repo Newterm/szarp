@@ -608,7 +608,7 @@ int DaemonConfig::GetSpeed()
 	if (m_speed != 0)
 		return m_speed;
 	if (m_device_obj) 
-		return m_device_obj->getAttribute<int>("speed");
+		return m_device_obj->getAttribute<int>("speed", -1);
 	return 0;
 }
 
@@ -673,7 +673,7 @@ void DaemonConfig::CloseIPK() {
 		m_device_path = m_device_obj->getAttribute("path");
 
 	if (m_speed == 0)
-		m_speed = m_device_obj->getAttribute<int>("speed", 0);
+		m_speed = m_device_obj->getAttribute<int>("speed", -1);
 
 	delete m_ipk;
 

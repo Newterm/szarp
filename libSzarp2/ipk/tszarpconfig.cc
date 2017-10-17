@@ -276,10 +276,10 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					storeAttribute(SC::U2A(xw.GetAttrName()), SC::U2A(attr));
+					storeAttribute(SC::U2L(xw.GetAttrName()), SC::U2L(attr));
 				}
 
-				if (!hasAttribute("version") || getAttribute("version", std::string("0.0")) != "1.0") {
+				if (!hasAttribute("version") || getAttribute<std::string>("version", "0.0") != "1.0") {
 					sz_log(0, "Error regarding \"version\" attribute!");
 					return 1;
 				}
@@ -346,8 +346,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 int
 TSzarpConfig::parseXML(xmlDocPtr doc)
 {
-    using namespace SC;
-
     unsigned char *c = NULL;
     int i;
     TDevice *td = NULL;
@@ -363,9 +361,9 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 
 	TAttribHolder::parseXML(node);
 
-	title = SC::A2S(getAttribute("title"));
+	title = SC::L2S(getAttribute<std::string>("title", ""));
 
-	if (!hasAttribute("version") || getAttribute("version", std::string("0.0")) != "1.0") {
+	if (!hasAttribute("version") || getAttribute<std::string>("version", "0.0") != "1.0") {
 		sz_log(0, "Error regarding \"version\" attribute!");
 		return 1;
 	}
@@ -603,12 +601,10 @@ const std::vector<size_t> TSzarpConfig::GetSendIpcInds(const TDevice &d) const {
 
 	for (TUnit* u = d.GetFirstUnit(); u != nullptr; u = u->GetNext()) {
 		for (TSendParam *s = u->GetFirstSendParam(); s; s = s->GetNext()) {
-			const std::wstring& param_name = s->GetParamName();
-			if (param_name.empty())
-				continue;
+			auto ipc_param = s->GetParamToSend();
 
-			TParam* param = getParamByName(param_name);
-			ret.push_back(param->GetIpcInd());
+			if (ipc_param == nullptr) continue; // value-type send param (ignore it)
+			else ret.push_back(ipc_param->GetIpcInd());
 		}
 	}
 

@@ -168,7 +168,7 @@ void TUnit::AddParam(TSendParam* s)
 
 wchar_t TUnit::GetId() const
 {
-	return SC::A2S(getAttribute("id"))[0];
+	return SC::L2S(getAttribute("id"))[0];
 }
 
 std::vector<IPCParamInfo*> TUnit::GetParams() const {

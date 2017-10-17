@@ -226,7 +226,7 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg)
 	m_single = cfg->GetSingle();
 	
 	std::string path = cfg->GetDevice()->getAttribute("path");
-	std::string options = cfg->GetDevice()->getAttribute("options");
+	std::string options = cfg->GetDevice()->getAttribute<std::string>("options", "");
 	if (m_single) {
 		printf("Using command '%s'\n", (path + " " + options).c_str());
 	}

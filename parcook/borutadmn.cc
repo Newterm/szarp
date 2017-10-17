@@ -449,7 +449,8 @@ tcp_client_driver* protocols::create_tcp_client_driver(UnitInfo* u) {
 	std::string proto = get_proto_name(u);
 	if (proto.empty())
 		return NULL;
-	std::string use_tcp_2_serial_proxy = u->getAttribute<std::string>("extra:use_tcp_2_serial_proxy");
+
+	std::string use_tcp_2_serial_proxy = u->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no");
 
 	if (use_tcp_2_serial_proxy != "yes") {
 		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
@@ -1234,7 +1235,7 @@ int boruta_daemon::configure_units() {
 	short *send = m_ipc->m_send;
 	protocols _protocols;
 	for (auto u: m_cfg->GetUnits()) {
-		std::string mode = u->getAttribute<std::string>("extra:mode");
+		std::string mode = u->getAttribute<std::string>("extra:mode", "client");
 
 		bool server;
 		if (mode == "server")
@@ -1245,7 +1246,7 @@ int boruta_daemon::configure_units() {
 			throw std::runtime_error("Unknown unit mode "+mode);
 		}
 
-		std::string medium = u->getAttribute<std::string>("extra:medium");
+		std::string medium = u->getAttribute<std::string>("extra:medium", "tcp");
 		if (medium == "tcp") {
 			if (server)
 				ret = m_tcp_server_mgr.configure(u, read, send, _protocols);
