@@ -110,7 +110,7 @@ ConfigDealerHandler::CParam::CParam(const boost::property_tree::wptree& conf, si
 
 ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree& conf): parent(_parent) {
 	TAttribHolder::parseXML(conf);
-	sent_param_name = SC::A2S(getAttribute("param"));
+	sent_param_name = SC::L2S(getAttribute("param"));
 }
 
 

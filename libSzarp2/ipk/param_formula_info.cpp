@@ -152,7 +152,7 @@ ParamFormulaInfo::GetDrawFormula()
 		_parsed_formula.replace(pc, 7, L"X");
     }
     
-    sz_log(9, "G: _parsed_formula: (%p) %s", this, SC::S2A(_parsed_formula).c_str());
+    sz_log(9, "G: _parsed_formula: (%p) %s", this, SC::S2L(_parsed_formula).c_str());
 
     return _parsed_formula;
 }
@@ -163,7 +163,7 @@ ParamFormulaInfo::GetDrawFormula()
 double
 ParamFormulaInfo::calculateConst(const std::wstring& formula)
 {
-    sz_log(10, "$ form: %s", SC::S2A(formula).c_str());
+    sz_log(10, "$ form: %s", SC::S2L(formula).c_str());
 
     double stack[DEFINABLE_STACK_SIZE];
     double tmp;
@@ -177,7 +177,7 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 	    if (sp >= DEFINABLE_STACK_SIZE) {
 		sz_log(0,
 			"Nastapilo przepelnienie stosu przy liczeniu formuly %s",
-			SC::S2A(formula).c_str());
+			SC::S2L(formula).c_str());
 		return SZB_NODATA;
 	    }
             wchar_t *eptr;
@@ -204,7 +204,7 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 		    if (DEFINABLE_STACK_SIZE <= sp) {
 			sz_log(0,
 				"Przepelnienie stosu dla formuly %s, w funkcji '!'",
-				SC::S2A(formula).c_str());
+				SC::S2L(formula).c_str());
 			return SZB_NODATA;
 		    }
 		    
@@ -240,7 +240,7 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 		    if (stack[sp] != 0.0)
 			stack[sp - 1] /= stack[sp];
 		    else {
-			sz_log(4, "WARRNING: dzielenie przez zero w formule: %s)", SC::S2A(formula).c_str());
+			sz_log(4, "WARRNING: dzielenie przez zero w formule: %s)", SC::S2L(formula).c_str());
 			return SZB_NODATA;
 		    }
 		    break;		
@@ -271,7 +271,7 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 		    else {
 			sz_log(4,
 				"WARRNING: wykladnik potegi < 0 %s)",
-				SC::S2A(formula).c_str());
+				SC::S2L(formula).c_str());
 			return SZB_NODATA;
 		    }
 		    break;
@@ -286,7 +286,7 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 		    if (DEFINABLE_STACK_SIZE <= sp) {
 			sz_log(0,
 				"Przepelnienie stosu dla formuly %s, w funkcji X",
-				SC::S2A(formula).c_str());
+				SC::S2L(formula).c_str());
 			return SZB_NODATA;
 		    }
 		    stack[sp++] = SZB_NODATA;
@@ -294,14 +294,14 @@ ParamFormulaInfo::calculateConst(const std::wstring& formula)
 		default:
 		    if (iswspace(*chptr))
 			    break;
-		    sz_log(10, "Nie obslugiwany operator %s\n w %s", SC::S2A(chptr).c_str(), SC::S2A(formula).c_str());
+		    sz_log(10, "Nie obslugiwany operator %s\n w %s", SC::S2L(chptr).c_str(), SC::S2L(formula).c_str());
 		    return SZB_NODATA;
 	    }
 	}
     } while (chptr && *(++chptr) != 0);
     
     if (sp-- < 0) {
-	sz_log(0, "ERROR: za malo danych na stosie p: %s, f: %s", SC::S2A(_name).c_str(), SC::S2A(formula).c_str());
+	sz_log(0, "ERROR: za malo danych na stosie p: %s, f: %s", SC::S2L(_name).c_str(), SC::S2L(formula).c_str());
 	return SZB_NODATA;
     }
     
@@ -343,7 +343,7 @@ ParamFormulaInfo::PrepareDefinable()
 	
 	ech = _formula.find(L')', sch);
 	if (ech == std::wstring::npos) {
-	    sz_log(0, "Error in formula = %s (param: %s)", SC::S2A(_formula).c_str(), SC::S2A(_name).c_str());
+	    sz_log(0, "Error in formula = %s (param: %s)", SC::S2L(_formula).c_str(), SC::S2L(_name).c_str());
 	    _f_cache.clear();
 		throw TCheckException();
 	}
@@ -482,7 +482,7 @@ ParamFormulaInfo::GetParcookFormula(bool ignoreIndexes, std::vector<std::wstring
 		if (p == NULL && ignoreIndexes) 
 			p = IPKContainer::GetObject()->GetParam(c2);
 		if (p == NULL) {
-		   sz_log(0, "GetParcookFormula: parameter '%s' not found in formula for '%s'", SC::S2A(c2).c_str(), SC::S2A(GetName()).c_str());
+		   sz_log(0, "GetParcookFormula: parameter '%s' not found in formula for '%s'", SC::S2L(c2).c_str(), SC::S2L(GetName()).c_str());
 		   throw TCheckException();
 		}
 

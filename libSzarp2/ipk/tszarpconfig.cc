@@ -276,7 +276,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					storeAttribute(SC::U2A(xw.GetAttrName()), SC::U2A(attr));
+					storeAttribute(SC::U2L(xw.GetAttrName()), SC::U2L(attr));
 				}
 
 				if (!hasAttribute("version") || getAttribute("version", std::string("0.0")) != "1.0") {
@@ -346,8 +346,6 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 int
 TSzarpConfig::parseXML(xmlDocPtr doc)
 {
-    using namespace SC;
-
     unsigned char *c = NULL;
     int i;
     TDevice *td = NULL;
@@ -363,7 +361,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 
 	TAttribHolder::parseXML(node);
 
-	title = SC::A2S(getAttribute("title"));
+	title = SC::L2S(getAttribute("title"));
 
 	if (!hasAttribute("version") || getAttribute("version", std::string("0.0")) != "1.0") {
 		sz_log(0, "Error regarding \"version\" attribute!");

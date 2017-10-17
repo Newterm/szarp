@@ -567,9 +567,9 @@ protected:
 
 	double _f_const_value; /**< const value if formula is const */
 
-	bool _prepared; /**< flag - is definalbe param prepared */
-	bool _f_const; /**< flag - is formula const */
-	bool _f_N;	    /**< flag - if 1 - N function i formula */
+	bool _prepared = false; /**< flag - is definalbe param prepared */
+	bool _f_const = false; /**< flag - is formula const */
+	bool _f_N = false; /**< flag - if 1 - N function i formula */
 
 #ifndef NO_LUA
 	unsigned char* _script{ NULL };
