@@ -784,6 +784,8 @@ public:
 class float_sender_modbus_val_op : public sender_modbus_val_op {
 	modbus_register *m_reg_lsw;
 	modbus_register *m_reg_msw;
+	int m_prec;
+	void reg_val(szarp::ParamValue &value);
 public:
 	float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec, driver_logger *log);
 	void get_val(zmqhandler* handler, size_t index);
@@ -995,22 +997,37 @@ void short_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 }
 
 float_sender_modbus_val_op::float_sender_modbus_val_op(float no_data, modbus_register *reg_lsw, modbus_register *reg_msw, int prec, driver_logger *log) :
-	sender_modbus_val_op(no_data, log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw) {}
+	sender_modbus_val_op(no_data, log), m_reg_lsw(reg_lsw), m_reg_msw(reg_msw), m_prec(prec) {}
+
+void float_sender_modbus_val_op::reg_val(szarp::ParamValue& val) {
+	float v = m_nodata_value;
+
+	if (val.has_float_value()) {
+		v = val.float_value();
+	}
+	else if (val.has_int_value()) {
+		v = (float)val.int_value() / m_prec;
+	}
+
+	sz4::nanosecond_time_t t(val.time());
+	if (val.has_nanotime()) {
+		t.nanosecond = val.nanotime();
+	}
+	else {
+		t.nanosecond = 0;
+	}
+
+	unsigned short iv[2]; 
+	memcpy(iv, &v, sizeof(float));
+	m_reg_msw->set_val(iv[0], t);
+	m_reg_lsw->set_val(iv[1], t);
+}
 
 void float_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
-	if (value.IsInitialized() && value.has_float_value()) {
-		float v = value.float_value();
-		sz4::nanosecond_time_t t(value.time());
-		if (value.has_nanotime())
-			t.nanosecond = value.nanotime();
-		else
-			t.nanosecond = 0;
-		unsigned short iv[2]; 
-		memcpy(iv, &v, sizeof(float));
-		m_reg_msw->set_val(iv[0], t);
-		m_reg_lsw->set_val(iv[1], t);
-	}
+	if (value.IsInitialized()) {
+		reg_val(value)
+  }
 }
 
 double_sender_modbus_val_op::double_sender_modbus_val_op(double no_data, int prec, driver_logger *log) :
