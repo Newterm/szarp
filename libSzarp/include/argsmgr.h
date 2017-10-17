@@ -63,7 +63,13 @@ public:
 	}
 
 	bool has(const std::string& section, const std::string& arg) const {
-		return cmd.count(arg) || libpar_getpar(section.c_str(), arg.c_str(), 0) != NULL;
+		auto cmd_arg = cmd.get<std::string>(arg);
+		if (cmd_arg) if (!cmd_arg->empty()) return true;
+
+		auto libp_arg = get_libparval<std::string>(section, arg);
+		if (libp_arg) if (!libp_arg->empty()) return true;
+
+		return false;
 	}
 
 	size_t count(const std::string& arg) const {

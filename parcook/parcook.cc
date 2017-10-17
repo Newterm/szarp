@@ -1200,7 +1200,7 @@ bool param_is_sent_to_meaner(TParam* p) {
 	if (!d)
 		return true;
 
-	return d->getAttribute<bool>("parcook_device", true);
+	return d->getAttribute<std::string>("parcook_device", "no") == "yes";
 }
 
 void configure_pars_infos(TSzarpConfig *ipk) 
