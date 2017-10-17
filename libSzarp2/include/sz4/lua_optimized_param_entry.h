@@ -120,17 +120,24 @@ public:
 	}
 };
 
+
+// THIS IS BAD
+// TODO: CHANGE THIS
 template<class types>
 const typename execution_engine<types>::compute_method
 execution_engine<types>::compute_methods[TParam::LAST_TIME_TYPE + 1][TParam::LAST_DATA_TYPE + 1] = {
 	{ &execution_engine<types>::compute<short, second_time_t>,
 		&execution_engine<types>::compute<int, second_time_t>,
 		&execution_engine<types>::compute<float, second_time_t>,
-		&execution_engine<types>::compute<double, second_time_t> },
+		&execution_engine<types>::compute<double, second_time_t>,
+		&execution_engine<types>::compute<uint32_t, second_time_t>,
+		&execution_engine<types>::compute<uint16_t, second_time_t>},
 	{ &execution_engine<types>::compute<short, nanosecond_time_t>,
 		&execution_engine<types>::compute<int, nanosecond_time_t>,
 		&execution_engine<types>::compute<float, nanosecond_time_t>,
-		&execution_engine<types>::compute<double, nanosecond_time_t> }
+		&execution_engine<types>::compute<double, nanosecond_time_t>,
+		&execution_engine<types>::compute<uint32_t, nanosecond_time_t>,
+		&execution_engine<types>::compute<uint16_t, nanosecond_time_t>}
 };
 
 template<class value_type, class time_type, class types> class lua_optimized_param_entry_in_buffer : public buffered_param_entry_in_buffer<value_type, time_type, types, execution_engine> {

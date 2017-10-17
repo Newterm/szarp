@@ -429,16 +429,14 @@ bool ParamEdit::ContainsForbiddenCharacters(const wxString &s, std::string &foun
 	// If you want to add another forbidden character, put it just in the array below
 	std::string forbidden_characters[] = { "\"", "\\" };
 
-	size_t i = 0;
-	while(!forbidden_characters[i].empty()) {
-		size_t found_forbidden_character = s.ToStdString().find(forbidden_characters[i]);
+	for (auto forbidden_char: forbidden_characters) {
+		size_t found_forbidden_character = s.ToStdString().find(forbidden_char);
 		if (found_forbidden_character != std::string::npos) {
-			found_character = forbidden_characters[i];
+			found_character = forbidden_char;
 			return true;
-		} else {
-			i++;
 		}
 	}
+
 	return false;
 }
 
