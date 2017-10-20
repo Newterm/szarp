@@ -106,14 +106,14 @@ int set_nonblock(int fd)
 
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to get socket flags");
+		dolog(1, "set_nonblock: Unable to get socket flags");
 		return -1;
 	}
 
 	flags |= O_NONBLOCK;
 	flags = fcntl(fd, F_SETFL, flags);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to set socket flags");
+		dolog(1, "set_nonblock: Unable to set socket flags");
 		return -1;
 	}
 
@@ -128,7 +128,7 @@ void dolog(int level, const char *fmt, ...)
 		char *l;
 		va_start(fmt_args, fmt);
 		if (vasprintf(&l, fmt, fmt_args) == -1) {
-			sz_log(0, "Error occured when logging in single mode");
+			sz_log(1, "Error occured when logging in single mode");
 			return;
 		}
 		va_end(fmt_args);
@@ -216,20 +216,20 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	c = (char *)xmlGetNsProp(cfg->GetXMLDevice(), BAD_CAST("address"),
 				 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		dolog(0,
+		dolog(1,
 		      "Missing address attribute in device element at line: %ld",
 		      xmlGetLineNo(cfg->GetXMLDevice()));
 		return 1;
 	}
 	if (inet_aton((char *)c, &m_addr.sin_addr) == 0) {
-		dolog(0, "incorrect server's IP address '%s'", (char *)c);
+		dolog(1, "incorrect server's IP address '%s'", (char *)c);
 		return 1;
 	}
 	xmlFree(c);
 	c = (char *)xmlGetNsProp(cfg->GetXMLDevice(), BAD_CAST("port"),
 				 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		dolog(0,
+		dolog(1,
 		      "Missing port attribute in device element at line: %ld",
 		      xmlGetLineNo(cfg->GetXMLDevice()));
 		return 1;
@@ -242,7 +242,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 			++i, p = p->GetNext()) {
 		char *expr;
 		if (asprintf(&expr, ".//ipk:param[position()=%d]", i + 1) == -1) {
-			dolog(0, "Could not get param element");
+			dolog(1, "Could not get param element");
 			return 1;
 		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
@@ -251,7 +251,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 		c = (char *)xmlGetNsProp(node, BAD_CAST("address"),
 					 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (c == NULL) {
-			dolog(0,
+			dolog(1,
 			      "Missing address attribute in param element at line: %ld",
 			      xmlGetLineNo(node));
 			return 1;
@@ -263,14 +263,14 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 	c = (char *)xmlGetNsProp(cfg->GetXMLDevice(), BAD_CAST("read_freq"),
 				 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		dolog(0,
+		dolog(1,
 		      "Missing read_freq attribute in device element at line: %ld",
 		      xmlGetLineNo(cfg->GetXMLDevice()));
 		return 1;
 	}
 	m_read_freq = atoi(c);
 	if (m_read_freq < 10) {
-		dolog(0,
+		dolog(1,
 		      "Invalid/too small read_freq attribute value, setting 60 seconds");
 		m_read_freq = 60;
 	}
@@ -283,7 +283,7 @@ void PRO2000Daemon::Connect()
 	Disconnect();
 	m_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_fd < 0) {
-		dolog(0, "socket() failed, errno %d (%s)", errno,
+		dolog(1, "socket() failed, errno %d (%s)", errno,
 		      strerror(errno));
 		exit(1);
 	}
@@ -300,7 +300,7 @@ do_connect:
 		} else if (errno == EWOULDBLOCK || errno == EINPROGRESS) {
 			m_state = WAITING_FOR_CONNECT;
 		} else {
-			dolog(0, "Failed to connect: %s", strerror(errno));
+			dolog(1, "Failed to connect: %s", strerror(errno));
 			close(m_fd);
 			m_fd = -1;
 			return;
@@ -381,7 +381,7 @@ void PRO2000Daemon::HandleReadReady()
 
 void PRO2000Daemon::HandleError()
 {
-	dolog(0, "Error in communicating with proxy");
+	dolog(1, "Error in communicating with proxy");
 	Disconnect();
 	m_state = IDLE;
 }

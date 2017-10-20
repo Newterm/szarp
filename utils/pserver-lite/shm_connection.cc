@@ -86,7 +86,7 @@ bool ShmConnection::configure()
 
 	char *config_param = libpar_getpar("global", "IPK", 0);
 	if (config_param == nullptr) {
-		sz_log(0, "ShmConnection::configure(): set 'IPK' param in szarp.cfg file");
+		sz_log(1, "ShmConnection::configure(): set 'IPK' param in szarp.cfg file");
 		libpar_done();
 		return false;
 	} else {
@@ -96,7 +96,7 @@ bool ShmConnection::configure()
 
 	config_param = libpar_getpar("global", "parcook_path", 0);
 	if (config_param == nullptr) {
-		sz_log(0, "ShmConnection::configure(): set 'parcook_path' param in szarp.cfg file");
+		sz_log(1, "ShmConnection::configure(): set 'parcook_path' param in szarp.cfg file");
 		libpar_done();
 		return false;
 	} else {
@@ -116,7 +116,7 @@ bool ShmConnection::configure()
 	xmlInitParser();
 
 	if (_szarp_config->loadXML(ipk_path) != 0) {
-		sz_log(0, "ShmConnection::configure(): error loading configuration from file %s",
+		sz_log(1, "ShmConnection::configure(): error loading configuration from file %s",
 				SC::S2A(ipk_path).c_str());
 		xmlCleanupParser();
 		return false;
@@ -141,14 +141,14 @@ bool ShmConnection::connect()
 
 	shm_key = ftok(_parcook_path.c_str(), SHM_PROBES_BUF);
 	if (shm_key == -1) {
-		sz_log(0, "ShmConnection::connect(): ftok() for shm failed, errno %d, path '%s'",
+		sz_log(1, "ShmConnection::connect(): ftok() for shm failed, errno %d, path '%s'",
 			errno, _parcook_path.c_str());
 		return false;
 	}
 
 	sem_key = ftok(_parcook_path.c_str(), SEM_PARCOOK);
 	if (sem_key == -1) {
-		sz_log(0, "ShmConnection::connect(): ftok() for sem failed, errno %d, path '%s'",
+		sz_log(1, "ShmConnection::connect(): ftok() for sem failed, errno %d, path '%s'",
 				errno, _parcook_path.c_str());
 		return false;
 	}
@@ -163,12 +163,12 @@ bool ShmConnection::connect()
 	}
 
 	if (_shm_desc == -1) {
-		sz_log(0, "ShmConnection::connect(): error getting shm id, errno %d, key %d", 
+		sz_log(1, "ShmConnection::connect(): error getting shm id, errno %d, key %d", 
 				errno, shm_key);
 		return false;
 	}
 	if (_sem_desc == -1) {
-		sz_log(0, "ShmConnection::connect(): error getting semid, errno %d, key %d",
+		sz_log(1, "ShmConnection::connect(): error getting semid, errno %d, key %d",
 				errno, sem_key);
 		return false;
 	}
@@ -186,7 +186,7 @@ void ShmConnection::shm_open(struct sembuf* semaphores)
 	semaphores[1].sem_flg = SEM_UNDO;
 
 	if (semop(_sem_desc, semaphores, 2) == -1) {
-		sz_log(0, "ShmConnection:shm_open(): cannot open semaphore, errno %d, exiting", errno);
+		sz_log(1, "ShmConnection:shm_open(): cannot open semaphore, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
 		g_TerminateHandler(0);
@@ -199,7 +199,7 @@ void ShmConnection::shm_close(struct sembuf* semaphores)
 	semaphores[0].sem_op = -1;
 	semaphores[0].sem_flg = SEM_UNDO;
 	if (semop(_sem_desc, semaphores, 1) == -1) {
-		sz_log(0, "ShmConnection:shm_close: cannot release semaphore, errno %d, exiting", errno);
+		sz_log(1, "ShmConnection:shm_close: cannot release semaphore, errno %d, exiting", errno);
 		g_signals_blocked = 0;
 		/* we use non-existing signal '0' */
 		g_TerminateHandler(0);
@@ -215,7 +215,7 @@ void ShmConnection::attach(int16_t** segment)
 
 	if (*segment != (void*)-1) return;
 
-	sz_log(0, "ShmConnection:update_segment(): cannot attach segment, errno %d, exiting", errno);
+	sz_log(1, "ShmConnection:update_segment(): cannot attach segment, errno %d, exiting", errno);
 	g_signals_blocked = 0;
 	g_TerminateHandler(0);
 }
@@ -224,7 +224,7 @@ void ShmConnection::detach(int16_t** segment)
 {
 	if (shmdt(*segment) != -1) return;
 
-	sz_log(0, "ShmConnection::update_segment(): cannot detache segment, errno %d, exiting", errno);
+	sz_log(1, "ShmConnection::update_segment(): cannot detache segment, errno %d, exiting", errno);
 	g_signals_blocked = 0;
 	g_TerminateHandler(0);
 }
@@ -275,7 +275,7 @@ int ShmConnection::param_index_from_path(std::string path)
 		param = param->GetNextGlobal();
 	}
 
-	sz_log(0, "ShmConnection::param_index_from_path: param not found!");
+	sz_log(1, "ShmConnection::param_index_from_path: param not found!");
 	return -1;
 }
 

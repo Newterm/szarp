@@ -134,7 +134,7 @@ void Set::from_json( const bp::ptree& ptree )
 
 			max_order = std::max( max_order , o );
 		} catch( boost::bad_lexical_cast& e ) {
-			sz_log(0, "Invalid order in param %s" ,
+			sz_log(1, "Invalid order in param %s" ,
 				ic->second.get<std::string>("@name").c_str());
 
 			ic->second.erase("@order");

@@ -378,13 +378,13 @@ int SetNoData(time_t start, time_t end)
 	
 	ipk_path = libpar_getpar(SZARP_CFG_SECTION, "IPK", 0);
 	if (ipk_path == NULL) {
-		sz_log(0, "szbnull: set 'IPK' param in " SZARP_CFG " file");
+		sz_log(1, "szbnull: set 'IPK' param in " SZARP_CFG " file");
 		return 1;
 	}
 	
 	char *_data_dir = libpar_getpar(SZARP_CFG_SECTION, "datadir", 0);
 	if (_data_dir == NULL) {
-		sz_log(0, "szbnull: set 'datadir' param in " SZARP_CFG " file");
+		sz_log(1, "szbnull: set 'datadir' param in " SZARP_CFG " file");
 		return 1;
 	}
 	data_dir = SC::L2S(_data_dir);
@@ -400,7 +400,7 @@ int SetNoData(time_t start, time_t end)
 
 	ipk = new TSzarpConfig();
 	if (ipk->loadXML(SC::L2S(ipk_path))) {
-		sz_log(0, "szbnull: error loading IPK configuration '%s'",
+		sz_log(1, "szbnull: error loading IPK configuration '%s'",
 				ipk_path);
 		return 1;
 	};

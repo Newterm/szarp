@@ -527,7 +527,8 @@ int main(int argc, char *argv[])
 	
 	cfg = new DaemonConfig("muksdmn");
 
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error while loading configuration, exiting.");
 		return 1;
 	muksinfo = new MUKS(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
@@ -542,9 +543,9 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), muk
 	}
 	
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
-		ipc = ipc_.release();
-	} catch(...) {
+		ipc = new IPCHandler(m_cfg);
+	} catch(const std::exception& e) {
+		sz_log(0, "Error while initializing IPC: %s, exiting.", e.what());
 		return 1;
 	}
 
@@ -554,7 +555,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), muk
 	while (true) {
 		fd = muksinfo->InitComm(SC::S2A(cfg->GetDevice()->GetPath()).c_str(), cfg->GetDevice()->GetSpeed(), 8, 2, NO_PARITY);
 		if (fd<0){
-			sz_log(2, "file descriptor <0! crashed");
+			sz_log(0, "file descriptor <0! crashed");
 			return 0;
 		}
 		

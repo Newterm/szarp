@@ -213,7 +213,6 @@ protected:
 	/** Parses command line parameters. Internal use.
 	 * @return 0 on success, 1 on error or if usage info was printed
 	 */
-	int ParseCommandLine(int argc, char**argv);
 	void ParseCommandLine(const ArgsManager&);
 	/** Loads IPK configuration from XML file. Internal use.
 	 * @return 0 on success, 1 on error
@@ -248,6 +247,9 @@ protected:
 	bool m_load_called;	/**< true if Load() method was already called */
 	bool m_load_xml_called;	/**< true if LoadXML() method was already called */
 
+	std::string m_prefix = "";
+	std::string m_parcook_path;	/**< path to parcook config file, used for IPC
+				  identifiers */
 	std::string m_linex_path;	/**< path to lineX.cfg file, used for IPC
 				  identifiers */
 	xmlDocPtr m_ipk_doc;	/**< IPK configuration as XML document */

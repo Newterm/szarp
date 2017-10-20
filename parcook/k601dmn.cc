@@ -449,7 +449,7 @@ protected:
 
 void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
-	sz_log(0, "%s: ReadError, closing connection..", m_id.c_str());
+	sz_log(1, "%s: ReadError, closing connection..", m_id.c_str());
 	m_serial_port->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
@@ -540,8 +540,8 @@ Unique registers (read params): %d\n\
 
 	try {
 		ipc = new IPCHandler(cfg);
-	} catch(...) {
-		exit(1);
+	} catch (const std::exception& e) {
+		throw K601Exception("ERROR!: IPC init failed");
 	}
 
 	sz_log(2, "starting main loop");
@@ -552,7 +552,7 @@ Unique registers (read params): %d\n\
 
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
-		sz_log(0,
+		dolog(0,
 		       "Cannot load %s library: %s",
 		       plugin_path, dlerror());
 		exit(1);
@@ -588,7 +588,7 @@ void K601Daemon::StartDo() {
 		m_serial_port->AddListener(this);
 		m_serial_port->Open();
 	} catch (SerialPortException &e) {
-		sz_log(0, "%s: %s", m_id.c_str(), e.what());
+		dolog(1, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
 		ScheduleNext(RESTART_INTERVAL_MS);
 	}
@@ -620,7 +620,7 @@ void K601Daemon::Do()
 				m_serial_port->WriteData(&query[0], query.size());
 				m_state = READ;
 			} catch (SerialPortException &e) {
-				sz_log(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				destroySend(MyKMPSendClass);
 				SetRestart();
 				wait_ms = RESTART_INTERVAL_MS;
@@ -693,7 +693,7 @@ void K601Daemon::Do()
 				m_serial_port->Close();
 				m_serial_port->Open();
 			} catch (SerialPortException &e) {
-				sz_log(0, "%s: Restart failed: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: Restart failed: %s", m_id.c_str(), e.what());
 				SetNoData();
 				ipc->GoParcook();
 				wait_ms = RESTART_INTERVAL_MS;
@@ -838,7 +838,7 @@ int main(int argc, char *argv[])
 	try {
 		daemon.Init(argc, argv);
 	} catch (const std::exception& e) {
-		sz_log(0, "%s", e.what());
+		dolog(0, "Error while initializing daemon: %s, exiting.", e.what());
 		exit(1);
 	}
 

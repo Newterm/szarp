@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 		go_daemon();
 	}
 
-	sz_log(0, "paramd: started");
+	sz_log(1, "paramd: started");
 	
 	signal(SIGINT, int_handler);
 

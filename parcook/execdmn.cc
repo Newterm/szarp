@@ -178,14 +178,14 @@ int ExecDaemon::XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num)
 	}
 	l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for exec:frequency, number expected",
+		sz_log(1, "incorrect value '%s' for exec:frequency, number expected",
 				(char *)c);
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if (l < DAEMON_INTERVAL) {
-		sz_log(0, "value '%ld' for exec:frequency to small", l);
+		sz_log(1, "value '%ld' for exec:frequency to small", l);
 		return 1;
 	}
 	m_freq = (int)l;
@@ -347,21 +347,24 @@ int main(int argc, char *argv[])
 	cfg = new DaemonConfig("execdmn");
 	ASSERT(cfg != NULL);
 
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
+	}
 
 	dmn = new ExecDaemon(cfg->GetDevice()->
 			GetFirstUnit()->GetParamsCount());
 	ASSERT(dmn != NULL);
 
 	if (dmn->ParseConfig(cfg)) {
+		sz_log(0, "Error parsing config, exiting.");
 		return 1;
 	}
 
 	try {
-		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
-		ipc = ipc_.release();
-	} catch(...) {
+		ipc = new IPCHandler(cfg);
+	} catch(const std::exception& e) {
+		sz_log(0, "Error initializing IPC: %s", e.what());
 		return 1;
 	}
 

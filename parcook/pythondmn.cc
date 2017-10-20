@@ -145,7 +145,7 @@ int ipc::configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr) {
 
 	} catch (zmq::error_t& e) {
 		m_zmq = nullptr;
-		sz_log(0, "ZMQ not initialized!");
+		sz_log(1, "ZMQ not initialized!");
 	}
 
 	evtimer_add(&m_timer, &m_cycle);
@@ -306,7 +306,7 @@ void ipc::set_no_data(size_t index) {
 
 int ipc::get_send(size_t index) {
 	if (index >= m_send_count) {
-		sz_log(0, "ipc::set ERROR index (%zu) greater than params count (%zu)", index, m_send_count);
+		sz_log(1, "ipc::set ERROR index (%zu) greater than params count (%zu)", index, m_send_count);
 		return SZARP_NO_DATA;
 	}
 
@@ -503,7 +503,7 @@ int main( int argc, char ** argv )
 	const std::string script_path = *args_mgr.get<std::string>("device-path");
 	FILE * fp = fopen(script_path.c_str(), "r");
 	if (NULL == fp) {
-		sz_log(2, "Script %s doesn't exists -- exiting", script_path.c_str());
+		sz_log(0, "Script %s doesn't exists -- exiting", script_path.c_str());
 		exit(1);
 	}
 

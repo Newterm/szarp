@@ -334,7 +334,7 @@ int ProgramConfig::parseXMLRules(xmlDocPtr doc, xmlNodePtr node2){
 
 
 			if (_str==NULL){
-				sz_log(0, "rule name not found in IPK!");
+				sz_log(1, "rule name not found in IPK!");
 				return 0;
 			}
 
@@ -427,12 +427,12 @@ int ProgramConfig::ParseCommandLine (int argc, char **argv){
 
 	path = libpar_getpar("", "IPK", 0);
 	if (path == NULL) {
-		sz_log(0, "'IPK' not found in szarp.cfg");
+		sz_log(1, "'IPK' not found in szarp.cfg");
 		return 0;
 	}
 	dir = libpar_getpar("", "datadir", 0);
 	if (dir == NULL) {
-		sz_log(0, "'datadir' not found in szarp.cfg");
+		sz_log(1, "'datadir' not found in szarp.cfg");
 		return 0;
 	}
 
@@ -937,7 +937,7 @@ int CipkConf::IpkInit(){
 	path = libpar_getpar("", "IPK", 0);
 
 	if (path == NULL) {
-		sz_log(0, "'IPK' not found in szarp.cfg");
+		sz_log(1, "'IPK' not found in szarp.cfg");
 		return S_NO_DATA;
 	}else{
 		m_path_initialised = 1;
@@ -945,7 +945,7 @@ int CipkConf::IpkInit(){
 	
 	dir = libpar_getpar("", "datadir", 0);
 	if (dir == NULL) {
-		sz_log(0, "'datadir' not found in szarp.cfg");
+		sz_log(1, "'datadir' not found in szarp.cfg");
 		return S_NO_DATA;
 	}else{
 		m_dir_initialised = 1;
@@ -1076,7 +1076,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 
 
 	if (p==NULL){
-		sz_log(0,"ERROR: Parametr '%s' is not at all", PName);	
+		sz_log(1,"ERROR: Parametr '%s' is not at all", PName);	
 	//	delete ipk;
 		return S_NO_DATA;
 	}
@@ -1119,12 +1119,12 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 	SZBASE_TYPE data;
 
 	if (path == NULL) {
-		sz_log(0, "'IPK' not found in szarp.cfg");
+		sz_log(1, "'IPK' not found in szarp.cfg");
 		return S_NO_DATA;
 	}
 	char *dir = libpar_getpar("", "datadir", 0);
 	if (dir == NULL) {
-		sz_log(0, "'datadir' not found in szarp.cfg");
+		sz_log(1, "'datadir' not found in szarp.cfg");
 		return S_NO_DATA;
 	}
 	ipk->loadXML(SC::L2S(path));
@@ -1146,7 +1146,7 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 	}
 	*PSize = ParamsCtr;  
 	if (ParamsCtr==0){
-		sz_log(0,"ERROR: WildCard '%s' couldn't match any parametr", PWildCard);	
+		sz_log(1,"ERROR: WildCard '%s' couldn't match any parametr", PWildCard);	
 		delete ipk;
 		return S_NO_DATA;
 	}

@@ -517,13 +517,13 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 
 	std::string _extra_id = unit->getAttribute<std::string>("extra:id", "");
 	if (_extra_id.empty()) {
-		m_log.log(0, "Invalid or missing extra:id attribute in param element");
+		m_log.log(1, "Invalid or missing extra:id attribute in param element");
 		return 1;
 	}
 
 	const int l = boost::lexical_cast<int>(_extra_id);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
+		m_log.log(1, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
 		return 1;
 	}
 	/* ADR is address + 128 */
@@ -536,7 +536,7 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 
 		std::string _pnu = param->getAttribute<std::string>("extra:parameter-number", "");
 		if (_pnu.empty()) {
-			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param %ls", param->GetName().c_str());
+			m_log.log(1, "Invalid or missing extra:parameter-number attribute in param %ls", param->GetName().c_str());
 			return 1;
 		}
 
@@ -545,14 +545,14 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 
 		std::string _prec = param->getAttribute<std::string>("extra:prec", "");
 		if (_prec.empty()) {
-			m_log.log(0, "Invalid extra:prec attribute in param %ls", param->GetName().c_str());
+			m_log.log(1, "Invalid extra:prec attribute in param %ls", param->GetName().c_str());
 			return 1;
 		}
 
 		const int l = boost::lexical_cast<int>(_prec);
 		if (l < 0 || ( l > SCALING_BOUNDARY && l != SCALING_PREC)) {
-			m_log.log(0, "Invalid extra:prec attribute value: %d in param %ls", l, param->GetName().c_str());
-			m_log.log(0, "If conversion-index is negative put it absolute value to prec attribute (not extra:prec)");
+			m_log.log(1, "Invalid extra:prec attribute value: %d in param %ls", l, param->GetName().c_str());
+			m_log.log(1, "If conversion-index is negative put it absolute value to prec attribute (not extra:prec)");
 			return 1;
 		}
 
@@ -568,7 +568,7 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 		std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 		if (val_op.empty()) {
 			if (m_registers.find(pnu) != m_registers.end()) {
-				m_log.log(0, "Already configured register with extra:parameter-number (%hd) in param %ls", pnu, param->GetName().c_str());
+				m_log.log(1, "Already configured register with extra:parameter-number (%hd) in param %ls", pnu, param->GetName().c_str());
 				return 1;
 			}
 			fc_register *reg = new fc_register(pnu, &m_log);
@@ -592,7 +592,7 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 				m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 			}
 			else {
-				m_log.log(0, "Unsupported extra:val_op attribute value - %s, param %ls", val_op.c_str(), param->GetName().c_str());
+				m_log.log(1, "Unsupported extra:val_op attribute value - %s, param %ls", val_op.c_str(), param->GetName().c_str());
 				return 1;
 			}
 		}

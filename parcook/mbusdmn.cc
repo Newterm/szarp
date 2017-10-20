@@ -1434,8 +1434,10 @@ When in SZARP line daemon mode, the following options are available:\n");
 
     } else { // SZARP line daemon mode
         sz_log(2, "Loading configuration...");
-        if (config->Load(&argc, argv) != 0)
+        if (config->Load(&argc, argv) != 0) {
+			sz_log(0, "Error loading configuration, exiting");
             return 1;
+		}
 
         bool is_debug = config->GetSingle() || config->GetDiagno();
 
@@ -1452,9 +1454,9 @@ When in SZARP line daemon mode, the following options are available:\n");
 		IPCHandler* ipc;
 
 		try {
-			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(config));
-			ipc = ipc_.release();
-		} catch(...) {
+			ipc = new IPCHandler(config);
+		} catch(const std::exception& e) {
+			sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 			return 1;
 		}
 

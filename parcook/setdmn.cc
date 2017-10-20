@@ -316,7 +316,7 @@ bool SetDaemon::SearchMinMax(xmlXPathContextPtr xp_ctx, const std::wstring& name
 	free(expr);
 	xmlChar* c = xmlGetNsProp(node, BAD_CAST("min"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		dolog(0, "missing min attribute in param element at line: %ld", xmlGetLineNo(node));
+		dolog(1, "missing min attribute in param element at line: %ld", xmlGetLineNo(node));
 		return 1;
 	}
 	min = string2num<double>(SC::U2S(c));
@@ -324,7 +324,7 @@ bool SetDaemon::SearchMinMax(xmlXPathContextPtr xp_ctx, const std::wstring& name
 
 	c = xmlGetNsProp(node, BAD_CAST("max"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		dolog(0, "missing max attribute in param element at line: %ld", xmlGetLineNo(node));
+		dolog(1, "missing max attribute in param element at line: %ld", xmlGetLineNo(node));
 		return 1;
 	}
 	max = string2num<double>(SC::U2S(c));
@@ -394,7 +394,7 @@ bool SetDaemon::ParseIP(xmlXPathContextPtr xp_ctx)
 			struct in_addr allowed_ip;
 			int ret = inet_aton(toks[i], &allowed_ip);
 			if (ret == 0) {
-				dolog(0, "incorrect IP address '%s'", toks[i]);
+				dolog(1, "incorrect IP address '%s'", toks[i]);
 				return false;
 			} else {
 				dolog(5, "IP address '%s' allowed", toks[i]);
@@ -455,7 +455,7 @@ bool SetDaemon::Init()
 	m_listen_fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (m_listen_fd == -1) {
 		TcpServException ex;
-		dolog(0, "cannot create listen socket, errno %d (%s)",
+		dolog(1, "cannot create listen socket, errno %d (%s)",
 				errno, strerror(errno));
 		throw ex;
 	}
@@ -466,7 +466,7 @@ bool SetDaemon::Init()
 				&op, sizeof(op));
 		if (ret == -1) {
 			TcpServException ex;
-			dolog(0, "cannot set socket options on listen socket, errno %d (%s)",
+			dolog(1, "cannot set socket options on listen socket, errno %d (%s)",
 					errno, strerror(errno));
 			close(m_listen_fd);
 			m_listen_fd = -1;
@@ -481,20 +481,20 @@ bool SetDaemon::Init()
 				sizeof(addr));
 		if (ret == -1) {
 			TcpServException ex;
-			dolog(0, "cannot bind to INADDR_ANY, port %d, errno %d (%s)",
+			dolog(1, "cannot bind to INADDR_ANY, port %d, errno %d (%s)",
 					m_listen_port, errno, strerror(errno));
 			throw ex;
 		}
 		ret = listen(m_listen_fd, 1);
 		if (ret == -1) {
 			TcpServException ex;
-			dolog(0, "listen() failed, errno %d (%s)",
+			dolog(1, "listen() failed, errno %d (%s)",
 					errno, strerror(errno));
 			throw ex;
 		}
 		if (set_fd_nonblock(m_listen_fd)) {
 			TcpServException ex;
-			dolog(0, "set_fd_nonblock() failed, errno %d (%s)",
+			dolog(1, "set_fd_nonblock() failed, errno %d (%s)",
 					errno, strerror(errno));
 			throw ex;
 		}

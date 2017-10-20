@@ -467,7 +467,7 @@ int wmtp_driver::configure(UnitInfo* unit, short* read, short *send) {
 		return 1;
 	m_request_producer.initialize(m_address);
 
-	m_log.log(0, "Boruta WMTP configure() - address is: %s", m_address.c_str());
+	m_log.log(1, "Boruta WMTP configure() - address is: %s", m_address.c_str());
 
 	// read target memory space
 	m_read = read;
@@ -483,7 +483,7 @@ int wmtp_driver::configure(UnitInfo* unit, short* read, short *send) {
 
 		// check if param name is valid
 		if (m_auto_params.find(param_name) == m_auto_params.end()) {
-			m_log.log(0, "ERROR: param extra:name invalid: %s", param_name.c_str());
+			m_log.log(1, "ERROR: param extra:name invalid: %s", param_name.c_str());
 			return 1;
 		}
 		m_requested_params[param_name] = offset_in_shared_memory;

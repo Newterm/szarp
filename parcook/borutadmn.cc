@@ -149,14 +149,14 @@ int set_nonblock(int fd) {
 
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to get socket flags");
+		dolog(1, "set_nonblock: Unable to get socket flags");
 		return -1;
 	}
 
 	flags |= O_NONBLOCK;
 	flags = fcntl(fd, F_SETFL, flags);
 	if (flags == -1) {
-		dolog(0, "set_nonblock: Unable to set socket flags");
+		dolog(1, "set_nonblock: Unable to set socket flags");
 		return -1;
 	}
 
@@ -182,7 +182,7 @@ int get_serial_port_config(UnitInfo* u, serial_port_configuration &spc) {
 		dolog(10, "Serial port configuration, odd parity");
 		spc.parity = serial_port_configuration::ODD;
 	} else {
-		dolog(0, "Unsupported parity %s, confiugration invalid (path %s)!!!", parity.c_str(), path.c_str());
+		dolog(1, "Unsupported parity %s, confiugration invalid (path %s)!!!", parity.c_str(), path.c_str());
 		return 1;	
 	}
 
@@ -194,7 +194,7 @@ int get_serial_port_config(UnitInfo* u, serial_port_configuration &spc) {
 		dolog(10, "Serial port configuration, setting two stop bits");
 		spc.stop_bits = 2;
 	} else {
-		dolog(0, "Unsupported number of stop bits %d, confiugration invalid (path %s)!!!", stop_bits, path.c_str());
+		dolog(1, "Unsupported number of stop bits %d, confiugration invalid (path %s)!!!", stop_bits, path.c_str());
 		return 1;
 	}
 
@@ -209,7 +209,7 @@ int get_serial_port_config(UnitInfo* u, serial_port_configuration &spc) {
 		dolog(10, "Serial port configuration, setting 6 bit char size");
 		spc.char_size = serial_port_configuration::CS_6;
 	} else {
-		dolog(0, "Unsupported char size %s, confiugration invalid (line %s)!!!", char_size.c_str(), path.c_str());
+		dolog(1, "Unsupported char size %s, confiugration invalid (line %s)!!!", char_size.c_str(), path.c_str());
 		return 1;
 	}
 	return 0;
@@ -455,14 +455,14 @@ tcp_client_driver* protocols::create_tcp_client_driver(UnitInfo* u) {
 	if (use_tcp_2_serial_proxy != "yes") {
 		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
 		if (i == m_tcp_client_factories.end()) {
-			dolog(0, "No driver defined for proto %s and tcp client role", proto.c_str());
+			dolog(1, "No driver defined for proto %s and tcp client role", proto.c_str());
 			return NULL;
 		}
 		return i->second();
 	} else {
 		serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
 		if (i == m_serial_client_factories.end()) {
-			dolog(0, "No driver defined for proto %s and serial client role", proto.c_str());
+			dolog(1, "No driver defined for proto %s and serial client role", proto.c_str());
 			return NULL;
 		}
 		return new tcp_proxy_2_serial_client(i->second());
@@ -475,7 +475,7 @@ serial_client_driver* protocols::create_serial_client_driver(UnitInfo* u) {
 		return NULL;
 	serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
 	if (i == m_serial_client_factories.end()) {
-		dolog(0, "No driver defined for proto %s and serial client role", proto.c_str());
+		dolog(1, "No driver defined for proto %s and serial client role", proto.c_str());
 		return NULL;
 	}
 	return i->second();
@@ -487,7 +487,7 @@ tcp_server_driver* protocols::create_tcp_server_driver(UnitInfo* u) {
 		return NULL;
 	tcp_server_factories_table::iterator i = m_tcp_server_factories.find(proto);
 	if (i == m_tcp_server_factories.end()) {
-		dolog(0, "No driver defined for proto %s and tcp server role", proto.c_str());
+		dolog(1, "No driver defined for proto %s and tcp server role", proto.c_str());
 		return NULL;
 	}
 	return i->second();
@@ -499,7 +499,7 @@ serial_server_driver* protocols::create_serial_server_driver(UnitInfo* u) {
 		return NULL;
 	serial_server_factories_table::iterator i = m_serial_server_factories.find(proto);
 	if (i == m_serial_server_factories.end()) {
-		dolog(0, "No driver defined for proto %s and serial server role", proto.c_str());
+		dolog(1, "No driver defined for proto %s and serial server role", proto.c_str());
 		return NULL;
 	}
 	return i->second();
@@ -511,7 +511,7 @@ serial_connection::serial_connection(size_t _conn_no, serial_connection_manager 
 int serial_connection::open_connection(const std::string& path, struct event_base* ev_base) {
 	fd = open(path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
 	if (fd == -1) {
-		dolog(0, "Failed do open port: %s, error: %s", path.c_str(), strerror(errno));
+		dolog(1, "Failed do open port: %s, error: %s", path.c_str(), strerror(errno));
 		return 1;
 	}
 	bufev = bufferevent_new(fd, connection_read_cb, NULL, connection_error_cb, this);
@@ -565,9 +565,9 @@ void client_manager::driver_finished_job(client_driver *driver) {
 	size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
 	if (driver->id().second != client) {
-		dolog(0, "Boruta was notfied by client number %zu (connection %s) that it has finished it's job!",
+		dolog(1, "Boruta was notfied by client number %zu (connection %s) that it has finished it's job!",
 			 client, m_connection_client_map.at(connection).at(client)->address_string().c_str());
-		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
+		dolog(1, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
 		return;
 	}
 
@@ -581,11 +581,11 @@ void client_manager::terminate_connection(client_driver *driver) {
 		m_connection_client_map.at(connection).at(client)->address_string().c_str(),
 		client);
 	if (driver->id().second != client) {
-		dolog(0, "Boruta core was requested by driver number %zu (connection %s) to terminate connection!",
+		dolog(1, "Boruta core was requested by driver number %zu (connection %s) to terminate connection!",
 				client,
 				m_connection_client_map.at(connection).at(client)->address_string().c_str());
-		dolog(0, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
-		dolog(0, "Request ignored");
+		dolog(1, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
+		dolog(1, "Request ignored");
 		return;
 	}
 	do_terminate_connection(connection);
@@ -704,7 +704,7 @@ void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& 
 	c.fd = socket(PF_INET, SOCK_STREAM, 0);
 	ASSERT(c.fd >= 0);
 	if (set_nonblock(c.fd)) {
-		dolog(0, "Failed to set non blocking mode on socket");
+		dolog(1, "Failed to set non blocking mode on socket");
 		close_connection(c);
 		return;
 	}
@@ -716,7 +716,7 @@ void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& 
 			NULL, connection_event_cb,
 			&c);
 	if (bufferevent_socket_connect(c.bufev, (struct sockaddr*) &addr, sizeof(addr))) {
-		dolog(0, "Failed to connect: %s", strerror(errno));
+		dolog(1, "Failed to connect: %s", strerror(errno));
 		close_connection(c);
 		return;
 	}
@@ -888,7 +888,7 @@ void tcp_client_manager::connection_timer_cb(int fd, short event, void* _tcp_con
 		case CONNECTED:
 		case NOT_CONNECTED:
 		case RESOLVING_ADDR:
-			dolog(0, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
+			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
 				 "received timer tick for CONNECTED or NOT_CONNECTED or RESOLVING_ADDR, shouldn't happen",
 				 c->address.first.c_str());
 			break;
@@ -1070,14 +1070,14 @@ int tcp_server_manager::start_listening_on_port(int port) {
 	int ret, fd, on = 1;
 	fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (fd == -1) {
-		dolog(0, "socket() failed, errno %d (%s)", errno, strerror(errno));
+		dolog(1, "socket() failed, errno %d (%s)", errno, strerror(errno));
 		return -1;
 	}
 
 	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
 			&on, sizeof(on));
 	if (ret == -1) {
-		dolog(0, "setsockopt() failed, errno %d (%s)",
+		dolog(1, "setsockopt() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(fd);
 		return -1;
@@ -1098,7 +1098,7 @@ int tcp_server_manager::start_listening_on_port(int port) {
 
 	ret = listen(fd, 1);
 	if (-1 == ret) {
-		dolog(0, "listen() failed, errno %d (%s)",
+		dolog(1, "listen() failed, errno %d (%s)",
 				errno, strerror(errno));
 		close(fd);
 		return -1;
@@ -1376,8 +1376,10 @@ int main(int argc, char *argv[]) {
 	xmlLineNumbersDefault(1);
 	try {
 		boruta_daemon daemon;
-		if (int ret = daemon.configure(&argc, argv))
+		if (int ret = daemon.configure(&argc, argv)) {
+			dolog(0, "Error while configuring daemon, exiting.");
 			return ret;
+		}
 
 		signal(SIGPIPE, SIG_IGN);
 		dolog(2, "Starting Boruta Daemon");

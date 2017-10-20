@@ -24,7 +24,7 @@ bool daemonize( ba::io_service& service )
 				service.notify_fork(ba::io_service::fork_parent);
 				exit(0);
 			} else {
-				sz_log(0, "Daemonize: First fork failed: %s", strerror(errno));
+				sz_log(1, "Daemonize: First fork failed: %s", strerror(errno));
 				return false;
 			}
 		}
@@ -39,7 +39,7 @@ bool daemonize( ba::io_service& service )
 				service.notify_fork(ba::io_service::fork_parent);
 				exit(0);
 			} else {
-				sz_log(0, "Daemonize: Second fork failed: %s", strerror(errno));
+				sz_log(1, "Daemonize: Second fork failed: %s", strerror(errno));
 				return false;
 			}
 		}
@@ -49,7 +49,7 @@ bool daemonize( ba::io_service& service )
 		close(2);
 
 		if (open("/dev/null", O_RDONLY) < 0) {
-			sz_log(0, "Daemonize: Unable to open /dev/null: %s", strerror(errno));
+			sz_log(1, "Daemonize: Unable to open /dev/null: %s", strerror(errno));
 			return false;
 		}
 
@@ -57,7 +57,7 @@ bool daemonize( ba::io_service& service )
 		service.notify_fork(boost::asio::io_service::fork_child);
 
 	} catch (std::exception& e) {
-		sz_log(0, "Daemonize: Exception: %s", e.what());
+		sz_log(1, "Daemonize: Exception: %s", e.what());
 		return false;
 	}
 

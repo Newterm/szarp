@@ -74,8 +74,6 @@ Sections *AddSection(const char *name)
 	else
 		nowa->name = strdup("");
 
-sz_log(8, "AddSection(): section name \"%s\"", name);
-
 	if (!sect) {
 		sect = nowa;
 		return nowa;
@@ -118,8 +116,6 @@ void AddPar(Par ** list, const char *name, const char *content)
 		nowa->content = strdup(content);
 	else
 		nowa->content = strdup("");
-
-sz_log(8, "AddPar(): added parametr \"%s\" to last section", name);
 
 	if (!(*list)) {
 		*list = nowa;
@@ -389,30 +385,35 @@ int libpar_init_with_filename(const char *filename, int exit_on_error)
     
     if (!filename) {
 #ifdef MINGW32
-	sz_log(0,
-		"libpar_init_with_filename: filename can't be NULL on Windows platform");
-	if (exit_on_error)
+	if (exit_on_error) {
+		sz_log(0, "libpar_init_with_filename: filename can't be NULL on Windows platform");
 	    exit(1);
-	else
+	} else {
+		sz_log(1, "libpar_init_with_filename: filename can't be NULL on Windows platform");
 	    return -1;
+	}
 #else
 	desc = fopen("/etc/szarp/" CFGNAME, "r");
 	if (!desc) {
-	    sz_log(0, "Cannot open config file: \"%s\"!", "/etc/szarp/" CFGNAME);
-	    if (exit_on_error)
-		exit(1);
-	    else
-		return -1;
+	    if (exit_on_error) {
+			sz_log(0, "Cannot open config file: \"%s\"!", "/etc/szarp/" CFGNAME);
+			exit(1);
+	    } else {
+			sz_log(1, "Cannot open config file: \"%s\"!", "/etc/szarp/" CFGNAME);
+			return -1;
+		}
 	}
 #endif
     } else {
 	desc = fopen(filename, "r");
 	if (!desc) {
-	    sz_log(0, "Cannot open config file \"%s\" (errno %d)", filename, errno);
-	    if (exit_on_error)
-		exit(1);
-	    else
-		return -1;
+	    if (exit_on_error) {
+			sz_log(0, "Cannot open config file \"%s\" (errno %d)", filename, errno);
+			exit(1);
+	    } else {
+			sz_log(1, "Cannot open config file \"%s\" (errno %d)", filename, errno);
+			return -1;
+		}
 	}
     }
     

@@ -518,7 +518,7 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_confi
 
 	auto l = unit->getAttribute<int>("extra:id", -1);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
+		m_log.log(1, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
 		return 1;
 	}
 	/* ADR is address + 128 */
@@ -541,12 +541,12 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_confi
 				configure_integer_register(pnu);
 			}
 			else {
-				m_log.log(0, "Unsupported value type: %s, for param %ls", val_type.c_str(), param->GetName().c_str());
+				m_log.log(1, "Unsupported value type: %s, for param %ls", val_type.c_str(), param->GetName().c_str());
 				return 1;
 			}
 
 		} catch(const std::exception& e) {
-			m_log.log(0, "Error while configuring param %ls", param->GetName().c_str());
+			m_log.log(1, "Error while configuring param %ls", param->GetName().c_str());
 			throw;
 		}
 	}

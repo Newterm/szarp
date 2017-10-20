@@ -46,8 +46,6 @@ public:
 		const auto pushParamsToRegister = [&params_to_register](const std::wstring& name) {
 			TParam* param_to_register = IPKContainer::GetObject()->GetParam(name);
 			if (!param_to_register) {
-				 // Something went wrong
-				sz_log(0, "Error getting param %S to observed of LUA function", name.c_str());
 				return;
 			}
 			if (std::find(params_to_register.begin(), params_to_register.end(), param_to_register) != params_to_register.end()) return;
@@ -206,7 +204,7 @@ public:
 		chptr = tab.c_str();
 		do {
 			if (sp >= SS) {
-				sz_log(0, "parcook: stack overflow after %td chars when calculating formula '%ls'",
+				sz_log(1, "stack overflow after %td chars when calculating formula '%ls'",
 						chptr - tab.c_str(), tab.c_str());
 				CalculNoData = 1;
 				return;

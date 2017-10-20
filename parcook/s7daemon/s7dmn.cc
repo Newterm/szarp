@@ -33,13 +33,13 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST("ipk"), SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	if (-1 == ret) {
-		sz_log(0, "Cannot register namespace %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
+		sz_log(1, "Cannot register namespace %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 		return 1;
 	}
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST("extra"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (-1 == ret) {
-		sz_log(0, "Cannot register namespace %s", IPKEXTRA_NAMESPACE_STRING);
+		sz_log(1, "Cannot register namespace %s", IPKEXTRA_NAMESPACE_STRING);
 		return 1;
 	}
 
@@ -51,7 +51,7 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 		char *expr;
 		ret = asprintf(&expr, ".//ipk:param[position()=%d]", i);
 		if (-1 == ret) {
-			sz_log(0, "Cannot allocate XPath expression for param number %d", i);
+			sz_log(1, "Cannot allocate XPath expression for param number %d", i);
 			return 1;
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST(expr), xp_ctx, false);
@@ -72,7 +72,7 @@ int S7Daemon::ParseConfig(DaemonConfig * cfg)
 		char *expr;
 		ret = asprintf(&expr, ".//ipk:send[position()=%d]", i);
 		if (-1 == ret) {
-			sz_log(0, "Cannot allocate XPath expression for param number %d", i);
+			sz_log(1, "Cannot allocate XPath expression for param number %d", i);
 			return 1;
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST(expr), xp_ctx, false);
@@ -156,7 +156,7 @@ int main(int argc, const char *argv[])
 	}
 
 	if( dmn.Init( argc , argv ) ) {
-		sz_log(0,"Cannot start %s daemon", dmn.Name());
+		sz_log(1,"Cannot start %s daemon", dmn.Name());
 		return 1;
 	}
 

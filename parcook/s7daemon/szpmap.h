@@ -264,7 +264,7 @@ public:
 		sz_log(10, "SzParamMap::writeMultiParam(%lu)",pid);
 
 		if (!hasParamLSW(getAddr(pid) - 2)) {
-			sz_log(0, "Param addr:%d has msw and missing lsw", getAddr(pid));
+			sz_log(1, "Param addr:%d has msw and missing lsw", getAddr(pid));
 			return;
 		}
 		
@@ -407,7 +407,7 @@ public:
 		sz_log(10, "SzParamMap::readMultiParam(%lu)", pid);
 
 		if (!hasSendLSW(getAddr(pid) - 2)) {
-			sz_log(0, "Send addr:%d has msw and missing lsw", getAddr(pid));
+			sz_log(1, "Send addr:%d has msw and missing lsw", getAddr(pid));
 			return false;
 		}
 		

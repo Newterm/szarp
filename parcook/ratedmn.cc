@@ -584,7 +584,7 @@ int RateInfo::parseParams(xmlNodePtr unit, DaemonConfig * cfg, list_of_periods_t
 			Cycle			
 				);
 		if (CheckDataStatus!=CHECK_OK){
-          		sz_log(0,
+          		sz_log(1,
                     	"attribute ratedmn:error (%d) in configuration (period section is invalid. May be From..-To... pair is invalid or ...price, cycle are not found), line %ld",
                     	CheckDataStatus,	
 			xmlGetLineNo(node));
@@ -680,7 +680,7 @@ params out %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 
 	
 	if (ipc->m_params_count!=N_OF_PARAMS){
-	sz_log(0,
+	sz_log(1,
                     	"ratedmn:error in configuration (param section is invalid. number of parameters is invalid - shoud be %d is %d), ",
                     	N_OF_PARAMS,	
 			ipc->m_params_count);
@@ -688,7 +688,7 @@ params out %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 	}
 
 	if (ipc->m_sends_count!=N_OF_SENDS){
-	sz_log(0,
+	sz_log(1,
                     	"ratedmn:error in configuration (send section is invalid. number of sends is invalid - shoud be %d is %d), ",
                     	N_OF_SENDS,	
 			ipc->m_sends_count);

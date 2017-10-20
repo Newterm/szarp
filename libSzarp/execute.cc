@@ -95,7 +95,7 @@ char * execute_substv(const char *path, char * const argv[])
 				return NULL;
 			}
 			execv(path, argv);
-			sz_log(1, "execute_subst: execl() error, errno %d", errno);
+			sz_log(0, "execute_subst: execl() error, errno %d", errno);
 			exit(1);
 		default:
 			if (close(pipe_fd[1]) < 0) {
@@ -197,11 +197,11 @@ int check_for_other (int argc, char *argv[])
       // if this is the copy of same program, return its pid
       if (strcmp (buffer, cmdline) == 0) {
 	ret = atoi (namelist[n]->d_name);
-	goto at_exit;
+	break;
       }
     }
   }
-at_exit:
+
   for (i = 0; i < on; i++)
 	  if (namelist[i])
 		  free(namelist[i]);

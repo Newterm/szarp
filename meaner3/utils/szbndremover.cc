@@ -308,13 +308,13 @@ int main(int argc, char* argv[])
 
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {
-		sz_log(0, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
+		sz_log(1, "Could not load IPK configuration for prefix '%s'", ipk_prefix);
 		return 1;
 	}
 
 	szb_buffer_t *szb = Szbase::GetObject()->GetBuffer(SC::L2S(ipk_prefix));
 	if (szb == NULL) {
-		sz_log(0, "Error initializing SzarpBase buffer");
+		sz_log(1, "Error initializing SzarpBase buffer");
 		return 1;
 	}
 

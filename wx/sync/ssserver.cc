@@ -855,7 +855,7 @@ void Listener::Accept(int fd) {
 
 	pid_t child = fork();
 	if (child < 0) {
-		sz_log(0, "fork error:%s, dropping connection to %s", strerror(errno), conn.addr.c_str());
+		sz_log(1, "fork error:%s, dropping connection to %s", strerror(errno), conn.addr.c_str());
 
 		SSL_free(conn.ssl);
 		close(fd);
@@ -979,7 +979,7 @@ void Server::Serve() {
 				//and now we are syncing
 				SynchronizeFiles(files_list, TPath(info.GetBaseDir()));
 			} else {
-				sz_log(0, "Recevied unexpected message type: %d", msg);
+				sz_log(1, "Recevied unexpected message type: %d", msg);
 				return;
 			}
 
