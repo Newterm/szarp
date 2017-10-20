@@ -27,23 +27,21 @@
 	<define name="params">
 		<element name="params" ns="http://www.praterm.com.pl/SZARP/ipk">
 			<ref name="attlist.params"/>
-			<interleave>
-				<oneOrMore>
-					<ref name="device"/>
-				</oneOrMore>
-				<optional>
-					<ref name="defined"/>
-				</optional>
-				<optional>
-					<ref name="drawdefinable"/>
-				</optional>
-				<optional>
-					<ref name="seasons"/>
-				</optional>
-				<optional>
-					<ref name="checker"/>
-				</optional>
-			</interleave>
+			<oneOrMore>
+				<ref name="device"/>
+			</oneOrMore>
+			<optional>
+				<ref name="defined"/>
+			</optional>
+			<optional>
+				<ref name="drawdefinable"/>
+			</optional>
+			<optional>
+				<ref name="seasons"/>
+			</optional>
+			<optional>
+				<ref name="checker"/>
+			</optional>
 		</element>
 	</define>
 	<define name="attlist.params" combine="interleave">
