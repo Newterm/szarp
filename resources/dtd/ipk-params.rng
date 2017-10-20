@@ -82,9 +82,9 @@
 
   <!--
 	Element 'device' zawiera opis grupy parametrów obsługiwanej przez
-	jednego demona linii. Musi zawierać co najmniej jeden element 'radio'
-	albo co najmniej jeden element 'unit'. Może też zawierać elementy (na
-	początku) i atrybuty z innych przestrzeni nazw.
+	jednego demona linii. Musi zawierać co najmniej jeden element 'unit'.
+	Może też zawierać elementy (na początku) i atrybuty
+	z innych przestrzeni nazw.
 	Atrybuty:
 		daemon - ścieżka do demona linii odpowiedzialnego za
 		obsługę opisywanej linii komunikacyjnej,
@@ -103,9 +103,6 @@
 		<element name="device" ns="http://www.praterm.com.pl/SZARP/ipk">
 			<ref name="attlist.device"/>
 			<choice>
-				<oneOrMore>
-					<ref name="radio"/>
-				</oneOrMore>
 				<oneOrMore>
 					<ref name="unit"/>
 				</oneOrMore>
@@ -421,24 +418,6 @@
 		</optional>
 	</define>
 
-  <!--
-	Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
-	radiowego). Musi zawierać co najmniej jeden element 'unit'.
-	Atrybuty:
-		id - wymagany, identyfikator używany przez modem radiowy.
-  -->
-
-	<define name="radio">
-		<element name="radio" ns="http://www.praterm.com.pl/SZARP/ipk">
-			<ref name="attlist.radio"/>
-			<oneOrMore>
-				<ref name="unit"/>
-			</oneOrMore>
-		</element>
-	</define>
-	<define name="attlist.radio" combine="interleave">
-		<attribute name="id"/>
-	</define>
 
   <!--
 	Element 'unit' opisuje jednostkę komunikacji. Zawiera co najmniej jeden
