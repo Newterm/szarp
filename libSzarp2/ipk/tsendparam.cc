@@ -60,6 +60,8 @@ int TSendParam::processAttributes() {
 		throw std::runtime_error(std::string("Invalid probe type in send param") + SC::S2A(paramName));
 	}
 
+	paramName = SC::L2S(getAttribute("param", ""));
+
 	configured = hasAttribute("param") || hasAttribute("value");
 	return 0;
 }

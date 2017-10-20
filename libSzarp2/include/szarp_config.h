@@ -1159,7 +1159,7 @@ public:
 	}
 
 	IPCParamInfo* GetParamToSend() const override {
-		if (hasAttribute("param")) return nullptr;
+		if (!hasAttribute("param")) return nullptr;
 		if (paramName.empty() || parentUnit == nullptr) return nullptr;
 		return parentUnit->GetSzarpConfig()->getIPCParamByName(paramName);
 	}
