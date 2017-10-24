@@ -7,4 +7,3 @@ build-*
 config-*
 files
 tmp
-!*.service
