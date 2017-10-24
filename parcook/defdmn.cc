@@ -162,7 +162,7 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	configure_events();
 
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+	if (m_cfg->Load(argc, argv))
 		throw SzException("Could not load configuration");
 
 	m_cfg->GetIPK()->SetConfigId(0);

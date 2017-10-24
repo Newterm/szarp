@@ -11,6 +11,7 @@
 #include "conversion.h"
 #include <sstream>
 #include <boost/optional.hpp>
+#include "argsmgr.h"
 
 namespace pt = boost::property_tree;
 
@@ -45,7 +46,7 @@ public:
 		try {
 			auto attr = attrs.find(attr_name);
 			if (attr != attrs.end()) {
-				return boost::lexical_cast<RT>(attr->second);
+				return cast_val<RT>(attr->second);
 			}
 		} catch(...) {}
 

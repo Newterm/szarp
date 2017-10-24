@@ -1200,7 +1200,7 @@ bool param_is_sent_to_meaner(TParam* p) {
 	if (!d)
 		return true;
 
-	return d->getAttribute<std::string>("parcook_device", "no") == "yes";
+	return d->getAttribute<std::string>("parcook_device", "yes") == "yes";
 }
 
 void configure_pars_infos(TSzarpConfig *ipk) 
@@ -1842,7 +1842,7 @@ int main(int argc, char *argv[])
 	ParseCfg(ipk, linedmnpat);
 
 	loginit_cmdline(log_level, logfile, &argc, argv);
-	sz_log(0, "parcook: started");
+	sz_log(1, "parcook: started");
 
 	atexit(Rmipc);
 

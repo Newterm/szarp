@@ -826,8 +826,7 @@ int main(int argc, char *argv[])
 		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
 	}
-	aqtinfo = new AqtBus(cfg->GetDevice()->GetFirstRadio()->
-				GetFirstUnit()->GetParamsCount());
+	aqtinfo = new AqtBus(cfg->GetDevice()->GetFirstUnit()->GetParamsCount());
 
 	if (aqtinfo->parseDevice(cfg->GetXMLDevice())) {
 		sz_log(0, "Error parsing xml, exiting.");

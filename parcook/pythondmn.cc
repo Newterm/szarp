@@ -138,8 +138,8 @@ int ipc::configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr) {
 
 	try {
 
-		char* sub_address = *args_mgr.get("parhub", "pub_conn_addr");
-		char* pub_address = *args_mgr.get("parhub", "sub_conn_addr"); // we publish on parhub's subscribe address
+		const char* sub_address = *args_mgr.get<const char*>("parhub", "pub_conn_addr");
+		const char* pub_address = *args_mgr.get<const char*>("parhub", "sub_conn_addr"); // we publish on parhub's subscribe address
 		m_zmq = new zmqhandler(cfg, *m_zmq_ctx, sub_address, pub_address);
 		sz_log(2, "ZMQ initialized successfully");
 
@@ -487,7 +487,7 @@ int main( int argc, char ** argv )
 
 	if (!args_mgr.has("use-cfgdealer")) {
 		auto cfg = new DaemonConfig("pythondmn");
-		if (int ret = cfg->Load(args_mgr, nullptr, 0, nullptr))
+		if (int ret = cfg->Load(args_mgr))
 			return ret;
 
 		if (ipc.configure(cfg, args_mgr)) {

@@ -56,10 +56,10 @@ noinst_HEADERS = \
 		 $(INCLUDE_DIR)/conversion.h \
 		 $(INCLUDE_DIR)/mingw32_missing.h 
 
-if MINGW32_OPT
 libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@
+if MINGW32_OPT
 else
-libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@ -lsystemd
+libSzarp_la_LIBADD += -lsystemd
 endif
 
  

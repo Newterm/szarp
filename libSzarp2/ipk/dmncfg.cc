@@ -40,6 +40,7 @@
 #include "liblog.h"
 #include "libpar.h"
 #include "xmlutils.h"
+#include "argsmgr.h"
 
 #define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
@@ -99,7 +100,7 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
-int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int force_device_index, void* ) 
+int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg, int force_device_index) 
 {
 	assert (m_load_called == 0);
 
@@ -108,7 +109,7 @@ int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int f
 		return 0;
 	}
 
-	szlog::init(args_mgr);
+	szlog::init(args_mgr, m_daemon_name);
 
 	ipc_info = IPCInfo{
 		*args_mgr.get<std::string>("parcook_path"),
@@ -145,165 +146,12 @@ int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int f
 	return 0;
 }
 
-int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* ) 
-{
-	assert (m_load_called == 0);
-	args_mgr.initLibpar();
-
-	ArgsManager args_mgr(m_daemon_name);
-	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
-
-	/* libpar command line*/
-	libpar_read_cmdline(argc, argv);
-
-	/* parse command line */
-	if (ParseCommandLine(*argc, argv)) {
-		return 2;
-	}
-
-	if (args_mgr.get<bool>("noconf").get_value_or(false)) {
-		m_load_called = 1;
-		return 0;
-	}
-
-	szlog::init(args_mgr, m_daemon_name);
-
-	m_parcook_path = *args_mgr.get<std::string>("parcook_path");
-	m_linex_path = *args_mgr.get<std::string>("linex_cfg");
-
-	m_ipk_path = *args_mgr.get<std::string>("IPK");
-	m_prefix = *args_mgr.get<std::string>("config_prefix");
-
-	ParseCommandLine(args_mgr);
-	/* do not load params.xml */
-	if( sz_cfg ) {
-		/**
-		 * Cannot change m_device to forced value,
-		 * cause m_device is used than to get proper
-		 * shared memory.
-		 */
-		if( force_device_index < 0 ) 
-			force_device_index = m_device;
-		if( LoadNotXML(sz_cfg,force_device_index) ) {
-			return 1;
-		}
-	/* load params.xml */
-	} else if (LoadXML(ipk_path.c_str())) {
-		return 1;
-	}
-		
-	m_load_called = 1;
-
-	InitUnits(GetDevice()->GetFirstUnit());
-
-	return 0;
-}
-
-int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* ) 
+int DaemonConfig::Load(int *argc, char **argv, int libpardone, TSzarpConfig* sz_cfg, int force_device_index) 
 {
 	ArgsManager args_mgr(m_daemon_name);
 	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
 
 	return Load(args_mgr, sz_cfg, force_device_index);
-}
-
-enum {
-	DEVICE=128,
-	SNIFF,
-	SCAN,
-	NOCONF,
-	DUMPHEX,
-	NOPARCOOK,
-	SPEED,
-	ASKDELAY,
-};
-
-/**Command line arguments recognized by DaemonConfig*/
-struct arguments
-{
-   	int single;
-	int diagno;
-	int device;
-	int noconf;
-	char* device_path;
-	int scanner;
-	char id1, id2;
-	int speed;
-	int dumphex;
-	int sniff;
-	int askdelay;
-};
-	
-static error_t parse_opt(int key, char *arg, struct argp_state *state)
-{
-        struct arguments *arguments = (struct arguments *)state->input;
-                                                                                
-        switch (key) {
-                case 'd':
-                case -1:
-                        break;
-                case 's':
-                        arguments->single = 1;
-                        break;
-
-		case 'b':
-                        arguments->diagno = 1;
-                        break;
-			
-		case ARGP_KEY_ARG:
-			if (state->arg_num > 0) 
-				break;
-			char *ptr;
-			arguments->device = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->device <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case DEVICE:
-			arguments->device_path = strdup(arg);
-			break;
-		case NOCONF:
-			arguments->noconf = 1;
-			break;
-		case SCAN:
-			arguments->scanner = 1;
-			if (sscanf(arg, "%c-%c", &arguments->id1, &arguments->id2) != 2) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case DUMPHEX:
-			arguments->dumphex = 1;
-			break;
-		case SNIFF:
-			arguments->sniff = 1;
-			break;
-		case SPEED:
-			arguments->speed = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->speed <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case ASKDELAY:
-			arguments->askdelay = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->askdelay <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case ARGP_KEY_END:
-			break;
-		case ARGP_KEY_NO_ARGS:
-			break;
-                default:
-                        return ARGP_ERR_UNKNOWN;
-        }
-        return 0;
 }
 
 void DaemonConfig::ParseCommandLine(const ArgsManager& args_mgr) {
@@ -378,7 +226,7 @@ int DaemonConfig::LoadXML(const char *path)
 	if (m_ipk->parseXML(doc))
 		return 1;
 
-	m_ipk->SetName(m_ipk->GetTitle(), SC::L2S(m_prefix));
+	m_ipk->SetPrefix(SC::L2S(m_prefix));
 
 	m_device_obj = m_ipk->DeviceById(m_device);
 	if (m_device_obj == NULL)

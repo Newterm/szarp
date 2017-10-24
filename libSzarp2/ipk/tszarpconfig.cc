@@ -179,18 +179,6 @@ TSzarpConfig::GetTitle()
     return title;
 }
 
-const std::wstring&
-TSzarpConfig::GetDocumentationBaseURL()
-{
-    return documentation_base_url;
-}
-
-void TSzarpConfig::SetName(const std::wstring& _title, const std::wstring& _prefix)
-{
-    title = _title;
-    prefix = _prefix;
-}
-
 const std::wstring& 
 TSzarpConfig::GetPrefix() const
 {
