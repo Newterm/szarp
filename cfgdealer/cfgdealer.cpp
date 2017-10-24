@@ -152,7 +152,7 @@ void CfgDealer::output_device_config(const pt::wptree& device_config) {
 	std::wostringstream oss;
 	pt::xml_parser::write_xml(oss, device_config);
 
-	std::string params_str = SC::S2A(oss.str());
+	std::string params_str = SC::S2L(oss.str());
 
 	//  Send reply back to client
 	zmq::message_t reply (params_str.size());

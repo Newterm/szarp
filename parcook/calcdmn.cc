@@ -299,6 +299,8 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv)) {
 		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
+	}
+
 	calcinfo = new DaemonClass(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
 				cfg->GetDevice()->
@@ -322,7 +324,7 @@ int main(int argc, char *argv[])
 		sz_log(0, "Error parsing xml, exiting.");
 		return 1;
 	}
-
+	
 
 	if (cfg->GetSingle()) {
 		printf("\
@@ -348,6 +350,7 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 		printf("Refresh cycle: %d [s]\n",calcinfo->m_refresh);
 	}
 
+
 	MyData = 0;
 	calcinfo->SetNoData(ipc);
 	sz_log(2, "starting main loop");
@@ -357,8 +360,10 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 		if (cfg->GetSingle()) {
 			printf("ReadData: %d\n",MyData);
 		}
+
 		if(MyData != SZARP_NO_DATA)
 			MyData = clc->Update(MyData);
+
 		if (MyData ==SZARP_NO_DATA){
 			ipc->m_read[0] = SZARP_NO_DATA;
 			ipc->m_read[1] = SZARP_NO_DATA;
@@ -366,13 +371,13 @@ params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->getAttribute("path").c
 			if (cfg->GetSingle()) {
 				printf("CalculatedData: SZARP_NO_DATA\n");
 			}
-		}else{
-		if (cfg->GetSingle()) {
+		} else {
+			if (cfg->GetSingle()) {
 				printf("CalculatedData: %d\n",MyData);
 			}
 
-		ipc->m_read[0] = (MyData & 0x0000ffff) ; //LSB
-		ipc->m_read[1] = (MyData & 0xffff0000) ; //MSB
+			ipc->m_read[0] = (MyData & 0x0000ffff) ; //LSB
+			ipc->m_read[1] = (MyData & 0xffff0000) ; //MSB
 		}
 		
 		ipc->GoParcook();

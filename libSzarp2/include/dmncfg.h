@@ -117,10 +117,9 @@ public:
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
-	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
+	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = NULL , int force_device_index = -1);
 	// [deprecated]
-	virtual int Load(int *argc, char **argv, int libpardone = 1, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
-
+	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1);
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
 	int GetLineNumber() const;

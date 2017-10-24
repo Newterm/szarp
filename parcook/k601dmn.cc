@@ -477,11 +477,11 @@ void K601Daemon::Init(int argc, char *argv[])
 	args_mgr.initLibpar();
 
 	if (args_mgr.has("use-cfgdealer")) {
-		szlog::init(args_mgr);
+		szlog::init(args_mgr, "k601dmn");
 		cfg = new ConfigDealerHandler(args_mgr);
 	} else {
 		auto d_cfg = new DaemonConfig("k601dmn");
-		if (d_cfg->Load(args_mgr, nullptr, 0, m_event_base))
+		if (d_cfg->Load(args_mgr))
 			throw SzException("Could not load configuraion");
 		cfg = d_cfg;
 	}
@@ -541,7 +541,7 @@ Unique registers (read params): %d\n\
 	try {
 		ipc = new IPCHandler(cfg);
 	} catch (const std::exception& e) {
-		throw K601Exception("ERROR!: IPC init failed");
+		throw std::runtime_error("ERROR!: IPC init failed");
 	}
 
 	sz_log(2, "starting main loop");
@@ -552,7 +552,7 @@ Unique registers (read params): %d\n\
 
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
-		sz_log(1,
+		sz_log(0,
 		       "Cannot load %s library: %s",
 		       plugin_path, dlerror());
 		exit(1);
@@ -838,7 +838,11 @@ int main(int argc, char *argv[])
 	try {
 		daemon.Init(argc, argv);
 	} catch (const std::exception& e) {
+<<<<<<< HEAD
 		sz_log(0, "%s", e.what());
+=======
+		sz_log(0, "Error while initializing daemon: %s, exiting.", e.what());
+>>>>>>> 473ef25... Fixes after merge with devel
 		exit(1);
 	}
 

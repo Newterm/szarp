@@ -1293,7 +1293,7 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 		return ret;
 
 	m_cfg = new DaemonConfig("borutadmn");
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+	if (m_cfg->Load(argc, argv))
 		return 101;
 	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
 

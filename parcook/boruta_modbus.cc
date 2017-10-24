@@ -1346,6 +1346,7 @@ int modbus_unit::get_float_order(TAttribHolder* param, FLOAT_ORDER default_value
 		} else if (_float_order == "lsbmsb") {
 			float_order = LSWMSW;
 		} else {
+			m_log.log(1, "Invalid float order specification: %s", _float_order.c_str());
 			return 1;
 		}
 	} else {
@@ -1408,6 +1409,7 @@ int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsi
 		}
 		is_lsw = false;
 	} else {
+		m_log.log(1, "Unsupported val_op attribute value - %s", val_op.c_str());
 		return 1;
 	}
 
@@ -1618,7 +1620,7 @@ int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsi
 
 int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
 	unsigned short addr;
-	long l = el->getAttribute<long>("extra:address", -1);
+	long l = el->getAttribute<unsigned long>("extra:address", -1);
 	if (l < 0 || l > 65535) {
 		m_log.log(1, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
 		return 1;

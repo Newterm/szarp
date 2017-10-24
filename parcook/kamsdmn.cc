@@ -512,12 +512,12 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	args_mgr.initLibpar();
 
 	if (args_mgr.has("use-cfgdealer")) {
-		szlog::init(args_mgr);
+		szlog::init(args_mgr, "kamsdmn");
 		m_daemon_conf = new ConfigDealerHandler(args_mgr);
 	} else {
 		auto d_cfg = new DaemonConfig("kamsdmn");
-		if (d_cfg->Load(args_mgr, nullptr, 0, m_event_base))
-			throw KamsDmnException("Could not load configuraion");
+		if (d_cfg->Load(args_mgr))
+			throw std::runtime_error("Could not load configuraion");
 		m_daemon_conf = d_cfg;
 	}
 

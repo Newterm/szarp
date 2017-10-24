@@ -87,13 +87,35 @@ TSendParam* TSendParam::GetNthParam(int n)
 }
 
 void TSendParam::Configure(const std::wstring& paramName, int value, int repeat, 
-		TProbeType type, int sendNoData)
+		TProbeType _type, int sendNoData)
 {
 	this->paramName = paramName;
 	storeAttribute("value", std::to_string(value));
 	storeAttribute("repeat", std::to_string(repeat));
-	storeAttribute("type", std::to_string(type));
 	storeAttribute("send_no_data", std::to_string(sendNoData));
+
+	std::string type_str;
+	switch (_type) {
+	case PROBE:
+		type_str = "probe";
+		break;
+	case MIN:
+		type_str = "min";
+		break;
+	case MIN10:
+		type_str = "min10";
+		break;
+	case HOUR:
+		type_str = "hour";
+		break;
+	case DAY:
+		type_str = "day";
+		break;
+	default:
+		throw std::runtime_error("Invalid probe type specified.");
+	}
+
+	storeAttribute("type", type_str);
 
 	TSendParam::processAttributes();
 }

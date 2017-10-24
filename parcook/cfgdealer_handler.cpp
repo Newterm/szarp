@@ -46,7 +46,7 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 		throw std::runtime_error("Got no configuration from cfgdealer (is it running?).");
 	}
 
-	std::wistringstream ss(SC::A2S(std::move(conf_str)));
+	std::wistringstream ss(SC::L2S(std::move(conf_str)));
 	boost::property_tree::wptree conf_tree;
 	boost::property_tree::read_xml(ss, conf_tree);
 

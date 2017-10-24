@@ -233,6 +233,10 @@ public:
 
 	void SetConfigId(unsigned _config_id) { config_id = _config_id; }
 
+	void SetPrefix(const std::wstring& _prefix) {
+		prefix = _prefix;
+	}
+
 	TUnit* createUnit(TDevice* parent);
 	TParam* createParam(TUnit* parent);
 

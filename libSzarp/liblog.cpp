@@ -120,7 +120,7 @@ void sz_logdone(void) {
 }
 
 void sz_log(int level, const char * msg_format, ...) {
-	if (level > szlog::log().get_log_treshold()) return;
+	if (szlog::PriorityForLevel(level) > szlog::log().get_log_treshold()) return;
 
 	va_list fmt_args;
 	va_start(fmt_args, msg_format);
@@ -133,7 +133,7 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(log_mutex);
 
-	if (level > szlog::log().get_log_treshold()) return;
+	if (szlog::PriorityForLevel(level) > szlog::log().get_log_treshold()) return;
 
 	char *l;
 	if (vasprintf(&l, msg_format, fmt_args) != -1) {
