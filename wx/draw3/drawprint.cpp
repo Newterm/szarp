@@ -574,9 +574,17 @@ bool DrawsPrintout::OnPrintPage(int page) {
 	if (sel == m_draws_count)
 		return false;
 	wxDC *dc = GetDC();
+#ifndef MINGW32
+	try {
+		//wxPostScriptDC *psdc = dynamic_cast<wxPostScriptDC*>(dc);
+		//if (psdc != nullptr)
+			//psdc->PsPrint(_("\n/ISOLatin1Encoding [\n/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright/parenleft/parenright/asterisk/plus/comma/minus/period/slash/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde/.notdef/.notdef/Lslash/lslash/Nacute/nacute/aogonek/Cacute/cacute/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/dotlessi/grave/acute/Oacute/tilde/macron/breve/dotaccent/Eogonek/eogonek/Sacute/sacute/.notdef/hungarumlaut/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot/hyphen/registered/macron/degree/plusminus/twosuperior/oacute/acute/mu/paragraph/periodcentered/.notdef/Zacute/zacute/.notdef/z/onehalf/threequarters/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/Ograve/Oacute/.notdef/.notdef/.notdef/multiply/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/oacute/.notdef/.notdef/.notdef/divide/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n] def\n"));
+	} catch(...) { // tu ew. usuniecie polskich znakow
+	}
+#endif
 
 	wxFont f;
-	f.Create(30, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
 	dc->SetMapMode(wxMM_TEXT);
 	dc->SetFont(f);
@@ -681,7 +689,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	wxFont font = dc->GetFont();
 	wxFont f = font;
 	//wxFont f(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, _T("Helvetica"), wxFONTENCODING_ISO8859_2);
-	f.SetPointSize(80);
+	f.SetPointSize(100);
 	dc->SetTextForeground(*wxBLACK);
 	dc->SetFont(f);
 
@@ -690,7 +698,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	dc->DrawText(cn, hw - tw / 2, maxy);
 	maxy += int(1.4 * th);
 
-	f.SetPointSize(40);
+	f.SetPointSize(65);
 	dc->SetFont(f);
 
 	wxString wt = fdi->GetSetName();
@@ -914,7 +922,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 		return false;
 
 	wxFont f;
-	f.Create(30, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
 	wxDC *dc = GetDC();
 	dc->SetMapMode(wxMM_TEXT);
@@ -964,7 +972,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 			35, 25, 10
 			);
 	m_painter.DrawDrawsInfo(dc,
-			30, 10
+			50, 10
 			);
 
 	pen = dc->GetPen();
@@ -997,7 +1005,7 @@ bool XYGraphPrintout::OnPrintPage(int page) {
 
 	ty += th * 12 / 10;
 
-	f.SetPointSize(30);
+	f.SetPointSize(50);
 	dc->SetFont(f);
 
 	txt = m_graph->m_di[0]->GetName();
@@ -1232,7 +1240,7 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 	if (page != 1)
 		return false;
 	wxFont f;
-	f.Create(30, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+	f.Create(50, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
 	wxDC *dc = GetDC();
 	dc->SetMapMode(wxMM_TEXT);
@@ -1270,7 +1278,7 @@ bool XYZGraphPrintout::OnPrintPage(int page) {
 	dc->DrawText(txt, (pw - tw)  / 2, ty);
 
 	ty += th * 12 / 10;
-	f.SetPointSize(30);
+	f.SetPointSize(50);
 	dc->SetFont(f);
 
 
