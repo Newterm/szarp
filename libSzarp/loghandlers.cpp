@@ -55,16 +55,7 @@ void JournaldLogger::log(const char* msg, szlog::priority p) const {
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 
-	#ifndef MINGW32
-		sd_journal_send(
-			"PRIORITY=%d", static_cast<std::underlying_type<szlog::priority>::type>(p),
-			"SYSLOG_IDENTIFIER=%s", name.c_str(),
-			"MESSAGE=%s", msg,
-			NULL
-		);
-	#else
 		std::cout << "<" << static_cast<std::underlying_type<szlog::priority>::type>(p) << "> " << msg << std::endl;
-	#endif
 }
 
 void FileLogger::blockSignals() {

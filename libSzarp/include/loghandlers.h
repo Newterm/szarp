@@ -8,9 +8,7 @@
 #include <condition_variable>
 #include <list>
 
-#ifndef MINGW32
-#include <systemd/sd-journal.h>
-#endif
+#include <syslog.h>
 
 namespace szlog {
 
