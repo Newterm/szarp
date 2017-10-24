@@ -645,10 +645,7 @@ void ValuesTable::UpdateStats(int idx) {
 		m_sum += val;
 		m_sum2 += val * val;
 		if (m_draw->GetDrawInfo() != NULL) {
-			double hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
-			if (is_30min)
-				hsum /= 60;
-			m_hsum += hsum;
+			m_hsum += v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 		}
 	} else {
 		m_max = m_min = val;
@@ -656,8 +653,6 @@ void ValuesTable::UpdateStats(int idx) {
 		m_sum2 = val * val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
-		if (is_30min)
-			m_hsum /= 60;
 	}
 	m_count++;
 
