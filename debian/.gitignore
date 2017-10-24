@@ -7,5 +7,4 @@ build-*
 config-*
 files
 tmp
-!services/*.service
-!services/*.target
+!*.service
