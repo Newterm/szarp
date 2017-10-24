@@ -1026,7 +1026,7 @@ void float_sender_modbus_val_op::reg_val(szarp::ParamValue& val) {
 void float_sender_modbus_val_op::get_val(zmqhandler* handler, size_t index) {
 	szarp::ParamValue& value = handler->get_value(index);
 	if (value.IsInitialized()) {
-		reg_val(value)
+		reg_val(value);
   }
 }
 
