@@ -1,0 +1,127 @@
+Package: szarp-base
+Files: opt/szarp/resources/{dtd,*TEMPLATE,szarp_in.cfg,version.info}
+Files: opt/szarp/bin/{szrsync,szbpush,ssh_tunel.sh,szppp-off,szppp-on,szredialer,szrsync,install_vim,config_deb}
+Files: opt/szarp/bin/{isdn-*-sh,ipcclean,ipcinfo,lpparse,szarp_scripter}
+Files: opt/szarp/resources/{xslt,dictionary.xml}
+Files: opt/szarp/resources/vimfiles/szarp.vim
+Files: opt/szarp/resources/vimfiles/syntax/*.vim
+Files: opt/szarp/logs
+Files: var/log/szarp
+
+Package: szarp-daemons
+Files: opt/szarp/bin/{parcook,sender,meaner3,sss,checker}
+Files: opt/szarp/bin/{stampd,ssconf.py,remarks_server.py,prober}
+Files: opt/szarp/bin/{calcdmn,dbdmn,execdmn,mbrtudmn,mbdmn}
+Files: opt/szarp/bin/{kamsdmn,aqtdmn,dpafdmn,iecdmn,mbusdmn}
+Files: opt/szarp/bin/{nrsdmn,pafdmn,pafdmnr,polludmn,ratedmn,rsdmn}
+Files: opt/szarp/bin/{tcpdmn,testdmn,sbusdmn,kwmsdmn,ddedmn,lbdmn}
+Files: opt/szarp/bin/{k601dmn,borutadmn,borutadmn_z,pythondmn,defdmn}
+Files: opt/szarp/lib/python/{szbcache.py,libpar.py,probes_server.py}
+Files: opt/szarp/lib/python/{probes_server.tac,meaner4,paramsvalues_pb2.py
+Files: opt/szarp/lib/python/{parhub.py,test_ipc.py*}
+Files: opt/szarp/lib/libpysz*
+Files: opt/szarp/bin/wlkdmn
+Files: etc/szarp/ssconf.cfg
+Files: opt/szarp/bin/pserver-lite
+
+Package: szarp-utils
+Files: opt/szarp/bin/{szbedit,szbindex,szbwriter,szbreader,extrszb,modem_pooler.sh,isdn_pooler.sh,probes_client.py}
+Files: opt/szarp/bin/{vrsh,vrsh_d,ipk2szarp,ipkrep,i2smo,peakator}
+Files: opt/szarp/bin/{agregator,precconv,szbnull,szbndremover,szbmod,raporter.py}
+Files: opt/szarp/bin/{conf-import.py,conf-get.sh,conf-put.sh}
+
+Package: szarp-scripts
+Files: opt/szarp/bin/{switch_controller.pl,ipk2mobile.pl,get_weather.sh}
+Files: opt/szarp/bin/{convert_names,get_sam,process_csv,sshkey,insum.sh}
+
+Package: szarp-server
+
+Package: szarp-wx
+Files: opt/szarp/bin/{draw3,ekstraktor3,ipkedit,kontroler3,raporter3,reporter4,wxhelp,scc,ssc,ssc_sudowrap.sh}
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/{common.mo,ekstraktor3.mo,ipkedit.mo,raporter3.mo,ssc.mo,draw3.mo,kontroler3.mo,scc.mo,wx.mo,reporter4.mo}
+Files: opt/szarp/resources/locales/fr_FR/LC_MESSAGES
+Files: opt/szarp/resources/locales/de_DE/LC_MESSAGES
+Files: opt/szarp/resources/sounds
+Files: opt/szarp/resources/wx/{anim,html}
+Files: opt/szarp/resources/wx/icons/{draw16.xpm,extr16.xpm,lock_icon16.xpm,scc.ico,back.xpm,draw3.ico,forward.xpm,szarp16.png,ssc.ico,conf_icon16.xpm,dysp_icon16.xpm,greenexit.xpm,szarp16.xpm,up.xpm,conf_icon32.xpm,dysp_icon32.xpm,help.xpm,rap16.xpm,dyspwx_icon.png,reload.xpm,down.xpm,exit.xpm,load.xpm,save.xpm}
+Files: opt/szarp/resources/wx/images/szarp-logo.png
+Files: opt/szarp/resources/wx/images/star.png
+Files: opt/szarp/resources/wx/images/draw_background1_tex.bmp
+Files: opt/szarp/resources/wx/images/left-arrow.png
+Files: opt/szarp/resources/wx/images/right-arrow.png
+Files: opt/szarp/resources/ssc.desktop
+Files: opt/szarp/resources/scc.desktop
+Files: opt/szarp/resources/regulators
+Files: etc/xdg/autostart/scc.desktop
+Files: usr/share/autostart/scc.desktop
+Files: usr/share/applications/scc.desktop
+
+Package: szarp-paramd
+Files: etc/pam.d/paramd
+Files: opt/szarp/bin/paramd
+Files: opt/szarp/resources/paramd_access.conf
+
+# if you want to add something to this section, please go to
+# pyipk/Makefile.am and update it according to instructions
+Package: szarp-pyipk
+Files: opt/szarp/bin/ipkcmd
+Files: opt/szarp/bin/ipkqt
+Files: opt/szarp/lib/plugins
+#Files: opt/szarp/lib/python*/dist-packages/libipk*
+#Files: opt/szarp/lib/python*/dist-packages/qtipk*
+Files: usr/lib*/python*/dist-packages/libipk*
+Files: usr/lib*/python*/dist-packages/qtipk*
+Files: usr/lib*/python*/dist-packages/miscipk*
+
+Package: szarp-xsltd
+Files: opt/szarp/resources/xsltd
+Files: opt/szarp/bin/xslt_handler.py
+
+Package: szarp-updater
+Files: opt/szarp/bin/update_debs
+
+Package: szarp-filler
+Files: opt/szarp/lib/python/{cmdLineParser.py*,DateDialog.py*,fillerGUI.py*,filler.py*}
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/filler.mo
+Files: opt/szarp/resources/wx/icons/add16.xpm
+Files: opt/szarp/bin/{filler,ipk2filler.py}
+
+Package: szarp-isledit
+Files: opt/szarp/bin/isledit
+Files: opt/szarp/resources/locales/pl_PL/LC_MESSAGES/isledit.mo
+Files: usr/share/inkscape/extensions/isledit.inx
+
+Package: szarp-sssweb
+Files: var/cache/pylons-sssweb
+Files: etc/szarp/ssweb*
+Files: usr/lib/python*/site-packages/sssweb*
+
+Package: szarp-nagios
+Files: etc/nagios/szarp*cfg
+Files: etc/szarp/szarp-nagios.cfg
+Files: opt/szarp/lib/szarpnagios.py
+Files: opt/szarp/bin/sn-fam.py
+Files: opt/szarp/bin/update-nagios.py
+Files: usr/share/nagios3/htdocs/szarp*.html
+
+Package: szarp-dbg-symbols
+Files: usr/lib/debug/*
+
+Package: szarp-iks-server
+Files: opt/szarp/bin/iks-server
+Files: opt/szarp/iks/iks-server.ini.sample
+
+Package: szarp-filler2
+Files: opt/szarp/lib/python/filler2/filler2-launcher.py*
+Files: opt/szarp/lib/python/filler2/ipk/{__init__.py*,ipkparser.py*}
+Files: opt/szarp/lib/python/filler2/ui/{__init__.py*,AboutDialog.py*,DatetimeDialog.py*,HistoryDialog.py*,Filler2.py*,ValueDialogs.py*}
+Files: opt/szarp/resources/locales/qt4/filler2_pl.qm
+Files: opt/szarp/resources/wx/icons/filler2.png
+Files: opt/szarp/resources/qt4/icons/{filler2.png,filler2-big.png,qt4.png,plot-*.png}
+Files: opt/szarp/bin/{filler2,szb2filler}
+Files: opt/szarp/resources/filler2.desktop
+Files: usr/share/applications/filler2.desktop
+
+Package: szarp-s7dmn
+Files: opt/szarp/bin/s7dmn
+

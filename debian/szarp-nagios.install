@@ -1,6 +1,0 @@
-etc/szarp/szarp-nagios.cfg
-opt/szarp/lib/szarpnagios.py
-opt/szarp/bin/sn-fam.py
-opt/szarp/bin/update-nagios.py
-usr/share/nagios3/htdocs/szarp-side.html
-usr/share/nagios3/htdocs/szarp.html

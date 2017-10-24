@@ -1,8 +1,0 @@
-opt/szarp/bin/switch_controller.pl
-opt/szarp/bin/ipk2mobile.pl
-opt/szarp/bin/get_weather.sh
-opt/szarp/bin/convert_names
-opt/szarp/bin/get_sam
-opt/szarp/bin/process_csv
-opt/szarp/bin/sshkey
-opt/szarp/bin/insum.sh

@@ -1,5 +1,6 @@
 *.log
 *.substvars
+*.install
 *.debhelper
 szarp-*
 build-*
@@ -8,8 +9,3 @@ files
 tmp
 !services/*.service
 !services/*.target
-!*.install
-!*.postinst
-!*.postrm
-!*.preinst
-!*.prerm
