@@ -43,19 +43,6 @@ function switch_to_sz3_units {
 	done
 }
 
-function enable_all_units {
-	for UNIT in "${SZ3UNITS[@]}"; do
-		touch "$UNITSELECT_PATH/$UNIT"
-		systemctl unmask $UNIT
-		systemctl enable $UNIT
-	done
-	for UNIT in "${SZ4UNITS[@]}"; do
-		touch "$UNITSELECT_PATH/$UNIT"
-		systemctl unmask $UNIT
-		systemctl enable $UNIT
-	done
-}
-
 
 case "$1" in
     configure)
@@ -70,8 +57,6 @@ case "$1" in
 		switch_to_sz4_units
 	elif [ "x$RET" = "xsz3" ]; then
 		switch_to_sz3_units
-	elif [ "x$RET" = "xsz3+sz4" ]; then
-		enable_all_units
 	else
 		echo "unknown database type: $RET" 1>&2
 		exit 10;
