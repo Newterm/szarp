@@ -1,5 +1,6 @@
 opt/szarp/resources/dtd
 opt/szarp/resources/parstart_cfg_TEMPLATE
+opt/szarp/resources/parstart_TEMPLATE
 opt/szarp/resources/rsyslog_conf_TEMPLATE
 opt/szarp/resources/sysctl_conf_TEMPLATE
 opt/szarp/resources/SZARP_CFG_TEMPLATE

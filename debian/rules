@@ -122,6 +122,7 @@ clean: sanity_check
 	-rm debian/*stamp
 	-rm debian/config-status*
 	-rm debian/build*
+	-rm debian/*parstart.init
 	-rm -rf doxy
 	-$(MAKE) maintainer-clean
 	dh_clean -a
@@ -138,6 +139,7 @@ install:
 
 binary-no-cb: debian/build-no-cb-stamp 
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" install
+	cp $(INSTALL_DIR)/etc/init.d/parstart debian/szarp-server.parstart.init
 	$(MAKE) -f debian/rules DH_OPTIONS="$(NO_CB_PACK_OPTS)" binary-arch-common
 
 
@@ -151,6 +153,7 @@ binary-arch-common:
 	dh_strip --dbg-package=szarp-dbg-symbols
 	dh_compress
 	dh_makeshlibs
+	dh_installinit -udefaults\ 98 --name=parstart
 	dh_installinit -i
 	dh_installdocs
 	dh_installcron

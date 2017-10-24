@@ -18,6 +18,7 @@ RESOURCES = \
 		@srcdir@/qt4 \
 		@srcdir@/xsltd \
 		@srcdir@/szarp_in.cfg \
+		@srcdir@/parstart_TEMPLATE \
 		@srcdir@/parstart_cfg_TEMPLATE \
 		@srcdir@/rsyslog_conf_TEMPLATE \
 		@srcdir@/SZARP_CFG_TEMPLATE \
@@ -51,8 +52,23 @@ szarp_cfg: DATABASE_PREFIX
 	mkdir -p /etc/szarp/
 	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg $(DESTDIR)/etc/szarp/szarp.cfg
 
-parstart_cfg: DATABASE_PREFIX
+parstart_:
+	@cat @srcdir@/parstart_TEMPLATE | \
+		sed s+__INSTALL_DIR__+`echo @prefix@`+g | \
+	sed s+__LOCK_DIR__+@lockdir@+g \
+		> parstart
+	@chmod +x parstart
 	@( if [ ! -d $(DESTDIR)/etc/szarp ] ; then $(INSTALL) -d $(DESTDIR)/etc/szarp ; fi )
+	@( if [ ! -f $(DESTDIR)$(INIT_D)/parstart ] ; then \
+		if [ ! -e $(DESTDIR)$(INIT_D) ] ; then \
+			$(INSTALL) -d $(DESTDIR)$(INIT_D); \
+		fi; \
+		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
+	elif [ -f $(DESTDIR)/etc/szarp/parstart.cfg ] ; then \
+		$(INSTALL) -m 755 parstart $(DESTDIR)$(INIT_D) ; \
+	fi )
+
+parstart_cfg: parstart_ DATABASE_PREFIX
 	cat parstart_cfg_TEMPLATE | \
 		sed s+__INSTALL_DIR__+`@prefix@+ | \
 		sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
@@ -142,7 +158,7 @@ install-data-local: copyfiles links
 
 endif
 
-install-data-hook: vim paramd_access apache2 regulators_defs dictionary ipk-params_xsd
+install-data-hook: vim paramd_access parstart_ apache2 regulators_defs dictionary ipk-params_xsd
 
 uninstall-local: uninstall-apache2
 	rm -rf $(DESTDIR)@prefix@/resources/* $(DESTDIR)/etc/apache2/sites-available/szarp
