@@ -445,7 +445,6 @@ process = Popen(command, stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 if stdout:
 	for note in stdout.strip().splitlines():
-		print note
 		add_note(note)
 if stderr:
 	for error in stderr.strip().splitlines():
