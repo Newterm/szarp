@@ -1,0 +1,14 @@
+[Unit]
+Description=SZARP Scada Software Server Sender
+After=parcook.service
+BindsTo=parcook.service
+PartOf=szarp-server.target parcook.service
+ConditionPathExists=/etc/szarp/units-enabled/sender
+[Service]
+Type=simple
+ExecStart=/opt/szarp/bin/sender --no-daemon
+SuccessExitStatus=0
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=szarp-server.target

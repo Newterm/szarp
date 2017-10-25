@@ -6,7 +6,7 @@ Maintainer: Newterm Developers <devs@newterm.pl>
 Section: misc
 Standards-Version: 3.6.1
 X-Python-Version: >= 2.6
-Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk3.0-dev, wx-common, libwxbase3.0-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev (<< 1.1) |  libssl1.0-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade | openjade, python-pybabel | python-babel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-5.1-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev (>=1.55), libboost-system-dev (>=1.55), libboost-thread-dev (>=1.55), libboost-program-options-dev (>=1.55), libboost-regex-dev (>=1.55), libboost-filesystem-dev (>=1.55), libboost-python-dev (>=1.55), libboost-locale-dev (>=1.55), libboost-signals-dev (>=1.55), libasio-dev | libasio1.55-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), docbook-dsssl, rsync, dh-python, konwert, pyqt4-dev-tools, libtool, python-all-dev, python-dev, pyqt4-dev-tools, qt4-linguist-tools, libzmq3-dev, libcppunit-dev, protobuf-compiler, python-zmq, libprotobuf-dev, python-sip, texlive-generic-recommended, libsnap7-dev, trang
+Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk3.0-dev, wx-common, libwxbase3.0-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev (<< 1.1) |  libssl1.0-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade | openjade, python-pybabel | python-babel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-5.1-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev (>=1.55), libboost-system-dev (>=1.55), libboost-thread-dev (>=1.55), libboost-program-options-dev (>=1.55), libboost-regex-dev (>=1.55), libboost-filesystem-dev (>=1.55), libboost-python-dev (>=1.55), libboost-locale-dev (>=1.55), libboost-signals-dev (>=1.55), libasio-dev | libasio1.55-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), docbook-dsssl, rsync, dh-python, konwert, pyqt4-dev-tools, libtool, python-all-dev, python-dev, pyqt4-dev-tools, qt4-linguist-tools, libzmq3-dev, libcppunit-dev, protobuf-compiler, python-zmq, libprotobuf-dev, python-sip, texlive-generic-recommended, libsnap7-dev, trang, libsystemd-dev
 
 ## draw3 compiled with CGAL fails at assertion on ubuntu trusty amd64
 # libcgal-dev
@@ -59,7 +59,7 @@ Description: Configure SZARP as a server
 Package: szarp-wx
 Section: x11
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont, libwxgtk3.0-0 [i386]
 Description: SZARP utilities based on wxWidgets library
  SZARP raporter3, reporter4, kontroler3, scc, ekstraktor3, wxhelp, draw3,
  confedit, pipes applications.

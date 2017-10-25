@@ -10,12 +10,14 @@ UNITSELECT_PATH="/etc/szarp/units-enabled"
 SZ4UNITS=(
 	"meaner4"
 	"parcook"
+	"sender"
 	"parhub"
 )
 
 SZ3UNITS=(
 	"meaner3"
 	"parcook"
+	"sender"
 	"paramd"
 	"prober"
 	"probes-server"
