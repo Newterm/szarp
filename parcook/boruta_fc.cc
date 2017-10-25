@@ -112,7 +112,7 @@
 			w celu u¿ywania transmisji po ethernecie nale¿y dodaæ atrybuty:
 				extra:use_tcp_2_serial_proxy="yes"
 					pozwolenie na komunikacjê szeregow± poprzez tcp
-				extra:tcp-ip="192.168.1.150"
+				extra:tcp-address="192.168.1.150"
 					adres IP do którego siê pod³±czamy
 				extra:tcp-port="6969"
 					port IP na który siê po³±czymy

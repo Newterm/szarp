@@ -20,7 +20,7 @@
 
  @config_example
 <device
-	daemon="/opt/szarp/bin/borutadmn"
+	daemon="/opt/szarp/bin/borutadmn_z"
 	path="/dev/null"
 		ignored, should be /dev/null
 	>
@@ -70,7 +70,7 @@
 
  @config_example.pl
 <device
-	daemon="/opt/szarp/bin/borutadmn"
+	daemon="/opt/szarp/bin/borutadmn_z"
 	path="/dev/null"
 		ignorowany, zaleca siê ustawienie /dev/null
 	>
