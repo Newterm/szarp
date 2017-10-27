@@ -150,6 +150,7 @@ int DaemonConfig::Load(int *argc, char **argv, int libpardone, TSzarpConfig* sz_
 {
 	ArgsManager args_mgr(m_daemon_name);
 	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.initLibpar();
 
 	return Load(args_mgr, sz_cfg, force_device_index);
 }

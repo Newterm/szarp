@@ -57,10 +57,6 @@ noinst_HEADERS = \
 		 $(INCLUDE_DIR)/mingw32_missing.h 
 
 libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@
-if MINGW32_OPT
-else
-libSzarp_la_LIBADD += -lsystemd
-endif
 
  
 EXTRA_DIST = \
