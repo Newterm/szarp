@@ -7,3 +7,8 @@ build-*
 config-*
 files
 tmp
+!*.install
+!*.postinst
+!*.postrm
+!*.preinst
+!*.prerm

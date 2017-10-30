@@ -2,18 +2,3 @@ Template: szarp/prefix
 Type: string
 _Description: Configuration prefix
  Enter configuration prefix.
-
-Template: szarp-server/db_catalog
-Type: boolean
-Default: true
-_Description: Shall I create szbase catalog?
- Choose yes if you want to create catalog for szbase data.
- (It is required for meaner3 to work).
-
-Template: szarp/szbase_type
-Type: select
-Choices: sz4, sz3
-Default: sz4
-_Description: Database type
- Select the SZARP database type to use.
- (Creates /etc/szarp/units-enabled/ with appropriate components if dir doesn't exist).
