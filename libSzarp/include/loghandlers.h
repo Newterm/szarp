@@ -6,6 +6,7 @@
 #include <iostream>
 #include <atomic>
 #include <condition_variable>
+#include <fstream>
 #include <list>
 
 #ifndef __MINGW32__
@@ -27,9 +28,8 @@ class LogHandler {
 public:
 	virtual void log(const std::string& msg, szlog::priority = szlog::priority::info) const = 0;
 	virtual void log(const char* msg, szlog::priority = szlog::priority::info) const = 0;
-	virtual ~LogHandler() {}
 
-	virtual void reinit() = 0;
+	virtual ~LogHandler() {}
 };
 
 class COutLogger: public LogHandler {
@@ -39,9 +39,6 @@ public:
 	void log(const std::string& msg, szlog::priority p = szlog::priority::info) const override;
 	void log(const char* msg, szlog::priority p = szlog::priority::info) const override;
 
-	void reinit() override {
-		_msg_mutex.unlock();
-	}
 };
 
 class JournaldLogger: public LogHandler {
@@ -54,30 +51,17 @@ public:
 	void log(const std::string& msg, szlog::priority p = szlog::priority::info) const override;
 	void log(const char* msg, szlog::priority p = szlog::priority::info) const override;
 
-	void reinit() override {
-		_msg_mutex.unlock();
-	}
 };
 
 class FileLogger: public LogHandler {
 public:
-	FileLogger(const std::string& filename);
-	~FileLogger() override;
+	FileLogger(std::string filename);
 
-	void reinit() override;
 	void log(const std::string& msg, szlog::priority p = szlog::priority::info) const override;
 	void log(const char* msg, szlog::priority p = szlog::priority::info) const override;
 
 private:
-	mutable std::list<std::tuple<szlog::priority, std::string>> msg_q;
-	mutable std::thread logger_thread;
-
-	const std::string get_priority_prefix(szlog::priority p) const;
-
-	void log_start(const std::string& filename);
-	void processMessages(std::ofstream&);
-
-	void blockSignals();
+	mutable std::unique_ptr<std::ofstream> logfile;
 };
 
 } // namespace szlog
