@@ -147,7 +147,7 @@ void SzbaseProt::set_current_set( Set::const_ptr s , ProbeType pt )
 		if( p )
 			send_cmd( new ValueSnd(p,pt) );
 		else
-			sz_log(0, "Unknown param (%s) in set (%s)",
+			sz_log(1, "Unknown param (%s) in set (%s)",
 					itr->c_str() , s->get_name().c_str() );
 	}
 }
@@ -176,7 +176,7 @@ void SzbaseProt::subscribe_custom( ProbeType pt, const std::vector<std::string>&
 		if( p )
 			send_cmd( new ValueSnd(p,pt) );
 		else
-			sz_log(0, "Unknown param (%s) in custom set", itr->c_str());
+			sz_log(1, "Unknown param (%s) in custom set", itr->c_str());
 	}
 }
 

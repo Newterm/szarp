@@ -3,14 +3,11 @@
 #include <functional>
 #include <iostream>
 
-using std::bind;
-namespace placeholders = std::placeholders;
-
 #include <boost/algorithm/string.hpp>
 
 namespace ba = boost::asio;
 namespace bs = boost::system;
-namespace balgo = boost::algorithm;
+
 using boost::asio::ip::tcp;
 
 #include <liblog.h>
@@ -22,7 +19,9 @@ TcpClient::TcpClient( ba::io_service& io_service, tcp::resolver::iterator endpoi
 	handler = std::make_shared<details::AsioHandler>(*this);
 
 	tcp::endpoint endpoint = *endpoint_iterator;
-	socket_.async_connect(endpoint, bind(&details::AsioHandler::handle_connect, handler, placeholders::_1));
+	socket_.async_connect(endpoint, [this](const bs::error_code& err){
+				handler->handle_connect(err);
+		  	} );
 }
 
 TcpClient::~TcpClient()
@@ -35,13 +34,30 @@ TcpClient::~TcpClient()
 
 void TcpClient::do_write_line( const std::string& line )
 {
-	lines.emplace( line.back() == '\n' ? line : line + '\n' );
+	outbox.emplace_back( line.back() == '\n' ? line : line + '\n' );
+
+	sz_log(9, "<<<      %.*s", (int)outbox.back().size()-1, outbox.back().c_str() );
+
+	if( sendbox.empty() )
+		schedule_next_line();
+}
+
+void TcpClient::schedule_next_line()
+{
+	std::vector<ba::const_buffer> bufs;
+
+	sendbox.swap( outbox );
+
+	for( auto& line : sendbox )
+	{
+		bufs.push_back( ba::buffer( line ) );
+	}
 
 	ba::async_write(socket_,
-		ba::buffer( lines.back() ),
-		bind(&details::AsioHandler::handle_write, handler, placeholders::_1));
-
-	sz_log(9, "<<<      %s", line.c_str() );
+		bufs,
+		[this](const bs::error_code& err, std::size_t){
+			handler->handle_write(err);
+		} );
 }
 
 void TcpClient::do_close()
@@ -53,11 +69,11 @@ namespace details {
 
 bool AsioHandler::handle_error( const bs::error_code& error )
 {
-	if( !error ) 
+	if( !error )
 		return false;
 
 	sz_log(3, "---      TcpClient disconnected (%s)", error.message().c_str() );
- 
+
 	if( is_valid() ) {
 		client.emit_disconnected( &client );
 		invalidate();
@@ -83,7 +99,9 @@ void AsioHandler::do_read_line()
 	ba::async_read_until(client.socket_,
 			client.read_buffer,
 			'\n',
-			bind(&AsioHandler::handle_read_line, shared_from_this(), placeholders::_1, placeholders::_2 ));
+			[this](const bs::error_code& error, size_t bytes ){
+				handle_read_line(error, bytes);
+			} );
 }
 
 void AsioHandler::handle_read_line( const bs::error_code& error, size_t bytes )
@@ -97,11 +115,15 @@ void AsioHandler::handle_read_line( const bs::error_code& error, size_t bytes )
 		ba::buffers_begin(bufs) + bytes - 1 );
 	client.read_buffer.consume( bytes );
 
-	balgo::trim( line );
+	boost::algorithm::trim( line );
 
 	sz_log(9, ">>>      %s", line.c_str());
 
-	client.emit_line_received( line );
+	try {
+		client.emit_line_received( line );
+	} catch( const std::exception& e ) {
+		sz_log(9, "Exception occurred during emit_line_received: %s" , e.what() );
+	}
 
 	do_read_line();
 }
@@ -112,7 +134,10 @@ void AsioHandler::handle_write(const bs::error_code& error)
 		return;
 
 	/** This line was send */
-	client.lines.pop();
+	client.sendbox.clear();
+
+	if( !client.outbox.empty() )
+		client.schedule_next_line();
 }
 
 } /** namespace details */

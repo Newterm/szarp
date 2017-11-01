@@ -63,7 +63,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 	
 	char *_ipk_path = libpar_getpar(section, "IPK", 0);
 	if (_ipk_path == NULL) {
-		sz_log(0, "TWriter::LoadConfig(): set 'IPK' param in szarp.cfg file");
+		sz_log(1, "TWriter::LoadConfig(): set 'IPK' param in szarp.cfg file");
 		return 1;
 	}
 	ipk_path = SC::L2S(_ipk_path);
@@ -71,7 +71,7 @@ int TWriter::LoadConfig(const char *section, const char* datadir_param)
 	
 	char* _data_dir = libpar_getpar(section, datadir_param, 0);
 	if (_data_dir  == NULL) {
-		sz_log(0, "TWriter::LoadConfig(): set '%s' param in szarp.cfg file", datadir_param);
+		sz_log(1, "TWriter::LoadConfig(): set '%s' param in szarp.cfg file", datadir_param);
 		return 1;
 	}
 	data_dir = SC::L2S(_data_dir);
@@ -107,12 +107,12 @@ int TWriter::CheckBase(unsigned long req_free_space)
 	assert(!data_dir.empty());
 	i = stat(SC::S2A(data_dir).c_str(), &buf);
 	if (i < 0) { 
-		sz_log(0, "TWriter::CheckBase(): cannot stat data_dir '%s', errno %d", 
+		sz_log(1, "TWriter::CheckBase(): cannot stat data_dir '%s', errno %d", 
 				SC::S2A(data_dir).c_str(), errno); 
 		return 1;
 	}
 	if (!S_ISDIR(buf.st_mode)) {
-		sz_log(0, "TWriter::CheckBase(): data_dir '%s' is not a directory", SC::S2A(data_dir).c_str());
+		sz_log(1, "TWriter::CheckBase(): data_dir '%s' is not a directory", SC::S2A(data_dir).c_str());
 		return 1;
 	}
 	/* check for write permisions */
@@ -127,14 +127,14 @@ int TWriter::CheckBase(unsigned long req_free_space)
 		goto perms_ok;
 	if ((buf.st_mode & S_IRWXO) == S_IRWXO)
 		goto perms_ok;
-	sz_log(0, "TWriter::CheckBase(): not enough permissions to use data dir '%s'",
+	sz_log(1, "TWriter::CheckBase(): not enough permissions to use data dir '%s'",
 			SC::S2A(data_dir).c_str());
 	return 1;
 perms_ok:
 	/* check for free space on device */
 	i = statvfs(SC::S2A(data_dir).c_str(), &buffs);
 	if (i != 0) {
-		sz_log(0, "TWriter::CheckBase(): cannot stat data_dir '%s' file system", 
+		sz_log(1, "TWriter::CheckBase(): cannot stat data_dir '%s' file system", 
 				SC::S2A(data_dir).c_str());
 		return 1;
 	}
@@ -143,7 +143,7 @@ perms_ok:
 	else
 		i = buffs.f_bavail;	/* blocks available for non-root users */
 	if (i * buffs.f_bsize < req_free_space) {
-		sz_log(0, "TWriter::CheckBase(): not enough blocks available on file system (%d)",
+		sz_log(1, "TWriter::CheckBase(): not enough blocks available on file system (%d)",
 				i);
 		return 1;
 	}
@@ -160,7 +160,7 @@ int TWriter::LoadIPK()
 	
 	int i = config->loadXML(ipk_path);
 	if (i != 0) {
-		sz_log(0, "TWriter::LoadIPK(): error loading configuration from file %s",
+		sz_log(1, "TWriter::LoadIPK(): error loading configuration from file %s",
 				SC::S2A(ipk_path).c_str());
 		xmlCleanupParser();
 		return -1;

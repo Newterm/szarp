@@ -155,19 +155,19 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	if (-1 == ret) {
-		sz_log(0, "Cannot register namespace %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
+		sz_log(1, "Cannot register namespace %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 		return 1;
 	}
 
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (-1 == ret) {
-		sz_log(0, "Cannot register namespace %s", IPKEXTRA_NAMESPACE_STRING);
+		sz_log(1, "Cannot register namespace %s", IPKEXTRA_NAMESPACE_STRING);
 		return 1;
 	}
 
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (prop == NULL) {
-		sz_log(0, "No attribute address given in line %ld", xmlGetLineNo(node));
+		sz_log(1, "No attribute address given in line %ld", xmlGetLineNo(node));
 		return 1;
 	}
 	address = (char*)prop;
@@ -201,7 +201,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 		char *expr;
 		ret = asprintf(&expr, ".//ipk:param[position()=%d]", i);
 		if (-1 == ret) {
-			sz_log(0, "Cannot allocate XPath expression for param number %d", i);
+			sz_log(1, "Cannot allocate XPath expression for param number %d", i);
 			return 1;
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
@@ -221,7 +221,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 {
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("db"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (NULL == prop) {
-		sz_log(0, "No attribute db given for param: %s in line %ld",
+		sz_log(1, "No attribute db given for param: %s in line %ld",
 				SC::S2U(p->GetName()).c_str(),
 			       	xmlGetLineNo(node));
 		return 1;
@@ -233,7 +233,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 
 	prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (NULL == prop) {
-		sz_log(0, "No attribute address given for param: %s in line %ld",
+		sz_log(1, "No attribute address given for param: %s in line %ld",
 				SC::S2U(p->GetName()).c_str(),
 			       	xmlGetLineNo(node));
 		return 1;
@@ -243,7 +243,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 
 	prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (NULL == prop) {
-		sz_log(0, "No attribute val_type given for param: %s in line %ld",
+		sz_log(1, "No attribute val_type given for param: %s in line %ld",
 				SC::S2U(p->GetName()).c_str(),
 			       	xmlGetLineNo(node));
 		return 1;
@@ -255,7 +255,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 	if (val_type != "short") {
 		prop = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 		if (NULL == prop) {
-			sz_log(0, "No attribute val_op given for param: %s in line %ld",
+			sz_log(1, "No attribute val_op given for param: %s in line %ld",
 					SC::S2U(p->GetName()).c_str(),
 					xmlGetLineNo(node));
 			return 1;
@@ -279,7 +279,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 			mval.lsw_param = p;
 		}
 		else {
-			sz_log(0, "Overlaping mapping for db: %d, addr: %d wth: addr: %d type: %d",
+			sz_log(1, "Overlaping mapping for db: %d, addr: %d wth: addr: %d type: %d",
 				db, address, it->first.address, it->first.vtype);
 			return 1;
 		}
@@ -300,7 +300,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 		s7map_key nkey(vt, address);
 		auto iret = vmap.find( nkey );
 		if (iret != vmap.end() && iret->first != nkey) {
-			sz_log(0, "ERROR: overlaping mappings in configuration");
+			sz_log(1, "ERROR: overlaping mappings in configuration");
 			return 1;
 		}
 
@@ -315,7 +315,7 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TPa
 			mval.msw_param = p;
 		}
 		else {
-			sz_log(0, "Wrong argument for attributte val_op");
+			sz_log(1, "Wrong argument for attributte val_op");
 			return 1;
 		}
 	}
@@ -349,7 +349,7 @@ int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* 
 			if (vval.lsw_param)
 				fv = (*pfv) * pow10(vval.lsw_param->GetPrec());
 			else {
-				sz_log(0, "ERROR: no param configured for value");
+				sz_log(1, "ERROR: no param configured for value");
 				return 1;
 			}
 			piv = reinterpret_cast<int*>(&fv);

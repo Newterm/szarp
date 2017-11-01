@@ -96,7 +96,7 @@ ParamDynamicTreeData IPKLoader::get_dynamic_tree()
 			try {
 				p->PrepareDefinable();
 			} catch( TCheckException& e ) {
-				sz_log(0,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
+				sz_log(1,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
 			}
 		}
 		if (p->IsInBase())
@@ -226,7 +226,7 @@ xmlNodePtr IPKLoader::create_node(xmlNodePtr parent, const std::wstring name)
 	for (n = parent->children; n; n = n->next) {
 		str = xmlGetProp(n, X"name");
 		if (!str) {
-			sz_log(0, "TREE not properly built");
+			sz_log(1, "TREE not properly built");
 			return NULL;
 		};
 		if (!strcmp((char *)str, (char *)(SC::S2U(name).c_str()))) {
@@ -259,7 +259,7 @@ xmlDocPtr IPKLoader::GetXMLDoc(AbstractNodesFilter &nf, const time_t& time, cons
 			try {
 				p->PrepareDefinable();
 			} catch( TCheckException& e ) {
-				sz_log(0,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
+				sz_log(1,"Invalid definable formula %s",SC::S2A(p->GetName()).c_str());
 			}
 		}
 		pcount++;

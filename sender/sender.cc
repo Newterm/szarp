@@ -543,7 +543,7 @@ int main(int argc, char *argv[])
 	/* Check for other copies of program. */
 	int pid;
 	if ((pid = check_for_other (argc, argv))) {
-		sz_log(0, "sender: another copy of program is running, pid %d, exiting", pid);
+		sz_log(1, "sender: another copy of program is running, pid %d, exiting", pid);
 		return 1;
 	}
 	arguments.no_daemon = 0;
@@ -563,14 +563,14 @@ int main(int argc, char *argv[])
 	if (log_value != NULL) {
 		free(log_value);
 	}
-	sz_log(0, "sender: started");
+	sz_log(1, "sender: started");
 
 	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
 	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
 	IPKContainer *ic = IPKContainer::GetObject();
 	TSzarpConfig *ipk = ic->GetConfig(SC::L2S(config_prefix));
 	if (ipk == NULL) {
-		sz_log(0, "Unable to load IPK for prefix %s", config_prefix);
+		sz_log(1, "Unable to load IPK for prefix %s", config_prefix);
 		return 1;
 	}
 	free(config_prefix);

@@ -29,7 +29,7 @@ bool TcpServer::handle_error( const bs::error_code& error )
 	if( !error ) 
 		return false;
 
-	sz_log(0, "TcpServer error: %s", error.message().c_str());
+	sz_log(1, "TcpServer error: %s", error.message().c_str());
 	return true;
 }
 
@@ -118,7 +118,7 @@ void TcpConnection::handle_read_line(const bs::error_code& error, size_t bytes )
 		emit_line_received( line );
 	} catch(const std::exception& e ) {
 		// we can catch here as boost signals and slots are in-place function calls by design
-		sz_log(0, "Exception occurred during emit_line_received: %s" , e.what());
+		sz_log(1, "Exception occurred during emit_line_received: %s" , e.what());
 	}
 
 	do_read_line();

@@ -250,7 +250,7 @@ int add_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'",
+		sz_log(1, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -304,7 +304,7 @@ int copy_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'",
+		sz_log(1, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -319,24 +319,24 @@ int copy_attribute(xmlDocPtr doc, xmlChar *xpath_expr,
 			xmlXPathObjectPtr xpath_cobj = xmlXPathEvalExpression(copy,
 					xpath_ctx);
 			if (xpath_cobj == NULL) {
-				sz_log(0, "Error evaluating expresion '%s'",
+				sz_log(1, "Error evaluating expresion '%s'",
 						SC::U2A(copy).c_str());
 				return 1;
 			}
 			if (!xpath_cobj || (xpath_cobj->nodesetval->nodeNr != 1)) {
-				sz_log(0, "Error, one object specified by expresion '%s' should exists",
+				sz_log(1, "Error, one object specified by expresion '%s' should exists",
 						SC::U2A(copy).c_str());
 				return 1;
 			}
 			xmlNodePtr cnode = xpath_cobj->nodesetval->nodeTab[0];
 			if (cnode->type != XML_ATTRIBUTE_NODE) {
-				sz_log(0, "Error, object specified by expresion '%s' must be an attribute",
+				sz_log(1, "Error, object specified by expresion '%s' must be an attribute",
 						SC::U2A(copy).c_str());
 				return 1;
 			}
 			if (!cnode->children || (cnode->children->type != XML_TEXT_NODE) ||
 					!cnode->children->content) {
-				sz_log(0, "Error, incorrect element pointed to by expression '%s'",
+				sz_log(1, "Error, incorrect element pointed to by expression '%s'",
 						SC::U2A(copy).c_str());
 				return 1;
 			}
@@ -385,7 +385,7 @@ int remove_xpath(xmlDocPtr doc, xmlChar *xpath_expr)
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'",
+		sz_log(1, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -422,12 +422,12 @@ int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 {
 	char *regx = strdup(SC::U2A(expresion).c_str());
 	if (strlen(regx) < 4) {
-		sz_log(0, "Error parsing substitute expresion '%s', expresion to short",
+		sz_log(1, "Error parsing substitute expresion '%s', expresion to short",
 				regx);
 		return 1;
 	}
 	if (regx[0] != 's') {
-		sz_log(0, "Error parsing substitute expresion '%s', first character should be 's'",
+		sz_log(1, "Error parsing substitute expresion '%s', first character should be 's'",
 				regx);
 		return 1;
 	}
@@ -435,7 +435,7 @@ int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 	delim = regx[1];
 	char *c = index(regx + 2, delim);
 	if (c == NULL) {
-		sz_log(0, "Error parsing substitute expresion '%s', delimiter character '%c' found only once",
+		sz_log(1, "Error parsing substitute expresion '%s', delimiter character '%c' found only once",
 				regx, delim);
 		return 1;
 	}
@@ -443,14 +443,14 @@ int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 	*pattern = strdup(regx + 2);
 	char *c2 = index(c + 1, delim);
 	if (c2 == NULL) {
-		sz_log(0, "Error parsing substitute expresion '%s', delimiter character '%c' found only twice",
+		sz_log(1, "Error parsing substitute expresion '%s', delimiter character '%c' found only twice",
 				regx, delim);
 		return 1;
 	}
 	*c2 = 0;
 	c2++;
 	if (*c2 != 0 ) {
-		sz_log(0, "Error parsing substitute expresion '%s', trailing characters",
+		sz_log(1, "Error parsing substitute expresion '%s', trailing characters",
 				regx);
 		return 1;
 
@@ -464,7 +464,7 @@ int compile_subst(xmlChar* expresion, re_pattern_buffer* preg,
 	preg->allocated = 0;
 	const char *err = 0;
 	if ((err = re_compile_pattern(*pattern, strlen(*pattern), preg)) != 0) {
-		sz_log(0, "Error compiling regular expresion '%s': %s",
+		sz_log(1, "Error compiling regular expresion '%s': %s",
 				*pattern, err);
 		return 1;
 	}
@@ -500,7 +500,7 @@ int process_regexp(xmlDocPtr doc, xmlChar *xpath_expr, xmlChar *regexp)
 	/* evaluate expresion */
 	xpath_obj = xmlXPathEvalExpression(xpath_expr, xpath_ctx);
 	if (xpath_obj == NULL) {
-		sz_log(0, "Error evaluating expresion '%s'",
+		sz_log(1, "Error evaluating expresion '%s'",
 				SC::U2A(xpath_expr).c_str());
 		return 1;
 	}
@@ -594,21 +594,21 @@ int make_link(xmlChar *prefix, xmlChar *old, xmlChar *name, xmlChar *result_pref
 	to = std::wstring(L"/opt/szarp/") + SC::U2S(result_prefix) + L"/szbase/" + toname;
 
 	if (szb_cc_parent(from)) {
-		sz_log(0, "Error creating parent dir for '%ls', errno %d (%s)", from.c_str(), errno, strerror(errno));
+		sz_log(1, "Error creating parent dir for '%ls', errno %d (%s)", from.c_str(), errno, strerror(errno));
 		return 1;
 	}
 
 	if (szb_cc_parent(to)) {
-		sz_log(0, "Error creating parent dir for '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
+		sz_log(1, "Error creating parent dir for '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
 		return 1;
 	}
 
 	if (unlink(SC::S2A(to).c_str()) && (errno != ENOENT)) {
-		sz_log(0, "Error removing '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
+		sz_log(1, "Error removing '%ls', errno %d (%s)", to.c_str(), errno, strerror(errno));
 		return 1;
 	}
 	if (symlink(SC::S2A(from).c_str(), SC::S2A(to).c_str())) {
-		sz_log(0, "Error creating link from '%ls' to '%ls', errno %d (%s)",
+		sz_log(1, "Error creating link from '%ls' to '%ls', errno %d (%s)",
 				from.c_str(), to.c_str(), errno, strerror(errno));
 		return 1;
 	}
@@ -909,7 +909,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 	/* get included configuration prefix */
 	prefix = xmlGetProp(cfg, BAD_CAST "prefix");
 	if (prefix == NULL) {
-		sz_log(0, "Error parsing <config> element - no 'prefix' attribute found, line %ld",
+		sz_log(1, "Error parsing <config> element - no 'prefix' attribute found, line %ld",
 				xmlGetLineNo(cfg));
 		return 1;
 	}
@@ -928,7 +928,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 	cur = xmlParseFile(c);
 
 	if (cur == NULL) {
-		sz_log(0, "Couldn't parse file '%s'", c);
+		sz_log(1, "Couldn't parse file '%s'", c);
 		return 1;
 	}
 	free(c);
@@ -947,13 +947,13 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 		xpath_expr = xmlGetProp(node, BAD_CAST "xpath");
 		if (!xmlStrcmp(node->name, BAD_CAST "attribute")) {
 			if (xpath_expr == NULL) {
-				sz_log(0, "Error, attribute 'xpath' not found for element 'attribute' on line %ld",
+				sz_log(1, "Error, attribute 'xpath' not found for element 'attribute' on line %ld",
 					xmlGetLineNo(node));
 				return 1;
 			}
 			xmlChar *name = xmlGetProp(node, BAD_CAST "name");
 			if (name == NULL) {
-				sz_log(0, "Error, attribute 'name' not found for element 'attribute' on line %ld",
+				sz_log(1, "Error, attribute 'name' not found for element 'attribute' on line %ld",
 					xmlGetLineNo(node));
 				return 1;
 			}
@@ -961,11 +961,11 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 			xmlChar *copy = xmlGetProp(node, BAD_CAST "copy");
 			if ((value == NULL) && (copy == NULL)) {
 
-				sz_log(0, "Error, attribute 'value' or 'copy' not found for element 'attribute' on line %ld",
+				sz_log(1, "Error, attribute 'value' or 'copy' not found for element 'attribute' on line %ld",
 					xmlGetLineNo(node));
 				return 1;
 			} else if (value && copy) {
-				sz_log(0, "Error, only one of 'value' and 'copy' attributes allowed for element 'attribute' on line %ld",
+				sz_log(1, "Error, only one of 'value' and 'copy' attributes allowed for element 'attribute' on line %ld",
 						xmlGetLineNo(node));
 			}
 			if (value && add_attribute(cur, xpath_expr, name, value))
@@ -982,7 +982,7 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 		}
 		if (!xmlStrcmp(node->name, BAD_CAST "remove")) {
 			if (xpath_expr == NULL) {
-				sz_log(0, "Error, attribute 'xpath' not found for element 'remove' on line %ld",
+				sz_log(1, "Error, attribute 'xpath' not found for element 'remove' on line %ld",
 					xmlGetLineNo(node));
 				return 1;
 			}
@@ -998,14 +998,14 @@ int add_config(xmlDocPtr doc, xmlNodePtr cfg, int is_primary, xmlChar *result_pr
 			continue;
 		}
 		if (xpath_expr == NULL) {
-			sz_log(0, "Error, attribute 'xpath' not found for element 'regexp' on line %ld",
+			sz_log(1, "Error, attribute 'xpath' not found for element 'regexp' on line %ld",
 					xmlGetLineNo(node));
 			return 1;
 		}
 		if ((node->children == NULL) ||
 				(node->children->type != XML_TEXT_NODE) ||
 				(node->children->content == NULL)) {
-			sz_log(0, "Error, no text content for element 'regexp' on line %ld",
+			sz_log(1, "Error, no text content for element 'regexp' on line %ld",
 					xmlGetLineNo(node));
 			return 1;
 		}
@@ -1168,14 +1168,14 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 	xmlChar* c;
 	c = xmlGetProp(v, BAD_CAST "id");
 	if (c == NULL) {
-		sz_log(0, "Attribute 'id' not found in element 'variable' (line %ld)",
+		sz_log(1, "Attribute 'id' not found in element 'variable' (line %ld)",
 				xmlGetLineNo(v));
 		return 1;
 	}
 	int i = atoi((char*)c);
 #if 0	/* now variables are global and can be redeclared */
 	if (vars.find(i) != vars.end()) {
-		sz_log(0, "Double 'id' for variable in template ('id' is '%s', converted to %d, line %ld)\n",
+		sz_log(1, "Double 'id' for variable in template ('id' is '%s', converted to %d, line %ld)\n",
 				c, i, xmlGetLineNo(v));
 		return 1;
 	}
@@ -1195,7 +1195,7 @@ int add_template_variable(vars_map_t& vars, xmlNodePtr v,
 		xmlXPathObjectPtr obj;
 		obj = xmlXPathEvalExpression(c, ctx);
 		if ((obj == NULL) || (obj->type != XPATH_STRING)) {
-			sz_log(0, "XPath result for '%s' (line %ld) is not a string",
+			sz_log(1, "XPath result for '%s' (line %ld) is not a string",
 					c, xmlGetLineNo(v));
 			return 1;
 		}
@@ -1345,7 +1345,7 @@ int process_template(xmlNodePtr templ, xmlNodePtr drawdefinable,
 	xmlChar *name = xmlGetProp(templ, BAD_CAST "name");
 	xmlChar *xpath = xmlGetProp(templ, BAD_CAST "xpath");
 	if (xpath == NULL) {
-		sz_log(0, "'xpath' attribute for element 'template' not found in config file (line %ld)",
+		sz_log(1, "'xpath' attribute for element 'template' not found in config file (line %ld)",
 				xmlGetLineNo(templ));
 		return 1;
 	}
@@ -1465,7 +1465,7 @@ int process_file(char *path, bool verbose, bool force)
 	/* load config file */
 	cfg = xmlParseFile(path);
 	if (cfg == NULL) {
-		sz_log(0, "Couldn't open file '%s'", path);
+		sz_log(1, "Couldn't open file '%s'", path);
 		return 1;
 	}
 
@@ -1509,7 +1509,7 @@ int process_file(char *path, bool verbose, bool force)
 	ASSERT(xpath_obj != NULL);
 
 	if (!xpath_obj->nodesetval) {
-		sz_log(0, "Error parsing config - '/aggregate/config' not found");
+		sz_log(1, "Error parsing config - '/aggregate/config' not found");
 		return 1;
 	}
 
@@ -1636,7 +1636,7 @@ int process_file(char *path, bool verbose, bool force)
 
 		/* save result to file */
 		if (xmlSaveFormatFile(out_path, output, 1) < 0) {
-			sz_log(0, "Error saving file %s", out_path);
+			sz_log(1, "Error saving file %s", out_path);
 			return 1;
 		}
 	} else {

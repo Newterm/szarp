@@ -75,7 +75,7 @@ int main(int argc, const char *argv[])
 	SampleDaemon dmn;
 
 	if( dmn.Init( argc , argv ) ) {
-		sz_log(0,"Cannot start %s daemon",dmn.Name());
+		sz_log(1,"Cannot start %s daemon",dmn.Name());
 		return 1;
 	}
 

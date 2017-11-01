@@ -69,7 +69,7 @@ int compile_lua_param(lua_State *lua, TParam *p) {
 	if (compile_lua_formula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str(), true))
 		lua_function_reference = luaL_ref(lua, LUA_REGISTRYINDEX);
 	else {
-		sz_log(0, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
+		sz_log(1, "Error compiling param %ls: %s\n", p->GetName().c_str(), lua_tostring(lua, -1));
 		lua_function_reference = LUA_REFNIL;
 	}
 	p->SetLuaParamRef(lua_function_reference);

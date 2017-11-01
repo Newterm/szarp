@@ -220,14 +220,14 @@ int DbDaemon::XMLCheckExpire(xmlNodePtr device_node)
 	char *e;
 	long l = strtol((char *)c, &e, 0);
 	if ((*c == 0) || (*e != 0)) {
-		sz_log(0, "incorrect value '%s' for db:expire, number expected",
+		sz_log(1, "incorrect value '%s' for db:expire, number expected",
 				(char *)c);
 		xmlFree(c);
 		return 1;
 	}
 	xmlFree(c);
 	if (l < 0) {
-		sz_log(0, "value '%ld' for db:expire must be non-negative", l);
+		sz_log(1, "value '%ld' for db:expire must be non-negative", l);
 		return 1;
 	}
 	m_expire = (int)l;
@@ -267,7 +267,7 @@ struct ParamDesc * DbDaemon::ConfigureParam(TParam * param, xmlNodePtr param_nod
 {
 	xmlChar* dbparam = xmlGetNsProp(param_node, BAD_CAST "param", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (dbparam == NULL) {
-		sz_log(0, "No extra:param attribute for parameter %s",
+		sz_log(1, "No extra:param attribute for parameter %s",
 		       	SC::S2U(param->GetName()).c_str());
 		return NULL;
 	}
@@ -280,7 +280,7 @@ struct ParamDesc * DbDaemon::ConfigureParam(TParam * param, xmlNodePtr param_nod
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	if (!szbase->FindParam(pd->dbparam, bp)) {
-		sz_log(0, "Param with name '%s' not found for parameter %s", 
+		sz_log(1, "Param with name '%s' not found for parameter %s", 
 			SC::S2U(pd->dbparam).c_str(), SC::S2U(param->GetName()).c_str());
 		delete pd;
 		return NULL;
@@ -320,7 +320,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 
 	if (XMLCheckExpire(xp_ctx->node)) {
 		xmlXPathFreeContext(xp_ctx);
-		sz_log(0, "Configuration error (expire attribute), exiting");
+		sz_log(1, "Configuration error (expire attribute), exiting");
 		return 1;
 	}
 
@@ -344,7 +344,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 
 		struct ParamDesc * pd = ConfigureParam(p, node, szbase);
 		if (NULL == pd) {
-			sz_log(0, "Param configuration error for %s, exiting",
+			sz_log(1, "Param configuration error for %s, exiting",
 			    SC::S2U(p->GetName()).c_str());
 			return 1;
 		}
@@ -466,21 +466,25 @@ int main(int argc, char *argv[])
 	cfg = new DaemonConfig("dbdmn");
 	ASSERT(cfg != NULL);
 	
-	if (cfg->Load(&argc, argv, 0)) // 0 - dont call libpar_done
+	if (cfg->Load(&argc, argv, 0)) { // 0 - dont call libpar_done
+		sz_log(0, "Error while loading configuration, exiting.");
 		return 1;
+	}
 	
 	dmn = new DbDaemon(cfg);
 	ASSERT(dmn != NULL);
 	
 	if (dmn->ParseConfig(cfg)) {
+		sz_log(0, "Error while parsing configuration, exiting.");
 		return 1;
 	}
 	libpar_done();
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		ipc = new IPCHandler(cfg);
+	} catch(...) {
+		sz_log(0, "Error initializing IPC.");
+		return 1;
 	}
 	cfg->CloseXML(1);
 

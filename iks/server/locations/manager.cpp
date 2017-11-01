@@ -23,7 +23,7 @@ void LocationsMgr::add_locations( const CfgSections& cfg )
 		try {
 			add_location( itr->first , itr->second );
 		} catch( config_error& e ) {
-			sz_log(0,"Invalid configuration at %s: %s" , itr->first.c_str() , e.what() );
+			sz_log(1,"Invalid configuration at %s: %s" , itr->first.c_str() , e.what() );
 		}
 }
 

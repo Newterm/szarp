@@ -9,7 +9,7 @@ SOURCE_DIR=@srcdir@
 INCLUDE_DIR=$(SOURCE_DIR)/include
 
 LDADD=
-AM_CPPFLAGS = -I$(INCLUDE_DIR) @BOOST_CPPFLAGS@ @XML_CFLAGS@ -DYYLMAX=32768
+AM_CPPFLAGS = -I$(INCLUDE_DIR) @BOOST_CPPFLAGS@ @XML_CFLAGS@ -DYYLMAX=32768 -DSD_JOURNAL_SUPPRESS_LOCATION
 
 
 LEX=@LEX@
@@ -55,6 +55,13 @@ noinst_HEADERS = \
 		 $(INCLUDE_DIR)/ipctools.h \
 		 $(INCLUDE_DIR)/conversion.h \
 		 $(INCLUDE_DIR)/mingw32_missing.h 
+
+if MINGW32_OPT
+libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@
+else
+libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@ -lsystemd
+endif
+
  
 EXTRA_DIST = \
              libparnt.lex 

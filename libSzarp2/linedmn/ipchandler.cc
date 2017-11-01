@@ -66,29 +66,29 @@ int IPCHandler::Init()
 
 	key = ftok(m_cfg->GetLinexPath(), m_cfg->GetLineNumber());
 	if (key == -1) {
-		sz_log(0, "ftok() error (path: %s), errno %d", m_cfg->GetLinexPath(), errno);
+		sz_log(1, "ftok() error (path: %s), errno %d", m_cfg->GetLinexPath(), errno);
 		return 1;
 	}
 	m_shm_d = shmget(key, sizeof(short) * m_params_count, 00600);
 	if (m_shm_d == -1) {
-		sz_log(0, "shmget() error (key: %08x), errno %d", key, errno);
+		sz_log(1, "shmget() error (key: %08x), errno %d", key, errno);
 		return 1;
 	}
 
 	m_segment = (short *) shmat(m_shm_d, NULL, 0);
 	if ( m_segment == (short *)(-1) ) {
-		sz_log(0, "shmat() error, errno %d", errno);
+		sz_log(1, "shmat() error, errno %d", errno);
 		return 1;
 	}
 
 	key = ftok(m_cfg->GetParcookPath(), SEM_PARCOOK);
 	if (key == -1) {
-		sz_log(0, "ftok('%s', SEM_PARCOOK), errno %d", m_cfg->GetLinexPath(), errno);
+		sz_log(1, "ftok('%s', SEM_PARCOOK), errno %d", m_cfg->GetLinexPath(), errno);
 		return 1;
 	}
 	m_sem_d = semget(key, SEM_LINE + 2 * m_cfg->GetLineNumber(), 00600);
 	if (m_sem_d == -1) {
-		sz_log(0, "semget(%x, %d) error, errno %d", 
+		sz_log(1, "semget(%x, %d) error, errno %d", 
 				key, SEM_LINE + 2 * m_cfg->GetLineNumber(), errno);
 		return 1;
 	}
@@ -98,12 +98,12 @@ int IPCHandler::Init()
 
 	key = ftok(m_cfg->GetParcookPath(), MSG_SET);
 	if (key == -1) {
-		sz_log(0, "ftok('%s', MSG_SET), errno %d", m_cfg->GetLinexPath(), errno);
+		sz_log(1, "ftok('%s', MSG_SET), errno %d", m_cfg->GetLinexPath(), errno);
 		return 1;
 	}
 	m_msgset_d = msgget(key, 00600);
 	if (m_msgset_d == -1) {
-		sz_log(0, "msgget() (MSG_SET) error, errno %d", errno);
+		sz_log(1, "msgget() (MSG_SET) error, errno %d", errno);
 		return 1;
 	}
 

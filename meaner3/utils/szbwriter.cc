@@ -557,7 +557,7 @@ int SzbaseWriter::process_line(char *line)
 	tokenize(line, &toks, &tokc);
 
 	if (tokc != 7 && tokc != 8) {
-		sz_log(0, "szbwriter: incorrect tokens number (%d - expected 7 or 8) in line '%s'", 
+		sz_log(1, "szbwriter: incorrect tokens number (%d - expected 7 or 8) in line '%s'", 
 				tokc, line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
@@ -566,31 +566,31 @@ int SzbaseWriter::process_line(char *line)
 	char *name = toks[0];
 	int year = atoi(toks[1]);
 	if (year <= 1970) {
-		sz_log(0, "szbwriter: incorrect year in line '%s'", line);
+		sz_log(1, "szbwriter: incorrect year in line '%s'", line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
 	int month = atoi(toks[2]);
 	if ((month < 1) || (month > 12)) {
-		sz_log(0, "szbwriter: incorrect month in line '%s'", line);
+		sz_log(1, "szbwriter: incorrect month in line '%s'", line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
 	int day = atoi(toks[3]);
 	if ((day < 1) || (day > 31)) {
-		sz_log(0, "szbwriter: incorrect day in line '%s'", line);
+		sz_log(1, "szbwriter: incorrect day in line '%s'", line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
 	int hour = atoi(toks[4]);
 	if ((hour < 0) || (hour > 23)) {
-		sz_log(0, "szbwriter: incorrect hour in line '%s'", line);
+		sz_log(1, "szbwriter: incorrect hour in line '%s'", line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}
 	int min = atoi(toks[5]);
 	if ((min < 0) || (min > 59)) {
-		sz_log(0, "szbwriter: incorrect min in line '%s'", line);
+		sz_log(1, "szbwriter: incorrect min in line '%s'", line);
 		tokenize(NULL, &toks, &tokc);
 		return 1;
 	}

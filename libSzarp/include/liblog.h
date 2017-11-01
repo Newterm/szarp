@@ -51,7 +51,7 @@ void sz_log_info(int info);
 
 namespace szlog {
 
-void init(const ArgsManager&);
+void init(const ArgsManager&, const std::string&);
 
 class Logger {
 	struct LogEntry {
@@ -66,14 +66,7 @@ class Logger {
 	std::shared_ptr<LogHandler> _logger;
 
 
-	void log(std::shared_ptr<LogEntry> msg) {
-		std::atomic_signal_fence(std::memory_order_relaxed);
-		if (msg->_p > treshold) return;
-		if (_logger)
-			_logger->log(std::move(msg->_str.str()), msg->_p);
-		else
-			std::cout << std::move(msg->_str.str()) << std::endl;
-	}
+	void log(std::shared_ptr<LogEntry> msg);
 
 	void log_now(std::shared_ptr<LogEntry> msg) {
 		log(msg);
@@ -93,6 +86,10 @@ public:
 	template <typename T>
 	void set_logger(std::shared_ptr<T> new_logger) {
 		_logger = new_logger;
+	}
+
+	std::shared_ptr<LogHandler> get_logger() const {
+		return _logger;
 	}
 
 	void set_log_treshold(szlog::priority p) {

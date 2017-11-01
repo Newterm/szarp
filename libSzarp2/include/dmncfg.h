@@ -25,6 +25,7 @@
 #define IPKEXTRA_NAMESPACE_STRING "http://www.praterm.com.pl/SZARP/ipk-extra"
 
 #include "szarp_config.h"
+#include "argsmgr.h"
 
 /**
  * This class implements configuration loader for SZARP line daemon. It loads
@@ -124,7 +125,9 @@ public:
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
-	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = NULL , int force_device_index = -1, void* async_logging_context = NULL);
+	virtual int Load(int *argc, char **argv, int libpardone = 1, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
+	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
+
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
 	int GetLineNumber();
@@ -215,7 +218,7 @@ protected:
 	/** Parses command line parameters. Internal use.
 	 * @return 0 on success, 1 on error or if usage info was printed
 	 */
-	int ParseCommandLine(int argc, char**argv);
+	void ParseCommandLine(const ArgsManager&);
 	/** Loads IPK configuration from XML file. Internal use.
 	 * @return 0 on success, 1 on error
 	 */
@@ -250,6 +253,7 @@ private:
 	bool m_load_called;	/**< true if Load() method was already called */
 	bool m_load_xml_called;	/**< true if LoadXML() method was already called */
 
+	std::string m_prefix = "";
 	std::string m_parcook_path;	/**< path to parcook config file, used for IPC
 				  identifiers */
 	std::string m_linex_path;	/**< path to lineX.cfg file, used for IPC

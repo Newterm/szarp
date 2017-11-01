@@ -20,15 +20,52 @@ std::atomic<bool> logger_should_exit{ false };
 
 std::string logfile;
 
-void prefork() {}
+void prefork() {
+	szlog::logger.reset();
+}
 
-void parent_postfork() {}
+void parent_postfork() {
+}
 
 void child_postfork() {
-	szlog::logger->reinit();
 }
 
 } // annon namespace
+
+void COutLogger::log(const std::string& msg, szlog::priority p) const {
+	log(msg.c_str(), p);
+}
+
+
+void COutLogger::log(const char* msg, szlog::priority p) const {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> lock(_msg_mutex);
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	auto localtime_t = std::localtime(&in_time_t);
+
+	std::cout << format_date(localtime_t) << " " << msg_priority_for_level(p) << " " << msg << std::endl;
+}
+
+void JournaldLogger::log(const std::string& msg, szlog::priority p) const {
+	log(msg.c_str(), p);
+}
+
+void JournaldLogger::log(const char* msg, szlog::priority p) const {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> lock(_msg_mutex);
+
+	#ifndef MINGW32
+		sd_journal_send(
+			"PRIORITY=%d", static_cast<std::underlying_type<szlog::priority>::type>(p),
+			"SYSLOG_IDENTIFIER=%s", name.c_str(),
+			"MESSAGE=%s", msg,
+			NULL
+		);
+	#else
+		std::cout << "<" << static_cast<std::underlying_type<szlog::priority>::type>(p) << "> " << msg << std::endl;
+	#endif
+}
 
 void FileLogger::blockSignals() {
 	pthread_atfork(prefork, parent_postfork, child_postfork);
@@ -74,7 +111,7 @@ void FileLogger::log_start(const std::string& filename) {
 	}
 }
 
-void FileLogger::log(std::string&& msg, szlog::priority p) const {
+void FileLogger::log(const std::string& msg, szlog::priority p) const {
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	{
 		std::lock_guard<std::mutex> lock(_msg_mutex);
@@ -88,6 +125,10 @@ void FileLogger::log(std::string&& msg, szlog::priority p) const {
 		std::unique_lock<std::mutex> lk(_msg_mutex);
 		cv.wait(lk, [this]{ return msg_q.empty() || logger_should_exit; });
 	}
+}
+
+void FileLogger::log(const char* msg, szlog::priority p) const {
+	log(std::string(msg));
 }
 
 FileLogger::FileLogger(const std::string& filename) {

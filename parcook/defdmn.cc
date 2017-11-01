@@ -91,10 +91,14 @@ int ipc_value(lua_State *lua);
 
 int main(int argc, char ** argv)
 {
-	Defdmn& dmn = Defdmn::getObject();
-	dmn.configure(&argc, argv);
+	try {
+		Defdmn& dmn = Defdmn::getObject();
+		dmn.configure(&argc, argv);
 
-	dmn.go();
+		dmn.go();
+	} catch (const std::exception& e) {
+		sz_log(0, "Error: %s, exiting.", e.what());
+	}
 }
 
 Defdmn::Defdmn(): m_ipc(nullptr), m_cfg(nullptr), m_zmq(nullptr), m_base(nullptr), m_event_base(nullptr), param_info() {}
@@ -119,8 +123,7 @@ void Defdmn::executeScripts() {
 			i->executeAndUpdate(*m_zmq);
 			if (connectToParcook) i->sendValueToParcook(m_ipc->m_read);
 		} catch (SzException &e) {
-			sz_log(0, "%s", e.what());
-			throw;
+			sz_log(1, "%s", e.what());
 		}
 	}
 }
@@ -164,17 +167,12 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	m_cfg->GetIPK()->SetConfigId(0);
 
-	m_ipc.reset(new IPCHandler(m_cfg.get()));
-
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init()) {
-			sz_log(0, "Could not initialize IPC");
-		} else {
-			connectToParcook = true;
-			sz_log(2, "IPC initialized successfully");
-		}
-	} else {
-		sz_log(2, "Single mode, ipc not intialized!!!");
+	try {
+		m_ipc.reset(new IPCHandler(m_cfg.get()));
+		sz_log(2, "IPC initialized successfully");
+		connectToParcook = true;
+	} catch(...) {
+		sz_log(1, "Could not initialize IPC");
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
