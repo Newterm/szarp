@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: raporter3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-25 11:47+0200\n"
+"POT-Creation-Date: 2017-11-07 12:06+0100\n"
 "PO-Revision-Date: 2008-09-15 15:43+0100\n"
 "Last-Translator: Pawe³ Pa³ucha <pawel@praterm.com.pl>\n"
 "Language-Team: \n"
@@ -17,13 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: repapp.cpp:188
-#, fuzzy
+#: repapp.cpp:191
 msgid "Reporter 4"
 msgstr "Raporter 4"
 
 #: reporter_view.cpp:68
-#, fuzzy
 msgid "Reporter"
 msgstr "Raporter"
 
@@ -79,8 +77,11 @@ msgstr "&Pomoc\tF1"
 msgid "&About"
 msgstr "&O autorach"
 
-#: reporter_view.cpp:120 reporter_view.cpp:121
-#, fuzzy
+#: reporter_view.cpp:120
+msgid "&Reporter"
+msgstr "&Raporter"
+
+#: reporter_view.cpp:121
 msgid "&Reports"
 msgstr "&Raporty"
 
@@ -117,7 +118,6 @@ msgid ". Do you want to replace existing template?"
 msgstr ". Czy chcesz zast±piæ istniej±cy wzorzec?"
 
 #: reporter_view.cpp:241
-#, fuzzy
 msgid "Report overwrite"
 msgstr "Nadpisanie wzorca"
 
@@ -142,7 +142,6 @@ msgid "Start\tSpace"
 msgstr "Start\tSpace"
 
 #: reporter_view.cpp:408
-#, fuzzy
 msgid "Server error."
 msgstr "&Serwer"
 
@@ -163,7 +162,6 @@ msgid "Operation failed."
 msgstr "Nie uda³o siê wykonaæ operacji."
 
 #: report_edit.cpp:55
-#, fuzzy
 msgid "Report edit"
 msgstr "Raporter->Edytor"
 
@@ -192,7 +190,6 @@ msgid "Delete"
 msgstr "Usuñ"
 
 #: report_edit.cpp:114
-#, fuzzy
 msgid "Reporter->Editor->Add"
 msgstr "Raporter->Edytor->Dodaj"
 
