@@ -3,14 +3,14 @@
 
 #include "szarp_config.h"
 #include "szbase/szbdate.h"
-#include "sz4/base.h"
 
 #include "utils/config.h"
 #include "utils/exception.h"
 #include "data/probe_type.h"
 
-class SzbaseObserverImpl;
-typedef std::shared_ptr<SzbaseObserverImpl> SzbaseObserverToken;
+#include "iks_live_cache.h"
+
+using SzbaseObserverToken = std::shared_ptr<Observer>;
 
 enum class SearchDir {
 	LEFT,
@@ -49,10 +49,13 @@ public:
 	 */
 	time_t get_latest( const std::string& param , ProbeType type ) const;
 
+	double get_updated_value( const std::string& param , ProbeType ptype ) const;
+
 	/**
 	 * Gets average from exact given time with specified probe
 	 */
 	double get_avg( const std::string& param , time_t time , ProbeType type ) const;
+	double get_live_val(const std::string& param) const { return live_values_holder.get_value(param); }
 
 	std::string search_data( const std::string& param ,
 						     const std::string& from ,
@@ -70,8 +73,6 @@ public:
 						  ProbeType pt
 						  ) const;
 
-	SzbaseObserverToken register_observer( const std::string& param , std::function<void( void )> );
-
 	std::string add_param( const std::string& param
 						 , const std::string& base
 						 , const std::string& formula
@@ -82,9 +83,18 @@ public:
 
 	void remove_param(const std::string& base , const std::string& param);
 
+	SzbaseObserverToken register_observer( const std::string& param , boost::optional<ProbeType> pt, std::function<void( void )> );
+
+	void deregister_param(const std::string& name);
+
 	const std::string& get_base_name() const;
 private:
 	std::wstring convert_string( const std::string& param ) const;
+
+	// base -> parhub url
+	static std::unordered_map<std::string, std::string> parhub_urls;
+	std::unique_ptr<ParhubPoller> live_updater;
+	LiveCache live_values_holder;
 
 	static void purge_cache();
 
@@ -103,7 +113,7 @@ public:
 
 };
 
-class SzbaseObserverImpl : public sz4::param_observer {
+class SzbaseObserverImpl : public sz4::param_observer, public Observer {
 	std::wstring param_name;
 	IPKContainer* ipk;
 	sz4::base* base;

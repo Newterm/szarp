@@ -30,6 +30,8 @@ libiks_server_data_a_SOURCES = \
 	param.cpp \
 	params.cpp \
 	params_updater.cpp \
+	parhub_poller.cpp \
+	iks_live_cache.cpp \
 	set.cpp \
 	sets.cpp \
 	vars.cpp \
