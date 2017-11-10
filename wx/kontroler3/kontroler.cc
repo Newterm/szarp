@@ -39,9 +39,7 @@
 #include "szapp.h"
 #include "szframe.h"
 
-#ifndef MINGW32
 #include "../../resources/wx/icons/kontr64.xpm"
-#endif
 
 #include <wx/listimpl.cpp>
 WX_DEFINE_LIST(szProbeList);
