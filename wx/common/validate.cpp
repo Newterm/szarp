@@ -3,7 +3,7 @@
  *
  * Patryk Kulpanowski <pkulpanowski@newterm.pl>
  */
-
+#ifndef _WIN32
 #include "validate.h"
 
 int ValidateConfig(wxString path) {
@@ -28,3 +28,4 @@ int ValidateConfig(wxString path) {
 
 	return ret;
 }
+#endif

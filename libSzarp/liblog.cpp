@@ -57,11 +57,15 @@ std::mutex log_mutex;
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY)
 {
 	szlog::log().set_log_treshold(level);
+#ifndef _WIN32
 	if (logfile) {
 		szlog::log().set_logger<szlog::JournaldLogger>(std::string(logfile));
 	} else {
 		szlog::log().set_logger<szlog::COutLogger>();
 	}
+#else
+	szlog::log().set_logger<szlog::COutLogger>();
+#endif
 
 	return level;
 }
@@ -70,6 +74,7 @@ namespace szlog {
 
 void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	auto log_type = args_mgr.get<std::string>("logger");
+#ifndef _WIN32
 	if (log_type) {
 		if (*log_type == "cout") {
 			log().set_logger<COutLogger>();
@@ -84,6 +89,9 @@ void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	} else {
 		log().set_logger<JournaldLogger>(logtag);
 	}
+#else
+	log().set_logger<COutLogger>();
+#endif
 
 	auto log_level = args_mgr.get<int>("log_level").get_value_or(2);
 
@@ -105,12 +113,16 @@ void Logger::log(std::shared_ptr<LogEntry> msg) {
 }
 
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY, void *) {
+#ifndef _WIN32
 	if (logname != NULL) {
 		auto pname = std::string(logname);
 		szlog::log().set_logger<szlog::JournaldLogger>(pname);
 	} else {
 		szlog::log().set_logger<szlog::COutLogger>();
 	}
+#else
+	szlog::log().set_logger<szlog::COutLogger>();
+#endif
 
 	szlog::log().set_log_treshold(level);
 	return level;

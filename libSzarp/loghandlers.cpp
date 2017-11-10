@@ -55,28 +55,31 @@ void JournaldLogger::log(const char* msg, szlog::priority p) const {
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 
-	#ifndef MINGW32
+#ifndef MINGW32
 		sd_journal_send(
 			"PRIORITY=%d", static_cast<std::underlying_type<szlog::priority>::type>(p),
 			"SYSLOG_IDENTIFIER=%s", name.c_str(),
 			"MESSAGE=%s", msg,
 			NULL
 		);
-	#else
+#else
 		std::cout << "<" << static_cast<std::underlying_type<szlog::priority>::type>(p) << "> " << msg << std::endl;
-	#endif
+#endif
 }
 
 void FileLogger::blockSignals() {
+#ifndef _WIN32
 	pthread_atfork(prefork, parent_postfork, child_postfork);
 
 	// block all signals and close after destructor is called (e.g. exit handler)
 	sigset_t mask;
 	sigfillset(&mask);
 	sigprocmask(SIG_SETMASK, &mask, NULL);
+#endif
 }
 
 void FileLogger::processMessages(std::ofstream& file) {
+#ifndef _WIN32
 	if (!msg_q.empty()) {
 		auto now = std::chrono::system_clock::now();
 		auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -91,9 +94,11 @@ void FileLogger::processMessages(std::ofstream& file) {
 
 		msg_q.clear();
 	}
+#endif
 }
 
 void FileLogger::log_start(const std::string& filename) {
+#ifndef _WIN32
 	std::lock_guard<std::mutex> exit_lock(_filelogger_exit_mutex);
 
 	blockSignals();
@@ -109,9 +114,11 @@ void FileLogger::log_start(const std::string& filename) {
 
 		cv.notify_all();
 	}
+#endif
 }
 
 void FileLogger::log(const std::string& msg, szlog::priority p) const {
+#ifndef _WIN32
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	{
 		std::lock_guard<std::mutex> lock(_msg_mutex);
@@ -125,13 +132,17 @@ void FileLogger::log(const std::string& msg, szlog::priority p) const {
 		std::unique_lock<std::mutex> lk(_msg_mutex);
 		cv.wait(lk, [this]{ return msg_q.empty() || logger_should_exit; });
 	}
+#endif
 }
 
 void FileLogger::log(const char* msg, szlog::priority p) const {
+#ifndef _WIN32
 	log(std::string(msg));
+#endif
 }
 
 FileLogger::FileLogger(const std::string& filename) {
+#ifndef _WIN32
 	// if not absolute path, force /var/log/szarp
 	if (filename.front() != '/') {
 		logfile = "/var/log/szarp/"+filename+".log";
@@ -141,18 +152,22 @@ FileLogger::FileLogger(const std::string& filename) {
 
 	logger_thread = std::thread([this](){ log_start(logfile); });
 	logger_thread.detach();
+#endif
 }
 
 
 FileLogger::~FileLogger() {
+#ifndef _WIN32
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	logger_should_exit = true;
 	_msg_mutex.unlock();
 	cv.notify_all();
 	_filelogger_exit_mutex.lock();
+#endif
 }
 
 void FileLogger::reinit() {
+#ifndef _WIN32
 	std::atomic_signal_fence(std::memory_order_relaxed);
 
 	_msg_mutex.unlock();
@@ -166,6 +181,7 @@ void FileLogger::reinit() {
 	logger_thread.detach();
 
 	_msg_mutex.unlock();
+#endif
 }
 
 } // namespace szlog

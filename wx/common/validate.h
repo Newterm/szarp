@@ -3,7 +3,7 @@
  *
  * Patryk Kulpanowski <pkulpanowski@newterm.pl>
  */
-
+#ifndef _WIN32
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -13,3 +13,4 @@
 /** Function to validate given config using i2smo
  * @param path path to config */
 int ValidateConfig(wxString path);
+#endif
