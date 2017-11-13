@@ -22,7 +22,7 @@ void FileloggerTest::test() {
 	const std::string LOGFILE = "/tmp/test.log";
 
 	szlog::log().set_logger<szlog::FileLogger>(LOGFILE);
-	szlog::log() << szlog::CRITICAL << "0" << szlog::flush;
+	szlog::log() << szlog::critical << "0" << szlog::flush;
 
 	if ((fork()) > 0) {
 		/* parent */
@@ -30,7 +30,7 @@ void FileloggerTest::test() {
 
 	} else {
 		/* child */
-		szlog::log() << szlog::CRITICAL << "msg from child :)" << szlog::flush;
+		szlog::log() << szlog::critical << "msg from child :)" << szlog::flush;
 	
 		exit(0);
 	}

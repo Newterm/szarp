@@ -200,15 +200,15 @@ Logger& Logger::operator<<(const szlog::str_mod& m) {
 
 priority PriorityForLevel(int level) {
 	if (level == 0) {
-		return szlog::CRITICAL;
+		return szlog::critical;
 	} else if (level <= 2) {
-		return szlog::ERROR;
+		return szlog::error;
 	} else if (level <= 5) {
-		return szlog::WARNING;
+		return szlog::warning;
 	} else if (level <= 7) {
-		return szlog::INFO;
+		return szlog::info;
 	} else {
-		return szlog::DEBUG;
+		return szlog::debug;
 	}
 }
 
@@ -232,15 +232,15 @@ std::string format_date(tm* localtime_t) {
 
 const std::string msg_priority_for_level(szlog::priority p) {
 	switch (p) {
-	case szlog::DEBUG:
+	case szlog::debug:
 		return "DEBUG";
-	case szlog::INFO:
+	case szlog::info:
 		return "INFO";
-	case szlog::WARNING:
+	case szlog::warning:
 		return "WARN";
-	case szlog::ERROR:
+	case szlog::error:
 		return "ERROR";
-	case szlog::CRITICAL:
+	case szlog::critical:
 		return "CRITICAL";
 	}
 

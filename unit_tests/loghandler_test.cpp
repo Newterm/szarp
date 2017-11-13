@@ -11,8 +11,8 @@ public:
 	mutable bool msg_logged = false;
 	mutable std::string _msg = "";
 
-	void log(const std::string& msg, szlog::priority p = szlog::priority::INFO) const override { msg_logged = true; _msg = msg; }
-	void log(const char* msg, szlog::priority p = szlog::priority::INFO) const override { log(std::string(msg), p); }
+	void log(const std::string& msg, szlog::priority p = szlog::priority::info) const override { msg_logged = true; _msg = msg; }
+	void log(const char* msg, szlog::priority p = szlog::priority::info) const override { log(std::string(msg), p); }
 
 	void reinit() {
 		reinit_called = true;
@@ -35,7 +35,7 @@ void LogHandlerTest::test() {
 	szlog::log().set_logger(lh);
 	szlog::log().set_log_treshold(2);
 
-	szlog::log() << szlog::INFO << "This should not be logged" << szlog::flush;
+	szlog::log() << szlog::info << "This should not be logged" << szlog::flush;
 
 	CPPUNIT_ASSERT(!lh->msg_logged);
 
@@ -44,7 +44,7 @@ void LogHandlerTest::test() {
 	CPPUNIT_ASSERT(!lh->msg_logged);
 
 	std::string MSG = "This should!";
-	szlog::log() << szlog::CRITICAL << MSG << szlog::flush;
+	szlog::log() << szlog::critical << MSG << szlog::flush;
 	CPPUNIT_ASSERT(lh->msg_logged);
 	CPPUNIT_ASSERT_EQUAL(lh->_msg, MSG);
 

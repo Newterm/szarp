@@ -62,7 +62,7 @@ class Logger {
 	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
 	std::mutex _msg_mutex;
 
-	szlog::priority treshold = szlog::priority::ERROR;
+	szlog::priority treshold = szlog::priority::error;
 	std::shared_ptr<LogHandler> _logger;
 
 
