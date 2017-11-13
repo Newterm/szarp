@@ -68,7 +68,7 @@ void JournaldLogger::log(const char* msg, szlog::priority p) const {
 }
 
 void FileLogger::blockSignals() {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	pthread_atfork(prefork, parent_postfork, child_postfork);
 
 	// block all signals and close after destructor is called (e.g. exit handler)
@@ -79,7 +79,7 @@ void FileLogger::blockSignals() {
 }
 
 void FileLogger::processMessages(std::ofstream& file) {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	if (!msg_q.empty()) {
 		auto now = std::chrono::system_clock::now();
 		auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -98,7 +98,7 @@ void FileLogger::processMessages(std::ofstream& file) {
 }
 
 void FileLogger::log_start(const std::string& filename) {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	std::lock_guard<std::mutex> exit_lock(_filelogger_exit_mutex);
 
 	blockSignals();
@@ -118,7 +118,7 @@ void FileLogger::log_start(const std::string& filename) {
 }
 
 void FileLogger::log(const std::string& msg, szlog::priority p) const {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	{
 		std::lock_guard<std::mutex> lock(_msg_mutex);
@@ -136,13 +136,13 @@ void FileLogger::log(const std::string& msg, szlog::priority p) const {
 }
 
 void FileLogger::log(const char* msg, szlog::priority p) const {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	log(std::string(msg));
 #endif
 }
 
 FileLogger::FileLogger(const std::string& filename) {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	// if not absolute path, force /var/log/szarp
 	if (filename.front() != '/') {
 		logfile = "/var/log/szarp/"+filename+".log";
@@ -157,7 +157,7 @@ FileLogger::FileLogger(const std::string& filename) {
 
 
 FileLogger::~FileLogger() {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	std::atomic_signal_fence(std::memory_order_relaxed);
 	logger_should_exit = true;
 	_msg_mutex.unlock();
@@ -167,7 +167,7 @@ FileLogger::~FileLogger() {
 }
 
 void FileLogger::reinit() {
-#ifndef _WIN32
+#ifndef __MINGW32__
 	std::atomic_signal_fence(std::memory_order_relaxed);
 
 	_msg_mutex.unlock();

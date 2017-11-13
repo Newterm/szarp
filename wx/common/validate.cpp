@@ -3,7 +3,7 @@
  *
  * Patryk Kulpanowski <pkulpanowski@newterm.pl>
  */
-#ifndef _WIN32
+#ifndef __MINGW32__
 #include "validate.h"
 
 int ValidateConfig(wxString path) {

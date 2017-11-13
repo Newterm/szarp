@@ -3,7 +3,7 @@
  *
  * Patryk Kulpanowski <pkulpanowski@newterm.pl>
  */
-#ifndef _WIN32
+#ifndef __MINGW32__
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
