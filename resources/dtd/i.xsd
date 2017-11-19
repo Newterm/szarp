@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.praterm.com.pl/SZARP/ipk-checker" xmlns:ipk-icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" xmlns:ipk-extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:ipk="http://www.praterm.com.pl/SZARP/ipk" xmlns:i="http://www.praterm.com.pl/SZARP/ipk-checker">
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk" schemaLocation="ipk-params.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-extra" schemaLocation="ipk-extra.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-icinga" schemaLocation="ipk-icinga.xsd"/>
+  <xs:element name="rules">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="i:rule"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="rule">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="ipk:attlist.rule"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attribute name="name"/>
+</xs:schema>

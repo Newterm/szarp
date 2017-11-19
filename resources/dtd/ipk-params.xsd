@@ -2,7 +2,9 @@
 <!--
   DTD for SZARP params configuration file.
   
-  Every time you edit the RNG file, run:
+  ========= DON'T EDIT the XSD file! =========
+  
+  Every time you change the RNG file, run:
   
     trang <rng file> <xsd file>
   
