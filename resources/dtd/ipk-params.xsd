@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DTD for SZARP params configuration file.
+  
+  Every time you edit the RNG file, run:
+  
+    trang <rng file> <xsd file>
+  
+  and commit both files to SZARP repo.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.praterm.com.pl/SZARP/ipk" xmlns:ipk-icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" xmlns:ipk-extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:ipk="http://www.praterm.com.pl/SZARP/ipk" xmlns:i="http://www.praterm.com.pl/SZARP/ipk-checker">
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-checker" schemaLocation="i.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-extra" schemaLocation="ipk-extra.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-icinga" schemaLocation="ipk-icinga.xsd"/>
+  <!--
+    Głównym elementem jest element 'param', zawiera on całą strukturę
+    konfiguracji parametrów dla danego obiektu.
+    Musi on zawierać co najmniej jeden element 'device' oraz może zawierać
+    jeden element 'defined' oraz jeden element 'drawdefinable'.
+    Atrybuty:
+          version - wymagany, wersja formatu pliku, obecnie obsługiwana
+          to "1.0",
+          read_freq - domyślnie 10, częstotliwość odczytu danych ze
+          sterowników w sekundach,
+          write_freq - domyślnie 10, częstotliwość zapisu danych do
+          sterowników (zadawania parametrów) w sekundach,
+          title - wymagany, nazwa obiektu którego dotyczy konfiguracja,
+          ps_address - opcjonalny, adres serwera ustawiającego parametry
+          ps_port - opcjonalny, porst serwera ustawiającego parametry
+          documentation_base_url - opcjonalny, adres bazowy dokumentacji parametrów
+  -->
+  <xs:element name="params">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ipk:device"/>
+        <xs:element ref="ipk:defined"/>
+        <xs:element ref="ipk:drawdefinable"/>
+        <xs:element ref="ipk:seasons"/>
+        <xs:element ref="i:rules"/>
+      </xs:choice>
+      <xs:attributeGroup ref="ipk:attlist.params"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.params">
+    <xs:attribute name="version" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1.0"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="read_freq" use="required" type="xs:integer"/>
+    <xs:attribute name="send_freq" use="required" type="xs:integer"/>
+    <xs:attribute name="title" use="required"/>
+    <xs:attribute name="documentation_base_url"/>
+    <xs:attribute name="ps_address"/>
+    <xs:attribute name="ps_port"/>
+    <xs:attribute ref="ipk-icinga:host_template"/>
+    <xs:attribute ref="ipk-icinga:parent"/>
+    <xs:attribute ref="ipk-icinga:address"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'device' zawiera opis grupy parametrów obsługiwanej przez
+    jednego demona linii. Musi zawierać co najmniej jeden element 'radio'
+    albo co najmniej jeden element 'unit'. Może też zawierać elementy (na
+    początku) i atrybuty z innych przestrzeni nazw.
+    Atrybuty:
+    	daemon - ścieżka do demona linii odpowiedzialnego za
+    	obsługę opisywanej linii komunikacyjnej,
+    	path - ścieżka do urządzenia związanego z linią
+    	(najczęściej odpowiedniego portu szeregowego),
+    	speed - prędkość portu szeregowego w bodach,
+    	stop - ilość bitów stopu - 1 lub 2,
+    	protocol - wersja protokołu (obecnie 0 lub 1), parametr ma
+    	znaczenie dla niektórych demonów linii,
+    	special - specjalna wartość dla niektórych linii (w starej
+    	konfiguracji pierwsza linia w pliku line<x>.cfg), np. dla
+    	uproszczonego protokołu RS232 bez adresowania linii (liczba).
+  -->
+  <xs:element name="device">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element maxOccurs="unbounded" ref="ipk:radio"/>
+        <xs:element maxOccurs="unbounded" ref="ipk:unit"/>
+      </xs:choice>
+      <xs:attributeGroup ref="ipk:attlist.device"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.device">
+    <xs:attribute name="daemon" use="required"/>
+    <xs:attribute name="path"/>
+    <xs:attribute name="speed" type="xs:integer"/>
+    <xs:attribute name="parcook_device"/>
+    <xs:attribute name="sec_period" type="xs:integer"/>
+    <xs:attribute name="usec_period" type="xs:integer"/>
+    <xs:attribute name="stop">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1"/>
+          <xs:enumeration value="2"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="special" type="xs:integer"/>
+    <xs:attribute name="moxa_port"/>
+    <xs:attribute name="ip_addr"/>
+    <xs:attribute name="options"/>
+    <xs:attribute ref="ipk-extra:packet"/>
+    <xs:attribute ref="ipk-extra:bittime"/>
+    <xs:attribute ref="ipk-extra:dev_name"/>
+    <xs:attribute ref="ipk-extra:SendDelay"/>
+    <xs:attribute ref="ipk-extra:protocol"/>
+    <xs:attribute ref="ipk-extra:atc-ip"/>
+    <xs:attribute ref="ipk-extra:StopBits"/>
+    <xs:attribute ref="ipk-extra:precision"/>
+    <xs:attribute ref="ipk-extra:tcp-data-port"/>
+    <xs:attribute ref="ipk-extra:tcp-cmd-port"/>
+    <xs:attribute ref="ipk-extra:opc_server"/>
+    <xs:attribute ref="ipk-extra:pyro_host"/>
+    <xs:attribute ref="ipk-extra:pyro_port"/>
+    <xs:attribute ref="ipk-extra:zerond"/>
+    <xs:attribute ref="ipk-extra:CheckCRC"/>
+    <xs:attribute ref="ipk-extra:ReceiveTimeout"/>
+    <xs:attribute ref="ipk-extra:docpath"/>
+    <xs:attribute ref="ipk-extra:OpenPortEveryTime"/>
+    <xs:attribute ref="ipk-extra:databits"/>
+    <xs:attribute ref="ipk-extra:byte_interval"/>
+    <xs:attribute ref="ipk-extra:slot"/>
+    <xs:attribute ref="ipk-extra:id"/>
+    <xs:attribute ref="ipk-extra:mode"/>
+    <xs:attribute ref="ipk-extra:address"/>
+    <xs:attribute ref="ipk-extra:frequency"/>
+    <xs:attribute ref="ipk-extra:DelayBetweenChars"/>
+    <xs:attribute ref="ipk-extra:delay_between_chars"/>
+    <xs:attribute ref="ipk-extra:rack"/>
+    <xs:attribute ref="ipk-extra:delay_between_requests"/>
+    <xs:attribute ref="ipk-extra:stopbits"/>
+    <xs:attribute ref="ipk-extra:ip"/>
+    <xs:attribute ref="ipk-extra:tcp-ip"/>
+    <xs:attribute ref="ipk-extra:port"/>
+    <xs:attribute ref="ipk-extra:daemon-mode"/>
+    <xs:attribute ref="ipk-extra:tcp-mode"/>
+    <xs:attribute ref="ipk-extra:read_freq"/>
+    <xs:attribute ref="ipk-extra:appname"/>
+    <xs:attribute ref="ipk-extra:uri"/>
+    <xs:attribute ref="ipk-extra:parity"/>
+    <xs:attribute ref="ipk-extra:tcp-port"/>
+    <xs:attribute ref="ipk-extra:tcp-allowed"/>
+    <xs:attribute ref="ipk-extra:tcp-address"/>
+    <xs:attribute ref="ipk-extra:tcp-keepalive"/>
+    <xs:attribute ref="ipk-extra:nodata-timeout"/>
+    <xs:attribute ref="ipk-extra:nodata-value"/>
+    <xs:attribute ref="ipk-extra:tcp-timeout"/>
+    <xs:attribute ref="ipk-extra:expire"/>
+    <xs:attribute ref="ipk-icinga:no_data_timeout"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'radio' zawiera opis pojedynczej linii radiowej (modemu
+    radiowego). Musi zawierać co najmniej jeden element 'unit'.
+    Atrybuty:
+    	id - wymagany, identyfikator używany przez modem radiowy.
+  -->
+  <xs:element name="radio">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="ipk:unit"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="ipk:attlist.radio"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.radio">
+    <xs:attribute name="id" use="required"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'unit' opisuje jednostkę komunikacji. Zawiera co najmniej jeden
+    elemen 'param' lub 'send'.
+    Atrybuty:
+    	id - wymagany, identyfikator jednostki - pojedynczy znak ASCII
+    	unikalny w obrębie linii komunikacyjnej,
+    	type - wymagany, typ raportu - wartość interpretowana przez
+    	sterownik (liczba),
+    	subtype - wymagany, podtyp raportu, wartość interpetowana przez
+    	sterownik (liczba),
+    	bufsize - wielkość bufora uśredniania dla parametrów w bajtach.
+  -->
+  <xs:element name="unit">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="ipk:param"/>
+        <xs:element ref="ipk:send"/>
+      </xs:choice>
+      <xs:attributeGroup ref="ipk:attlist.unit"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.unit">
+    <xs:attribute name="id" use="required"/>
+    <xs:attribute name="type" use="required" type="xs:integer"/>
+    <xs:attribute name="subtype" use="required" type="xs:integer"/>
+    <xs:attribute name="bufsize" use="required" type="xs:integer"/>
+    <xs:attribute name="hdd_temp_port" type="xs:integer"/>
+    <xs:attribute name="moxa_port"/>
+    <xs:attribute name="ip_addr"/>
+    <xs:attribute ref="ipk-extra:limits"/>
+    <xs:attribute ref="ipk-extra:docpath"/>
+    <xs:attribute ref="ipk-extra:CheckCRC"/>
+    <xs:attribute ref="ipk-extra:ReceiveTimeout"/>
+    <xs:attribute ref="ipk-extra:const_speed"/>
+    <xs:attribute ref="ipk-extra:SendDelay"/>
+    <xs:attribute ref="ipk-extra:proto"/>
+    <xs:attribute ref="ipk-extra:optical"/>
+    <xs:attribute ref="ipk-extra:mode"/>
+    <xs:attribute ref="ipk-extra:dev_name"/>
+    <xs:attribute ref="ipk-extra:nodata-value"/>
+    <xs:attribute ref="ipk-extra:medium"/>
+    <xs:attribute ref="ipk-extra:inter-unit-query"/>
+    <xs:attribute ref="ipk-extra:path"/>
+    <xs:attribute ref="ipk-extra:timeout"/>
+    <xs:attribute ref="ipk-extra:inter-unit-delay"/>
+    <xs:attribute ref="ipk-extra:query-interval"/>
+    <xs:attribute ref="ipk-extra:port"/>
+    <xs:attribute ref="ipk-extra:max_read_attempts"/>
+    <xs:attribute ref="ipk-extra:read_timeout"/>
+    <xs:attribute ref="ipk-extra:read-timeout"/>
+    <xs:attribute ref="ipk-extra:char_size"/>
+    <xs:attribute ref="ipk-extra:serial_protocol_variant"/>
+    <xs:attribute ref="ipk-extra:stopbits"/>
+    <xs:attribute ref="ipk-extra:parity"/>
+    <xs:attribute ref="ipk-extra:use_tcp_2_serial_proxy"/>
+    <xs:attribute ref="ipk-extra:tcp-address"/>
+    <xs:attribute ref="ipk-extra:tcp-port"/>
+    <xs:attribute ref="ipk-extra:tcp-allowed"/>
+    <xs:attribute ref="ipk-extra:id"/>
+    <xs:attribute ref="ipk-extra:speed"/>
+    <xs:attribute ref="ipk-extra:plc"/>
+    <xs:attribute ref="ipk-extra:single-register-pdu"/>
+    <xs:attribute ref="ipk-extra:DoubleOrder"/>
+    <xs:attribute ref="ipk-extra:FloatOrder"/>
+    <xs:attribute ref="ipk-extra:nodata-timeout"/>
+    <xs:attribute ref="ipk-extra:address"/>
+    <xs:attribute ref="ipk-icinga:no_data_timeout"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'param' opisuje konkretny parametr. Moze zawierac jeden element
+    'define' oraz elementy 'value', 'raport', 'draw'. Może też zawierać
+    elementy (na ostatniej pozycji) i atrybuty z innych przestrzeni nazw.
+    Atrybuty:
+    	name - wymagany, pełna tekstowa nazwa parametru, powinna
+    	zawierać trzy człony oddzielone dwukropkami, poza dwukropkami
+    	może zawierać dowolne znaki, zaleca się jednak ograniczyć do
+    	liter (mogą być polskie) i cyfr, nazwa MUSI być unikalna w
+    	obrębie całej konfiguracji,
+    	short_name - wymagany, nazwa skrócona (do 4 znaków), dowolna
+    	draw_name - nazwa krótka używana jako nazwa wykresu, powinna
+    	mieć do 20 znaków, jeżeli jest pusta będzie używana nazwa
+    	pełna,
+    	unit - wymagana, nazwa jednostki, domyślnie '-' (brak jednostki),
+    	base_ind - indeks w bazie, liczba nieujemna dla starego formatu
+    	bazy, "auto" dla nowego formatu bazy, jeśli nie występuje,
+    	oznacza to że parametr nie jest zapisywany do bazy,
+    	prec - dla parametrów liczbowych - ilość miejsc po przecinku,
+    	tobase - atrybut nie powinien występować w konfiguracjach, ale
+    jest obecny w szablonach, więc został uwzględniony w DTD
+  -->
+  <xs:element name="param">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ipk:value"/>
+        <xs:element ref="ipk:define"/>
+        <xs:element ref="ipk:script"/>
+        <xs:element ref="ipk-extra:editable"/>
+        <xs:element ref="ipk:raport"/>
+        <xs:element ref="ipk:draw"/>
+        <xs:element ref="ipk-extra:doc"/>
+      </xs:choice>
+      <xs:attributeGroup ref="ipk:attlist.param"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.param">
+    <xs:attribute name="name" use="required"/>
+    <xs:attribute name="short_name"/>
+    <xs:attribute name="unit"/>
+    <xs:attribute name="prec" type="xs:integer"/>
+    <xs:attribute name="draw_name"/>
+    <xs:attribute name="base_ind">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="auto"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="forbidden"/>
+    <xs:attribute name="ip_addr"/>
+    <xs:attribute name="data_type">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="short"/>
+          <xs:enumeration value="ushort"/>
+          <xs:enumeration value="integer"/>
+          <xs:enumeration value="uinteger"/>
+          <xs:enumeration value="float"/>
+          <xs:enumeration value="double"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="ipk-icinga:no_data_timeout"/>
+    <xs:attribute ref="ipk-icinga:min"/>
+    <xs:attribute ref="ipk-icinga:max"/>
+    <xs:attribute ref="ipk-icinga:flat_time"/>
+    <xs:attribute ref="ipk-icinga:test_param"/>
+    <xs:attribute ref="ipk-extra:export"/>
+    <xs:attribute ref="ipk-extra:parameter-number"/>
+    <xs:attribute ref="ipk-extra:divisor"/>
+    <xs:attribute ref="ipk-extra:number"/>
+    <xs:attribute ref="ipk-extra:parname"/>
+    <xs:attribute ref="ipk-extra:lswmsw"/>
+    <xs:attribute ref="ipk-extra:ip"/>
+    <xs:attribute ref="ipk-extra:tag"/>
+    <xs:attribute ref="ipk-extra:id"/>
+    <xs:attribute ref="ipk-extra:param"/>
+    <xs:attribute ref="ipk-extra:transform"/>
+    <xs:attribute ref="ipk-extra:prec"/>
+    <xs:attribute ref="ipk-extra:devid"/>
+    <xs:attribute ref="ipk-extra:special"/>
+    <xs:attribute ref="ipk-extra:val_op2"/>
+    <xs:attribute ref="ipk-extra:DoubleOrder"/>
+    <xs:attribute ref="ipk-extra:FloatOrder"/>
+    <xs:attribute ref="ipk-extra:type"/>
+    <xs:attribute ref="ipk-extra:word"/>
+    <xs:attribute ref="ipk-extra:topic"/>
+    <xs:attribute ref="ipk-extra:db"/>
+    <xs:attribute ref="ipk-extra:db_type"/>
+    <xs:attribute ref="ipk-extra:multiplier"/>
+    <xs:attribute ref="ipk-extra:register"/>
+    <xs:attribute ref="ipk-extra:item"/>
+    <xs:attribute ref="ipk-extra:function"/>
+    <xs:attribute ref="ipk-extra:val_type"/>
+    <xs:attribute ref="ipk-extra:address"/>
+    <xs:attribute ref="ipk-extra:register_type"/>
+    <xs:attribute ref="ipk-extra:probe-type"/>
+    <xs:attribute ref="ipk-extra:val_op"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'value' opisuje dostępne wartości dla parametrów
+    nieliczbowych i odpowiadające im wartości liczbowe (np "Tak" - 1, "Nie
+    - 0). Pojedyczny element opisuje jedną wartość.
+    Atrybuty:
+    	int - wymagany, wartość liczbowa (w bazie lub pamięci
+    	dzielonej),
+    	name - opis wartości widoczny np. w raportach.
+  -->
+  <xs:element name="value">
+    <xs:complexType>
+      <xs:attributeGroup ref="ipk:attlist.value"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.value">
+    <xs:attribute name="int" use="required" type="xs:integer"/>
+    <xs:attribute name="name" use="required"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'define' występujący w parametrze oznacza, że dany parametr
+    jest parametrem definiowalnym, wyliczanym na podstawie innych.
+    Atrybuty:
+    	type - wymagany, określa typ formuły, obecnie dostępne są
+    	dwa typy:
+    	"RPN" - standardowa formuła SZARP'a 2.1 w odwrotnej notacji
+    	polskiej, z liczbami zapisywanymi normalnie, a odwołania do
+    	wartości parametrów mają postać pełnej nazwy parametru w
+    	nawiasie, przy czym zamiast członu nazwy może wystąpić '*',
+    	oznaczająca skopiowanie członu nazwy z parametru macierzystego,
+    	jest wyliczany przez parcook'a i dostępny z pamięci dzielonej,
+    	"DRAWDEFINABLE" - parametr wyliczany przez przeglądającego,
+    	nieobecny w pamięci dzielonej ani w bazie, formula także w
+    	postaci ONP, ale z trochę innym zestawem operatorów, w SZARP
+    	2.1 opisany w pliku definable.cfg, parametry tego typu mogą
+    	występować tylko wewnątrz elementu 'drawdefinable'
+    	formula - domyślnie "null" - formuła do wyliczania wartości
+    	parametru.
+    lua_formula - określa sposób w jaki ma być liczona wartość średnia
+    	parametru zapisnego w LUA:
+    	"va" - oznacza ze wartość średnia jest liczona na podstaiwe
+    	wartości średnich parametrów od których formuła zeleży
+    	(tak zachowywały się tzw. 'stare definiowalne')
+    	"av" - oznacza że wartośc średnia jest liczona jako
+    	uśrednie wartości formuły dla wszystkich
+    	próbek z zadanego przedziału czasu ('nowe definiowalne')
+    new_def - opcjonalny, jesli ustawiony na 'yes' parametr DRAWDEFINABLE
+    	powinien być liczony w nowy sposób, brak atrubutu odczytywane
+    	jest jako 'no'
+    Przykład parametru definiowalnego:
+    
+    <param name="Kocioł 1:Waga:stosunek energia / masa"
+    	short_name="Km" draw_name="Stos. energia/masa" unit="MWh/t" prec="3"
+    	base_ind="40">
+    	<define type="RPN" formula="(*:*:stosunek energia /objętość;) 1000 * (*:*:masa nasypowa
+    	   w&#x119;gla) / "/>
+    </param>
+    
+  -->
+  <xs:element name="define">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ipk:script"/>
+        <xs:element ref="ipk-extra:doc"/>
+      </xs:choice>
+      <xs:attributeGroup ref="ipk:attlist.define"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.define">
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="RPN"/>
+          <xs:enumeration value="DRAWDEFINABLE"/>
+          <xs:enumeration value="LUA"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formula"/>
+    <xs:attribute name="lua_formula">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="va"/>
+          <xs:enumeration value="av"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="lua_start_date_time"/>
+    <xs:attribute name="lua_start_offset"/>
+    <xs:attribute name="lua_end_offset"/>
+    <xs:attribute name="start_date"/>
+    <xs:attribute name="new_def"/>
+  </xs:attributeGroup>
+  <xs:element name="script" type="xs:string"/>
+  <!-- Element 'editable' ??? PROFIT -->
+  <xs:attributeGroup name="attlist.editable">
+    <xs:attribute name="min" use="required"/>
+    <xs:attribute name="max" use="required"/>
+    <xs:attribute name="time" use="required"/>
+  </xs:attributeGroup>
+  <!--
+    Element 'raport' opisuje wystąpienie parametru w raporcie. Jeden
+    parametr może mieć wiele elementów 'raport', będzie więc widoczny w
+    wielu raportach.
+    Atrybuty:
+    	title - wymagany, tytuł raportu, jest jednocześnie
+    	identyfikatorem raportu, więc różne raporty muszą mieć różne
+    	tytuły,
+    	descr - opis parametru w raporcie, jeżeli nie występuje, to
+    	jako opis używana jest ostatnia część nazwy parametru,
+    	order - liczba rzeczywista, określa kolejność parametru w
+    	raporcie, im mniejsza tym wyżej w raporcie znajdzie się
+    	parametr, parametry bez tego atrybutu są ustawiane za tymi
+    	z priorytetem,
+    	filename - nazwa pliku z raportem, jeżeli jej nie ma, to użyty
+    	będzie tytuł, atrybut ten w przyszłości może zostać usunięty.
+  -->
+  <xs:element name="raport">
+    <xs:complexType>
+      <xs:attributeGroup ref="ipk:attlist.raport"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.raport">
+    <xs:attribute name="title" use="required"/>
+    <xs:attribute name="description"/>
+    <xs:attribute name="order"/>
+    <xs:attribute name="filename"/>
+  </xs:attributeGroup>
+  <!--
+    Opis wykresu. Podobnie jak z raportami parametr może występować w wielu
+    wykresach.
+    Atrybuty:
+    	title - wymagany, nazwa okna z wykresami (grupy wykresów),
+    	max - maksymalna wartość parametru (górny zakres osi), liczba
+    	rzeczywista, obecnie wymagana,
+    	min - minimalna wartość parametru (dolny zakres osi), liczba
+    	rzeczywista, obecnie wymagana,
+    	scale - parametr określający jaka część wykresu ma być
+    	przeskalowana do zakresu podanego przez następne atrybuty,
+    	jeżeli jest równy 0 lub nieobecny, przeskalowanie nie
+    	występuje, podawany w procentach,
+    	minscale, maxscale - dolny i górny zakres wartości ulegających
+    	przeskalowaniu (liczby rzeczywiste),
+    	color - kolor wykresu, podany jako stała tekstowa lub wartość
+    	RGB w postaci szesnastkowej, np. 'Red' lub '#FF1123', jeżeli
+    	jest nieobecny kolor zostanie dobrany automatycznie
+    	special - atrybut specjalny, domyślnie 'none', inne to:
+    		piedraw - parametr jest liczony do wykresu kołowego
+    		hoursum - parametr jest liczony do sumowania
+    		godzinowego
+    		valve - zawory, atrybut dla kompatybilności wstecz
+    		rel - jeśli w oknie są dwa wykresy, to w oknie
+    		dodatkowym pojawi się wyliczenie stosunku wartości
+    		parametrów z wykresów
+    		diff - w oknie dodatkowym pojawia się różnica wartości
+    		końcowej i początkowej dla wykresu.
+    	Dokładny opis znaczenia atrybutów specjalnych znajduje się w
+    	pliku resources/dcoumentation/draw.ekran.README.html.
+    	prior - priorytet okna zawierającego wykres - liczba
+    	zmiennoprzecinkowa dodatnia, im mniejsza tym wyżej będzie okno
+    	na liście w programie przeglądającym
+    	order - jak prior, ale dotyczy kolejności wykresu w oknie
+  -->
+  <xs:element name="draw">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ipk:treenode"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="ipk:attlist.draw"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.draw">
+    <xs:attribute name="title" use="required"/>
+    <xs:attribute name="max" type="xs:double"/>
+    <xs:attribute name="min" type="xs:double"/>
+    <xs:attribute name="scale" type="xs:double"/>
+    <xs:attribute name="minscale" type="xs:double"/>
+    <xs:attribute name="maxscale" type="xs:double"/>
+    <xs:attribute name="color"/>
+    <xs:attribute name="prior" type="xs:double"/>
+    <xs:attribute name="order" type="xs:double"/>
+    <xs:attribute name="special" default="none">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="piedraw"/>
+          <xs:enumeration value="hoursum"/>
+          <xs:enumeration value="valve"/>
+          <xs:enumeration value="rel"/>
+          <xs:enumeration value="diff"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="new_def">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="yes"/>
+          <xs:enumeration value="no"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <!--
+    Element 'treenode' jest to podelement elementu draw lub treenode, służy do umieszczenia
+    zestawu wykresów w drzewie.
+    Atrybuty:
+      prior - określa priorytet tego węzła wśród jego braci, funkcjonuje to identycznie
+      jak element prior w elementach draw
+      draw_prior - określa priorytet zestawu ojca w węźle definiowanym przez ten element,
+      ma tylko sens w przypadku elementów których bezpośrednim ojcem jest element draw
+  -->
+  <xs:element name="treenode">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="ipk:treenode"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="ipk:attlist.treenode"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.treenode">
+    <xs:attribute name="name" use="required"/>
+    <xs:attribute name="prior" type="xs:double"/>
+    <xs:attribute name="draw_prior" type="xs:double"/>
+  </xs:attributeGroup>
+  <!-- Dokumentacja -->
+  <xs:attributeGroup name="attlist.doc">
+    <xs:attribute name="hidden">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="true"/>
+          <xs:enumeration value="false"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <!--
+    Element 'send' opisuje parametr wysyłany do sterownika. Może zawierać
+    elementy i atrybuty z przestrzeni innych przestrzeni nazw.
+    Atrybuty:
+    	param - nazwa parametru, którego wartość ma być wysyłana, musi
+    	istnieć parametr o takie nazwie, wymagany,
+    	type - rodzaj wysyłanych danych - próbka (domyślnie) lub
+    	średnia podanego rodzaju,
+    	repeat - ilość powtórzeń jeżeli sterownik nie potwierdził
+    	przyjęcia parametru.
+    	send_no_data - jeśli atrybut jest obecny, to sender wysyła do
+    	sterownika NO_DATA, jeśli nie, to w przypadku braku danych nic
+    	nie wysyła
+  -->
+  <xs:element name="send">
+    <xs:complexType>
+      <xs:attributeGroup ref="ipk:attlist.send"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="attlist.send">
+    <xs:attribute name="param"/>
+    <xs:attribute name="value"/>
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="probe"/>
+          <xs:enumeration value="min"/>
+          <xs:enumeration value="min10"/>
+          <xs:enumeration value="hour"/>
+          <xs:enumeration value="day"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="repeat"/>
+    <xs:attribute name="send_no_data"/>
+    <xs:attribute name="prec" type="xs:integer"/>
+    <xs:attribute ref="ipk-extra:number"/>
+    <xs:attribute ref="ipk-extra:val_type"/>
+    <xs:attribute ref="ipk-extra:type"/>
+    <xs:attribute ref="ipk-extra:prec"/>
+    <xs:attribute ref="ipk-extra:combined"/>
+    <xs:attribute ref="ipk-extra:val_op"/>
+    <xs:attribute ref="ipk-extra:address"/>
+    <xs:attribute ref="ipk-extra:function"/>
+    <xs:attribute ref="ipk-extra:db"/>
+    <xs:attribute ref="ipk-extra:db_type"/>
+  </xs:attributeGroup>
+  <!-- element defined zawiera definicje parametrów definiowalnych parcooka -->
+  <xs:element name="defined">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ipk:param"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    element drawdefinable zawiera definicje parametrów definiowalnych
+    przeglądającego
+  -->
+  <xs:element name="drawdefinable">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ipk:param"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!--
+    Element 'seasons' opisuje sezony letnie, moze zawierac dowolna ilosc
+    elementow 'season' opisujacych sezony dla poszczegolnych lat.
+    Element 'seasons' musi zawierac nastepujace atrybuty:
+    month_start - miesiac, w ktorym zaczyna sie sezon letni - liczba z przedzialu (1-12)
+    day_start - dzien, w ktorym zaczyna sie sezon letni - liczba z przedialu (1-31)
+    month_end - miesiac, w ktorym konczy sie sezon letni - liczba z przedzialu (1-12)
+    day_end - miesiac , w ktorym konczy sie sezon letni - liczba z przedialu (1-31)
+    Atrybuty elementu seasons definiuja domyslne granice sezonu letniego uzywane, jezeli
+    dla danego roku granice te nie sa okresolne za pomoca elementu 'season'.
+    
+    Element 'season' zawiera taki same atrybuty jak element 'seasons' oraz dodatkowy atrybut
+    'year' okreslajacy rok, ktorego definicja sezonu dotyczy.
+  -->
+  <xs:element name="seasons">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ipk:season"/>
+      </xs:sequence>
+      <xs:attribute name="month_start" use="required"/>
+      <xs:attribute name="day_start" use="required"/>
+      <xs:attribute name="month_end" use="required"/>
+      <xs:attribute name="day_end" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="season">
+    <xs:complexType>
+      <xs:attribute name="month_start" use="required"/>
+      <xs:attribute name="day_start" use="required"/>
+      <xs:attribute name="month_end" use="required"/>
+      <xs:attribute name="day_end" use="required"/>
+      <xs:attribute name="year" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <!-- Checker -->
+  <xs:attributeGroup name="attlist.rule">
+    <xs:attribute ref="i:name" use="required"/>
+  </xs:attributeGroup>
+  <!-- Główny tag dokumentu -->
+</xs:schema>
