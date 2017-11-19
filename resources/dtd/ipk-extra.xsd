@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:ipk-icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" xmlns:ipk-extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:ipk="http://www.praterm.com.pl/SZARP/ipk" xmlns:i="http://www.praterm.com.pl/SZARP/ipk-checker">
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk" schemaLocation="ipk-params.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-checker" schemaLocation="i.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-icinga" schemaLocation="ipk-icinga.xsd"/>
+  <xs:attribute name="packet"/>
+  <xs:attribute name="bittime" type="xs:integer"/>
+  <xs:attribute name="dev_name"/>
+  <xs:attribute name="SendDelay" type="xs:integer"/>
+  <xs:attribute name="protocol"/>
+  <xs:attribute name="atc-ip"/>
+  <xs:attribute name="StopBits">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="0"/>
+        <xs:enumeration value="1"/>
+        <xs:enumeration value="2"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="precision" type="xs:integer"/>
+  <xs:attribute name="tcp-data-port" type="xs:integer"/>
+  <xs:attribute name="tcp-cmd-port" type="xs:integer"/>
+  <xs:attribute name="opc_server"/>
+  <xs:attribute name="pyro_host"/>
+  <xs:attribute name="pyro_port" type="xs:integer"/>
+  <xs:attribute name="zerond">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="yes"/>
+        <xs:enumeration value="no"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="CheckCRC">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="enable"/>
+        <xs:enumeration value="disable"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="ReceiveTimeout" type="xs:integer"/>
+  <xs:attribute name="docpath"/>
+  <xs:attribute name="OpenPortEveryTime">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="yes"/>
+        <xs:enumeration value="no"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="databits" type="xs:integer"/>
+  <xs:attribute name="byte_interval" type="xs:integer"/>
+  <xs:attribute name="slot" type="xs:integer"/>
+  <xs:attribute name="id"/>
+  <xs:attribute name="mode">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="master"/>
+        <xs:enumeration value="slave"/>
+        <xs:enumeration value="client"/>
+        <xs:enumeration value="server"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="address"/>
+  <xs:attribute name="frequency" type="xs:integer"/>
+  <xs:attribute name="DelayBetweenChars" type="xs:integer"/>
+  <xs:attribute name="delay_between_chars" type="xs:integer"/>
+  <xs:attribute name="rack">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="0"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="delay_between_requests" type="xs:integer"/>
+  <xs:attribute name="stopbits">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="0"/>
+        <xs:enumeration value="1"/>
+        <xs:enumeration value="2"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="ip"/>
+  <xs:attribute name="tcp-ip"/>
+  <xs:attribute name="port" type="xs:integer"/>
+  <xs:attribute name="daemon-mode">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="tcp-server"/>
+        <xs:enumeration value="tcp-client"/>
+        <xs:enumeration value="serial-server"/>
+        <xs:enumeration value="serial-client"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="tcp-mode">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="client"/>
+        <xs:enumeration value="server"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="read_freq" type="xs:integer"/>
+  <xs:attribute name="appname"/>
+  <xs:attribute name="uri"/>
+  <xs:attribute name="parity">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="EVEN"/>
+        <xs:enumeration value="NONE"/>
+        <xs:enumeration value="ODD"/>
+        <xs:enumeration value="even"/>
+        <xs:enumeration value="none"/>
+        <xs:enumeration value="odd"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="tcp-port" type="xs:integer"/>
+  <xs:attribute name="tcp-allowed"/>
+  <xs:attribute name="tcp-address"/>
+  <xs:attribute name="tcp-keepalive">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="yes"/>
+        <xs:enumeration value="no"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="nodata-timeout" type="xs:integer"/>
+  <xs:attribute name="nodata-value" type="xs:double"/>
+  <xs:attribute name="tcp-timeout" type="xs:integer"/>
+  <xs:attribute name="expire" type="xs:integer"/>
+  <xs:attribute name="limits"/>
+  <xs:attribute name="const_speed" type="xs:integer"/>
+  <xs:attribute name="proto">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="zet"/>
+        <xs:enumeration value="datapaf"/>
+        <xs:enumeration value="lumel"/>
+        <xs:enumeration value="fp210"/>
+        <xs:enumeration value="wmtp"/>
+        <xs:enumeration value="modbus"/>
+        <xs:enumeration value="fc"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="optical">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="true"/>
+        <xs:enumeration value="false"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="medium">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="tcp"/>
+        <xs:enumeration value="serial"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="inter-unit-query" type="xs:integer"/>
+  <xs:attribute name="path"/>
+  <xs:attribute name="timeout" type="xs:integer"/>
+  <xs:attribute name="inter-unit-delay" type="xs:integer"/>
+  <xs:attribute name="query-interval" type="xs:integer"/>
+  <xs:attribute name="max_read_attempts" type="xs:integer"/>
+  <xs:attribute name="read_timeout" type="xs:integer"/>
+  <xs:attribute name="read-timeout" type="xs:integer"/>
+  <xs:attribute name="char_size" type="xs:integer"/>
+  <xs:attribute name="serial_protocol_variant">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="ascii"/>
+        <xs:enumeration value="rtu"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="use_tcp_2_serial_proxy">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="yes"/>
+        <xs:enumeration value="no"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="speed" type="xs:double"/>
+  <xs:attribute name="plc">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="zet"/>
+        <xs:enumeration value="sk"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="single-register-pdu">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="0"/>
+        <xs:enumeration value="1"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="DoubleOrder">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="msdlsd"/>
+        <xs:enumeration value="lsdmsd"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="FloatOrder">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="msblsb"/>
+        <xs:enumeration value="lsbmsb"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="export" type="xs:integer"/>
+  <xs:attribute name="parameter-number" type="xs:integer"/>
+  <xs:attribute name="divisor" type="xs:integer"/>
+  <xs:attribute name="number" type="xs:integer"/>
+  <xs:attribute name="parname"/>
+  <xs:attribute name="lswmsw">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="MSW"/>
+        <xs:enumeration value="LSW"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="tag"/>
+  <xs:attribute name="param"/>
+  <xs:attribute name="transform">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="lsw"/>
+        <xs:enumeration value="msw"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="prec" type="xs:integer"/>
+  <xs:attribute name="devid"/>
+  <xs:attribute name="special">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="prev"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="val_op2">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="MSD"/>
+        <xs:enumeration value="LSD"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="type">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="lsb"/>
+        <xs:enumeration value="msb"/>
+        <xs:enumeration value="string"/>
+        <xs:enumeration value="integer"/>
+        <xs:enumeration value="single"/>
+        <xs:enumeration value="float"/>
+        <xs:enumeration value="bcd"/>
+        <xs:enumeration value="short_float"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="word">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="lsw"/>
+        <xs:enumeration value="msw"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="topic">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="InTouch"/>
+        <xs:enumeration value="Tagname"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="db" type="xs:integer"/>
+  <xs:attribute name="db_type">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="db"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="multiplier" type="xs:integer"/>
+  <xs:attribute name="register" type="xs:integer"/>
+  <xs:attribute name="item"/>
+  <xs:attribute name="function"/>
+  <xs:attribute name="val_type">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="byte"/>
+        <xs:enumeration value="short"/>
+        <xs:enumeration value="ushort"/>
+        <xs:enumeration value="integer"/>
+        <xs:enumeration value="uinteger"/>
+        <xs:enumeration value="real"/>
+        <xs:enumeration value="float"/>
+        <xs:enumeration value="long"/>
+        <xs:enumeration value="double"/>
+        <xs:enumeration value="bit"/>
+        <xs:enumeration value="word"/>
+        <xs:enumeration value="decimal2"/>
+        <xs:enumeration value="decimal3"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="register_type">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="holding_register"/>
+        <xs:enumeration value="input_register"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="probe-type">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="PT_SEC10"/>
+        <xs:enumeration value="PT_MIN10"/>
+        <xs:enumeration value="PT_HOUR"/>
+        <xs:enumeration value="PT_HOUR8"/>
+        <xs:enumeration value="PT_DAY"/>
+        <xs:enumeration value="PT_WEEK"/>
+        <xs:enumeration value="PT_MONTH"/>
+        <xs:enumeration value="PT_YEAR"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="val_op">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="MSW"/>
+        <xs:enumeration value="msw"/>
+        <xs:enumeration value="LSW"/>
+        <xs:enumeration value="lsw"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:element name="editable">
+    <xs:complexType>
+      <xs:attributeGroup ref="ipk:attlist.editable"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="doc">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="ipk:attlist.doc"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attribute name="combined">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="MSW"/>
+        <xs:enumeration value="LSW"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+</xs:schema>

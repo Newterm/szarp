@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.praterm.com.pl/SZARP/ipk-icinga" xmlns:ipk-icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" xmlns:ipk-extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:ipk="http://www.praterm.com.pl/SZARP/ipk" xmlns:i="http://www.praterm.com.pl/SZARP/ipk-checker">
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk" schemaLocation="ipk-params.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-checker" schemaLocation="i.xsd"/>
+  <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-extra" schemaLocation="ipk-extra.xsd"/>
+  <xs:attribute name="host_template"/>
+  <xs:attribute name="parent"/>
+  <xs:attribute name="address"/>
+  <xs:attribute name="no_data_timeout" type="xs:integer"/>
+  <xs:attribute name="min" type="xs:double"/>
+  <xs:attribute name="max" type="xs:double"/>
+  <xs:attribute name="flat_time" type="xs:double"/>
+  <xs:attribute name="test_param"/>
+</xs:schema>
