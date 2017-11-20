@@ -1,0 +1,11 @@
+<!--
+  DTD for SZARP params configuration file.
+
+  ========= DON'T EDIT the XSD files! =========
+
+  Every time you change the RNG file, run:
+
+    trang ipk-params.rng ipk-params.xsd
+
+  and commit all changed files to SZARP repo.
+-->

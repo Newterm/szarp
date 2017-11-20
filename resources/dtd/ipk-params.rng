@@ -2,6 +2,14 @@
 
 <!--
   DTD for SZARP params configuration file.
+
+  ========= DON'T EDIT the XSD files! =========
+
+  Every time you change the RNG file, run:
+
+    trang ipk-params.rng ipk-params.xsd
+
+  and commit all changed files to SZARP repo.
 -->
 
 <grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
