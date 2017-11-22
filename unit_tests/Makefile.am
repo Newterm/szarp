@@ -18,6 +18,8 @@ LIBS = ../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la \
 
 bin_PROGRAMS = unit_tests sz4_extr_simple
 
+TESTS = unit_tests
+
 unit_tests_SOURCES = \
 	unit_tests.cpp \
 	sz4_block_unit_test.cpp \
