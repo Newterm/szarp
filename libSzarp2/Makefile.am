@@ -257,7 +257,6 @@ endif
 
 bin_SCRIPTS= \
 	$(INC_TO_BIN) \
-	@srcdir@/tools/ipk_config \
 	@srcdir@/tools/ipk_add_template \
 	@srcdir@/tools/ipk_base_max \
 	@srcdir@/tools/ipk_check_dtd \
