@@ -258,10 +258,6 @@ if test "$no_python" != "yes" ; then
 			     your path.
 			     ])
 	fi
-
-	# test if python version is >= 2.6. This is needed cause pyipk doesnt
-	# work with python 2.5, but sharp has to be build on debian lenny
-	AM_CONDITIONAL(PYTHON_26, test `$PYTHON -c "py=map(int,'$PYTHON_VERSION'.split('.'));print(int(py.pop(0)>=2 and py.pop(0)>=6))"` -eq 1 )
 fi
 
 # X windows tests (sets 'X_CFLAGS', 'X_PRE_LIBS', 'X_LIBS' and
@@ -1149,11 +1145,6 @@ fi
 # Resources directory
 SUBDIRS="$SUBDIRS resources script"
 
-# pyipk directory
-if test x$no_python != xyes -a x$with_mingw32 != xyes; then
-	SUBDIRS="$SUBDIRS pyipk"
-fi
-
 # qt4 directory
 if test x$no_python != xyes -a x$with_mingw32 != xyes; then
 	SUBDIRS="$SUBDIRS qt4"
@@ -1198,7 +1189,6 @@ AC_OUTPUT( \
 	meaner3/Makefile \
 	parcook/Makefile \
 	parcook/s7daemon/Makefile \
-	pyipk/Makefile \
 	qt4/Makefile \
 	qt4/filler2/Makefile \
 	resources/Makefile \
