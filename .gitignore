@@ -1,6 +1,7 @@
 *.o
 *.mo
 *.pyc
+*.pyo
 *.a
 *.lo
 *.la
