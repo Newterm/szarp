@@ -1,6 +1,0 @@
-opt/szarp/bin/ipkcmd
-opt/szarp/bin/ipkqt
-opt/szarp/lib/plugins
-usr/lib/python2.7/dist-packages/libipk
-usr/lib/python2.7/dist-packages/qtipk
-usr/lib/python2.7/dist-packages/miscipk
