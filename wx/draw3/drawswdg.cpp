@@ -235,6 +235,8 @@ void DrawsWidget::SetKeyboardAction(ActionKeyboardType action)
 
 	wxLogInfo(_T("DEBUG: Keyboard action %d requested"), action);
 
+	const TimeIndex& t_index = m_draws_controller->GetSelectedDraw()->GetTimeIndex(); 
+
 	switch (action) {
 	case NONE:
 		if (m_action >= CURSOR_LEFT_KB) {
@@ -258,13 +260,13 @@ void DrawsWidget::SetKeyboardAction(ActionKeyboardType action)
 		m_action = action;
 		m_keyboard_timer->Start(FULL_SCREEN_SPEED / 3,
 					wxTIMER_ONE_SHOT);
-		MoveCursorLeft(6);
+		MoveCursorLeft(TimeIndex::PeriodMult[m_draws_controller->GetPeriod()]);
 		break;
 	case CURSOR_LONG_RIGHT_KB:
 		m_action = action;
 		m_keyboard_timer->Start(FULL_SCREEN_SPEED / 3,
 					wxTIMER_ONE_SHOT);
-		MoveCursorRight(6);
+		MoveCursorRight(TimeIndex::PeriodMult[m_draws_controller->GetPeriod()]);
 		break;
 	case CURSOR_HOME_KB:
 		m_action = action;
