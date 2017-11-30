@@ -630,7 +630,20 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 	std::tie(connection_mgr, base, io) =
 		build_iks_client(ipk_container, address, port, _T("User:Param:"));
 
+	connection_cv = std::move(connection_mgr->connection_cv.get_future());
+
 	io_thread = start_connection_manager(connection_mgr);
+}
+
+bool Sz4ApiBase::BlockUntilConnected(const unsigned int timeout_s) {
+	if (!connection_cv.valid()) {
+		throw DrawBaseException(_("Could not establish connection to iks server"));
+	}
+
+	const std::chrono::seconds connection_establishing_timeout = std::chrono::seconds(timeout_s);
+	
+	if (connection_cv.wait_for(connection_establishing_timeout) == std::future_status::ready) return true;
+	return false;
 }
 
 void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,

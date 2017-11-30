@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-09 12:48+0200\n"
+"POT-Creation-Date: 2017-12-01 12:23+0100\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -43,7 +43,7 @@ msgstr ""
 msgid "Error"
 msgstr "Błąd"
 
-#: cfgmgr.cpp:1406 paredit.cpp:753 GUI/resources.xrc:1515
+#: cfgmgr.cpp:1406 paredit.cpp:751 GUI/resources.xrc:1515
 msgid "User:Param:"
 msgstr "Parametr:Użytkownika:"
 
@@ -118,9 +118,13 @@ msgid "Failed to import set from file: %s\n"
 msgstr "Nie udało się zaimportować zestawu z pliku :%s"
 
 #: cfgmgr.cpp:1537 defcfg.cpp:1492 defcfg.cpp:1584 defcfg.cpp:1649
-#: drawpick.cpp:668
+#: drawapp.cpp:369 drawpick.cpp:668
 msgid "Operation failed."
 msgstr "Operacja się nie powiodła."
+
+#: database.cpp:640
+msgid "Could not establish connection to iks server"
+msgstr "Nie udało się połączyć ze zdalną bazą danych"
 
 #: dbmgr.cpp:156 dbmgr.cpp:177 dbmgr.cpp:180
 #, c-format
@@ -182,7 +186,7 @@ msgstr "Parametry"
 
 #: defcfg.cpp:1491
 msgid "\" is not present in draw set \""
-msgstr ""
+msgstr "\" nie jest zawarty w zestawie \""
 
 #: defcfg.cpp:1491
 #, fuzzy
@@ -246,51 +250,51 @@ msgstr "Operacja importu wykresów zakończyła się poprawnie."
 msgid "Ok!"
 msgstr "Ok!"
 
-#: disptime.cpp:74 drawview.cpp:200 gcdcgraphs.cpp:739 glgraphs.cpp:1359
+#: disptime.cpp:74 drawview.cpp:200 gcdcgraphs.cpp:746 glgraphs.cpp:1359
 msgid "january"
 msgstr "styczeń"
 
-#: disptime.cpp:75 drawview.cpp:203 gcdcgraphs.cpp:742 glgraphs.cpp:1362
+#: disptime.cpp:75 drawview.cpp:203 gcdcgraphs.cpp:749 glgraphs.cpp:1362
 msgid "february"
 msgstr "luty"
 
-#: disptime.cpp:76 drawview.cpp:206 gcdcgraphs.cpp:745 glgraphs.cpp:1365
+#: disptime.cpp:76 drawview.cpp:206 gcdcgraphs.cpp:752 glgraphs.cpp:1365
 msgid "march"
 msgstr "marzec"
 
-#: disptime.cpp:77 drawview.cpp:209 gcdcgraphs.cpp:748 glgraphs.cpp:1368
+#: disptime.cpp:77 drawview.cpp:209 gcdcgraphs.cpp:755 glgraphs.cpp:1368
 msgid "april"
 msgstr "kwiecień"
 
-#: disptime.cpp:78 drawview.cpp:212 gcdcgraphs.cpp:751 glgraphs.cpp:1371
+#: disptime.cpp:78 drawview.cpp:212 gcdcgraphs.cpp:758 glgraphs.cpp:1371
 msgid "may"
 msgstr "maj"
 
-#: disptime.cpp:79 drawview.cpp:215 gcdcgraphs.cpp:754 glgraphs.cpp:1374
+#: disptime.cpp:79 drawview.cpp:215 gcdcgraphs.cpp:761 glgraphs.cpp:1374
 msgid "june"
 msgstr "czerwiec"
 
-#: disptime.cpp:80 drawview.cpp:218 gcdcgraphs.cpp:757 glgraphs.cpp:1377
+#: disptime.cpp:80 drawview.cpp:218 gcdcgraphs.cpp:764 glgraphs.cpp:1377
 msgid "july"
 msgstr "lipiec"
 
-#: disptime.cpp:81 drawview.cpp:221 gcdcgraphs.cpp:760 glgraphs.cpp:1380
+#: disptime.cpp:81 drawview.cpp:221 gcdcgraphs.cpp:767 glgraphs.cpp:1380
 msgid "august"
 msgstr "sierpień"
 
-#: disptime.cpp:82 drawview.cpp:224 gcdcgraphs.cpp:763 glgraphs.cpp:1383
+#: disptime.cpp:82 drawview.cpp:224 gcdcgraphs.cpp:770 glgraphs.cpp:1383
 msgid "septermber"
 msgstr "wrzesień"
 
-#: disptime.cpp:83 drawview.cpp:227 gcdcgraphs.cpp:766 glgraphs.cpp:1386
+#: disptime.cpp:83 drawview.cpp:227 gcdcgraphs.cpp:773 glgraphs.cpp:1386
 msgid "october"
 msgstr "październik"
 
-#: disptime.cpp:84 drawview.cpp:230 gcdcgraphs.cpp:769 glgraphs.cpp:1389
+#: disptime.cpp:84 drawview.cpp:230 gcdcgraphs.cpp:776 glgraphs.cpp:1389
 msgid "november"
 msgstr "listopad"
 
-#: disptime.cpp:85 drawview.cpp:233 gcdcgraphs.cpp:772 glgraphs.cpp:1392
+#: disptime.cpp:85 drawview.cpp:233 gcdcgraphs.cpp:779 glgraphs.cpp:1392
 msgid "december"
 msgstr "grudzień"
 
@@ -302,35 +306,62 @@ msgstr " %Y%n godzina %H:%M"
 msgid "%A, %d %B %Y%n time %H:%M"
 msgstr "%A, %d %B %Y%n godz. %H:%M"
 
-#: drawapp.cpp:323
+#: drawapp.cpp:315
 msgid "Setting locale..."
 msgstr "Ładowanie ustawień lokalizacyjnych..."
 
-#: drawapp.cpp:328
+#: drawapp.cpp:320
 msgid "Reading params from szarp.cfg..."
 msgstr "Ładowanie parametrów z szarp.cfg..."
 
-#: drawapp.cpp:334
+#: drawapp.cpp:326
 msgid "Initializing IPKContainer..."
 msgstr "Inicjalizacja kontenera IPK..."
 
-#: drawapp.cpp:342
+#: drawapp.cpp:336
 msgid "Initializing szbase..."
 msgstr "Inicjalizacja szbase..."
 
-#: drawapp.cpp:344
+#: drawapp.cpp:338
 msgid "Initializing XML Resources..."
 msgstr "Inicjalizacja zasobów XML..."
 
-#: drawapp.cpp:348
+#: drawapp.cpp:342 drawapp.cpp:380
 msgid "Starting database query mechanism..."
 msgstr "Uruchamianie mechanizmu odpytywania bazy..."
 
-#: drawapp.cpp:390
+#: drawapp.cpp:351
+#, fuzzy
+msgid "Starting sz4 database..."
+msgstr "Uruchamiam draw3..."
+
+#: drawapp.cpp:363
+msgid "Connecting to database..."
+msgstr "Łączenie z bazą danych"
+
+#: drawapp.cpp:366
+msgid "Could not connect to iks-server, should we try again?"
+msgstr "Nie udało się połączyć ze zdalną bazą danych. Czy próbować ponownie?"
+
+#: drawapp.cpp:366 paredit.cpp:351
+#, fuzzy
+msgid "Operation failed"
+msgstr "Operacja się nie powiodła."
+
+#: drawapp.cpp:369
+msgid "Internal error, please restart the application"
+msgstr "Błąd silnika bazy danych. Proszę uruchomić program ponownie."
+
+#: drawapp.cpp:373
+#, fuzzy
+msgid "Starting sz3 database..."
+msgstr "Uruchamiam draw3..."
+
+#: drawapp.cpp:395
 msgid "Loading configuration..."
 msgstr "Wczytywanie konfiguracji..."
 
-#: drawapp.cpp:405
+#: drawapp.cpp:410
 msgid ""
 "Error occurred while loading default configuration. Check your szarp.cfg "
 "file or use i2smo test."
@@ -338,72 +369,72 @@ msgstr ""
 "Błąd podczas ładowania domyślnej konfiguracji. Sprawdź swój plik szarp.cfg, "
 "bądź wywołaj i2smo."
 
-#: drawapp.cpp:411
+#: drawapp.cpp:416
 msgid "Missing starting base specification."
 msgstr "Nie określono bazy startowej"
 
-#: drawapp.cpp:431
+#: drawapp.cpp:436
 msgid "Initizalizing remarks..."
 msgstr "Inicjalizacja obsługi komentarzy..."
 
-#: drawapp.cpp:436
+#: drawapp.cpp:441
 msgid "Creating Frame Manager..."
 msgstr "Tworzenie menadżera ramek..."
 
-#: drawapp.cpp:466
+#: drawapp.cpp:471
 msgid "Szarp Draw version 3.00."
 msgstr "Szarp Draw wersja 3.00."
 
-#: drawapp.cpp:469
+#: drawapp.cpp:474
 msgid "X windows geometry specification"
 msgstr "specyfikacja geometrii jak dla X windows"
 
-#: drawapp.cpp:472 testapp.cpp:184
+#: drawapp.cpp:477 testapp.cpp:184
 msgid "base name"
 msgstr "nazwa bazy"
 
-#: drawapp.cpp:477 testapp.cpp:189
+#: drawapp.cpp:482 testapp.cpp:189
 msgid "open url in existing window"
 msgstr "otwórz url w istniejącym oknie"
 
-#: drawapp.cpp:480
+#: drawapp.cpp:485
 msgid "open window in full screen mode"
 msgstr "otwórz okno w trybie pełnoekranowym"
 
-#: drawapp.cpp:482 testapp.cpp:192
+#: drawapp.cpp:487 testapp.cpp:192
 msgid "verbose logging"
 msgstr "gadatliwe logowanie"
 
-#: drawapp.cpp:484
+#: drawapp.cpp:489
 msgid "force sz4 base format"
 msgstr "wymuś bazę sz4"
 
-#: drawapp.cpp:486
+#: drawapp.cpp:491
 msgid "force sz3 base format"
 msgstr "wymuś bazę sz3"
 
-#: drawapp.cpp:488
+#: drawapp.cpp:493
 msgid "force iks server"
 msgstr "wymuś połączenie z iks-serverem"
 
-#: drawapp.cpp:491 testapp.cpp:195
+#: drawapp.cpp:496 testapp.cpp:195
 msgid "print version number and exit"
 msgstr "wypisz numer wersji i wyjdź"
 
-#: drawapp.cpp:494
+#: drawapp.cpp:499
 #, fuzzy
 msgid "IKS server address"
 msgstr "Adres serwera próbek"
 
-#: drawapp.cpp:497
+#: drawapp.cpp:502
 msgid "IKS server port"
 msgstr "IKS serwer port"
 
-#: drawapp.cpp:499 testapp.cpp:202
+#: drawapp.cpp:504 testapp.cpp:202
 msgid "debug level"
 msgstr "poziom komunikatów debugujących"
 
-#: drawapp.cpp:530
+#: drawapp.cpp:535
 msgid "V"
 msgstr ""
 
@@ -774,11 +805,11 @@ msgstr "Musisz ustawić tytuł."
 msgid "No title"
 msgstr "Brak tytułu"
 
-#: drawpick.cpp:895 paredit.cpp:921
+#: drawpick.cpp:895 paredit.cpp:919
 msgid "Error while editing network set: "
 msgstr "Błąd podczas edycji zestawu sieciowego:"
 
-#: drawpick.cpp:895 paredit.cpp:921
+#: drawpick.cpp:895 paredit.cpp:919
 msgid "Editing network set error"
 msgstr "Błąd edycji parametru"
 
@@ -786,7 +817,7 @@ msgstr "Błąd edycji parametru"
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten zestaw."
 
-#: drawpick.cpp:903 paredit.cpp:930 remarks.cpp:1529
+#: drawpick.cpp:903 paredit.cpp:928 remarks.cpp:1529
 msgid "Insufficient privileges"
 msgstr "Brak uprawnień"
 
@@ -799,7 +830,7 @@ msgid "Failed to fetch network sets"
 msgstr "Nie udało się pobrać zestawów sieciowych"
 
 #: drawpick.cpp:922 drawpick.cpp:1004 drawpick.cpp:1034 drawpnl.cpp:645
-#: drawpnl.cpp:680 drawtb.cpp:78 paredit.cpp:789
+#: drawpnl.cpp:680 drawtb.cpp:78 paredit.cpp:787
 msgid "Find"
 msgstr "Wyszukaj"
 
@@ -968,11 +999,11 @@ msgstr "Wyjdź"
 msgid "New version available"
 msgstr "Nowa wersja zainstalowana"
 
-#: drawview.cpp:192 gcdcgraphs.cpp:731 glgraphs.cpp:1351
+#: drawview.cpp:192 gcdcgraphs.cpp:738 glgraphs.cpp:1351
 msgid "summer season"
 msgstr "sezon letni"
 
-#: drawview.cpp:194 gcdcgraphs.cpp:733 glgraphs.cpp:1353
+#: drawview.cpp:194 gcdcgraphs.cpp:740 glgraphs.cpp:1353
 msgid "winter season"
 msgstr "sezon zimowy"
 
@@ -988,17 +1019,11 @@ msgstr "Czy chcesz zamknąć program?"
 msgid "Do you want to close this window?"
 msgstr "Czy chcesz zamknąć okno?"
 
-#: frmmgr.cpp:155 frmmgr.cpp:235
+#: frmmgr.cpp:155
 msgid "Question"
 msgstr "Pytanie"
 
-#: frmmgr.cpp:235
-msgid "The are no user defined sets. Do you want to create one?"
-msgstr ""
-"Nie zdefiniowano żadnych zestawów użytkownika. Czy chcesz stworzyć nowy "
-"zestaw?"
-
-#: gcdcgraphs.cpp:391 wxgraphs.cpp:215
+#: gcdcgraphs.cpp:398 wxgraphs.cpp:215
 msgid "No data"
 msgstr "Brak danych"
 
@@ -1157,11 +1182,6 @@ msgstr "Nie udało się znaleźć parametru "
 msgid "Failed to add parameter, reason was: "
 msgstr "Nie udało się usunąć parametru:"
 
-#: paredit.cpp:351
-#, fuzzy
-msgid "Operation failed"
-msgstr "Operacja się nie powiodła."
-
 #: paredit.cpp:357
 msgid "Comma next to a number found. Do you want to correct it?"
 msgstr "Znaleziono przecinek w liczbie. Czy powinien zostać poprawiony?"
@@ -1210,36 +1230,36 @@ msgstr "Czy na pewno chcesz zamknąć to okno?"
 msgid "Cancel window"
 msgstr "Zamykanie okna"
 
-#: paredit.cpp:601
+#: paredit.cpp:599
 #, c-format
 msgid "Error while compiling param %s"
 msgstr "Błąd podczas kompilacji parametru %s"
 
-#: paredit.cpp:622
+#: paredit.cpp:620
 #, c-format
 msgid "Invalid expression %s"
 msgstr "Niepoprawne wyrażenie %s"
 
-#: paredit.cpp:695
+#: paredit.cpp:693
 #, c-format
 msgid "Found time: %s"
 msgstr "Znaleziony czas: %s"
 
-#: paredit.cpp:697
+#: paredit.cpp:695
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: paredit.cpp:697
+#: paredit.cpp:695
 msgid "No date found"
 msgstr "Nie znaleziono danych spełniających podany warunek"
 
-#: paredit.cpp:751
+#: paredit.cpp:749
 #, c-format
 msgid "User:%s:"
 msgstr "Parametr:%s:"
 
-#: paredit.cpp:930
+#: paredit.cpp:928
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten parametr."
 
@@ -2684,6 +2704,11 @@ msgstr "Adres serwera próbek"
 #: GUI/resources.xrc:2129
 msgid "Probe servers addresses:"
 msgstr "Adres serwera próbek:"
+
+#~ msgid "The are no user defined sets. Do you want to create one?"
+#~ msgstr ""
+#~ "Nie zdefiniowano żadnych zestawów użytkownika. Czy chcesz stworzyć nowy "
+#~ "zestaw?"
 
 #~ msgid "Classic"
 #~ msgstr "Klasyczny"

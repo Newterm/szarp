@@ -235,8 +235,6 @@ void DrawsWidget::SetKeyboardAction(ActionKeyboardType action)
 
 	wxLogInfo(_T("DEBUG: Keyboard action %d requested"), action);
 
-	const TimeIndex& t_index = m_draws_controller->GetSelectedDraw()->GetTimeIndex(); 
-
 	switch (action) {
 	case NONE:
 		if (m_action >= CURSOR_LEFT_KB) {

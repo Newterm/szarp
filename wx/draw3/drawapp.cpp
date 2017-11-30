@@ -89,6 +89,7 @@
 #include "getprobersaddresses.h"
 
 #include "../../resources/wx/icons/draw64.xpm"
+#include "wx_exceptions.h"
 
 extern void InitXmlResource();
 
@@ -208,56 +209,47 @@ bool DrawApp::OnInit() {
 	m_remarks_handler = NULL;
 
 #ifdef __WXGTK__
-	if (m_base == wxEmptyString)
-	{
+	if (m_base == wxEmptyString) {
 		libpar_init();
-	}
-	else
-	{
+		auto base = libpar_getpar("", "config_prefix", 1);
+		m_base = SC::L2S(base);
+		free(base);
+	} else {
 		//base argument was given, so no need of loading the default configuration
 		wxString base_path = GetSzarpDir();
 		std::string config_path = std::string(wxString(base_path + m_base + '/').mb_str());
 		libpar_init_from_folder(config_path);
 	}
 
-	char *base = NULL;
-	if (m_base == wxEmptyString) {
-		base = libpar_getpar("", "config_prefix", 1);
-		m_base = SC::L2S(base);
-		free(base);
+	if (m_base_type == NO_BASE) {
+		const auto cfg_base_type = libpar_getpar("draw3", "base_type", 0);
+		if (cfg_base_type) {
+			const std::string base_type(cfg_base_type);
+			if (base_type == "sz4" || base_type == "SZ4"|| base_type == "4") {
+				m_base_type = SZ4_BASE;
+			} else if (base_type == "iks"|| base_type == "IKS"|| base_type == "i") {
+				m_base_type = IKS_BASE;
+			} else {
+				m_base_type = SZBASE_BASE;
+			}
+		}
 	}
 
-	{
-		if (m_base_type == NO_BASE) {
-			const auto cfg_base_type = libpar_getpar("draw3", "base_type", 0);
-			if (cfg_base_type) {
-				const std::string base_type(cfg_base_type);
-				if (base_type == "sz4" || base_type == "SZ4"|| base_type == "4") {
-					m_base_type = SZ4_BASE;
-				} else if (base_type == "iks"|| base_type == "IKS"|| base_type == "i") {
-					m_base_type = IKS_BASE;
-				} else {
-					m_base_type = SZBASE_BASE;
-				}
+	if (m_base_type == IKS_BASE) {
+		if (m_iks_server == wxEmptyString) {
+			char *iks_server = libpar_getpar("draw3", "iks_server", 0);
+			if (iks_server) {
+				m_iks_server = SC::L2S(iks_server);
+				free(iks_server);
+			} else {
+				m_iks_server = m_base;
 			}
 		}
 
-		if (m_base_type == IKS_BASE) {
-			if (m_iks_server == wxEmptyString) {
-				char *iks_server = libpar_getpar("draw3", "iks_server", 0);
-				if (iks_server) {
-					m_iks_server = SC::L2S(iks_server);
-					free(iks_server);
-				} else {
-					m_iks_server = m_base;
-				}
-			}
-
-			char *iks_port = libpar_getpar("draw3", "iks_server_port", 0);
-			if (iks_port) {
-				m_iks_port = SC::L2S(iks_port);
-				free(iks_port);
-			}
+		char *iks_port = libpar_getpar("draw3", "iks_server_port", 0);
+		if (iks_port) {
+			m_iks_port = SC::L2S(iks_port);
+			free(iks_port);
 		}
 	}
 
@@ -332,9 +324,11 @@ bool DrawApp::OnInit() {
 		_lang = DEFAULT_LANGUAGE;
 
 	splash->PushStatusText(_("Initializing IPKContainer..."));
+
 	IPKContainer::Init(GetSzarpDataDir().wc_str(), 
 			GetSzarpDir().wc_str(), 
 			_lang.wc_str());
+
 	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject(), m_base);
 
 	m_cfg_mgr->SetSplashScreen(splash);
@@ -353,26 +347,37 @@ bool DrawApp::OnInit() {
 	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	Draw3Base *draw_base = NULL;
-	switch (m_base_type) {
-		case SZ4_BASE:
-			draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().wc_str(),
-				IPKContainer::GetObject());
-			wxLogError(_T("Using sz4 base engine"));
-			break;
-		case IKS_BASE:
-			draw_base = new Sz4ApiBase(m_dbmgr, m_iks_server.wc_str(), m_iks_port.wc_str(),
-				IPKContainer::GetObject());
-			wxLogError(_T("Connecting to iks at %s:%s"), m_iks_server.wc_str(), m_iks_port.wc_str());
-			break;
-		case SZBASE_BASE:
-		default:
-			draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().wc_str(),
-				&ConfigurationFileChangeHandler::handle,
-				wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
-			wxLogError(_T("Using sz3 base engine"));
-			break;
+	if (m_base_type == SZ4_BASE) {
+		splash->PushStatusText(_("Starting sz4 database..."));
+		wxLogInfo(_T("Using sz4 base engine"));
+		draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().wc_str(), IPKContainer::GetObject());
+	} else if (m_base_type == IKS_BASE) {
+		wxLogInfo(_T("Connecting to iks at %s:%s"), m_iks_server.wc_str(), m_iks_port.wc_str());
+		try {
+			bool connected = false;
+
+			auto iks_base = new Sz4ApiBase(m_dbmgr, m_iks_server.wc_str(), m_iks_port.wc_str(), IPKContainer::GetObject());
+			draw_base = iks_base;
+
+			do {
+				splash->PushStatusText(_("Connecting to database..."));
+				connected = iks_base->BlockUntilConnected();
+				if (connected) break;
+			} while (wxMessageBox(_("Could not connect to iks-server, should we try again?"), _("Operation failed"), wxYES_NO | wxICON_WARNING) == wxYES);
+
+		} catch(const DrawBaseException& e) {
+			wxMessageBox(_("Internal error, please restart the application"), _("Operation failed."), wxOK | wxICON_ERROR);
+			return FALSE;
+		}
+	} else {
+		splash->PushStatusText(_("Starting sz3 database..."));
+		wxLogInfo(_T("Using sz3 base engine"));
+		draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().wc_str(),
+			&ConfigurationFileChangeHandler::handle,
+			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
 	}
 
+	splash->PushStatusText(_("Starting database query mechanism..."));
 	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, draw_base);
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);

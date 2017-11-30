@@ -638,7 +638,6 @@ void ValuesTable::UpdateStats(int idx) {
 
 	const double& val = v.val;
 
-	bool is_30min = m_draw->m_draws_controller->GetPeriod() == PERIOD_T_30MINUTE;
 	if (m_count) {
 		m_max = std::max(val, m_max);
 		m_min = std::min(val, m_min);
