@@ -27,6 +27,8 @@ public:
 		po::options_description log_desc{"Logger Options"};
 		log_desc.add_options()
 			("debug,d", po::value<unsigned int>(), "Enables verbose logging")
+			("max_q_size", po::value<unsigned int>()->default_value(20), "Drops log messages if there are more than max_q_size in buffer")
+			("no_dropping", po::value<bool>()->default_value(false), "Disables dropping, if logger gets too many messages the log() becomes blocking")
 			("log_file", po::value<std::string>(), "Specifies file to log into")
 			("logger", po::value<std::string>(), "Specifies logger type (journald, file, cout)");
 
@@ -40,7 +42,6 @@ public:
 		} 
 	}
 };
-
 
 class IgnoreRemainigOptions: public ArgsHolder {
 public:

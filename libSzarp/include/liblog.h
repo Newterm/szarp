@@ -27,6 +27,9 @@ enum SZ_LIBLOG_FACILITY {
 #include <thread>
 #include <sstream>
 
+#include <deque>
+#include <future>
+
 class ArgsManager;
 
 // [[deprecated]]
@@ -53,31 +56,44 @@ namespace szlog {
 
 void init(const ArgsManager&, const std::string&);
 
+struct LogEntry {
+	std::stringstream _str;
+	priority _p;
+
+	LogEntry(const std::string& msg, priority p): _str(msg), _p(p) {}
+};
+
 class Logger {
-	struct LogEntry {
-		std::stringstream _str;
-		szlog::priority _p;
-	};
+	enum class DropPolicy { NODROP = false, DROP = true };
+	DropPolicy drop_policy = DropPolicy::DROP;
 
-	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
+	size_t max_log_msgs = 20;
+
+	std::mutex _in_mutex;
+	std::mutex _out_mutex;
+	std::deque<std::shared_ptr<LogEntry>> _msgs_to_send;
+
+	std::future<void> _msg_cv;
+	bool logger_exited = true;
+	std::function<void()> log_thread = [this](){ log_messages(); };
+
 	std::mutex _msg_mutex;
+	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
 
-	szlog::priority treshold = szlog::priority::ERROR;
+	szlog::priority treshold = szlog::priority::error;
 	std::shared_ptr<LogHandler> _logger;
 
-
-	void log(std::shared_ptr<LogEntry> msg);
-
-	void log_now(std::shared_ptr<LogEntry> msg) {
-		log(msg);
-	}
-
-	void log_later(std::shared_ptr<LogEntry> msg) {
-		// TODO: add async logging (detach)
-		std::thread([this, msg](){ log(msg); }).detach();
-	}
+	void log_messages();
+	void log(const std::string& msg, priority p);
 
 public:
+	void flush();
+
+	void log_later(std::shared_ptr<LogEntry> msg);
+	void log_now(std::shared_ptr<LogEntry> msg);
+
+	void parse_args(const ArgsManager& args_mgr);
+
 	template <typename T, typename... Ts>
 	void set_logger(Ts&&... args) {
 		_logger = std::make_shared<T>(std::forward<Ts>(args)...);
@@ -107,9 +123,6 @@ public:
 	template <typename T>
 	Logger& operator<<(const T& msg);
 
-	void reinit() {
-		_logger->reinit();
-	}
 };
 
 template <typename T>

@@ -83,6 +83,7 @@ class DTime {
 	wxString Format(const char* format = wxDefaultDateTimeFormat) const;
 
 	operator const wxDateTime&();
+	wxDateTime TimeJustBefore() const { return m_time - wxTimeSpan::Milliseconds(1); }
 };
 
 /**Maps @see DTime objects to corresponding indexes into @see m_values table*/
@@ -106,7 +107,7 @@ class TimeIndex {
 
 	void UpdatePeriods();
 
-	public:
+public:
 	TimeIndex(const PeriodType& draw);
 
 	TimeIndex(const PeriodType& draw, size_t max_values);
@@ -141,7 +142,7 @@ class TimeIndex {
 
 	static const size_t default_units_count[PERIOD_T_LAST];
 
-        static const int PeriodMult[PERIOD_T_LAST];
+	static const int PeriodMult[PERIOD_T_LAST];
 };
 
 #endif

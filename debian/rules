@@ -64,7 +64,6 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-isledit \
 		-pszarp-nagios \
 		-pszarp-paramd \
-		-pszarp-pyipk \
 		-pszarp-scripts \
 		-pszarp-server \
 		-pszarp-server-complete \
@@ -75,8 +74,7 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-viewer \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
-		-pszarp-filler2 \
-		-pszarp-s7dmn
+		-pszarp-filler2
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 

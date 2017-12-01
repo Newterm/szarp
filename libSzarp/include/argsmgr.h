@@ -43,7 +43,7 @@ public:
 			#ifndef MINGW32
 				libpar_init_from_folder("/opt/szarp/"+base_arg+"/");
 			#else
-				libpar_init_with_filename("%HOMEDRIVE%\\%HOMEPATH%\\.szarp\\"+base_arg+"\\config\\params.xml");
+				libpar_init_with_filename(("%HOMEDRIVE%\\%HOMEPATH%\\.szarp\\"+base_arg+"\\config\\params.xml").c_str(), 1);
 			#endif
 		} else {
 			#ifndef MINGW32

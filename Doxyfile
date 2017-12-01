@@ -65,49 +65,14 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = include/ \
-                         . \
-                         include/icon/ \
-                         libSzarp/ \
-                         libSzarp/include/ \
-                         libSzarp2/include/ \
-                         libSzarp2/include/szbase \
-                         libSzarp2/include/misc \
-                         libSzarp2/include/szbextr \
-                         libSzarp2/include/tools \
-                         libSzarp2/ipk/ \
-                         libSzarp2/szbase/ \
-                         meaner3/ \
-                         meaner3/utils \
-                         parcook/ \
-                         sender/ \
-                         isl/server/ \
-                         isl/python/ \
-                         isl/paramd/ \
-                         utils/ \
-			 wx/kravat/ \
-                         wx/common/ \
-                         wx/confedit/ \
-			 wx/szau/ \
-                         wx/draw3/ \
-			 wx/kontroler3/ \
-			 wx/raporter3/ \
-			 wx/pipes/ \
-			 wx/confedit/ \
-                         wx/koper/ \
-			 wx/isledit/ \
-			 wx/sync/ \
-                         wx/scc/ \
-			 wx/szast/ \
-                         wx/sync/ \
-                         wx/wxhelp/ \
-			 isl/server/ \
-			 isl/paramd/
+INPUT                  = .
 FILE_PATTERNS          = *.c \
                          *.h \
                          *.cpp \
+                         *.hpp \
+                         *.tpp \
                          *.cc
-RECURSIVE              = NO
+RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
@@ -226,14 +191,15 @@ PERL_PATH              = /usr/bin/perl
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = YES
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 UML_LOOK               = NO
 TEMPLATE_RELATIONS     = NO
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
-CALL_GRAPH             = NO
+CALL_GRAPH             = YES
+CALLER_GRAPH             = YES
 GRAPHICAL_HIERARCHY    = YES
 DOT_IMAGE_FORMAT       = png
 DOT_PATH               = 

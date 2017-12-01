@@ -43,33 +43,48 @@
 #include "loghandlers.h"
 #include "argsmgr.h"
 
+#include <csignal>
+
 namespace szlog {
 
 std::shared_ptr<Logger> logger{new Logger()};
 
 }
 
-namespace {
-std::mutex log_mutex;
-}
-
-
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY)
 {
 	szlog::log().set_log_treshold(level);
+#ifndef __MINGW32__
 	if (logfile) {
 		szlog::log().set_logger<szlog::JournaldLogger>(std::string(logfile));
 	} else {
 		szlog::log().set_logger<szlog::COutLogger>();
 	}
+#else
+	szlog::log().set_logger<szlog::COutLogger>();
+#endif
 
 	return level;
+}
+
+namespace {
+
+void blockSignals() {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+
+	// block all signals and close after destructor is called (e.g. exit handler)
+	sigset_t mask;
+	sigfillset(&mask);
+	sigprocmask(SIG_SETMASK, &mask, NULL);
+}
+
 }
 
 namespace szlog {
 
 void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	auto log_type = args_mgr.get<std::string>("logger");
+#ifndef __MINGW32__
 	if (log_type) {
 		if (*log_type == "cout") {
 			log().set_logger<COutLogger>();
@@ -84,33 +99,109 @@ void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	} else {
 		log().set_logger<JournaldLogger>(logtag);
 	}
+#else
+	log().set_logger<COutLogger>();
+#endif
 
-	auto log_level = args_mgr.get<int>("log_level").get_value_or(2);
-
-	// if debug is specified, use it
-	log_level = args_mgr.get<unsigned int>("debug").get_value_or(log_level);
-
-	log().set_log_treshold(log_level);
+	log().parse_args(args_mgr);
 }
 
-void Logger::log(std::shared_ptr<LogEntry> msg) {
+void Logger::parse_args(const ArgsManager& args_mgr) {
+	auto log_level = args_mgr.get<int>("log_level").get_value_or(2);
+
+	treshold = priority(args_mgr.get<unsigned int>("debug").get_value_or(log_level));
+
+	max_log_msgs = *args_mgr.get<unsigned int>("max_q_size");
+	drop_policy = *args_mgr.get<bool>("no_dropping")? DropPolicy::NODROP : DropPolicy::DROP;
+}
+
+void Logger::flush() {
 	std::atomic_signal_fence(std::memory_order_relaxed);
-	if (msg->_p > treshold) return;
+	std::lock_guard<std::mutex> _in_guard(_in_mutex);
+
+	_out_mutex.lock();
+	if (logger_exited) {
+		logger_exited = false;
+		_msg_cv = std::async(std::launch::async, log_thread);
+	}
+	_out_mutex.unlock();
+
+	if (_msg_cv.valid())
+		_msg_cv.wait();
+}
+
+void Logger::log(const std::string& msg, priority p) {
+	if (p > treshold) return;
+
 	if (_logger)
-		_logger->log(msg->_str.str(), msg->_p);
-	else
-		std::cout << msg->_str.str() << std::endl;
+		_logger->log(msg, p);
+}
+
+void Logger::log_now(std::shared_ptr<LogEntry> msg) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> _guard(_in_mutex);
+
+	log(msg->_str.str(), msg->_p);
+}
+
+void Logger::log_later(std::shared_ptr<LogEntry> msg) {
+	std::atomic_signal_fence(std::memory_order_relaxed);
+	std::lock_guard<std::mutex> _in_guard(_in_mutex);
+	std::lock_guard<std::mutex> _out_guard(_out_mutex);
+	if (_msgs_to_send.size() >= max_log_msgs) {
+		if (drop_policy == DropPolicy::NODROP) {
+			log(msg->_str.str(), msg->_p);
+		} else if (_msgs_to_send.size() == max_log_msgs) {
+			_msgs_to_send.push_back(std::make_shared<szlog::LogEntry>("Begginning to drop messages from process.", szlog::PriorityForLevel(1)));
+		}
+
+		return;
+	}
+
+	_msgs_to_send.push_back(msg);
+
+	// check if logger thread is inactive
+	if (logger_exited) {
+		logger_exited = false;
+		_msg_cv = std::async(std::launch::async, log_thread);
+	}
+}
+
+void Logger::log_messages() {
+	blockSignals();
+
+	while (true) {
+		std::deque<std::shared_ptr<LogEntry>> msgs;
+
+		{	// synchronised
+			std::lock_guard<std::mutex> _guard(_out_mutex);
+			if (_msgs_to_send.size() == 0) {
+				logger_exited = true;
+				return;
+			}
+
+			std::swap(msgs, _msgs_to_send);
+		}
+
+		for (const auto msg: msgs) {
+			log(msg->_str.str(), msg->_p);
+		}
+	}
 }
 
 }
 
 int sz_loginit(int level, const char * logname, SZ_LIBLOG_FACILITY, void *) {
+#ifndef __MINGW32__
 	if (logname != NULL) {
 		auto pname = std::string(logname);
 		szlog::log().set_logger<szlog::JournaldLogger>(pname);
 	} else {
 		szlog::log().set_logger<szlog::COutLogger>();
 	}
+#else
+	szlog::log().set_logger<szlog::COutLogger>();
+#endif
 
 	szlog::log().set_log_treshold(level);
 	return level;
@@ -130,22 +221,12 @@ void sz_log(int level, const char * msg_format, ...) {
 
 
 void vsz_log(int level, const char * msg_format, va_list fmt_args) {
-	std::atomic_signal_fence(std::memory_order_relaxed);
-	std::lock_guard<std::mutex> lock(log_mutex);
-
 	if (level > szlog::log().get_log_treshold()) return;
 
-	char *l;
-	if (vasprintf(&l, msg_format, fmt_args) != -1) {
-		auto log_impl = szlog::log().get_logger();
-		if (log_impl) {
-			log_impl->log(l, szlog::PriorityForLevel(level));
-		} else {
-			szlog::log() << szlog::PriorityForLevel(level) << l << szlog::flush;
-		}
+	char *msg;
+	if (vasprintf(&msg, msg_format, fmt_args) != -1) {
+		szlog::log().log_later(std::make_shared<szlog::LogEntry>(msg, szlog::PriorityForLevel(level)));
 	}
-
-	if (l) free(l);
 }
 
 namespace szlog {
@@ -156,8 +237,7 @@ Logger& Logger::operator<<(const szlog::priority& p) {
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 	const auto t_id = std::this_thread::get_id();
 
-	if (!_msgs[t_id]) _msgs[t_id] = std::make_shared<LogEntry>();
-	_msgs[t_id]->_p = p;
+	if (!_msgs[t_id]) _msgs[t_id] = std::make_shared<LogEntry>("", p);
 	return *this;
 }
 
@@ -167,16 +247,18 @@ Logger& Logger::operator<<(const szlog::str_mod& m) {
 	std::lock_guard<std::mutex> lock(_msg_mutex);
 	const auto t_id = std::this_thread::get_id();
 
-	if (!_msgs[t_id]) _msgs[t_id] = std::make_shared<LogEntry>();
-
 	switch(m) {
 	case szlog::str_mod::endl:
+		if (!_msgs[t_id]) return *this;
 		log_later(_msgs[t_id]);
 		_msgs.erase(t_id);
 		break;
 	case szlog::str_mod::flush:
-		log_now(_msgs[t_id]);
-		_msgs.erase(t_id);
+		if (_msgs[t_id]) {
+			log_now(_msgs[t_id]);
+			_msgs.erase(t_id);
+		}
+		flush();
 		break;
 	case szlog::str_mod::block:
 		break;
@@ -188,15 +270,15 @@ Logger& Logger::operator<<(const szlog::str_mod& m) {
 
 priority PriorityForLevel(int level) {
 	if (level == 0) {
-		return szlog::CRITICAL;
+		return szlog::critical;
 	} else if (level <= 2) {
-		return szlog::ERROR;
+		return szlog::error;
 	} else if (level <= 5) {
-		return szlog::WARNING;
+		return szlog::warning;
 	} else if (level <= 7) {
-		return szlog::INFO;
+		return szlog::info;
 	} else {
-		return szlog::DEBUG;
+		return szlog::debug;
 	}
 }
 
@@ -220,15 +302,15 @@ std::string format_date(tm* localtime_t) {
 
 const std::string msg_priority_for_level(szlog::priority p) {
 	switch (p) {
-	case szlog::DEBUG:
+	case szlog::debug:
 		return "DEBUG";
-	case szlog::INFO:
+	case szlog::info:
 		return "INFO";
-	case szlog::WARNING:
+	case szlog::warning:
 		return "WARN";
-	case szlog::ERROR:
+	case szlog::error:
 		return "ERROR";
-	case szlog::CRITICAL:
+	case szlog::critical:
 		return "CRITICAL";
 	}
 

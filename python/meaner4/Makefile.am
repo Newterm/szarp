@@ -1,5 +1,7 @@
 SUBDIRS = unittests
 
+TESTS = ./run_tests.sh
+
 meaner4dir = @prefix@/lib/python/meaner4
 meaner4_PYTHON = config.py \
 	lastentry.py \

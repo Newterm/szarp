@@ -26,6 +26,8 @@ LDADD = \
 	@BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ \
 	@PTHREAD_CFLAGS@
 
+TESTS = szcache_test
+
 bin_PROGRAMS = pserver-lite szcache_test
 
 pserver_lite_SOURCES = \

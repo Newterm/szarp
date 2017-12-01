@@ -55,6 +55,8 @@
 			this unit working mode possible values are 'client' and 'server'
 		extra:medium="serial"
 			data transmittion medium, may be either serial (line) or tcp
+		extra:use_tcp_2_serial_proxy="yes"
+			set to yes if serial connection must be established over tcp proxy
 		extra:proto="modbus"
 			protocol to use for this unit
 		in case of serial line, following self-explanatory attributes are also supported:

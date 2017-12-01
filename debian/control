@@ -6,7 +6,7 @@ Maintainer: Newterm Developers <devs@newterm.pl>
 Section: misc
 Standards-Version: 3.6.1
 X-Python-Version: >= 2.6
-Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk3.0-dev, wx-common, libwxbase3.0-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev (<< 1.1) |  libssl1.0-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade | openjade, python-pybabel | python-babel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-5.1-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev (>=1.55), libboost-system-dev (>=1.55), libboost-thread-dev (>=1.55), libboost-program-options-dev (>=1.55), libboost-regex-dev (>=1.55), libboost-filesystem-dev (>=1.55), libboost-python-dev (>=1.55), libboost-locale-dev (>=1.55), libboost-signals-dev (>=1.55), libasio-dev | libasio1.55-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), docbook-dsssl, rsync, dh-python, konwert, pyqt4-dev-tools, libtool, python-all-dev, python-dev, pyqt4-dev-tools, qt4-linguist-tools, libzmq3-dev, libcppunit-dev, protobuf-compiler, python-zmq, libprotobuf-dev, python-sip, texlive-generic-recommended, libsnap7-dev, libsystemd-dev
+Build-Depends: debhelper (>= 5.0.38), autotools-dev, automake, autoconf, autoconf-archive, libwxgtk3.0-dev, wx-common, libwxbase3.0-dev, libxml2-dev, bison, flex, imagemagick, jadetex, gettext, xsltproc, libxslt1-dev, libnewt-dev, libssl-dev (<< 1.1) |  libssl1.0-dev, libpam-dev, libcurl3-dev, perl, librsync-dev, libgtk2.0-dev, libsqlite3-dev, libldap2-dev (>= 2.3.5), python-setuptools (>= 0.6b3-1), libzip-dev, jade | openjade, python-pybabel | python-babel, libicu-dev, libxt-dev, libc-ares-dev, libxmlrpc-epi-dev, libluajit-5.1-dev | liblua5.1-0-dev, libftgl-dev, libboost-dev (>=1.55), libboost-system-dev (>=1.55), libboost-thread-dev (>=1.55), libboost-program-options-dev (>=1.55), libboost-regex-dev (>=1.55), libboost-filesystem-dev (>=1.55), libboost-python-dev (>=1.55), libboost-locale-dev (>=1.55), libboost-signals-dev (>=1.55), libasio-dev | libasio1.55-dev, libstdc++-dev, libxpm-dev, libevent-dev(>=2.0), docbook-dsssl, rsync, dh-python, konwert, pyqt4-dev-tools, libtool, python-all-dev, python-dev, pyqt4-dev-tools, qt4-linguist-tools, libzmq3-dev, libcppunit-dev, protobuf-compiler, python-zmq, libprotobuf-dev, python-sip, python-lxml, python-protobuf, texlive-generic-recommended, libsnap7-dev, libsystemd-dev
 
 ## draw3 compiled with CGAL fails at assertion on ubuntu trusty amd64
 # libcgal-dev
@@ -23,7 +23,7 @@ Description: SZARP basic components
 Package: szarp-daemons
 Section: misc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, python-lxml, python-decorator, python-twisted, python-daemon, python-zmq, python-protobuf, python-systemd
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, python-lxml, python-decorator, python-twisted, python-daemon, python-zmq, python-protobuf, python-systemd, libsnap71
 Suggests: python-twisted-core
 Breaks: szarp-proprietary-daemons(<=3.1-10)
 Conflicts: szarp-proprietary-daemons(<=3.0.6824), szarp-sss, szarp-utils (<=2.2.2070)
@@ -185,14 +185,6 @@ Architecture: any
 Description: Debug symbols for szarp binaries
  Contains debug symbols for szarp binaries.
 
-Package: szarp-pyipk
-Section: x11
-Architecture: all
-Depends: python (>= 2.5), ${python:Depends}, python-lxml , python-qt4 , python-sip , python-paramiko
-Description: Sets of scripts and libraries to easily manage params.xml file
- This package contains sets of plugins to manage params.xml file, and both
- graphical and command line application to use them.
-
 Package: szarp-iks
 Section: misc
 Architecture: any
@@ -214,11 +206,3 @@ Depends: python (>=2.6), ${python:Depends}, szarp-utils, szarp-daemons, python-q
 Description: SZARP Filler 2 is a tool for manual szbase data editing.
  This package contains SZARP Filler 2 application that enable user to manually
  edit szbase database. It is written in pyQt4.
-
-Package: szarp-s7dmn
-Section: misc
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, libsnap71
-Description: This package contains s7dmn daemon program for communication with Siemens controllers.
- Reading and writing data is available for all Step7 compatibile controllers.
-

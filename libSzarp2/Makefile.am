@@ -249,8 +249,14 @@ MAINTAINERCLEANFILES = Makefile.in \
 	tools/ipk_config \
 	$(PROTOBUF_ALL)
 
+if MINGW32_OPT
+INC_TO_BIN =
+else
+INC_TO_BIN = @srcdir@/tools/ipk_config
+endif
+
 bin_SCRIPTS= \
-	@srcdir@/tools/ipk_config \
+	$(INC_TO_BIN) \
 	@srcdir@/tools/ipk_add_template \
 	@srcdir@/tools/ipk_base_max \
 	@srcdir@/tools/ipk_check_dtd \

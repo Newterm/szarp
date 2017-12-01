@@ -398,8 +398,9 @@ void DrawsController::SearchState::HandleRightResponse(wxDateTime& time) {}
 void DrawsController::SearchLeft::Enter(const DTime& search_from) {
 	m_search_time = search_from;
 	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-	SendSearchQuery((search_from + index.GetTimeRes() + index.GetDateRes()).GetTime() - wxTimeSpan::Seconds(10),
-		wxInvalidDateTime, -1);
+	const auto& time_just_before = (search_from + index.GetTimeRes() + index.GetDateRes()).TimeJustBefore();
+
+	SendSearchQuery(time_just_before, wxInvalidDateTime, -1);
 }
 
 void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
@@ -518,7 +519,7 @@ void DrawsController::SearchBothPreferRight::Enter(const DTime& search_from) {
 	m_start_time = index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod();
 
 	SendSearchQuery(search_from.GetTime(),
-			index.GetStartTime().GetTime() - wxTimeSpan::Seconds(10),
+			index.GetStartTime().TimeJustBefore(),
 			1);
 }
 
@@ -528,7 +529,7 @@ void DrawsController::SearchBothPreferRight::HandleRightResponse(wxDateTime& tim
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_RIGHT, m_right_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
+		SendSearchQuery(m_search_time.TimeJustBefore(),
 			wxInvalidDateTime,
 			-1);
 	}

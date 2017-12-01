@@ -60,7 +60,29 @@ class Sz4Writer(MeanerBase):
 		self.name2index = { sp.param.param_name : i for (i, sp) in enumerate(self.save_params) }
 
 	def prepare_value(self, value, param):
-		return float(value) * (10 ** param.prec)
+		if "short" in param.data_type:
+			if value:
+				return int(value)
+			else:
+				return -2 ** 15
+
+		elif "integer" in param.data_type:
+			if value:
+				return int(value)
+			else:
+				return -2 ** 31
+
+		elif "float" in param.data_type:
+			if value:
+				return float(value)
+			else:
+				return float('nan')
+
+		elif "double" in param.data_type:
+			if value:
+				return float(value)
+			else:
+				return float('nan')
 
 	def process_szw_file(self, path, time_format):
 		f = open(path, 'r')
@@ -96,16 +118,16 @@ class Sz4Writer(MeanerBase):
 		for line in f:
 			(pname, time_string, value_string) = line.rsplit(';', 3)
 
-			pindex = self.name2index[unicode(pname, 'utf-8')]
+			pindex = self.name2index[unicode(pname, 'utf-8').strip()]
 			if pindex is None:
 				continue
 			sparam = self.save_params[pindex]
 
-			_datetime = datetime.strptime(time_string, time_format)
+			_datetime = datetime.strptime(time_string.strip(), time_format)
 			time_sec = time.mktime(_datetime.timetuple())
 			time_nanosec = _datetime.time().microsecond * 1000
 
-			value = self.prepare_value(value_string, sparam.param)
+			value = self.prepare_value(value_string.strip().replace(',', '.'), sparam.param)
 			sparam.process_value(value, int(time_sec), time_nanosec)
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
@@ -122,6 +144,6 @@ if __name__ == "__main__":
 	if ".szw" in args.input_file:
 		writer.process_szw_file(args.input_file, "%Y-%m-%d %H:%M" if args.time_format == None else args.time_format)
 	elif ".sz4" in args.input_file:
-		writer.process_file(args.input_file, "%Y-%m-%d %H:%M:%S" if args.time_format == None else args.time_format) 
+		writer.process_file(args.input_file, "%Y-%m-%d %H:%M:%S" if args.time_format == None else args.time_format)
 	else:
 		print("Wrong input file format! Aborting !", file=sys.stderr)

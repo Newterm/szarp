@@ -37,9 +37,7 @@
 #include "szarpfonts.h"
 #include "version.h"
 
-#ifndef MINGW32
 #include "../../resources/wx/icons/szarp64.xpm"
-#endif
 
 /**
  * Program events' ids

@@ -28,6 +28,8 @@ LDADD = \
 	@BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ \
 	@PTHREAD_CFLAGS@
 
+TESTS = command-handlers-unit-tests
+
 bin_PROGRAMS = command-handlers-unit-tests
 
 command_handlers_unit_tests_SOURCES = \

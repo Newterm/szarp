@@ -18,12 +18,16 @@ LIBS = ../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la \
 
 bin_PROGRAMS = unit_tests sz4_extr_simple
 
+TESTS = unit_tests
+
 unit_tests_SOURCES = \
 	unit_tests.cpp \
 	sz4_block_unit_test.cpp \
+	parhublistener_test.cpp \
 	szb_param_monitor_unit_test.cpp \
 	sz4_file_search.cpp \
 	sz4_buffer_unit_test.cpp \
+	sz4_factory_test.cpp \
 	sz4_base_test.cpp \
 	sz4_definable_param_cache.cpp \
 	test_observer.h \
@@ -36,7 +40,6 @@ unit_tests_SOURCES = \
 	sz4_wsum.cpp \
 	sz4_live_cache.cpp \
 	sz4_decode_test.cpp \
-	sz4_factory_test.cpp \
 	filelogger_test.cpp \
 	loghandler_test.cpp \
 	zmq_handler_test.cpp \

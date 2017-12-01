@@ -93,16 +93,17 @@ ParamsUpdater::SubPar::SubPar( const std::string& pname , boost::optional<ProbeT
 bool ParamsUpdater::SubPar::start_sub() {
 	SubParWeakPtr ptr(shared_from_this());
 
+	auto callback_lambda = [ptr] () {
+		GlobalService::get_service().post( std::bind( callback, ptr ) );
+	};
+
 	try {
-			token = parent->data_feeder->register_observer( pname , [ptr] () {
-				GlobalService::get_service().post( std::bind( callback, ptr ) );
-			} );
+		token = parent->data_feeder->register_observer(pname, pt, callback_lambda);
+		return true;
 	} catch( szbase_error& e ) {
 		sz_log( 0, "Szbase error while registering observer : %s", e.what() );
 		return false;
 	}
-
-	return true;
 }
 
 ParamsUpdater::SubPar::~SubPar() {
@@ -114,24 +115,9 @@ void ParamsUpdater::SubPar::update_param() {
 	using namespace boost::posix_time;
 
 	if( pt ) {
-		time_t t = parent->data_feeder->get_latest( pname, *pt );
-		time_t ptime = SzbaseWrapper::round( t , *pt );
-		ProbeType ptype = *pt;
-		if (t == ptime || ptype == ProbeType::Type::LIVE) {
-			//special case, account for the fact that in this case we
-			//need to ask for one second (because currently IKS operates
-			//with resolution of up to 1 sec) starting just before
-			//latest time
-			ptime = sz4::time_just_before( sz4::second_time_t( t ) );
-			ptype = ProbeType(ProbeType::Type::S);
-		}
-
 		parent->params.param_value_changed(
 				pname ,
-				parent->data_feeder->get_avg(
-					pname ,
-					ptime ,
-					ptype ) ,
+				parent->data_feeder->get_updated_value(pname, *pt) ,
 				*pt );
 	} else {
 		parent->params.param_changed( pname );

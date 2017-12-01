@@ -115,8 +115,15 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 		wxBitmap left_arrow;
 		wxBitmap right_arrow;
 
-		left_arrow.LoadFile("/opt/szarp/resources/wx/images/left-arrow.png", wxBITMAP_TYPE_PNG);
-		right_arrow.LoadFile("/opt/szarp/resources/wx/images/right-arrow.png", wxBITMAP_TYPE_PNG);
+#ifndef __MINGW32__
+		left_arrow.LoadFile("../../resources/wx/images/left-arrow.png", wxBITMAP_TYPE_PNG);
+		right_arrow.LoadFile("../../resources/wx/images/right-arrow.png", wxBITMAP_TYPE_PNG);
+#else
+		wxString left_arrow_path = wxGetApp().GetSzarpDir() + _T("\\resources\\wx\\images\\left-arrow.png");
+		wxString right_arrow_path = wxGetApp().GetSzarpDir() + _T("\\resources\\wx\\images\\right-arrow.png");
+		left_arrow.LoadFile(left_arrow_path, wxBITMAP_TYPE_PNG);
+		right_arrow.LoadFile(right_arrow_path, wxBITMAP_TYPE_PNG);
+#endif
 
 		dc.DrawBitmap(left_arrow, 0, 0, 40, h);
 		dc.DrawBitmap(right_arrow, w - 40, 0, 40, h);

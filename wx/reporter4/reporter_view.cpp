@@ -117,7 +117,7 @@ ReporterWindow::ReporterWindow(): wxFrame(NULL, wxID_ANY, _("Reporter")) {
 	menu_help->Append(ID_M_HELP_REP, _("&Help\tF1"));
 	menu_help->Append(ID_M_HELP_ABOUT, _("&About"));
 	
-	menu_bar->Append(m_report_menu, _("&Reports"));
+	menu_bar->Append(m_report_menu, _("&Reporter"));
 	menu_bar->Append(m_menu_template, _("&Reports"));
 	menu_bar->Append(menu_option, _("&Options"));
 	menu_bar->Append(menu_help, _("&Help"));

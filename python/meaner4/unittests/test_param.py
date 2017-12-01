@@ -23,16 +23,17 @@
 import lxml
 import lxml.etree
 import unittest
+
 import param
 import paramsvalues_pb2
 
 class ParamTest(unittest.TestCase):
 	def setUp(self):
 
-		self.types 	= [ "short"        , "int"       , "float"       , "double"       , "ushort"    , "uinteger"    ]
+		self.types 	= [ "short"        , "integer"       , "float"       , "double"       , "ushort"    , "uinteger"    ]
 		self.val_lens   = [ 2              , 4           , 4             , 8              , 2           , 4           ]
 		self.formats	= [ "<h"           , "<i"        , "<f"          , "<d"           , "<H"       , "<I"       ]
-		self.values	= [ 1	           , 1000000     , 1.5           , 1.234567889    , 40000       , 3000000000  ]
+		self.values	= [ 1	           , 1000000     , 1.5           , 1.234567889    , 40000       , 3000000  ]
 		self.msg_attrs  = [ "int_value"	   , "int_value" , "float_value" , "double_value" , "int_value" , "int_value" ]
 
 		self.node_def = lxml.etree.fromstring("""
@@ -46,7 +47,7 @@ class ParamTest(unittest.TestCase):
 		self.nodes = []
 		for t in self.types:
 			n = lxml.etree.fromstring("""
-      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" val_type="%s">
+      <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%%" prec="1" base_ind="auto" data_type="%s">
         <raport title="Kocioł 3" order="14"/>
         <draw title="Kocioł 3 Komora spalania" color="red" min="0" max="100" prior="85" order="1"/>
         <draw title="Kocioł 3 Praca falowników" color="red" min="0" max="100" prior="86" order="1"/>

@@ -543,7 +543,7 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 		if (ss.eof())
 			ok = true;
 		else
-			dolog(0, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
+			dolog(1, "Invalid value %s for attribute %s in line, %ld", (char*)prop, pname, xmlGetLineNo(node));
 	}
 	xmlFree(prop);
 	return ok ? 0 : 1;
