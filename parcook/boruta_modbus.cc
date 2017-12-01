@@ -387,10 +387,10 @@ public:
 		unsigned short v = op->val();
 		m_log->log(9, "Checking param for forbidden value: got %i, forbidden is: %i", v, forbidden);
 		if (v != forbidden) {
-			m_log->log(6, "Param got forbidden value!");
 			return v;
 		}
 
+		m_log->log(6, "Param got forbidden value!");
 		return SZARP_NO_DATA;
 	}
 };
@@ -1322,7 +1322,7 @@ int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int p
 int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
-		m_log.log(0, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
+		m_log.log(1, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
 		return 1;
 	}
 	pushValOp(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log), param);
@@ -1348,7 +1348,7 @@ int modbus_unit::get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, boo
 		} else if (_float_order == "lsbmsb") {
 			float_order = LSWMSW;
 		} else {
-			m_log.log(0, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
+			m_log.log(1, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
 			return 1;
 		}
 	} else {
@@ -1370,7 +1370,7 @@ int modbus_unit::get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, b
 	} else if (double_order_string == "lsdmsd") {
 		m_double_order = LSDMSD;
 	} else {
-		m_log.log(0, "Invalid double order specification: %s", double_order_string.c_str());
+		m_log.log(1, "Invalid double order specification: %s", double_order_string.c_str());
 		return 1;
 	}
 	return 0;
@@ -1414,7 +1414,7 @@ int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned 
 		}
 		is_lsw = false;
 	} else {
-		m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
 		return 1;
 	}
 
@@ -1476,7 +1476,7 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 	} else if (val_op2 == "MSD") {
 		is_lsd = false;
 	} else {
-		m_log.log(0, "Unsupported val_op2 attribute value - %s, line %ld", val_op2.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported val_op2 attribute value - %s, %ls", val_op2.c_str(), param->GetName().c_str());
 		return 1;
 	}
 	auto op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
@@ -1531,7 +1531,7 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 			m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
 				param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
 		} else {
-			m_log.log(0, "Unsupported long value type for send param line %ld, exiting!", xmlGetLineNo(node));
+			m_log.log(1, "Unsupported long value type for send param no %ls, exiting!", param->GetName().c_str());
 			return 1;
 		}
 	}
@@ -1585,7 +1585,7 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 
 int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	if (send) {
-		m_log.log(0, "Unsupported decimal3 value type for send param line %ld, exiting!", xmlGetLineNo(node));
+		m_log.log(1, "Unsupported decimal3 value type for send param %ls, exiting!", param->GetName().c_str());
 		return 1;
 	}
 
@@ -1597,7 +1597,7 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 	} else if (val_op == "MSW") {
 		is_lsw = false;
 	} else {
-		m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported val_op attribute value - %s, line %ls", val_op.c_str(), param->GetName().c_str());
 		return 1;
 	}
 
@@ -1628,7 +1628,7 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, TSendParam *sp, bool send) { 
 	char* c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (c == NULL) {
-		m_log.log(0, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
+		m_log.log(1, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
 		return 1;
 	}
 
@@ -1636,7 +1636,7 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 	char *e;
 	long l = strtol((char*)c, &e, 0);
 	if (*e != 0 || l < 0 || l > 65535) {
-		m_log.log(0, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
+		m_log.log(1, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
 		return 1;
 	} 
 	xmlFree(c);
@@ -1649,7 +1649,7 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 	else if (!strcmp(c, "input_register"))
 		rt = INPUT_REGISTER;
 	else {
-		m_log.log(0, "Unsupported register type, line %ld, should be either input_register or holding_register", xmlGetLineNo(node));
+		m_log.log(1, "Unsupported register type, should be either input_register or holding_register");
 		return 1;
 	}
 	xmlFree(c);
@@ -1664,7 +1664,7 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 		if (!sp->GetParamName().empty()) {
 			param = sc->getParamByName(sp->GetParamName());
 			if (param == NULL) {
-				m_log.log(0, "parameter with name '%s' not found (send parameter at line %ld)",
+				m_log.log(1, "parameter with name '%s' not found (send parameter at line %ld)",
 						SC::S2L(sp->GetParamName()).c_str(), xmlGetLineNo(node));
 				return 1;
 			}
@@ -1694,7 +1694,7 @@ int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, T
 	} else if (val_type == "decimal3") {
 		ret = configure_decimal3_register(param, sp, prec, node, addr, send, rt);
 	} else {
-		m_log.log(0, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 		ret = 1;
 	}
 
@@ -1732,12 +1732,12 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 
 	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 	if (-1 == ret) {
-		m_log.log(0, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
+		m_log.log(1, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 		return 1;
 	}
 	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (-1 == ret) {
-		m_log.log(0, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
+		m_log.log(1, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
 		return 1;
 	}
 
@@ -1754,7 +1754,7 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 
 	        ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
 		if (-1 == ret) {
-			m_log.log(0, "Cannot allocate XPath expression for param number %d", j + 1);
+			m_log.log(1, "Cannot allocate XPath expression for param number %d", j + 1);
 			return 1;
 		}
 		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
@@ -1948,7 +1948,7 @@ int tcp_server::configure(TUnit* unit, xmlNodePtr node, short *read, short *send
 		struct in_addr ip;
 		int ret = inet_aton(ip_allowed.c_str(), &ip);
 		if (ret == 0) {
-			m_log.log(0, "incorrect IP address '%s'", ip_allowed.c_str());
+			m_log.log(1, "incorrect IP address '%s'", ip_allowed.c_str());
 			return 1;
 		} else {
 			m_log.log(5, "IP address '%s' allowed", ip_allowed.c_str());
@@ -2394,7 +2394,7 @@ int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, s
 	else if (protocol == "ascii")
 		m_parser = new serial_ascii_parser(this, &m_log);
 	else {
-		m_log.log(0, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		m_log.log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
 		return 1;
 	}
 
@@ -2843,7 +2843,7 @@ int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 	else if (protocol == "ascii")
 		m_parser = new serial_ascii_parser(this, &m_log);
 	else {
-		m_log.log(0, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		m_log.log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
 		return 1;
 	}
 	if (m_parser->configure(node, spc))

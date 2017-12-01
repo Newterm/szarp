@@ -521,7 +521,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 
 	m_expiration_time = 0;
 	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, true)) {
-		m_log.log(0, "Invalid extra:nodata-timeout specified, error");
+		m_log.log(1, "Invalid extra:nodata-timeout specified, error");
 		return 1;
 	}
 	if (!m_expiration_time) {
@@ -532,13 +532,13 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 
 	std::string _extra_id;
 	if (get_xml_extra_prop(node, "id", _extra_id)) {
-		m_log.log(0, "Invalid or missing extra:id attribute in param element at line: %ld", xmlGetLineNo(node));
+		m_log.log(1, "Invalid or missing extra:id attribute in param element at line: %ld", xmlGetLineNo(node));
 		return 1;
 	}
 
 	const int l = boost::lexical_cast<int>(_extra_id);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(0, "Invalid value of extra:id value %d, expected value between 1 and 31 (line %ld)", l, xmlGetLineNo(node));
+		m_log.log(1, "Invalid value of extra:id value %d, expected value between 1 and 31 (line %ld)", l, xmlGetLineNo(node));
 		return 1;
 	}
 	/* ADR is address + 128 */
@@ -548,7 +548,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 	for(unsigned int i = 0; i < m_read_count; ++i) {
 		char *expr;
 		if(asprintf(&expr, ".//ipk:param[position()=%d]", i+1) == -1) {
-			m_log.log(0, "Error occured when finding param");
+			m_log.log(1, "Error occured when finding param");
 
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
@@ -560,7 +560,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 		std::string _pnu;
 		m_log.log(10, "extra:param %s", _pnu.c_str());
 		if (get_xml_extra_prop(pnode, "parameter-number", _pnu, false)) {
-			m_log.log(0, "Invalid or missing extra:parameter-number attribute in param element at line %ld", xmlGetLineNo(pnode));
+			m_log.log(1, "Invalid or missing extra:parameter-number attribute in param element at line %ld", xmlGetLineNo(pnode));
 			return 1;
 		}
 
@@ -569,7 +569,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 
 		std::string val_type;
 		if (get_xml_extra_prop(pnode, "val_type", val_type, true)) {
-			m_log.log(0, "Invalid extra:val_type attribute in param element at line: %ld", xmlGetLineNo(pnode));
+			m_log.log(1, "Invalid extra:val_type attribute in param element at line: %ld", xmlGetLineNo(pnode));
 			return 1;
 		}
 
@@ -583,7 +583,7 @@ int fc_proto::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, 
 			configure_integer_register(pnu);
 		}
 		else {
-			m_log.log(0, "Unsupported value type: %s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
+			m_log.log(1, "Unsupported value type: %s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
 			return 1;
 		}
 	}

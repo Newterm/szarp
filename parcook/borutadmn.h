@@ -531,7 +531,7 @@ template<class T> int get_xml_extra_prop(xmlNodePtr node, const char* pname, T& 
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST pname, BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (prop == NULL) {
 		if (!optional) {
-			dolog(0, "No attribute %s given in line %ld", pname, xmlGetLineNo(node));
+			dolog(1, "No attribute %s given in line %ld", pname, xmlGetLineNo(node));
 			return 1;
 		} else {
 			return 0;

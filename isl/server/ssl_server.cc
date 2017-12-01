@@ -149,7 +149,7 @@ SSLConnection::SSLConnection(SSL_CTX *ctx, ConnectionHandler *ch,
 	ssl = SSL_new(ctx);
 	SSL_set_bio(ssl, bio, bio);
 	if (SSL_accept(ssl) <= 0) {
-		sz_log(0, "SSL accept error");
+		sz_log(1, "SSL accept error");
 		return;
 	}
 	is_ok = 1;

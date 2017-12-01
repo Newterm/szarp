@@ -81,32 +81,32 @@ int main(int argc, char** argv)
 	
 	char *path = libpar_getpar("", "IPK", 0);
 	if (path == NULL) {
-		sz_log(0, "'IPK' not found in szarp.cfg");
+		sz_log(1, "'IPK' not found in szarp.cfg");
 		return 1;
 	}
 	char *dir = libpar_getpar("", "datadir", 0);
 	if (dir == NULL) {
-		sz_log(0, "'datadir' not found in szarp.cfg");
+		sz_log(1, "'datadir' not found in szarp.cfg");
 		return 1;
 	}
 
 	TSzarpConfig ipk;
 	if (ipk.loadXML(SC::L2S(path))) {
-		sz_log(0, "Error loading IPK from file '%s'", path);
+		sz_log(1, "Error loading IPK from file '%s'", path);
 		return 1;
 	}
 	free(path);
 
 	TParam *p = ipk.getParamByName(SC::L2S(argv[1]));
 	if (p == NULL) {
-		sz_log(0, "Parameter '%s' not found in IPK", argv[1]);
+		sz_log(1, "Parameter '%s' not found in IPK", argv[1]);
 		return 1;
 	}
 
 	char *tmp;
 	time_t start = strtol(argv[2], &tmp, 10);
 	if ((argv[2][0] == 0) || (tmp[0] != 0)) {
-		sz_log(0, "'%s' is not a correct number", argv[2]);
+		sz_log(1, "'%s' is not a correct number", argv[2]);
 		return 1;
 	}
 	time_t end;
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	} else {
 		end = strtol(argv[3], &tmp, 10);
 		if ((argv[3][0] == 0) || (tmp[0] != 0)) {
-			sz_log(0, "'%s' is not a correct number", argv[2]);
+			sz_log(1, "'%s' is not a correct number", argv[2]);
 			return 1;
 		}
 	}
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 	szb_buffer_t* buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, &ipk);
 
 	if (buf == NULL) {
-		sz_log(0, "Error creating szbase buffer");
+		sz_log(1, "Error creating szbase buffer");
 		return 1;
 	}
 	free(dir);

@@ -1618,7 +1618,7 @@ When in SZARP line daemon mode, the following options are available:\n");
                 
                 ipc->GoParcook();
             } else
-                sz_log(0, "No current data file found");
+                sz_log(1, "No current data file found");
 
             sz_log(9, "Sleeping...");
 

@@ -162,7 +162,7 @@ TExecute* g_exec = NULL;
 
 RETSIGTYPE g_CriticalHandler(int signum)
 {
-	sz_log(0, "meaner3: signal %d caught, exiting, report to author",
+	sz_log(1, "meaner3: signal %d caught, exiting, report to author",
 			signum);
 	/* resume default action - abort */
 	signal(signum, SIG_DFL);

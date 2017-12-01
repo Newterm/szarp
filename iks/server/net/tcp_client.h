@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <functional>
-#include <queue>
+#include <deque>
 
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
@@ -23,12 +23,12 @@ public:
 
 	virtual void write_line( const std::string& line )
 	{
-		io_service_.post(std::bind(&TcpClient::do_write_line, this, line));
+		io_service_.post([this, line](){ do_write_line(line); } );
 	}
 
 	void close()
 	{
-		io_service_.post(std::bind(&TcpClient::do_close, this));
+		io_service_.post([this](){ do_close(); } );
 	}
 
 	slot_connection on_connected( const sig_connection_slot& slot )
@@ -41,6 +41,8 @@ private:
 
 	void do_close();
 
+	void schedule_next_line();
+
 	std::shared_ptr<details::AsioHandler> handler;
 
 	boost::asio::io_service& io_service_;
@@ -48,7 +50,8 @@ private:
 
 	boost::asio::streambuf read_buffer;
 
-	std::queue<std::string> lines;
+	std::deque<std::string> outbox;
+	std::deque<std::string> sendbox;
 
 	sig_connection emit_connected;
 

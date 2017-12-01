@@ -274,7 +274,7 @@ void kams_daemon::StartDo() {
 		dolog(10, "%s: Opening connection...", m_id.c_str());
 		m_connection->Open();
 	} catch (SerialPortException &e) {
-		dolog(0, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
+		dolog(1, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
 		SetRestart();
 		ScheduleNext(RESTART_INTERVAL_MS);
 	}
@@ -314,7 +314,7 @@ void kams_daemon::Do()
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written == 3) {
@@ -328,7 +328,7 @@ void kams_daemon::Do()
 			try {
 				WriteChar();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				SetRestart();
 			}
 			if (m_chars_written < 3) {
@@ -357,12 +357,12 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (NoDataException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
 			} catch (KamsDmnException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 1000;
 				m_state = SET_COMM_WRITE;
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
@@ -370,7 +370,7 @@ void kams_daemon::Do()
 				}
 				m_ipc->GoParcook();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
 				IncreaseWaitForDataTime();
 				SetRestart();
@@ -382,7 +382,7 @@ void kams_daemon::Do()
 				m_connection->Close();
 				m_connection->Open();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
+				dolog(1, "%s: Restart failed: %s", m_id.c_str(), e.what());
 				for (int i = 0; i < m_ipc->m_params_count; i++) {
 					m_ipc->m_read[i] = SZARP_NO_DATA;
 				}
@@ -429,7 +429,7 @@ void kams_daemon::WriteChar()
 
 void kams_daemon::ReadError(const BaseConnection *conn, short event)
 {
-	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
+	dolog(0, "%s: ReadError, closing connection..", m_id.c_str());
 	m_connection->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
@@ -678,8 +678,7 @@ int main(int argc, char *argv[])
 		dolog(10, "Reading config");
 		daemon.ReadConfig(argc, argv);
 	} catch (kams_daemon::KamsDmnException &e) {
-		dolog(0, "Exception occured:");
-		dolog(0, "%s", e.what());
+		dolog(0, "Exception occured: %s", e.what());
 		exit(1);
 	}
 	dolog(10, "Starting daemon");

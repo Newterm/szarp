@@ -603,7 +603,7 @@ protected:
 
 void K601Daemon::ReadError(const BaseConnection *conn, short event)
 {
-	dolog(0, "%s: %s", m_id.c_str(), "ReadError, closing connection..");
+	sz_log(1, "%s: ReadError, closing connection..", m_id.c_str());
 	m_serial_port->Close();
 	SetRestart();
 	ScheduleNext(RESTART_INTERVAL_MS);
@@ -733,11 +733,10 @@ Unique registers (read params): %d\n\
 
 	}
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init()) {
-			throw K601Exception("ERROR!: IPC init failed");
-		}
+	try {
+		ipc = new IPCHandler(cfg);
+	} catch (const std::exception& e) {
+		throw K601Exception("ERROR!: IPC init failed");
 	}
 
 	dolog(2, "starting main loop");
@@ -747,7 +746,7 @@ Unique registers (read params): %d\n\
 	(void)ret;
 	plugin = dlopen(plugin_path, RTLD_LAZY);
 	if (plugin == NULL) {
-		dolog(0,
+		dolog(1,
 		       "Cannot load %s library: %s",
 		       plugin_path, dlerror());
 		exit(1);
@@ -760,7 +759,7 @@ Unique registers (read params): %d\n\
 	destroyReceive = (KMPReceiveDestroy_t *) dlsym(plugin, "DestroyKMPReceive");
 	if ((createSend == NULL) || (createReceive == NULL) || (destroySend == NULL)
 			|| (destroyReceive == NULL)) {
-		dolog(0, "Error loading symbols frop prop-plugins.so library: %s",
+		dolog(1, "Error loading symbols frop prop-plugins.so library: %s",
 				dlerror());
 		dlclose(plugin);
 		exit(1);
@@ -783,7 +782,7 @@ void K601Daemon::StartDo() {
 		m_serial_port->AddListener(this);
 		m_serial_port->Open();
 	} catch (SerialPortException &e) {
-		dolog(0, "%s: %s", m_id.c_str(), e.what());
+		dolog(1, "%s: %s", m_id.c_str(), e.what());
 		SetRestart();
 		ScheduleNext(RESTART_INTERVAL_MS);
 	}
@@ -815,7 +814,7 @@ void K601Daemon::Do()
 				m_serial_port->WriteData(&query[0], query.size());
 				m_state = READ;
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s", m_id.c_str(), e.what());
+				dolog(1, "%s: %s", m_id.c_str(), e.what());
 				destroySend(MyKMPSendClass);
 				SetRestart();
 				wait_ms = RESTART_INTERVAL_MS;
@@ -888,7 +887,7 @@ void K601Daemon::Do()
 				m_serial_port->Close();
 				m_serial_port->Open();
 			} catch (SerialPortException &e) {
-				dolog(0, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
+				dolog(1, "%s: %s %s", m_id.c_str(), "Restart failed:", e.what());
 				SetNoData();
 				ipc->GoParcook();
 				wait_ms = RESTART_INTERVAL_MS;
@@ -1032,8 +1031,8 @@ int main(int argc, char *argv[])
 
 	try {
 		daemon.Init(argc, argv);
-	} catch (K601Daemon::K601Exception &e) {
-		dolog(0, "%s", e.what());
+	} catch (const std::exception& e) {
+		dolog(0, "Error while initializing daemon: %s, exiting.", e.what());
 		exit(1);
 	}
 

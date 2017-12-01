@@ -110,7 +110,7 @@ int main (int argc, char **argv)
 
 		/* set logging */
 		sz_loginit(loglevel, NULL, SZ_LIBLOG_FACILITY_DAEMON);
-		sz_log(0, "starting pserverLITE...");
+		sz_log(1, "starting pserverLITE...");
 
 		/* read configuration (section "probes_server") */
 		libpar_init_with_filename("/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg", 1);
@@ -140,7 +140,7 @@ int main (int argc, char **argv)
 		/* daemonize pserver-lite process */
 		if (!no_daemon) {
 			if (daemonize(DMN_SIGPIPE_IGN) != 0) {
-				sz_log(0, "failed to daemonize process, exiting...");
+				sz_log(1, "failed to daemonize process, exiting...");
 				return EXIT_FAILURE;
 			}
 		}
@@ -164,13 +164,13 @@ int main (int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	catch (std::exception& e) {
-		sz_log(0, "ERROR: %s, exiting...", e.what());
+		sz_log(1, "ERROR: %s, exiting...", e.what());
 		std::cerr << PROGRAM_NAME << ": ERROR: " << e.what() << std::endl;
 
 		return EXIT_FAILURE;
 	}
 	catch (...) {
-		sz_log(0, "ERROR: exception of unknown type! Exiting...");
+		sz_log(1, "ERROR: exception of unknown type! Exiting...");
 		std::cerr
 			<< PROGRAM_NAME
 			<< ": ERROR: exception of unknown type!" << std::endl;

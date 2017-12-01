@@ -284,7 +284,7 @@ void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
 	switch (m_state) {
 		case READING_FLOW:
 			if (tokc != 4) {
-				m_log.log(0, "Invalid number of fields in flow response");
+				m_log.log(1, "Invalid number of fields in flow response");
 				m_manager->terminate_connection(this);
 				break;
 			}
@@ -294,7 +294,7 @@ void fp210_driver::data_ready(struct bufferevent* bufev, int fd) {
 			break;
 		case READING_SUMS:
 			if (tokc != 3) {
-				m_log.log(0, "Invalid number of fields in sum response");
+				m_log.log(1, "Invalid number of fields in sum response");
 				m_manager->terminate_connection(this);
 				break;
 			}
@@ -319,7 +319,7 @@ int fp210_driver::configure(TUnit* unit, xmlNodePtr node, short* read, short *se
 		return 1;
 	m_read_count = unit->GetParamsCount();
 	if (m_read_count != 5) {
-		m_log.log(0, "FP210 requires exactly 5 parameters in szarp configuration");
+		m_log.log(1, "FP210 requires exactly 5 parameters in szarp configuration");
 		return 1;
 	}
 	m_read = read;

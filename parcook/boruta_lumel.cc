@@ -263,7 +263,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	}
 
 	if (id > 31) {
-	    m_log.log(0, "Unit id out of allowed range in unit element at line: %ld", xmlGetLineNo(node));
+	    m_log.log(1, "Unit id out of allowed range in unit element at line: %ld", xmlGetLineNo(node));
 	    return 1;
 	}
 	m_unit_id = id;
@@ -278,7 +278,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 	for (size_t i = 0; i < m_read_count ; i++) {
 		char *expr;
 		if (asprintf(&expr, ".//ipk:param[position()=%zu]", i + 1) == -1) {
-			sz_log(0, "error occured reading param");
+			sz_log(1, "error occured reading param");
 			return 1;
 		}
 		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
@@ -287,14 +287,14 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 
 		std::string _addr;
 		if (get_xml_extra_prop(pnode, "address", _addr, false)) {
-		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(1, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
 		char *e;
 		long l = strtol(_addr.c_str(), &e, 0);
 		if (*e != 0 || l < 0 || l > 0x32) {
-			m_log.log(0, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
+			m_log.log(1, "Invalid address attribute value: %ld (line %ld), between 0 and 0x32", l, xmlGetLineNo(pnode));
 			return 1;
 		}
 		unsigned char addr = (unsigned char)l;
@@ -303,14 +303,14 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 		int prec = exp10(param->GetPrec());
 		std::string _prec;
 		if (get_xml_extra_prop(pnode, "prec", _prec, true)) {
-		    m_log.log(0, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(1, "Invalid address attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
 		if (!_prec.empty()) {
 		    l = strtol(_prec.c_str(), &e, 0);
 		    if (*e != 0 || l < 0) {
-			    m_log.log(0, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
+			    m_log.log(1, "Invalid extra:prec attribute value: %ld (line %ld)", l, xmlGetLineNo(pnode));
 			    return 1;
 		    }
 		    prec = exp10(l);
@@ -319,7 +319,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 
 		std::string val_op;
 		if (get_xml_extra_prop(node, "val_op", val_op, true)) {
-		    m_log.log(0, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
+		    m_log.log(1, "Invalid val_op attribute in param element at line: %ld", xmlGetLineNo(pnode));
 		    return 1;
 		}
 
@@ -327,7 +327,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 
 		if (val_op.empty()) {
 		    if (m_registers.find(addr) != m_registers.end()) {
-			m_log.log(0, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
+			m_log.log(1, "Already configured register with address (%hd) in param element at line: %ld", addr, xmlGetLineNo(pnode));
 			return 1;
 		    }
 		    reg = new lumel_register(addr, &m_log);
@@ -350,7 +350,7 @@ int lumel_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, sh
 			m_read_operators.push_back(new long_read_val_op(reg, prec, false));
 		    }
 		    else {
-			m_log.log(0, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
+			m_log.log(1, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(pnode));
 			return 1;
 		    }
 		}

@@ -145,7 +145,7 @@ void Initialize(unsigned char linenum)
 	else {
 		int ret = fscanf(linedef, "%c%d\n", &ch, &val);
 		if ( ret != 2 ) {
-			sz_log(0, "testdmn: fscanf error, could not read given values");
+			sz_log(1, "testdmn: fscanf error, could not read given values");
 			exit(1);
 		}
 		if (ch != 'R')
@@ -162,13 +162,13 @@ void Initialize(unsigned char linenum)
 		    UnitsOnLine);
 	maxj = RadiosOnLine ? RadiosOnLine : 1;
 	if ((RadioInfo = (tRadio *) calloc(maxj, sizeof(tRadio))) == NULL) {
-		sz_log(0, "testdmn: memory allocating error (1)");
+		sz_log(1, "testdmn: memory allocating error (1)");
 		exit(1);
 	}
 	for (j = 0; j < maxj; j++) {
 		if (RadiosOnLine) {
 			if (fgets(RadioInfo[j].RadioName, 40, linedef) == NULL) {
-				sz_log(0, "testdmn: fgets error, could not copy given linedef");
+				sz_log(1, "testdmn: fgets error, could not copy given linedef");
 				exit(1);
 			}
 
@@ -177,7 +177,7 @@ void Initialize(unsigned char linenum)
 				*chptr = 0;
 			int ret = fscanf(linedef, "%d\n", &val);
 			if ( ret != 1 ) {
-				sz_log(0, "testdmn: fscanf error, could not read given values");
+				sz_log(1, "testdmn: fscanf error, could not read given values");
 				exit(1);
 			}
 			RadioInfo[j].NumberOfUnits = UnitsOnLine =
@@ -187,7 +187,7 @@ void Initialize(unsigned char linenum)
 		}
 		if ((UnitsInfo =
 		     (tUnit *) calloc(UnitsOnLine, sizeof(tUnit))) == NULL) {
-			sz_log(0, "testdmn: memory allocating error (2)");
+			sz_log(1, "testdmn: memory allocating error (2)");
 			exit(1);
 		}
 		for (i = 0; i < UnitsOnLine; i++) {
@@ -195,7 +195,7 @@ void Initialize(unsigned char linenum)
 			       &UnitsInfo[i].UnitCode, &val, &val1, &val2,
 			       &val3, &val4);
 			if (ret != 6) {
-				sz_log(0, "testdmn: fscanf error, could not read given values");
+				sz_log(1, "testdmn: fscanf error, could not read given values");
 				exit(1);
 			}
 			UnitsInfo[i].RapId = (unsigned char) val;
@@ -212,25 +212,25 @@ void Initialize(unsigned char linenum)
 			if ((UnitsInfo[i].Pars =
 			     (short *) calloc(UnitsInfo[i].ParOut,
 					      sizeof(short))) == NULL) {
-				sz_log(0, "testdmn: memory allocating error (3)");
+				sz_log(1, "testdmn: memory allocating error (3)");
 				exit(1);
 			}
 			if ((UnitsInfo[i].Sending =
 			     (unsigned char *) calloc(UnitsInfo[i].ParOut,
 						      sizeof(unsigned char)))
 			    == NULL) {
-				sz_log(0, "testdmn: memory allocating error (4)");
+				sz_log(1, "testdmn: memory allocating error (4)");
 				exit(1);
 			}
 			if ((UnitsInfo[i].rtype = (long *)
 			     calloc(UnitsInfo[i].ParOut,
 				    sizeof(long))) == NULL) {
-				sz_log(0, "testdmn: memory allocating error (5)");
+				sz_log(1, "testdmn: memory allocating error (5)");
 				exit(1);
 			}
 			if ((UnitsInfo[i].Vals = (int *)
 			     calloc(UnitsInfo[i].ParIn, sizeof(int))) == NULL) {
-				sz_log(0, "testdmn: memory allocating error (6)");
+				sz_log(1, "testdmn: memory allocating error (6)");
 				exit(1);
 			}
 			for (ii = 0; ii < UnitsInfo[i].ParOut; ii++) {
@@ -242,20 +242,20 @@ void Initialize(unsigned char linenum)
 	}
 	if ((ShmDes = shmget(ftok(linedmnpat, linenum),
 			     sizeof(short) * VTlen, 00600)) < 0) {
-		sz_log(0, "testdmn: cannot get shared memory segment descriptor");
+		sz_log(1, "testdmn: cannot get shared memory segment descriptor");
 		exit(1);
 	}
 	if ((SemDes =
 	     semget(ftok(parcookpat, SEM_PARCOOK), SEM_LINE + 2 * linenum, 00600)) < 0) {
-		sz_log(0, "testdmn: cannot get parcook semaphor descriptor");
+		sz_log(1, "testdmn: cannot get parcook semaphor descriptor");
 		exit(1);
 	}
 	if ((MsgSetDes = msgget(ftok(parcookpat, MSG_SET), 00666)) < 0) {
-		sz_log(0, "testdmn: cannot get 'set' message queue descriptor");
+		sz_log(1, "testdmn: cannot get 'set' message queue descriptor");
 		exit(1);
 	}
 	if ((MsgRplyDes = msgget(ftok(parcookpat, MSG_RPLY), 00666)) < 0) {
-		sz_log(0, "testdmn: cannot get 'reply' message queue descriptor");
+		sz_log(1, "testdmn: cannot get 'reply' message queue descriptor");
 		exit(1);
 	}
 }
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 	Initialize(LineNum);
 
 	if ((ValTab = (short *) shmat(ShmDes, (void *) 0, 0)) == (void *) -1) {
-		sz_log(0, "testdmn: can not attach shared memory segment");
+		sz_log(1, "testdmn: can not attach shared memory segment");
 		exit(1);
 	}
 

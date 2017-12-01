@@ -173,13 +173,13 @@ bool Szbase::AddBase(const std::wstring& szbase_dir, const std::wstring &prefix)
 
 	TSzarpConfig *ipk = m_ipk_containter->GetConfig(prefix);
 	if (ipk == NULL) {
-		sz_log(0, "Unable to load ipk dir:%ls", prefix.c_str());
+		sz_log(1, "Unable to load ipk dir:%ls", prefix.c_str());
 		return false;
 	}
 		
 	szb_buffer_t* szbbuf = szb_create_buffer(this, szbase_dir, m_buffer_cache_size, ipk);
 	if (szbbuf == NULL) {
-		sz_log(0, "Unable to load ipk dir:%ls", szbase_dir.c_str());
+		sz_log(1, "Unable to load ipk dir:%ls", szbase_dir.c_str());
 		return false;
 	}
 

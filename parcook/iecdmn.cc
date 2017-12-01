@@ -407,7 +407,7 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 	Unit dunit;
 	xmlChar* _address = xmlGetNsProp(xunit, BAD_CAST "address", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (_address == NULL) {
-		dolog(0, "Attribute iec:address not present in unit element, line no (%ld)", xmlGetLineNo(xunit));
+		dolog(1, "Attribute iec:address not present in unit element, line no (%ld)", xmlGetLineNo(xunit));
 		return false;
 	}
 	dunit.address = (char*)_address;
@@ -462,7 +462,7 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 
 		xmlChar* _address = xmlGetNsProp(n, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 		if (_address == NULL) {
-			dolog(0, "Attribute iec:address not present in param element, line no (%ld)", xmlGetLineNo(n));
+			dolog(1, "Attribute iec:address not present in param element, line no (%ld)", xmlGetLineNo(n));
 			return false;
 		}
 		std::string address = (char*)_address;
@@ -784,7 +784,7 @@ void IECDaemon::ParseResponse(IECDaemon::Unit& unit, const char* read_buffer, si
 					break;
 			}
 	} catch (std::ios_base::failure) {
-		dolog(0, "Failed to parse response from meter");
+		dolog(1, "Failed to parse response from meter");
 	}
 }
 
@@ -816,12 +816,16 @@ void IECDaemon::Start() {
 
 int main(int argc, char *argv[]) {
 	DaemonConfig* cfg = new DaemonConfig("iecdmn");
-	if (cfg->Load(&argc, argv))
+	if (cfg->Load(&argc, argv)) {
+		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
+	}
 	g_single = cfg->GetSingle() || cfg->GetDiagno();
 	IECDaemon daemon;
-	if (!daemon.Configure(cfg))
+	if (!daemon.Configure(cfg)) {
+		sz_log(0, "Error configuring daemon, exiting.");
 		return 1;
+	}
 	daemon.Start();
 	return 1;
 
@@ -835,7 +839,7 @@ void dolog(int level, const char * fmt, ...) {
 		char *l;
 		va_start(fmt_args, fmt);
 		if (vasprintf(&l, fmt, fmt_args) == -1) {
-			sz_log(0, "Error occured when logging in single mode");
+			sz_log(1, "Error occured when logging in single mode");
 			return;
 		}
 		va_end(fmt_args);

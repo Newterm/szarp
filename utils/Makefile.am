@@ -27,8 +27,8 @@ AM_CPPFLAGS = \
 		-DPREFIX=\"@prefix@\" \
 		-DINSTALL_PREFIX='"/opt/szarp"'
 
-LIBSZARP=../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@
-LIBSZARP2=../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la @BOOST_PROGRAM_OPTIONS_LIB@ @BOOST_DATE_TIME_LIB@  @BOOST_THREAD_LIB@	@LUA_LIBS@
+LIBSZARP=../libSzarp/libSzarp.la
+LIBSZARP2=../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la @BOOST_DATE_TIME_LIB@  @BOOST_THREAD_LIB@	@LUA_LIBS@
 
 LDADD = @XML_LIBS@ $(LIBSZARP) @LUA_LIBS@
 

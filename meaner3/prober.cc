@@ -139,7 +139,7 @@ TProber* g_prober = NULL;
 
 RETSIGTYPE g_CriticalHandler(int signum)
 {
-	sz_log(0, "prober: signal %d caught, exiting, report to author",
+	sz_log(1, "prober: signal %d caught, exiting, report to author",
 			signum);
 	/* resume default action - abort */
 	signal(signum, SIG_DFL);
@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
 
 	/* Check for other copies of program. */
 	if ((i = check_for_other (argc, argv))) {
-		sz_log(0, "prober: another copy of program is running, pid %d, exiting", i);
+		sz_log(1, "prober: another copy of program is running, pid %d, exiting", i);
 		return 1;
 	}
 
@@ -209,13 +209,13 @@ int main(int argc, char* argv[])
 	/* Set signal handling */
 	g_prober = prober;
 	if (prober->InitSignals(g_CriticalHandler, g_TerminateHandler) != 0) {
-		sz_log(0, "prober: error setting signal actions, exiting");
+		sz_log(1, "prober: error setting signal actions, exiting");
 		return 1;
 	}
 	
 	/* Load configuration data. */
 	if (prober->LoadConfig(SZARP_CFG_SECTION) != 0) {
-		sz_log(0, "prober: error while loading configuration, exiting");
+		sz_log(1, "prober: error while loading configuration, exiting");
 		return 1;
 	}
 	
@@ -223,19 +223,19 @@ int main(int argc, char* argv[])
 
 	/* Check base. */
 	if (prober->CheckBase() != 0) {
-		sz_log(0, "prober: cannot initialize base, exiting");
+		sz_log(1, "prober: cannot initialize base, exiting");
 		return 1;
 	}
 
 	/* Load IPK */
 	if (prober->LoadIPK() == -1) {
-		sz_log(0, "prober: cannot set up IPK configuration, exiting");
+		sz_log(1, "prober: cannot set up IPK configuration, exiting");
 		return 1;
 	}
 	
 	/* Try connecting with parcook. */
 	if (prober->InitReader() != 0) {
-		sz_log(0, "prober: connection with parcook failed, exiting");
+		sz_log(1, "prober: connection with parcook failed, exiting");
 		return 1;
 	}
 
@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 				} else {
 					/* This is indeed fixable with more buffering */
 					//prober->WriteParamsMissed(nlost);	
-					sz_log(0, "prober: unfixable pos diff - data lost");
+					sz_log(1, "prober: unfixable pos diff - data lost");
 					prober->SetWritePos(curr_pos);
 				}
 			}

@@ -7,7 +7,7 @@ SzParamMap::SzParam SzParamMap::ConfigureParamFromXml( unsigned long int idx, xm
 	/* val_type */
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute val_type given for param in line %ld",
+		sz_log(1, "No attribute val_type given for param in line %ld",
 			       	xmlGetLineNo(node));
 		return SzParam();
 	}
@@ -28,7 +28,7 @@ SzParamMap::SzParam SzParamMap::ConfigureParamFromXml( unsigned long int idx, xm
 	/* address */
 	prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute address given for param in line %ld",
+		sz_log(1, "No attribute address given for param in line %ld",
 			       	xmlGetLineNo(node));
 		return SzParam();
 	}
@@ -69,14 +69,14 @@ bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xm
 	sz_log(7, "SzParam::max = %f", szp.getMax());
 
 	if (szp.getMin() > szp.getMax()) {
-		sz_log(0, "Configuration error: min > max");
+		sz_log(1, "Configuration error: min > max");
 		return false;
 	}
 
 	/* extra:prec is required for sending floats */
 	prop = xmlGetNsProp(node, BAD_CAST("prec"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
 	if (NULL == prop) {
-		sz_log(0, "No attribute prec (required for float) given for param in line %ld",
+		sz_log(1, "No attribute prec (required for float) given for param in line %ld",
 			       	xmlGetLineNo(node));
 
 		if (szp.isFloat()) return false;
