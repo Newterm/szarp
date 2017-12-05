@@ -51,14 +51,18 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 	boost::property_tree::read_xml(ss, conf_tree);
 
 	for (const auto& params_child: conf_tree.get_child(L"params")) {
-		if (params_child.first == L"device") {
-			parseDevice(params_child.second);
-		} else if (params_child.first == L"sends") {
+		if (params_child.first == L"sends") {
 			for (const auto& sends_child: params_child.second) {
 				if (sends_child.first == L"param") {
 					parseSentParam(sends_child.second);
 				}
 			}
+		}
+	}
+
+	for (const auto& params_child: conf_tree.get_child(L"params")) {
+		if (params_child.first == L"device") {
+			parseDevice(params_child.second);
 		}
 	}
 }
@@ -78,7 +82,7 @@ void ConfigDealerHandler::parseDevice(const boost::property_tree::wptree& device
 }
 
 void ConfigDealerHandler::parseSentParam(const boost::property_tree::wptree& send) {
-	IPCParamInfo* param = new CParam(send, send.get<size_t>(L"<xmlattr>.ipc_ind"));
+	auto param = new CParam(send, send.get<size_t>(L"<xmlattr>.ipc_ind"));
 	sent_params[param->GetName()] = param;
 	sends_inds.push_back(param->GetIpcInd());
 }
@@ -111,6 +115,22 @@ ConfigDealerHandler::CParam::CParam(const boost::property_tree::wptree& conf, si
 ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree& conf): parent(_parent) {
 	TAttribHolder::parseXML(conf);
 	sent_param_name = SC::L2S(getAttribute<std::string>("param", ""));
+	ParseSentParam();
+}
+
+void ConfigDealerHandler::CSend::ParseSentParam() {
+	const std::vector<std::string> ignored_params = {"extra:address"};
+	IPCParamInfo* param_to_send = GetParamToSend();
+	std::vector<std::pair<std::string, std::string>> attributes = param_to_send->getAllAttributes();
+	for (const auto& attr_pair: attributes) {
+		const std::string& attr_name = attr_pair.first;
+		if (std::find(ignored_params.begin(), ignored_params.end(), attr_name) == ignored_params.end()) continue;
+
+		if (!hasAttribute(attr_name)) {
+			const std::string& attr_val = attr_pair.second;
+			storeAttribute(attr_name, attr_val);
+		}
+	}
 }
 
 

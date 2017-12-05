@@ -29,6 +29,8 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 	public:
 		CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree&);
 
+		void ParseSentParam();
+
 		IPCParamInfo* GetParamToSend() const {
 			if (sent_param_name.empty()) {
 				return nullptr;
