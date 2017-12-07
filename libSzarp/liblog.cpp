@@ -70,12 +70,14 @@ int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[],
 namespace {
 
 void blockSignals() {
+#ifndef __MINGW32__
 	std::atomic_signal_fence(std::memory_order_relaxed);
 
 	// block all signals and close after destructor is called (e.g. exit handler)
 	sigset_t mask;
 	sigfillset(&mask);
 	sigprocmask(SIG_SETMASK, &mask, NULL);
+#endif
 }
 
 }
