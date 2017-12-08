@@ -287,7 +287,7 @@ TSzarpConfig::generateXML(void)
     if (!title.empty())
 	xmlSetProp(doc->children, X "title", S2U(title).c_str());
     for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	xmlAddChild(doc->children, d->generateXMLNode());
+	if (d->GetDaemon() != L"/opt/szarp/bin/logdmn") xmlAddChild(doc->children, d->generateXMLNode());
     if (defined > 0) {
 	node = xmlNewChild(doc->children, NULL, X "defined", NULL);
 	for (TParam * p = defined; p; p = p->GetNext())
@@ -330,7 +330,11 @@ TSzarpConfig::saveXML(const std::wstring &path)
     d = generateXML();
     if (d == NULL)
 	return -1;
-    r = xmlSaveFormatFile(SC::S2A(path).c_str(), d, 1);
+    if (encoding.empty()) {
+	r = xmlSaveFormatFile(SC::S2A(path).c_str(), d, 1);
+    } else {
+	r = xmlSaveFormatFileEnc(SC::S2A(path).c_str(), d, SC::S2A(encoding).c_str(), 1);
+    }
     xmlFreeDoc(d);
     return r;
 }
@@ -349,6 +353,8 @@ TSzarpConfig::loadXMLDOM(const std::wstring& path, const std::wstring& prefix) {
 		sz_log(1, "XML document not wellformed\n");
 		return 1;
 	}
+	const xmlChar* enc = doc->encoding;
+	if (enc != nullptr) encoding = SC::U2S(enc);
 
 	ret = parseXML(doc);
 	xmlFreeDoc(doc);
@@ -371,6 +377,8 @@ TSzarpConfig::loadXMLReader(const std::wstring &path, const std::wstring& prefix
 
 	if (ret == 1) {
 		try {
+			const xmlChar* enc = xmlTextReaderConstEncoding(reader);
+			if (enc != nullptr) encoding = SC::U2S(enc);
 			ret = parseXML(reader);
 		}
 	       	catch (XMLWrapperException) {

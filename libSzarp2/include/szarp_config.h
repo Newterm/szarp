@@ -387,6 +387,8 @@ protected:
 
 	std::wstring nativeLanguage;
 
+	std::wstring encoding{};
+
 	std::wstring documentation_base_url;
 
 	TBoiler *boilers;/**< List of boilers for analysis*/

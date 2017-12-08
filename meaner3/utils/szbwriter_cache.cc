@@ -38,9 +38,9 @@ SzProbeCache::~SzProbeCache()
 {
 	flush();
 	if( last_key ) delete last_key;
-	delete m_mmap_param;
-	delete m_mmap_param_lsw;
-	delete m_mmap_param_msw;
+	if( m_mmap_param ) delete m_mmap_param;
+	if (m_mmap_param_lsw) delete m_mmap_param_lsw;
+	if (m_mmap_param_msw) delete m_mmap_param_msw;
 }
 
 void SzProbeCache::add( const Key& k , const Value& v )
@@ -59,22 +59,28 @@ void SzProbeCache::add( const Key& k , const Value& v )
 			if (last_key->is_double) {
 				delete m_mmap_param_msw;
 				delete m_mmap_param_lsw;
+				m_mmap_param_msw = nullptr;
+				m_mmap_param_lsw = nullptr;
 			}
 			else {
 				delete m_mmap_param;
+				m_mmap_param = nullptr;
 			}
 
 		       	delete last_key;
+			last_key = nullptr;
 		}
 
 		if (k.is_double) {
 			std::wstring name1 = k.name + L" msw";
 			TParam * p_msw = m_ipk->getParamByName(name1);
+			assert(p_msw != nullptr);
 			TSaveParam * ps_msw = new TSaveParam(p_msw);
 			m_mmap_param_msw = new TMMapParam( m_dir , ps_msw->GetName() , k.year , k.month , m_probe_length );
 
 			std::wstring name2 = k.name + L" lsw";
 			TParam * p_lsw = m_ipk->getParamByName(name2);
+			assert(p_lsw != nullptr);
 			TSaveParam * ps_lsw = new TSaveParam(p_lsw);
 			m_mmap_param_lsw = new TMMapParam( m_dir , ps_lsw->GetName() , k.year , k.month , m_probe_length );
 
@@ -83,6 +89,7 @@ void SzProbeCache::add( const Key& k , const Value& v )
 		}
 		else {
 			TParam * p = m_ipk->getParamByName(k.name);
+			assert(p != nullptr);
 			TSaveParam * ps = new TSaveParam(p);
 			m_mmap_param = new TMMapParam( m_dir , ps->GetName() , k.year , k.month , m_probe_length );
 			delete ps;
@@ -131,8 +138,8 @@ void SzProbeCache::flush( const Key& k )
 		if( m_mmap_param_msw->write( m_values.time , sp_msw , m_values.length ) )
 			throw failure( "Cannot write to buffer");
 
-		delete sp_lsw;
-		delete sp_msw;
+		delete[] sp_lsw;
+		delete[] sp_msw;
 	}
 	else {
 		short* sp = new short[m_values.length];
@@ -144,7 +151,7 @@ void SzProbeCache::flush( const Key& k )
 		if( m_mmap_param->write( m_values.time , sp , m_values.length ) )
 			throw failure( "Cannot write to buffer");
 
-		delete sp;
+		delete[] sp;
 	}
 
 	m_values.clear();
@@ -189,7 +196,7 @@ bool SzProbeCache::Values::empty()
 
 SzProbeCache::Values::~Values()
 {
-	delete probes;
+	delete[] probes;
 }
 
 bool operator==( const SzProbeCache::Key& a , const SzProbeCache::Key& b )

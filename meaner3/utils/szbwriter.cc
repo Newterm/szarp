@@ -120,7 +120,7 @@ class DataWriter {
 
 		SzProbeCache* m_cache;
 
-		std::wstring m_cur_name;
+		std::wstring m_cur_name{};
 
 		bool m_is_double;
 
@@ -186,8 +186,8 @@ protected:
 	bool m_new_par; 	/**< if new parameter was added */
 	size_t m_last_type;	/**< last type of probe to write + 1 */
 
-	struct tm m_tm; /**< last time */
-	time_t m_t; /**< last time */
+	struct tm m_tm{}; /**< last time */
+	time_t m_t{}; /**< last time */
 };
 
 DataWriter::DataWriter(SzbaseWriter* parent, DataWriter::PROBE_TYPE ptype, const std::wstring& data_dir, int fill_how_many)
@@ -313,7 +313,6 @@ int DataWriter::fill_gaps(time_t begin, time_t end, double sum, int count)
 
 int DataWriter::save_data()
 {
-	//sz_log(10, "save_data begin: pt=%d, m_dir[pt]=%ls", (int) pt, m_dir.c_str());
 	sz_log(10, "DataWriter::save_data %s", !m_cur_cnt ? "end - NO DATA" : "data exists");
 
 	if (!m_cur_cnt)
@@ -550,12 +549,13 @@ int SzbaseWriter::is_double(const std::wstring& name)
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
+
 	sz_log(10, "SzbaseWriter::add_data begin: name=%s, [%d-%d-%d %d:%d:%d] data=%s",
 			SC::S2U(name).c_str(), year, month, day, hour, min, sec, SC::S2U(data).c_str());
 
-	struct tm tm;
+	struct tm tm{};
 
-	/* get UTC time */
+	// get UTC time 
 	tm.tm_year  = year  - 1900;
 	tm.tm_mon   = month - 1;
 	tm.tm_mday  = day;
@@ -574,29 +574,39 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	
 	if (name != m_cur_name) {
 		TParam* cur_par = getParamByName(name);
-		if (NULL == cur_par && !m_add_new_pars) {
+		if (NULL == cur_par) {
+			if (m_add_new_pars) {
+				add_param(name, unit, guess_prec(data));
+				cur_par = getParamByName(name);
+			} else {
 			sz_log(1, "Param %s not found in configuration and "
 					"program run without -n flag, value ignored!",
 					SC::S2U(name).c_str());
-			return 1;
+				return 1;
+			}
 		}
+		assert(cur_par != nullptr);
+		// here we should have params added
 		if (is_dbl) {
 			std::wstring name1 = name + L" msw";
 			std::wstring name2 = name + L" lsw";
 
 			TParam * par = getParamByName(name1);
+			if (m_add_new_pars) assert(par != nullptr);
 			if (NULL == par) {
 				sz_log(1, "Param %s not found in configuration", SC::S2U(name1).c_str());
 				return 1;
 			}
 
 			par = getParamByName(name2);
+			if (m_add_new_pars) assert(par != nullptr);
 			if (NULL == par) {
 				sz_log(1, "Param %s not found in configuration", SC::S2U(name1).c_str());
 				return 1;
 			}
 		}
 		m_cur_par = cur_par;
+		assert(m_cur_par != nullptr);
 		m_cur_name = name;
 	}
 
@@ -609,7 +619,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 			return 1;
 	}
 
-	/* check for draw's min and max; it's strange but it works ;-) */
+	// check for draw's min and max; it's strange but it works ;-)
 	if (m_cur_par->GetDraws()) {
 		double min = m_cur_par->GetDraws()->GetMin();
 		double max = m_cur_par->GetDraws()->GetMax();
@@ -733,7 +743,7 @@ bool SzbaseWriter::have_new_params()
 }
 
 /* arguments handling */
-const char *argp_program_version = "szbwriter " VERSION;
+const char *argp_program_version = "szbwriter ";
 const char *argp_program_bug_address = "coders@szarp.org";
 static char doc[] = "SZARP batch database writer.\v\
 Config file:\n\
