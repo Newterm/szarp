@@ -163,8 +163,7 @@ TSzarpConfig::TSzarpConfig( bool logparams ) :
 	logparams(logparams),
        	device_counter(1),
        	radio_counter(1),
-       	unit_counter(1),
-	use_names_cache(false)
+       	unit_counter(1)
 {
 }
 
@@ -714,14 +713,6 @@ TSzarpConfig::PrepareDrawDefinable()
 TParam *
 TSzarpConfig::getParamByName(const std::wstring& name)
 {
-
-    if (use_names_cache) {
-	std::map<std::wstring, TParam *>::iterator it = params_map.find(name);
-	if (it == params_map.end())
-	    return NULL;
-	return it->second;
-    }
-
     for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
 	if (!p->GetName().empty() && !name.empty() && p->GetName() == name)
 	    return p;
@@ -1157,17 +1148,3 @@ void TSzarpConfig::ConfigureSeasonsLimits() {
 const TSSeason* TSzarpConfig::GetSeasons() const {
 	return seasons;
 }
-
-void TSzarpConfig::UseNamesCache()
-{
-	use_names_cache = true;
-}
-
-void TSzarpConfig::AddParamToNamesCache(TParam * _param)
-{
-	if (!use_names_cache)
-		return;
-
-	params_map[_param->GetName()] = _param;
-}
-

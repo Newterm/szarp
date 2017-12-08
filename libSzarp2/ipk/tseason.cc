@@ -73,7 +73,7 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 		if (xw.IsTag("season")) {
 			if (xw.IsBeginTag()) {
 
-				int year = -1;
+				int year;
 				Season s;
 
 				const char* need_attr_seasn[] = {"year", "month_start",  "month_end", "day_start", "day_end", 0 };
@@ -105,9 +105,6 @@ int TSSeason::parseXML(xmlTextReaderPtr reader) {
 					} catch (boost::bad_lexical_cast &) {
 						xw.XMLErrorWrongAttrValue();
 					}
-				}
-				if (-1 == year) {
-					xw.XMLErrorWrongAttrValue();
 				}
 				seasons[year] = s;
 			}

@@ -61,9 +61,9 @@ TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 		if (xw.IsTag("param")) {
 			if (xw.IsBeginTag()) {
 				if (params == NULL) {
-					params = p = new TParam(NULL, tszarp);
+					params = p = new TParam(NULL,tszarp);
 				} else {
-					p = p->Append(new TParam(NULL, tszarp));
+					p = p->Append(new TParam(NULL,tszarp));
 				}
 				if (p->parseXML(reader))
 					return NULL;
@@ -77,5 +77,5 @@ TParam* TDefined::parseXML(xmlTextReaderPtr reader, TSzarpConfig *tszarp)
 		}
 	}
 
-	return params;
+return params;
 }

@@ -101,9 +101,9 @@ int TUnit::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsTag("param")) {
 			if (xw.IsBeginTag() || ( xw.IsEndTag() && !xw.IsEmptyTag()) ) {
 				if (params == NULL)
-					p = params = new TParam(this, GetSzarpConfig());
+					p = params = new TParam(this);
 				else
-					p = p->Append(new TParam(this, GetSzarpConfig()));
+					p = p->Append(new TParam(this));
 				if (p->parseXML(reader))
 					return 1;
 			}
@@ -176,9 +176,9 @@ int TUnit::parseXML(xmlNodePtr node)
 	for (ch = node->children; ch; ch = ch->next) {
 		if (!strcmp((char *)ch->name, "param")) {
 			if (params == NULL)
-				p = params = new TParam(this, GetSzarpConfig());
+				p = params = new TParam(this);
 			else
-				p = p->Append(new TParam(this, GetSzarpConfig()));
+				p = p->Append(new TParam(this));
 			if (p->parseXML(ch))
 				return 1;
 		} else if (!strcmp((char *)ch->name, "send")) {
