@@ -228,6 +228,8 @@ void vsz_log(int level, const char * msg_format, va_list fmt_args) {
 	char *msg;
 	if (vasprintf(&msg, msg_format, fmt_args) != -1) {
 		szlog::log().log_later(std::make_shared<szlog::LogEntry>(msg, szlog::PriorityForLevel(level)));
+
+		if (msg) free(msg);
 	}
 }
 
