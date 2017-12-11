@@ -152,8 +152,12 @@ def check_for_daemons():
 	"""
 	Testing - looking for custom daemons, looking for extra:param base in dbmdmn daemon
 	"""
+	md5file_path = "/var/lib/dpkg/info/szarp-daemons.md5sums"
+	if not os.path.isfile(md5file_path):
+		add_note("File does not exist: %s, will not check daemon sums" % md5file_path)
+		return
 	md5_map = {}
-	with open("/var/lib/dpkg/info/szarp-daemons.md5sums", "r") as md5file:
+	with open(md5file_path, "r") as md5file:
 		for line in md5file:
 			if "opt/szarp/bin" in line:
 				md5, daemon = line.split()
