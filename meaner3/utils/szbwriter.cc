@@ -225,13 +225,13 @@ int DataWriter::add_data( const std::wstring& name, bool is_dbl, time_t t, doubl
 		SC::S2U(m_cur_name).c_str(), SC::S2U(name).c_str(), t, data);
 
 	if (name != m_cur_name) {
-		if (save_data())
+		if (close_data())
 			return 1;
 
 		m_is_double = is_dbl;
 
-		m_cur_sum = 0;
-		m_cur_cnt = 0;
+		m_cur_sum = data;
+		m_cur_cnt = 1;
 
 		m_cur_t = t / m_probe_length * m_probe_length;
 		sz_log(10, "DataWriter::add_data: (name != n_cur_name) t = %ld, m_cur_t = %ld", t, m_cur_t);
