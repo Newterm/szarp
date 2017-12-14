@@ -82,7 +82,7 @@ class DTime {
 	 * @return string represeting formatted date*/
 	wxString Format(const char* format = wxDefaultDateTimeFormat) const;
 
-	operator const wxDateTime&();
+	operator const wxDateTime&() const;
 	wxDateTime TimeJustBefore() const { return m_time - wxTimeSpan::Milliseconds(1); }
 };
 

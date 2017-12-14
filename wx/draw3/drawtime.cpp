@@ -346,7 +346,7 @@ wxString DTime::Format(const char* format) const {
 	return m_time.Format(format);
 }
 
-DTime::operator const wxDateTime&() {
+DTime::operator const wxDateTime&() const {
 	return m_time;
 }
 
