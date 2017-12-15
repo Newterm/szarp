@@ -1040,17 +1040,6 @@ if test x$no_newt != xyes ; then
 fi
 AC_SUBST(SZBEDIT)
 
-# WX programs needs wxWidgets
-if test x$no_wx != xyes ; then
-        SUBDIRS="$SUBDIRS extern wx"
-        DRAW3=draw3
-        if test x$host_os != xmingw32 ; then
-                IPKEDIT=ipkedit
-        fi
-	HELPCOMMAND="\${lib_prefix}/bin/wxhelp"
-else
-	HELPCOMMAND="konqueror"
-fi
 AC_SUBST(DRAW3)
 AC_SUBST(IPKEDIT)
 AC_SUBST(HELPCOMMAND)
@@ -1183,8 +1172,6 @@ AC_SUBST(SUBDIRS)
 
 AC_OUTPUT( \
 	Makefile \
-	extern/Makefile \
-	extern/wxscintilla/Makefile \
 	iks/Makefile \
 	iks/server/Makefile \
 	iks/server/locations/Makefile \
@@ -1225,23 +1212,6 @@ AC_OUTPUT( \
 	www/Makefile \
 	www/pylons/Makefile \
 	www/pylons/sssweb/Makefile \
-	wx/Makefile \
-	wx/common/Makefile \
-	wx/draw3/Makefile \
-	wx/ekstraktor3/Makefile \
-	wx/filler/Makefile \
-	wx/isledit/Makefile \
-	wx/scc/Makefile \
-	wx/raporter3/Makefile \
-	wx/kontroler3/Makefile \
-	wx/viszio/Makefile \
-	wx/confedit/Makefile \
-	wx/wxhelp/Makefile \
-	wx/sync/Makefile \
-	wx/koper/Makefile \
-	wx/szau/Makefile \
-	wx/szast/Makefile \
-	wx/setter/Makefile \
 	)
 
 # Print configure raport
