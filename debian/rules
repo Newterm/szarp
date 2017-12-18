@@ -60,24 +60,6 @@ INSTALL_DIR = debian/tmp
 
 NO_CB_PACK_OPTS ?= \
 		-pszarp-base \
-		-pszarp-daemons \
-		-pszarp-filler \
-		-pszarp-isledit \
-		-pszarp-koper \
-		-pszarp-nagios \
-		-pszarp-paramd \
-		-pszarp-pyipk \
-		-pszarp-scripts \
-		-pszarp-server \
-		-pszarp-server-complete \
-		-pszarp-terminal \
-		-pszarp-updater \
-		-pszarp-utils \
-		-pszarp-wx \
-		-pszarp-viewer \
-		-pszarp-xsltd \
-		-pszarp-dbg-symbols \
-		-pszarp-filler2
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 
@@ -153,7 +135,6 @@ binary-arch: binary-no-cb
 binary-arch-common: 
 	dh_testroot
 	dh_link
-	dh_strip --dbg-package=szarp-dbg-symbols
 	dh_compress
 	dh_makeshlibs
 	dh_installinit -udefaults\ 98 --name=parstart
@@ -169,43 +150,7 @@ binary-arch-common:
 	dh_md5sums
 	dh_builddeb
 
-debian/build-doc-pdf:
-	$(MAKE) -C resources/documentation/new pdf
-	touch $@
-
-debian/build-doc-html:
-	$(MAKE) -C resources/documentation/new html
-	touch $@
-
-debian/build-sssweb: debian/config-status-no-cb
-	$(MAKE) -C www/pylons/sssweb
-	@touch $@
-
-install-sssweb: DH_OPTIONS=-pszarp-sssweb
-install-sssweb:
-	dh_testroot
-	$(MAKE) -C www/pylons/sssweb install DESTDIR=$(CURDIR)/$(INSTALL_DIR)
-	dh_installdirs
-	@(cd $(INSTALL_DIR); ../install_gen $(DH_OPTIONS));
-	dh_install -X.svn --sourcedir=$(INSTALL_DIR)
-
-create-sssweb: DH_OPTIONS=-pszarp-sssweb
-create-sssweb:
-	dh_testroot
-	dh_pysupport
-	dh_installinit -i
-	dh_installdocs
-	dh_installlogrotate
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-binary-sssweb: sanity_check configure debian/build-sssweb install-sssweb create-sssweb
-
 binary-arch: binary-no-cb
-
-build-indep: debian/build-doc-pdf debian/build-doc-html
 
 install-doc-pdf:
 	dh_install -p szarp-doc-pdf resources/documentation/new/_pdf/* \
@@ -220,15 +165,12 @@ install-doc-html:
 	dh_install -p szarp-doc-html resources/documentation/new/style.css \
 		$(PREFIX)/resources/documentation/new
 
-install-indep: install-doc-pdf install-doc-html
-
-create-indep: DH_OPTIONS=$(DOC_PACKAGES)
 create-indep: 
 	dh_gencontrol
 	dh_md5sums 
 	dh_builddeb 
 
-binary-indep: build-indep install-indep create-indep binary-sssweb
+binary-indep: create-indep
 
 sanity_check:
 	dh_testroot
