@@ -32,6 +32,7 @@ import lxml
 import sys
 import os
 
+from heartbeat import heartbeat_param_name, create_hearbeat_param
 import saveparam
 import parampath
 import lastentry
@@ -128,6 +129,8 @@ class Converter:
 		for p in self.ipk.params:
 			sp = saveparam.SaveParam(p, self.szbase_dir, FileFactory(), False)
 			self.s_params[p.param_name] = sp
+	
+		self.s_params[heartbeat_param_name] = saveparam.SaveParam(create_hearbeat_param(), self.szbase_dir, FileFactory())
 
 		self.queue = queue
 

@@ -35,7 +35,7 @@ class LastEntry:
 
 	def time_to_int(self, time, nanotime):
 		if self.param.time_prec == 8:
-			time = long(time) * (10 ** 9)
+			time = long(time) * 1000000000
 			time += nanotime
 
 		return time
