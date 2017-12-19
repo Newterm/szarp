@@ -170,6 +170,8 @@ protected:
 	 * @return 1 for double params, 0 otherwise */
 	int is_double(const std::wstring &name);
 
+	bool is_valid_name(const std::wstring &name);
+
 	std::wstring m_double_pattern;	/**< shell pattern for names of params
 					  that should be saved in two words,
 					  may be NULL */
@@ -546,6 +548,11 @@ int SzbaseWriter::is_double(const std::wstring& name)
 #endif
 }
 
+bool SzbaseWriter::is_valid_name(const std::wstring &name)
+{
+	return name.find(L"::") == std::wstring::npos;
+}
+
 int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, int year, int month, int day, 
 		int hour, int min, int sec, const std::wstring& data)
 {
@@ -576,6 +583,11 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 		TParam* cur_par = getParamByName(name);
 		if (NULL == cur_par) {
 			if (m_add_new_pars) {
+				if (!is_valid_name(name)) {
+					sz_log(1, "Ignoring new param with invalid name: %s",
+						SC::S2U(name).c_str());
+					return 0;	// silently ignore such invalid param
+				}
 				add_param(name, unit, guess_prec(data));
 				cur_par = getParamByName(name);
 			} else {
