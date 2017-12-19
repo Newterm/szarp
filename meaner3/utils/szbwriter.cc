@@ -578,6 +578,8 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 
 	sz_log(10, "SzbaseWriter::add_data: name=%s, m_cur_name=%s",
 		       	SC::S2U(name).c_str(), SC::S2U(m_cur_name).c_str());
+
+	bool adding_new_param = false;
 	
 	if (name != m_cur_name) {
 		TParam* cur_par = getParamByName(name);
@@ -590,6 +592,7 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 				}
 				add_param(name, unit, guess_prec(data));
 				cur_par = getParamByName(name);
+				adding_new_param = true;
 			} else {
 			sz_log(1, "Param %s not found in configuration and "
 					"program run without -n flag, value ignored!",
@@ -632,7 +635,8 @@ int SzbaseWriter::add_data(const std::wstring &name, const std::wstring &unit, i
 	}
 
 	// check for draw's min and max; it's strange but it works ;-)
-	if (m_cur_par->GetDraws()) {
+	// don't update draws of an existing param, as they may have been tuned by users
+	if (m_cur_par->GetDraws() && adding_new_param) {
 		double min = m_cur_par->GetDraws()->GetMin();
 		double max = m_cur_par->GetDraws()->GetMax();
 		if (new_value > max) {
