@@ -171,7 +171,6 @@ const std::string& ipc::get_ipk_path() {
 void ipc::set_read(size_t index, py::object & val) {
 	if (m_force_sz4) { 
 		set_read_sz4_int(index, val);
-		return;
 	}
 
 	if (index >= m_read_count) {
@@ -322,11 +321,19 @@ void ipc::go_parcook() {
 	if (m_ipc) {
 		m_ipc->GoParcook();
 	}
+
+	if (m_force_sz4) {
+		go_sz4();
+	}
 }
 
 void ipc::go_sender() {
 	if (m_ipc) {
 		m_ipc->GoSender();
+	}
+
+	if (m_zmq) {
+		m_zmq->receive();
 	}
 }
 
@@ -498,7 +505,6 @@ int main( int argc, char ** argv )
 		ConfigDealerHandler cfg(args_mgr);
 		ipc.configure(&cfg, args_mgr);
 	}
-
 
 	const std::string script_path = *args_mgr.get<std::string>("device-path");
 	FILE * fp = fopen(script_path.c_str(), "r");
