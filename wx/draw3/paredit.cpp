@@ -449,7 +449,7 @@ void ParamEdit::TransferToWindow(DefinedParam *param) {
 	m_user_param_label->SetLabel(param->GetParamName().BeforeLast(L':') + L':');
 	m_param_name_input->SetValue(param->GetParamName().AfterLast(L':'));
 	m_unit_input->SetValue(param->GetUnit());
-	m_formula_type_choice->SetSelection(param->GetFormulaType() == TParam::LUA_VA ? 0 : 1);
+	m_formula_type_choice->SetSelection(param->GetFormulaType() == FormulaType::LUA_VA ? 0 : 1);
 
 
 	if (param->GetStartTime() > 0) {
@@ -554,8 +554,8 @@ wxString ParamEdit::GetFormula() {
 	return m_formula_input->GetText();
 }
 
-TParam::FormulaType ParamEdit::GetFormulaType() {
-	return m_formula_type_choice->GetSelection() == 0 ? TParam::LUA_VA : TParam::LUA_AV;
+FormulaType ParamEdit::GetFormulaType() {
+	return m_formula_type_choice->GetSelection() == 0 ? FormulaType::LUA_VA : FormulaType::LUA_AV;
 }
 
 DrawInfo* ParamEdit::GetCurrentDrawInfo() {
@@ -632,7 +632,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 		L"",
 		GetFormula(),
 		0,
-		TParam::LUA_AV,
+		FormulaType::LUA_AV,
 		-1);
 	param->CreateParam();
 

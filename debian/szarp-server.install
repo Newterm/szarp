@@ -2,6 +2,7 @@
 ../services/parhub.service /lib/systemd/system/
 ../services/parcook.service /lib/systemd/system/
 ../services/sender.service /lib/systemd/system/
+../services/cfgdealer.service /lib/systemd/system/
 ../services/meaner3.service /lib/systemd/system/
 ../services/paramd.service /lib/systemd/system/
 ../services/prober.service /lib/systemd/system/

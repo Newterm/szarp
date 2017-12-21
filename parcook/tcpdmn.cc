@@ -719,11 +719,11 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv))
 		return 1;
 
-	server = new TCPServer(cfg->GetDevice()->GetFirstRadio()->
+	server = new TCPServer(cfg->GetDevice()->
 			GetFirstUnit()->GetParamsCount(),
-			cfg->GetDevice()->GetFirstRadio()->
+			cfg->GetDevice()->
 			GetFirstUnit()->GetSendParamsCount(),
-			cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetId());
+			cfg->GetDevice()->GetFirstUnit()->GetId());
 	ASSERT(server != NULL);
 
 	g_server = server;
@@ -733,19 +733,20 @@ int main(int argc, char *argv[])
 	}
 
 	if (cfg->GetSingle()) {
-		printf("line number: %d\ndevice: %ls\nparams in: %d\nparams out %d\n",
+		printf("line number: %d\ndevice: %s\nparams in: %d\nparams out %d\n",
 				cfg->GetLineNumber(),
-				cfg->GetDevice()->GetPath().c_str(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->getAttribute("path").c_str(),
+				cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount()				);
 	}
 
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	if (atexit(exit_handler)) {

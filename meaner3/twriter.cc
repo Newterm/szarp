@@ -172,7 +172,7 @@ int TWriter::LoadIPK()
 	assert (params != NULL);
 	sz_log(5, "TWriter::LoadIPK(): total %d params found", params_len);
 	for (p = config->GetFirstParam(), i = 0; p && (i < params_len);
-			p = config->GetNextParam(p), i++)
+			p = p->GetNextGlobal(), i++)
 	{
 		if (p->IsInBase()) {
 			sz_log(10, "TWriter::LoadIPK(): setting up parameter '%s'", SC::S2A(p->GetName()).c_str());

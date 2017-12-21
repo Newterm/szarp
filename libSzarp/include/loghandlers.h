@@ -20,21 +20,16 @@ enum priority: unsigned int { critical = 0, error = 2, warning = 4, info = 6, de
 
 priority PriorityForLevel(int level);
 
-const std::string msg_priority_for_level(szlog::priority p);
-
 std::string format_date(tm* localtime_t);
 
 class LogHandler {
 public:
 	virtual void log(const std::string& msg, szlog::priority = szlog::priority::info) const = 0;
 	virtual void log(const char* msg, szlog::priority = szlog::priority::info) const = 0;
-
 	virtual ~LogHandler() {}
 };
 
 class COutLogger: public LogHandler {
-	mutable std::mutex _msg_mutex;
-
 public:
 	void log(const std::string& msg, szlog::priority p = szlog::priority::info) const override;
 	void log(const char* msg, szlog::priority p = szlog::priority::info) const override;
@@ -42,7 +37,6 @@ public:
 };
 
 class JournaldLogger: public LogHandler {
-	mutable std::mutex _msg_mutex;
 	std::string name;
 
 public:

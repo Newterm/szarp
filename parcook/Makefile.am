@@ -30,7 +30,7 @@ AM_CPPFLAGS = @XML_CFLAGS@ @LUA_CFLAGS@ \
 LIBSZARP2 = ../libSzarp2/libSzarp2.la
 LIBSZARP = ../libSzarp/libSzarp.la
 
-LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(BOOST_LOCALE_LIB) @ZMQ_LIBS@ @PROTOBUF_LIBS@
+LDADD = $(LIBSZARP2) $(LIBSZARP) @EVENT_LIBS@ @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ $(BOOST_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(BOOST_LOCALE_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) @ZMQ_LIBS@ @PROTOBUF_LIBS@
 
 # Aditional libraries for daemons using dlopen
 DL = -ldl
@@ -43,7 +43,7 @@ bin_PROGRAMS = \
 	      dbdmn \
 	      @DDEDMN@ \
 	      dpafdmn \
-	      dprdmn \
+		  dprdmn \
 	      execdmn \
 	      ipcinfo \
 	      k601dmn \
@@ -94,14 +94,14 @@ execdmn_SOURCES = execdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
-kamsdmn_SOURCES = kamsdmn.cc
+kamsdmn_SOURCES = kamsdmn.cc cfgdealer_handler.cpp
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
 
 mbrtudmn_SOURCES = mbrtudmn.cc
 
-k601dmn_SOURCES = k601dmn.cc k601-prop-plugin.h
+k601dmn_SOURCES = k601dmn.cc cfgdealer_handler.cpp k601-prop-plugin.h
 k601dmn_LDADD = $(LDADD) $(DL)
 
 pafdmn_SOURCES = pafdmn.cc
@@ -129,12 +129,12 @@ parcook_SOURCES = parcook.cc funtable.cc funtable.h
 mbusdmn_SOURCES = mbusdmn.cc
 
 wlkdmn_SOURCES = wlkdmn.cc
-wlkdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB)
+wlkdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB)
 
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc boruta_wmtp.cc boruta_lumel.cc boruta_fc.cc
+borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc boruta_wmtp.cc boruta_lumel.cc boruta_fc.cc  cfgdealer_handler.cpp
 borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 borutadmn_z_SOURCES = borutadmn_z.cc borutadmn_z.h  boruta_modbus_z.cc boruta_fc_z.cc
@@ -142,7 +142,7 @@ borutadmn_z_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DA
 
 sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)
 
-sbusdmn_SOURCES = sbusdmn.cc
+sbusdmn_SOURCES = sbusdmn.cc cfgdealer_handler.cpp
 
 ddedmn_SOURCES = ddedmn.cc
 ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc++
@@ -153,8 +153,8 @@ iecdmn_LDADD = $(LDADD)
 prodmn_SOURCES = prodmn.cc
 prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-pythondmn_SOURCES = pythondmn.cc
-pythondmn_LDADD = $(LDADD) -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS)
+pythondmn_SOURCES = pythondmn.cc cfgdealer_handler.cpp
+pythondmn_LDADD = -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS) $(LDADD)
 
 snap7dmn_SOURCES = snap7dmn.cc $(basedmn_SOURCES)
 snap7dmn_LDADD = $(LDADD) -lsnap7

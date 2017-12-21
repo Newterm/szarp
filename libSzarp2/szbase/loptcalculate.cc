@@ -214,7 +214,7 @@ double SzbaseExecutionEngine::Value(size_t param_index, const double& time_, con
 
 	ParamRef& ref = m_param->m_par_refs[param_index];
 
-	if (ref.m_param->GetFormulaType() == TParam::LUA_AV)
+	if (ref.m_param->GetFormulaType() == FormulaType::LUA_AV)
 		return ValueAvg(ref, time, period_type);
 
 	switch ((SZARP_PROBE_TYPE) period_type) {

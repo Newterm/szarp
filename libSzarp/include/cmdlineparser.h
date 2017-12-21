@@ -28,7 +28,7 @@ public:
 		log_desc.add_options()
 			("debug,d", po::value<unsigned int>(), "Enables verbose logging")
 			("max_q_size", po::value<unsigned int>()->default_value(20), "Drops log messages if there are more than max_q_size in buffer")
-			("no_dropping", po::value<bool>()->default_value(false), "Disables dropping, if logger gets too many messages the log() becomes blocking")
+			("nodrop", po::value<bool>(), "Disables dropping, if logger gets too many messages the log() becomes blocking")
 			("log_file", po::value<std::string>(), "Specifies file to log into")
 			("logger", po::value<std::string>(), "Specifies logger type (journald, file, cout)");
 
@@ -65,14 +65,15 @@ public:
 		po::options_description desc{"General daemon arguments"};
 		desc.add_options()
 			("single,s", "Forbid writing via IPC")
+			("diagno", "Enable diagnostic mode")
 			("use-cfgdealer", "Enables configuring via config dealer")
-			("cfgdealer-address", po::value<std::string>()->default_value("localhost:5555"), "Config dealer's address")
-			("sniff", po::value<bool>()->default_value(false), "Do not initiate transmision, sniff traffic")
+			("cfgdealer-address", po::value<std::string>()->default_value("tcp://localhost:5555"), "Config dealer's address")
+			("sniff", "Do not initiate transmision, sniff traffic")
 			("scan", po::value<std::string>(), "range of ID to use from config (e.g. 1-7)")
 			("speed", po::value<unsigned int>(), "Port communication speed")
-			("noconf", po::value<bool>()->default_value(false), "Do not load configuration")
+			("noconf", "Do not load configuration")
 			("askdelay", po::value<unsigned int>(), "Sets delay between queries to different units")
-			("dumphex", po::value<bool>()->default_value(false), "Print trasmitted bytes in hex-terminal format")
+			("dumphex", "Print trasmitted bytes in hex-terminal format")
 			("device-no", po::value<unsigned int>(), "Device number in config file")
 			("device-path", po::value<std::string>()->default_value("/dev/null"), "Device path attribute");
 

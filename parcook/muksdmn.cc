@@ -530,9 +530,9 @@ int main(int argc, char *argv[])
 	if (cfg->Load(&argc, argv)) {
 		sz_log(0, "Error while loading configuration, exiting.");
 		return 1;
-	muksinfo = new MUKS(cfg->GetDevice()->GetFirstRadio()->
+	muksinfo = new MUKS(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 	if (cfg->GetSingle()) {

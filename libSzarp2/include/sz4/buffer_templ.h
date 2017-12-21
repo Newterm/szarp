@@ -62,9 +62,9 @@ template<template<typename DT, typename TT, class BT> class param_entry_type, cl
 
 template<class base> generic_param_entry* param_entry_build(base *_base, TParam* param, const boost::filesystem::wpath &buffer_directory) {
 	switch (param->GetSz4Type()) {
-		case TParam::SZ4_REAL:
+		case Sz4ParamType::REAL:
 			return param_entry_build<real_param_entry_in_buffer, base>(_base, param, buffer_directory);
-		case TParam::SZ4_COMBINED: {
+		case Sz4ParamType::COMBINED: {
 			param->SetDataType(TParam::INT);
 
 			auto entry = param_entry_build<combined_param_entry_in_buffer, base>(_base, param, buffer_directory);
@@ -79,7 +79,7 @@ template<class base> generic_param_entry* param_entry_build(base *_base, TParam*
 
 			return entry;
 		}
-		case TParam::SZ4_LUA_OPTIMIZED: {
+		case Sz4ParamType::LUA_OPTIMIZED: {
 			param->SetDataType(TParam::DOUBLE);
 
 			auto entry = param_entry_build<lua_optimized_param_entry_in_buffer, base>(_base, param, buffer_directory);
@@ -95,7 +95,7 @@ template<class base> generic_param_entry* param_entry_build(base *_base, TParam*
 				}
 			return entry;
 		}
-		case TParam::SZ4_LUA: {
+		case Sz4ParamType::LUA: {
 			param->SetDataType(TParam::DOUBLE);
 
 			auto entry = param_entry_build<lua_param_entry_in_buffer, base>(_base, param, buffer_directory);
@@ -119,7 +119,7 @@ template<class base> generic_param_entry* param_entry_build(base *_base, TParam*
 			}
 			return entry;
 		}
-		case TParam::SZ4_DEFINABLE: {
+		case Sz4ParamType::DEFINABLE: {
 			param->SetDataType(TParam::DOUBLE);
 
 			auto entry = param_entry_build<rpn_param_entry_in_buffer, base>(_base, param, buffer_directory);
@@ -135,7 +135,7 @@ template<class base> generic_param_entry* param_entry_build(base *_base, TParam*
 			return entry;
 		}
 		default:
-		case TParam::SZ4_NONE:
+		case Sz4ParamType::NONE:
 			assert(false);
 	}
 }
@@ -172,7 +172,7 @@ template<class base> void buffer_templ<base>::remove_param(TParam* param) {
 	entry->deregister_from_monitor(m_param_monitor);
 	delete entry;
 
-	param->SetSz4Type(TParam::SZ4_NONE);
+	param->SetSz4Type(Sz4ParamType::NONE);
 
 	m_param_ents[param->GetParamId()] = NULL;
 }
@@ -184,36 +184,36 @@ template<class base> generic_param_entry* buffer_templ<base>::create_param_entry
 }
 
 template<class base> void buffer_templ<base>::prepare_param(TParam* param) {
-	if (param->GetSz4Type() != TParam::SZ4_NONE)
+	if (param->GetSz4Type() != Sz4ParamType::NONE)
 		return;
 
-	if (param->GetType() == TParam::P_REAL) {
-		param->SetSz4Type(TParam::SZ4_REAL);
+	if (param->GetType() == ParamType::REAL) {
+		param->SetSz4Type(Sz4ParamType::REAL);
 		return;
 	}
 
 	if (param->IsDefinable())
 		param->PrepareDefinable();
 
-	if (param->GetType() == TParam::P_COMBINED) {
-		param->SetSz4Type(TParam::SZ4_COMBINED);
+	if (param->GetType() == ParamType::COMBINED) {
+		param->SetSz4Type(Sz4ParamType::COMBINED);
 		param->SetDataType(TParam::INT);
 		return;
 	}
 
-	if (param->GetType() == TParam::P_DEFINABLE) {
-		param->SetSz4Type(TParam::SZ4_DEFINABLE);
+	if (param->GetType() == ParamType::DEFINABLE) {
+		param->SetSz4Type(Sz4ParamType::DEFINABLE);
 		return;
 	}
 
-	if (param->GetType() == TParam::P_LUA) {
+	if (param->GetType() == ParamType::LUA) {
 		LuaExec::Param* exec_param = new LuaExec::Param();
 		param->SetLuaExecParam(exec_param);
 
 		if (LuaExec::optimize_lua_param<ipk_container_type>(param, m_ipk_container)) 
-			param->SetSz4Type(TParam::SZ4_LUA_OPTIMIZED);
+			param->SetSz4Type(Sz4ParamType::LUA_OPTIMIZED);
 		else
-			param->SetSz4Type(TParam::SZ4_LUA);
+			param->SetSz4Type(Sz4ParamType::LUA);
 		return;
 	}
 }

@@ -12,7 +12,7 @@ void COutLogger::log(const char* msg, szlog::priority p) const {
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 	auto localtime_t = std::localtime(&in_time_t);
 
-	std::cout << format_date(localtime_t) << " " << msg_priority_for_level(p) << " " << msg << std::endl;
+	std::cout << format_date(localtime_t) << " " << msg << std::endl;
 }
 
 void JournaldLogger::log(const std::string& msg, szlog::priority p) const {
@@ -40,7 +40,7 @@ void FileLogger::log(const char* msg, szlog::priority p) const {
 	auto localtime_t = std::localtime(&in_time_t);
 
 	*logfile << format_date(localtime_t);
-	*logfile << " " << msg_priority_for_level(p) << ": ";
+	*logfile << ": ";
 	*logfile << msg;
 	*logfile << std::endl;
 }

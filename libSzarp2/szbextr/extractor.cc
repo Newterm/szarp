@@ -822,7 +822,7 @@ SzbExtractor::ExtractStartEndTime(TSzarpConfig *ipk,
 	num_of_params = 0;
 
 	int i = 0;
-	for (TParam *prm = ipk->GetFirstParam(); prm != NULL; prm = ipk->GetNextParam(prm)) {
+	for (TParam *prm = ipk->GetFirstParam(); prm != NULL; prm = prm->GetNextGlobal()) {
 		if (progress_watcher)
 			progress_watcher(i++ * 100 / max, watcher_data);
 		if (!prm->IsReadable())

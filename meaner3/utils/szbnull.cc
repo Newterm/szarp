@@ -405,7 +405,7 @@ int SetNoData(time_t start, time_t end)
 		return 1;
 	};
 
-	for (TParam *p = ipk->GetFirstParam(); p; p = p->GetNext(true)) {
+	for (TParam *p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		if (!p->IsInBase())
 			continue;
 		printf("Setting param %ls\n", p->GetName().c_str());

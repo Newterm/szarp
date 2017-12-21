@@ -143,8 +143,6 @@ public:
 protected:
 	int m_expire;		/**< expire time in seconds */
 	time_t m_last;		/**< time of last read */
-	TSzarpConfig* m_target_ipk;
-				/**< IPK object for database configuration */
 	std::map<std::string, SZARP_PROBE_TYPE> m_probe_type_map;
 };
 
@@ -155,12 +153,11 @@ protected:
 DbDaemon::DbDaemon(DaemonConfig* cfg) 
 {
 	m_single = cfg->GetSingle();
-	m_params_count = cfg->GetDevice()->GetFirstRadio()->
+	m_params_count = cfg->GetDevice()->
 			GetFirstUnit()->GetParamsCount();
 	ASSERT(m_params_count >= 0);
 	m_expire = DEFAULT_EXPIRE;
 	m_last = 0;
-	m_target_ipk = NULL;
 	
 	m_probe_type_map["PT_SEC10"] = PT_SEC10;
 	m_probe_type_map["PT_MIN10"] = PT_MIN10;
@@ -331,7 +328,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 	szbase->NextQuery();
 
 
-	TParam *p = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
+	TParam *p = cfg->GetDevice()->GetFirstUnit()->GetFirstParam();
 	for (int i = 1; NULL != p && i <= m_params_count; i++) {
 		char *expr;
 		const int ret = asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i);

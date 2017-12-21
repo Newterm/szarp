@@ -23,6 +23,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include "unit_test_common.h"
 
 class Sz4LiveCache : public CPPUNIT_NS::TestFixture
 {
@@ -30,7 +31,7 @@ class Sz4LiveCache : public CPPUNIT_NS::TestFixture
 	void retentionTest ();
 	void blockTest ();
 
-	TSzarpConfig config;
+	mocks::TSzarpConfigMock config;
 	TParam* param;
 	std::unique_ptr<zmq::socket_t> sock;
 	std::unique_ptr<sz4::live_cache> cache;

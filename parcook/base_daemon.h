@@ -66,7 +66,7 @@ public:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int Init(int argc, const char *argv[] , TSzarpConfig* sz_cfg = NULL , int dev_index = -1 );
+	virtual int Init(int argc, const char *argv[] , int dev_index = -1 );
 
 	/** 
 	 * @brief Wait for next cycle. 
@@ -110,7 +110,7 @@ protected:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int Init( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg = NULL , int dev_index = -1 );
+	virtual int Init( const char*name , int argc, const char *argv[], int dev_index = -1 );
 	/** 
 	 * @brief Creates and initialize DaemonConfig member
 	 * 
@@ -120,7 +120,7 @@ protected:
 	 * 
 	 * @return 0 on success, 1 otherwise
 	 */
-	virtual int InitConfig( const char*name , int argc, const char *argv[], TSzarpConfig* sz_cfg , int dev_index = -1 );
+	virtual int InitConfig( const char*name , int argc, const char *argv[], int dev_index = -1 );
 	/** 
 	 * @brief Creates and initialize IPCHandler member
 	 * 

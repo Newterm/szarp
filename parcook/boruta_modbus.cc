@@ -451,20 +451,19 @@ protected:
 	time_t m_expiration_time;
 	float m_nodata_value;
 
-	int get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
-	int get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
-	int get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
+	int get_float_order(TAttribHolder* param, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
+	int get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
+	int get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw);
 
-	virtual void pushValOp(parcook_modbus_val_op* op, TParam* param);
+	virtual void pushValOp(parcook_modbus_val_op* op, TAttribHolder* param);
 
-	int configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal3_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_param(xmlNodePtr node, TSzarpConfig *sc, TParam* p, TSendParam *sp, bool send);
-	int configure_unit(TUnit* u, xmlXPathContextPtr xp_ctx);
+	int configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_param(TAttribHolder*, IPCParamInfo* param, bool send);
 
 	const char* error_string(const unsigned char& error);
 
@@ -486,8 +485,8 @@ public:
 
 	bool register_val_expired(time_t time);
 	virtual int initialize();
-	int configure_unit(TUnit* u, xmlNodePtr node);
-	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
+	int configure_unit(UnitInfo* u);
+	int configure(UnitInfo* unit, short *read, short *send);
 	void finished_cycle();
 	void starting_new_cycle();
 };
@@ -520,7 +519,7 @@ public:
 	tcp_server();
 	const char* driver_name() { return "modbus_tcp_server"; }
 	virtual void frame_parsed(TCPADU &adu, struct bufferevent* bufev);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short *read, short *send);
+	virtual int configure(UnitInfo* unit, short *read, short *send);
 	virtual int initialize();
 	virtual void connection_error(struct bufferevent* bufev);
 	virtual void data_ready(struct bufferevent* bufev);
@@ -579,7 +578,7 @@ protected:
 	virtual void terminate_connection() = 0;
 
 public:
-	int configure(TUnit *unit, xmlNodePtr node, short *read, short *send);
+	int configure(UnitInfo* unit, short *read, short *send);
 	void pdu_received(unsigned char u, PDU &pdu);
 	virtual int initialize();
 };
@@ -601,7 +600,7 @@ public:
 	virtual void data_ready(struct bufferevent* bufev, int fd);
 	virtual void finished_cycle();
 	virtual void starting_new_cycle();
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send);
+	virtual int configure(UnitInfo* unit, short* read, short *send);
 	virtual void timeout();
 };
 
@@ -638,7 +637,7 @@ protected:
 	virtual void write_timer_event();
 public:
 	serial_parser(serial_connection_handler *serial_handler, driver_logger* log);
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc) = 0;
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc) = 0;
 	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
 	virtual void read_data(struct bufferevent *bufev) = 0;
 	virtual void write_finished(struct bufferevent *bufev);
@@ -672,7 +671,7 @@ public:
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
 	void reset();
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc);
 
 	static const int max_frame_size = 256;
 };
@@ -696,7 +695,7 @@ public:
 	serial_ascii_parser(serial_connection_handler *serial_handler, driver_logger* log);
 	void read_data(struct bufferevent *bufev);
 	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	virtual int configure(xmlNodePtr node, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, serial_port_configuration &spc);
 };
 
 class modbus_serial_client : public serial_connection_handler, public serial_client_driver, public modbus_client {
@@ -714,7 +713,7 @@ public:
 	virtual void connection_error(struct bufferevent *bufev);
 	virtual void scheduled(struct bufferevent* bufev, int fd);
 	virtual void data_ready(struct bufferevent* bufev, int fd);
-	virtual int configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc);
 	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev);
 	virtual void error(ERROR_CONDITION error);
 	virtual struct event_base* get_event_base();
@@ -731,7 +730,7 @@ class serial_server : public modbus_unit, public serial_connection_handler, publ
 public:
 	serial_server();
 	const char* driver_name() { return "modbus_serial_server"; }
-	virtual int configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration &spc);
+	virtual int configure(UnitInfo* unit, short *read, short *send, serial_port_configuration &spc);
 	virtual int initialize();
 	virtual void frame_parsed(SDU &sdu, struct bufferevent* bufev);
 	virtual struct bufferevent* get_buffer_event();
@@ -1294,15 +1293,15 @@ bool modbus_unit::register_val_expired(time_t time) {
 modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
 modbus_unit::~modbus_unit() {}
 
-void modbus_unit::pushValOp(parcook_modbus_val_op* op, TParam* param) {
-	if (m_check_forbidden && param->HasForbidden()) {
-		m_parcook_ops.push_back(new forbidden_proxy(op, param->GetForbidden()));
+void modbus_unit::pushValOp(parcook_modbus_val_op* op, TAttribHolder* param) {
+	if (m_check_forbidden && param->hasAttribute("forbidden")) {
+		m_parcook_ops.push_back(new forbidden_proxy(op, param->getAttribute<short>("forbidden")));
 	} else {
 		m_parcook_ops.push_back(op);
 	}
 }
 
-int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
@@ -1319,7 +1318,7 @@ int modbus_unit::configure_int_register(TParam* param, TSendParam *sparam, int p
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
 		m_log.log(1, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
@@ -1337,10 +1336,9 @@ int modbus_unit::configure_bcd_register(TParam* param, TSendParam* sparam, int p
 	return 0;
 }
 
-int modbus_unit::get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, bool &default_used, FLOAT_ORDER& float_order) {
-	std::string _float_order;
+int modbus_unit::get_float_order(TAttribHolder* param, FLOAT_ORDER default_value, bool &default_used, FLOAT_ORDER& float_order) {
+	std::string _float_order = param->getAttribute<std::string>("extra:FloatOrder", "");
 
-	get_xml_extra_prop(node, "FloatOrder", _float_order, true);
 	if (!_float_order.empty()) {
 		default_used = false;
 		if (_float_order == "msblsb") {
@@ -1348,7 +1346,7 @@ int modbus_unit::get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, boo
 		} else if (_float_order == "lsbmsb") {
 			float_order = LSWMSW;
 		} else {
-			m_log.log(1, "Invalid float order specification: %s, %ld", _float_order.c_str(), xmlGetLineNo(node));
+			m_log.log(1, "Invalid float order specification: %s", _float_order.c_str());
 			return 1;
 		}
 	} else {
@@ -1358,9 +1356,8 @@ int modbus_unit::get_float_order(xmlNodePtr node, FLOAT_ORDER default_value, boo
 	return 0;
 }
 
-int modbus_unit::get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order) {
-	std::string double_order_string;
-	get_xml_extra_prop(node, "DoubleOrder", double_order_string, true);
+int modbus_unit::get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order) {
+	std::string double_order_string = param->getAttribute<std::string>("extra:DoubleOrder", "");
 	default_used = false;
 	if (double_order_string.empty()) {
 		default_used = true;
@@ -1370,16 +1367,15 @@ int modbus_unit::get_double_order(xmlNodePtr node, DOUBLE_ORDER default_value, b
 	} else if (double_order_string == "lsdmsd") {
 		m_double_order = LSDMSD;
 	} else {
-		m_log.log(1, "Invalid double order specification: %s", double_order_string.c_str());
 		return 1;
 	}
 	return 0;
 }
 
-int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw) {
+int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw, bool& is_lsw) {
 	FLOAT_ORDER float_order;
 	bool default_used;
-	if (get_float_order(node, m_float_order, default_used, float_order))
+	if (get_float_order(param, m_float_order, default_used, float_order))
 		return 1;
 
 	if (!default_used)
@@ -1392,8 +1388,7 @@ int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned 
 				break;
 		}
 
-	std::string val_op;
-	get_xml_extra_prop(node, "val_op", val_op, false);
+	std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 	m_log.log(10, "get_double_order: val_op: %s", val_op.c_str());
 	if (val_op.empty() || val_op == "LSW")  {
 		if (float_order == MSWLSW) {
@@ -1414,23 +1409,23 @@ int modbus_unit::get_lsw_msw_reg(xmlNodePtr node, unsigned short addr, unsigned 
 		}
 		is_lsw = false;
 	} else {
-		m_log.log(1, "Unsupported val_op attribute value - %s, line %ld", val_op.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported val_op attribute value - %s", val_op.c_str());
 		return 1;
 	}
 
 	return 0;
 }
 
-int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	unsigned short addrs[4];
 
 	FLOAT_ORDER float_order;
 	bool default_used;
-	if (get_float_order(node, m_float_order, default_used, float_order))
+	if (get_float_order(param, m_float_order, default_used, float_order))
 		return 1;
 
 	DOUBLE_ORDER double_order;
-	if (get_double_order(node, m_double_order, default_used, double_order))
+	if (get_double_order(param, m_double_order, default_used, double_order))
 		return 1;
 
 	switch (double_order) {
@@ -1468,9 +1463,8 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 			break;
 	}
 
-	std::string val_op2;
-	bool is_lsd;
-	get_xml_extra_prop(node, "val_op2", val_op2, false);
+	std::string val_op2 = param->getAttribute<std::string>("extra:val_op2", "");
+	bool is_lsd = false;
 	if (val_op2.empty() || val_op2 == "LSD")  {
 		is_lsd = true;
 	} else if (val_op2 == "MSD") {
@@ -1496,14 +1490,14 @@ int modbus_unit::configure_double_register(TParam* param, TSendParam *sparam, in
 	return 0;
 }
 
-int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	std::string val_type;	
-	if (get_xml_extra_prop(node, "val_type", val_type))
+int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");
+	if (val_type.empty())
 		return 1;
 
 	bool is_lsw;
 	unsigned short msw, lsw;
-	if (get_lsw_msw_reg(node, addr, lsw, msw, is_lsw))
+	if (get_lsw_msw_reg(param, addr, lsw, msw, is_lsw))
 		return 1;
 	
 	if (m_registers.find(lsw) == m_registers.end()) 
@@ -1542,11 +1536,11 @@ int modbus_unit::configure_long_float_register(TParam* param, TSendParam *sparam
 	return 0;
 }
 
-int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	bool is_lsw;
 	unsigned short msw, lsw;
 	modbus_register* regs[2];
-	if (get_lsw_msw_reg(node, addr, lsw, msw, is_lsw))
+	if (get_lsw_msw_reg(param, addr, lsw, msw, is_lsw))
 		return 1;
 
 	RMAP::iterator j = m_registers.find(msw);
@@ -1583,15 +1577,14 @@ int modbus_unit::configure_decimal2_register(TParam* param, TSendParam *sparam, 
 	return 0;
 }
 
-int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, int prec, xmlNodePtr node, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	if (send) {
 		m_log.log(1, "Unsupported decimal3 value type for send param %ls, exiting!", param->GetName().c_str());
 		return 1;
 	}
 
 	bool is_lsw;
-	std::string val_op;
-	get_xml_extra_prop(node, "val_op", val_op, false);
+	std::string val_op = param->getAttribute<std::string>("extra:val_op", "");
 	if (val_op.empty() || val_op == "LSW")  {
 		is_lsw = true;
 	} else if (val_op == "MSW") {
@@ -1625,89 +1618,63 @@ int modbus_unit::configure_decimal3_register(TParam* param, TSendParam *sparam, 
 	return 0;
 }
 
-int modbus_unit::configure_param(xmlNodePtr node, TSzarpConfig* sc, TParam* p, TSendParam *sp, bool send) { 
-	char* c = (char*) xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (c == NULL) {
-		m_log.log(1, "Missing address attribute in param element at line: %ld", xmlGetLineNo(node));
-		return 1;
-	}
-
+int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
 	unsigned short addr;
-	char *e;
-	long l = strtol((char*)c, &e, 0);
-	if (*e != 0 || l < 0 || l > 65535) {
-		m_log.log(1, "Invalid address attribute value: %s(line %ld), between 0 and 65535", c, xmlGetLineNo(node));
+	long l = el->getAttribute<unsigned long>("extra:address", -1);
+	if (l < 0 || l > 65535) {
+		m_log.log(1, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
 		return 1;
 	} 
-	xmlFree(c);
+
 	addr = l;
 
 	REGISTER_TYPE rt;
-	c = (char*) xmlGetNsProp(node, BAD_CAST("register_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (c == NULL || !strcmp(c, "holding_register"))
+	auto reg_type_attr = el->getAttribute<std::string>("extra:register_type", "holding_register");
+	if (reg_type_attr == "holding_register")
 		rt = HOLDING_REGISTER;
-	else if (!strcmp(c, "input_register"))
+	else if (reg_type_attr == "input_register")
 		rt = INPUT_REGISTER;
 	else {
 		m_log.log(1, "Unsupported register type, should be either input_register or holding_register");
 		return 1;
 	}
-	xmlFree(c);
 
-	std::string val_type;	
-	if (get_xml_extra_prop(node, "val_type", val_type))
+	std::string val_type = el->getAttribute<std::string>("extra:val_type", "");
+	if (val_type.empty())
 		return 1;
 
-	TParam *param = NULL; 
-	int prec_e = 0;
+	int prec_e;
 	if (send) {
-		if (!sp->GetParamName().empty()) {
-			param = sc->getParamByName(sp->GetParamName());
-			if (param == NULL) {
-				m_log.log(1, "parameter with name '%s' not found (send parameter at line %ld)",
-						SC::S2L(sp->GetParamName()).c_str(), xmlGetLineNo(node));
-				return 1;
-			}
-			if (get_xml_extra_prop(node, "prec", prec_e))
-				prec_e = param->GetPrec();
-		} else {
-			if (get_xml_extra_prop(node, "prec", prec_e))
-				prec_e = 0;
-		}
+		prec_e = el->getAttribute("extra:prec", param? param->GetPrec() : 0);
 	} else {
-		param = p;
-		prec_e = p->GetPrec();
+		prec_e = param->GetPrec();
 	}
+
 	int prec = exp10(prec_e);
 
 	int ret;
 	if (val_type == "integer") {
-		ret = configure_int_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_int_register(param, prec, addr, send, rt);
 	} else if (val_type == "bcd") {
-		ret = configure_bcd_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_bcd_register(param, prec, addr, send, rt);
 	} else if (val_type == "long" || val_type == "float") {
-		ret = configure_long_float_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_long_float_register(param, prec, addr, send, rt);
 	} else if (val_type == "double") {
-		ret = configure_double_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_double_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal2") {
-		ret = configure_decimal2_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_decimal2_register(param, prec, addr, send, rt);
 	} else if (val_type == "decimal3") {
-		ret = configure_decimal3_register(param, sp, prec, node, addr, send, rt);
+		ret = configure_decimal3_register(param, prec, addr, send, rt);
 	} else {
-		m_log.log(1, "Unsupported value type:%s, for param at line: %ld", val_type.c_str(), xmlGetLineNo(node));
+		m_log.log(1, "Unsupported value type: %s");
 		ret = 1;
 	}
 
 	return ret;
 }
 
-int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
-	int i, j;
-	TParam *p;
-	TSendParam *sp;
-
-	std::string _id;
-	get_xml_extra_prop(node, "id", _id, true);
+int modbus_unit::configure_unit(UnitInfo* u) {
+	std::string _id = u->getAttribute<std::string>("extra:id", "");
 	if (_id.empty()) {
 		switch (u->GetId()) {
 			case L'0'...L'9':
@@ -1727,56 +1694,31 @@ int modbus_unit::configure_unit(TUnit* u, xmlNodePtr node) {
 		m_id = strtol(_id.c_str(), NULL, 0);
 	}
 
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(node->doc);
-	xp_ctx->node = node;
-
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	if (-1 == ret) {
-		m_log.log(1, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-		return 1;
-	}
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "modbus", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (-1 == ret) {
-		m_log.log(1, "Cannot register XPath Namespace: %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-		return 1;
-	}
-
-	get_xml_extra_prop(node, "limits", m_check_forbidden, true);
+	m_check_forbidden = u->getAttribute("extra:limits", false);
 	if (m_check_forbidden) {
 		m_log.log(7, "Daemon will check forbidden values");
 	}
 
-	for (p = u->GetFirstParam(), sp = u->GetFirstSendParam(), i = 0, j = 0; i < u->GetParamsCount() + u->GetSendParamsCount(); i++, j++) {
-		char *expr;
-		if (i == u->GetParamsCount())
-			j = 0;
-		bool send = j != i;
-
-	        ret = asprintf(&expr, ".//ipk:%s[position()=%d]", i < u->GetParamsCount() ? "param" : "send", j + 1);
-		if (-1 == ret) {
-			m_log.log(1, "Cannot allocate XPath expression for param number %d", j + 1);
+	for (auto p: u->GetParams()) {
+		if (configure_param(p, p, false)) {
+			m_log.log(1, "Error in param %ls", p->GetName().c_str());
 			return 1;
 		}
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		ASSERT(node);
-		free(expr);
-
-		if (configure_param(node, u->GetSzarpConfig(), p, sp, send))
-			return 1;
-
-		if (send)
-			sp = sp->GetNext();
-		else
-			p = p->GetNext();
-
 	}
-	xmlXPathFreeContext(xp_ctx);
+
+	for (auto p: u->GetSendParams()) {
+		if (configure_param(p, p->GetParamToSend(), true)) {
+			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
-int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
+int modbus_unit::configure(UnitInfo* unit, short *read, short *send) {
 	bool default_used;
-	if (get_float_order(node, MSWLSW, default_used, m_float_order))
+	if (get_float_order(unit, MSWLSW, default_used, m_float_order))
 		return 1;
 	if (default_used)
 		m_log.log(5, "Float order not specified, assuming msblsb");
@@ -1786,7 +1728,7 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 		m_log.log(5, "Setting lswmsw float order");
 
 	
-	if (get_double_order(node, MSDLSD, default_used, m_double_order))
+	if (get_double_order(unit, MSDLSD, default_used, m_double_order))
 		return 1;
 	if (default_used)
 		m_log.log(5, "Double order not specified, assuming msdlsd");
@@ -1795,24 +1737,16 @@ int modbus_unit::configure(TUnit *unit, xmlNodePtr node, short *read, short *sen
 	else if (m_double_order == LSDMSD)
 		m_log.log(5, "Setting lsdmsd double order");
 
-	m_expiration_time = 0;
-	if (get_xml_extra_prop(node, "nodata-timeout", m_expiration_time, true)) {
-		m_log.log(5, "invalid no-data timeout specified, error");
-		return 1;
-	}
+	m_expiration_time = unit->getAttribute("extra:nodata-timeout", 0);
 	if (!m_expiration_time) {
 		m_log.log(5, "no-data timeout not specified (or 0), assuming 1 minute data expiration");
 		m_expiration_time = 60;
 	} 
 
-	m_nodata_value = 0;
-	if (get_xml_extra_prop(node, "nodata-value", m_nodata_value, true)) {
-		m_log.log(5, "invalid nodata-value, not a float");
-		return 1;
-	}
+	m_nodata_value = unit->getAttribute<float>("extra:nodata-value", 0.0);
 	m_log.log(9, "No data value set to: %f", m_nodata_value);
 
-	if (configure_unit(unit, node))
+	if (configure_unit(unit))
 		return 1;
 
 	m_read = read;
@@ -1937,11 +1871,10 @@ void tcp_server::frame_parsed(TCPADU &adu, struct bufferevent* bufev) {
 		m_parsers[bufev]->send_adu(adu.trans_id, adu.unit_id, adu.pdu, bufev);
 }
 
-int tcp_server::configure(TUnit* unit, xmlNodePtr node, short *read, short *send) {
-	if (modbus_unit::configure(unit, node, read, send))
+int tcp_server::configure(UnitInfo* unit, short *read, short *send) {
+	if (modbus_unit::configure(unit, read, send))
 		return 1;
-	std::string ips_allowed;
-	get_xml_extra_prop(node, "tcp-allowed", ips_allowed, true);
+	std::string ips_allowed = unit->getAttribute<std::string>("extra:tcp-allowed", "");
 	std::stringstream ss(ips_allowed);
 	std::string ip_allowed;
 	while (ss >> ip_allowed) {
@@ -2041,7 +1974,7 @@ void modbus_client::schedule_send_query() {
 		case READING_FROM_PEER:
 		case WRITING_TO_PEER:
 			evtimer_add(&m_next_query_timer, &tv);
-			m_log.log(10, "schedule next query in %dms", wait_ms);
+			m_log.log(10, "schedule next query in %u ms", wait_ms);
 			break;
 		default:
 			break;
@@ -2206,23 +2139,18 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	}
 }
 
-int modbus_client::configure(TUnit *unit, xmlNodePtr node, short *read, short *send) {
-	m_single_register_pdu = false;
-	if (!get_xml_extra_prop(node, "single-register-pdu", m_single_register_pdu)) {
-		m_log.log(5, "setting single-register-pdu mode");
-	}
-	m_query_interval_ms = 0;
-	if (!get_xml_extra_prop(node, "query-interval", m_query_interval_ms)) {
-		m_log.log(5, "setting query interval ms to %u", m_query_interval_ms);
-	}
-	m_request_timeout = 10;
-	if (get_xml_extra_prop(node, "request-timeout", m_request_timeout, true))
-		return 1;
+int modbus_client::configure(UnitInfo* unit, short *read, short *send) {
+	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
+
+	m_query_interval_ms = unit->getAttribute("extra:query-interval", 0);
+	m_log.log(5, "setting query interval ms to %u", m_query_interval_ms);
+
+	m_request_timeout = unit->getAttribute("extra:request-timeout", 10);
 
 	evtimer_set(&m_next_query_timer, next_query_cb, this);
 	evtimer_set(&m_query_deadine_timer, query_deadline_cb, this);
 
-	return modbus_unit::configure(unit, node, read, send);
+	return modbus_unit::configure(unit, read, send);
 }
 
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
@@ -2321,8 +2249,8 @@ void modbus_tcp_client::data_ready(struct bufferevent* bufev, int fd) {
 		drain_buffer(bufev);
 }
 
-int modbus_tcp_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send) {
-	if (modbus_client::configure(unit, node, read, send))
+int modbus_tcp_client::configure(UnitInfo* unit, short* read, short *send) {
+	if (modbus_client::configure(unit, read, send))
 		return 1;
 
 	event_base_set(m_event_base, &m_next_query_timer);
@@ -2380,15 +2308,14 @@ void modbus_serial_client::data_ready(struct bufferevent* bufev, int fd) {
 		drain_buffer(bufev);
 }
 
-int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, short *send, serial_port_configuration &spc) {
-	if (modbus_client::configure(unit, node, read, send))
+int modbus_serial_client::configure(UnitInfo* unit, short* read, short *send, serial_port_configuration &spc) {
+	if (modbus_client::configure(unit, read, send))
 		return 1;
 
 	event_base_set(m_event_base, &m_next_query_timer);
 	event_base_set(m_event_base, &m_query_deadine_timer);
 
-	std::string protocol;
-	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
+	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "");
 	if (protocol.empty() || protocol == "rtu")
 		m_parser = new serial_rtu_parser(this, &m_log);
 	else if (protocol == "ascii")
@@ -2398,7 +2325,7 @@ int modbus_serial_client::configure(TUnit* unit, xmlNodePtr node, short* read, s
 		return 1;
 	}
 
-	if (m_parser->configure(node, spc))
+	if (m_parser->configure(unit, spc))
 		return 1;
 	modbus_client::reset_cycle();
 	return 0;
@@ -2541,9 +2468,8 @@ serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, 
 	reset();
 }
 
-int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
-	m_delay_between_chars = 0;
-	get_xml_extra_prop(node, "out-intra-character-delay", m_delay_between_chars, true);
+int serial_rtu_parser::configure(UnitInfo* unit, serial_port_configuration &spc) {
+	m_delay_between_chars = unit->getAttribute("extra:out-intra-character-delay", 0);
 	if (m_delay_between_chars == 0)
 		m_log->log(10, "Serial port configuration, delay between chars not given (or 0) assuming no delay");
 	else
@@ -2563,8 +2489,7 @@ int serial_rtu_parser::configure(xmlNodePtr node, serial_port_configuration &spc
 
 	m_log->log(8, "Setting 1.5Tc timer to %d us",  m_timeout_1_5_c);
 
-	m_timeout_3_5_c = 0;
-	get_xml_extra_prop(node, "read-timeout", m_timeout_3_5_c, true);
+	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", 0);;
 	if (m_timeout_3_5_c == 0) {
 		m_log->log(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
 		if (chars_per_sec)
@@ -2814,9 +2739,8 @@ void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct buffe
 	bufferevent_write(bufev, const_cast<char*>("\n"), 1);
 }
 
-int serial_ascii_parser::configure(xmlNodePtr node, serial_port_configuration &spc) {
-	m_delay_between_chars = 0;
-	get_xml_extra_prop(node, "read-timeout", m_timeout, true);
+int serial_ascii_parser::configure(UnitInfo* unit, serial_port_configuration &spc) {
+	m_delay_between_chars = unit->getAttribute("extra:read-timeout", 0);
 	if (m_timeout == 0) {
 		m_timeout = 1000000;
 	} else {
@@ -2833,11 +2757,10 @@ void serial_ascii_parser::reset() {
 
 serial_server::serial_server() : modbus_unit(this) {}
 
-int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *send, serial_port_configuration &spc) {
-	if (modbus_unit::configure(unit, node, read, send))
+int serial_server::configure(UnitInfo *unit, short *read, short *send, serial_port_configuration &spc) {
+	if (modbus_unit::configure(unit, read, send))
 		return 1;
-	std::string protocol;
-	get_xml_extra_prop(node, "serial_protocol_variant", protocol, true);
+	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "");
 	if (protocol.empty() || protocol == "rtu")
 		m_parser = new serial_rtu_parser(this, &m_log);
 	else if (protocol == "ascii")
@@ -2846,7 +2769,7 @@ int serial_server::configure(TUnit *unit, xmlNodePtr node, short *read, short *s
 		m_log.log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
 		return 1;
 	}
-	if (m_parser->configure(node, spc))
+	if (m_parser->configure(unit, spc))
 		return 1;
 	return 0;
 }

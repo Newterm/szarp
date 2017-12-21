@@ -155,14 +155,13 @@ int set_nonblock(int fd) {
 	return 0;
 }
 
-int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
-	std::string path;
-	if (get_xml_extra_prop(node, "path", path))
+int get_serial_port_config(TAttribHolder* unit, serial_port_configuration &spc) {
+	std::string path = unit->getAttribute<std::string>("extra:path", "");
+	if (path.empty())
 		return 1;
 	spc.path = path;
 
-	int speed = 0;
-	get_xml_extra_prop(node, "speed", speed, true);
+	int speed = unit->getAttribute("extra:speed", 0);
 	if (speed == 0) {
 		dolog(10, "Speed not specified, assuming value 9600");
 		speed = 9600;
@@ -170,8 +169,7 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 	dolog(10, "Serial port configuration, speed: %d", speed);
 	spc.speed = speed;
 
-	std::string parity;
-	get_xml_extra_prop(node, "parity", parity, true);
+	std::string parity = unit->getAttribute<std::string>("extra:parity", "");
 	if (parity.empty()) {
 		dolog(10, "Serial port configuration, parity not specified, assuming no parity");
 		spc.parity = serial_port_configuration::NONE;
@@ -189,8 +187,7 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 		return 1;	
 	}
 
-	std::string stop_bits;
-	get_xml_extra_prop(node, "stopbits", stop_bits, true);
+	std::string stop_bits = unit->getAttribute<std::string>("extra:stopbits", "");
 	if (stop_bits.empty()) {
 		dolog(10, "Serial port configuration, stop bits not specified, assuming 1 stop bit");
 		spc.stop_bits = 1;
@@ -205,8 +202,7 @@ int get_serial_port_config(xmlNodePtr node, serial_port_configuration &spc) {
 		return 1;
 	}
 
-	std::string char_size;
-	get_xml_extra_prop(node, "char_size", char_size, true);
+	std::string char_size = unit->getAttribute<std::string>("extra:char_size", "");
 	if (char_size.empty()) {
 		dolog(10, "Serial port configuration, char size not specified, assuming 8 bit char size");
 		spc.char_size = serial_port_configuration::CS_8;
@@ -427,13 +423,13 @@ void tcp_proxy_2_serial_client::starting_new_cycle() {
 	m_serial_client->starting_new_cycle();
 }
 
-int tcp_proxy_2_serial_client::configure(TUnit* unit, xmlNodePtr node, size_t read, size_t send) {
+int tcp_proxy_2_serial_client::configure(TUnit* unit, size_t read, size_t send) {
 	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc)) {
+	if (get_serial_port_config(unit, spc)) {
 		dolog(1, "tcp_proxy_2_serial_client: failed to get serial port settings for tcp_proxy_2_serial_client");
 		return 1;
 	}
-	return m_serial_client->configure(unit, node, read, send, spc);
+	return m_serial_client->configure(unit, read, send, spc);
 }
 
 tcp_proxy_2_serial_client::~tcp_proxy_2_serial_client() {
@@ -456,19 +452,16 @@ protocols::protocols() {
 	m_serial_client_factories["fc"] = create_fc_serial_client;
 }
 
-std::string protocols::get_proto_name(xmlNodePtr node) {
-	std::string ret;
-	get_xml_extra_prop(node, "proto", ret);
+std::string protocols::get_proto_name(TUnit* unit) {
+	std::string ret = unit->getAttribute<std::string>("extra:proto", "");
 	return ret;
 }
 
-tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
-	std::string proto = get_proto_name(node);
+tcp_client_driver* protocols::create_tcp_client_driver(TUnit* unit) {
+	std::string proto = get_proto_name(unit);
 	if (proto.empty())
 		return NULL;
-	std::string use_tcp_2_serial_proxy;
-	if (get_xml_extra_prop(node, "use_tcp_2_serial_proxy", use_tcp_2_serial_proxy, true))
-		return NULL;
+	std::string use_tcp_2_serial_proxy = unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no");
 
 	if (use_tcp_2_serial_proxy != "yes") {
 		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
@@ -487,8 +480,8 @@ tcp_client_driver* protocols::create_tcp_client_driver(xmlNodePtr node) {
 	}
 }
 
-serial_client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
-	std::string proto = get_proto_name(node);
+serial_client_driver* protocols::create_serial_client_driver(TUnit* unit) {
+	std::string proto = get_proto_name(unit);
 	if (proto.empty())
 		return NULL;
 	serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
@@ -499,8 +492,8 @@ serial_client_driver* protocols::create_serial_client_driver(xmlNodePtr node) {
 	return i->second();
 }
 
-tcp_server_driver* protocols::create_tcp_server_driver(xmlNodePtr node) {
-	std::string proto = get_proto_name(node);
+tcp_server_driver* protocols::create_tcp_server_driver(TUnit* unit) {
+	std::string proto = get_proto_name(unit);
 	if (proto.empty())
 		return NULL;
 	tcp_server_factories_table::iterator i = m_tcp_server_factories.find(proto);
@@ -511,8 +504,8 @@ tcp_server_driver* protocols::create_tcp_server_driver(xmlNodePtr node) {
 	return i->second();
 }
 
-serial_server_driver* protocols::create_serial_server_driver(xmlNodePtr node) {
-	std::string proto = get_proto_name(node);
+serial_server_driver* protocols::create_serial_server_driver(TUnit* unit) {
+	std::string proto = get_proto_name(unit);
 	if (proto.empty())
 		return NULL;
 	serial_server_factories_table::iterator i = m_serial_server_factories.find(proto);
@@ -664,10 +657,10 @@ void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
 	evtimer_add(&timer, &tv); 
 }
 				
-int tcp_client_manager::get_address(xmlNodePtr node, std::pair<std::string, short> &addr) {
-	if (get_xml_extra_prop(node, "tcp-address", addr.first))
-		return 1;
-	if (get_xml_extra_prop(node, "tcp-port", addr.second))
+int tcp_client_manager::get_address(TUnit* unit, std::pair<std::string, short> &addr) {
+	addr.first = unit->getAttribute<std::string>("extra:tcp-address", "");
+	addr.second = unit->getAttribute<short>("extra:tcp-port", -1);
+	if (addr.first.empty() || addr.second < 0)
 		return 1;
 	return 0;
 }
@@ -763,17 +756,17 @@ void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
 }
 
-int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, protocols& _protocols) {
+int tcp_client_manager::configure(TUnit *unit, size_t read, size_t send, protocols& _protocols) {
 	std::pair<std::string, short> addr;
-	if (get_address(node, addr))
+	if (get_address(unit, addr))
 		return 1;
-	tcp_client_driver* driver = _protocols.create_tcp_client_driver(node);
+	tcp_client_driver* driver = _protocols.create_tcp_client_driver(unit);
 	if (driver == NULL)
 		return 1;
 	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, node, read, send)) {
+	if (driver->configure(unit, read, send)) {
 		delete driver;
 		return 1;
 	}
@@ -788,13 +781,9 @@ int tcp_client_manager::configure(TUnit *unit, xmlNodePtr node, size_t read, siz
 		
 		tcp_connection c(this, i, addr);
 
-		c.retry_gap = 4;
-		if (get_xml_extra_prop(node, "connection-retry-gap", c.retry_gap, true))
-			return 1;
+		c.retry_gap = unit->getAttribute("extra:connection-retry-gap", 4);
 
-		c.establishment_timeout = 10;
-		if (get_xml_extra_prop(node, "connection-establishment-timeout", c.establishment_timeout, true))
-			return 1;
+		c.establishment_timeout = unit->getAttribute("extra:connection-establishment-timeout", 10);
 
 		dolog(1, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
 		m_tcp_connections.push_back(c);
@@ -942,17 +931,17 @@ void serial_client_manager::do_schedule(size_t conn_no, size_t client_no) {
 			m_serial_connections.at(conn_no).fd);
 }
 
-int serial_client_manager::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, protocols &_protocols) {
+int serial_client_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
 	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc))
+	if (get_serial_port_config(unit, spc))
 		return 1;
-	serial_client_driver* driver = _protocols.create_serial_client_driver(node);
+	serial_client_driver* driver = _protocols.create_serial_client_driver(unit);
 	if (driver == NULL)
 		return 1;
 	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, node, read, send, spc)) {
+	if (driver->configure(unit, read, send, spc)) {
 		delete driver;
 		return 1;
 	}
@@ -989,17 +978,17 @@ void serial_client_manager::connection_error_cb(serial_connection* c) {
 	client_manager::connection_error_cb(c->conn_no);		
 }
 
-int serial_server_manager::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, protocols &_protocols) {
+int serial_server_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
 	serial_port_configuration spc;
-	if (get_serial_port_config(node, spc))
+	if (get_serial_port_config(unit, spc))
 		return 1;
-	serial_server_driver* driver = _protocols.create_serial_server_driver(node);
+	serial_server_driver* driver = _protocols.create_serial_server_driver(unit);
 	if (driver == NULL)
 		return 1;
 	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, node, read, send, spc)) {
+	if (driver->configure(unit, read, send, spc)) {
 		delete driver;
 		return 1;
 	}
@@ -1097,19 +1086,19 @@ void tcp_server_manager::close_connection(struct bufferevent* bufev) {
 	bufferevent_free(bufev);
 }
 
-int tcp_server_manager::configure(TUnit *unit, xmlNodePtr node, size_t read, size_t send, protocols &_protocols) {
-	tcp_server_driver* driver = _protocols.create_tcp_server_driver(node);
+int tcp_server_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
+	tcp_server_driver* driver = _protocols.create_tcp_server_driver(unit);
 	if (driver == NULL)
 		return 1;
 	driver->set_manager(this);
 	driver->set_event_base(m_boruta->get_event_base());
 	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, node, read, send)) {
+	if (driver->configure(unit, read, send)) {
 		delete driver;
 		return 1;
 	}
-	int port;
-	if (get_xml_extra_prop(node, "tcp-port", port))
+	int port = unit->getAttribute("extra:tcp-port", -1);
+	if (port < 0)
 		return 1;
 	m_listen_ports.push_back(listen_port(this, port, m_drivers.size()));
 	driver->id() = m_drivers.size();
@@ -1197,7 +1186,7 @@ int boruta_daemon::configure_ipc() {
 	char* pub_conn_address = libpar_getpar("parhub", "pub_conn_addr", 1);
 
 	try {
-		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), m_zmq_ctx, pub_conn_address, sub_conn_address);
+		m_zmq = new zmqhandler(m_cfg, m_zmq_ctx, pub_conn_address, sub_conn_address);
 		dolog(10, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
 		dolog(1, "ZMQ initialization failed, %s", e.what());
@@ -1236,26 +1225,13 @@ int boruta_daemon::configure_events() {
 int boruta_daemon::configure_units() {
 	int i, ret;
 	TUnit* u;
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(m_cfg->GetXMLDoc());
-	xp_ctx->node = m_cfg->GetXMLDevice();
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
-		SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "boruta",
-		BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	ASSERT(ret == 0);
 	size_t read = 0;
 	size_t send = 0;
 	protocols _protocols;
-	for (i = 0, u = m_cfg->GetDevice()->GetFirstRadio()->GetFirstUnit();
+	for (i = 0, u = m_cfg->GetDevice()->GetFirstUnit();
 			u;
 			++i, u = u->GetNext()) {
-		std::stringstream ss;
-		ss << "./ipk:unit[position()=" << i + 1 << "]";
-		xmlNodePtr node = uxmlXPathGetNode((const xmlChar*) ss.str().c_str(), xp_ctx, false);
-		std::string mode;
-		if (get_xml_extra_prop(node, "mode", mode))
-			return 1;
+		std::string mode = u->getAttribute<std::string>("extra:mode", "");
 		bool server;
 		if (mode == "server")
 			server = true;	
@@ -1265,21 +1241,19 @@ int boruta_daemon::configure_units() {
 			dolog(1, "Unknown unit mode: %s, failed to configure daemon", mode.c_str());
 			return 1;
 		}
-		std::string medium;
-		if (get_xml_extra_prop(node, "medium", medium))
-			return 1;
+		std::string medium = u->getAttribute<std::string>("extra:medium", "");
 		if (medium == "tcp") {
 			if (server)
-				ret = m_tcp_server_mgr.configure(u, node, read, send, _protocols);
+				ret = m_tcp_server_mgr.configure(u, read, send, _protocols);
 			else
-				ret = m_tcp_client_mgr.configure(u, node, read, send, _protocols);
+				ret = m_tcp_client_mgr.configure(u, read, send, _protocols);
 			if (ret)
 				return 1;
 		} else if (medium == "serial") {
 			if (server)
-				ret = m_serial_server_mgr.configure(u, node, read, send, _protocols);
+				ret = m_serial_server_mgr.configure(u, read, send, _protocols);
 			else
-				ret = m_serial_client_mgr.configure(u, node, read, send, _protocols);
+				ret = m_serial_client_mgr.configure(u, read, send, _protocols);
 			if (ret)
 				return 1;
 		} else {
@@ -1289,14 +1263,11 @@ int boruta_daemon::configure_units() {
 		read += u->GetParamsCount();
 		send += u->GetSendParamsCount();
 	}
-	xmlXPathFreeContext(xp_ctx);
 	return 0;
 }
 
 int boruta_daemon::configure_cycle_freq() {
-	int duration = 10000;
-	if (get_xml_extra_prop(m_cfg->GetXMLDevice(), "cycle_duration", duration, true))
-		return 1;
+	int duration = m_cfg->GetDevice()->getAttribute<int>("extra:cycle_duration", 10000);
 	m_cycle.tv_sec = duration / 1000;
 	m_cycle.tv_usec = (duration % 1000) * 1000;
 
@@ -1322,7 +1293,7 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 		return ret;
 
 	m_cfg = new DaemonConfig("borutadmn");
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+	if (m_cfg->Load(argc, argv))
 		return 101;
 	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
 

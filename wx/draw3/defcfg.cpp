@@ -181,7 +181,7 @@ void DefinedParam::SetParamName(wxString pn) {
 
 void DefinedParam::CreateParam() {
 
-	m_param = new TParam(NULL, NULL, L"", TParam::LUA_VA, TParam::P_LUA);
+	m_param = new TParam(NULL, NULL, L"", FormulaType::LUA_VA, ParamType::LUA);
 
 	m_param->SetName(m_param_name.wc_str());
 	m_param->SetPrec(m_prec);
@@ -535,7 +535,7 @@ xmlNodePtr DefinedParam::GenerateXML(xmlDocPtr doc) {
 	snprintf(buffer, 9, "%d", m_prec);
 	xmlSetProp(f, X "prec", X buffer);
 
-	if (m_type == TParam::LUA_VA)
+	if (m_type == FormulaType::LUA_VA)
 		xmlSetProp(f, X "type", X "va");
 	else
 		xmlSetProp(f, X "type", X "av");
@@ -558,7 +558,7 @@ DefinedParam::DefinedParam(wxString base_prefix,
 				wxString unit,
 				wxString formula,
 				int prec,
-				TParam::FormulaType type,
+				FormulaType type,
 				time_t start_time,
 				bool network_param) {
 
@@ -765,9 +765,9 @@ void DefinedParam::ParseXML(xmlNodePtr d) {
 
 	xmlChar *type = xmlGetProp(d, BAD_CAST "type");
 	if (type && !xmlStrcmp(type, BAD_CAST "av"))
-		m_type = TParam::LUA_AV;
+		m_type = FormulaType::LUA_AV;
 	else
-		m_type = TParam::LUA_VA;
+		m_type = FormulaType::LUA_VA;
 	xmlFree(type);
 
 	xmlChar *unit = xmlGetProp(d, BAD_CAST "unit");
@@ -800,9 +800,9 @@ void DefinedParam::ParseXMLRPCValue(XMLRPC_VALUE p) {
 	v = XMLRPC_VectorNext(p);
 	std::wstring sftype = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
 	if (sftype == L"av") 
-		m_type = TParam::LUA_AV;
+		m_type = FormulaType::LUA_AV;
 	else
-		m_type = TParam::LUA_VA;
+		m_type = FormulaType::LUA_VA;
 	
 	v = XMLRPC_VectorNext(p);
 	m_unit = SC::U2S((const unsigned char*) XMLRPC_GetValueString(v));
@@ -934,7 +934,7 @@ wxString DefinedParam::GetFormula() {
 	return m_formula;
 }
 
-TParam::FormulaType DefinedParam::GetFormulaType() {
+FormulaType DefinedParam::GetFormulaType() {
 	return m_type;
 }
 
@@ -958,7 +958,7 @@ void DefinedParam::SetFormula(wxString formula) {
 	m_formula = formula;
 }
 
-void DefinedParam::SetFormulaType(TParam::FormulaType type) {
+void DefinedParam::SetFormulaType(FormulaType type) {
 	m_type = type;
 }
 

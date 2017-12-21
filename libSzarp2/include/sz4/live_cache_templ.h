@@ -257,7 +257,7 @@ template<class entry_builder> live_cache::live_cache(
 
 		for (auto p = szarp_config->GetFirstParam();
 				p != end;
-				p = p->GetNext(true)) {
+				p = p->GetNextGlobal()) {
 
 			auto entry(factory<generic_live_block, entry_builder>::op
 				(p, config.retention));

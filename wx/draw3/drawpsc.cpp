@@ -53,15 +53,15 @@ DrawPscSystemConfigurationEditor* DrawPscSystemConfigurationEditor::Create(wxStr
 
 	TSzarpConfig* sc = ipk->GetTSzarpConfig();
 
-	std::wstring address = sc->GetPSAdress();
-	std::wstring port = sc->GetPSPort();
+	std::string address = sc->getAttribute<std::string>("ps_address", "");
+	std::string port = sc->getAttribute<std::string>("ps_port", "");
 	if (address.empty() || port.empty())
 		return NULL;
 
 	DrawPscSystemConfigurationEditor *dsc = new DrawPscSystemConfigurationEditor();
 	dsc->m_units = units;
-	dsc->m_address = address;
-	dsc->m_port = port;
+	dsc->m_address = SC::A2S(address);
+	dsc->m_port = SC::A2S(port);
 	dsc->m_prefix = prefix;
 	dsc->m_draw_psc = psc;
 	dsc->m_frame = NULL;
@@ -124,16 +124,16 @@ void DrawPscSystemConfigurationEditor::SetSpeedAndUnitNames(IPKConfig *cfg) {
 		PscConfigurationUnit* unit = *i;
 		wxString path = unit->GetPath();
 
-		for (TDevice* d = sc->GetFirstDevice(); d != NULL; d = sc->GetNextDevice(d)) {
-			if (path != d->GetPath())
+		for (TDevice* d = sc->GetFirstDevice(); d != NULL; d = d->GetNext()) {
+			if (path != SC::A2S(d->getAttribute("path")))
 				continue;
 
-			int speed = d->GetSpeed();
+			int speed = d->getAttribute<int>("speed", -1);
 			if (speed != -1)
 				unit->SetSpeed(wxString::Format(_T("%d"), speed));
 
 			TUnit *u;
-			for (u = d->GetFirstRadio()->GetFirstUnit(); u != NULL && unit->GetId()[0] != wxChar(u->GetId()); u = u->GetNext());
+			for (u = d->GetFirstUnit(); u != NULL && unit->GetId()[0] != wxChar(u->GetId()); u = u->GetNext());
 
 			if (u == NULL) {
 				m_units_names[unit] = _T("Unknown unit name");
@@ -141,7 +141,7 @@ void DrawPscSystemConfigurationEditor::SetSpeedAndUnitNames(IPKConfig *cfg) {
 			}
 
 			wxString un;
-			if (u->GetUnitName().empty()) {
+			if (u->getAttribute<std::string>("name", "").empty()) {
 				TParam *p = u->GetFirstParam();
 				if (p) {
 					wxString pn = p->GetName();

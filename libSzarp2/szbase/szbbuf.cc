@@ -163,18 +163,18 @@ szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month)
 	}
 
     switch (param->GetType()) {
-	case TParam::P_REAL:
+	case ParamType::REAL:
 		ret = new RealDatablock(buffer, param, year, month);
 		break;
-	case TParam::P_COMBINED:
+	case ParamType::COMBINED:
 		ret = new CombinedDatablock(buffer, param, year, month);
 		break;
-	case TParam::P_DEFINABLE:
+	case ParamType::DEFINABLE:
 		ret = new DefinableDatablock(buffer, param, year, month);
 	    break;
 #ifndef NO_LUA
-	case TParam::P_LUA:
-	    	if (param->GetFormulaType() == TParam::LUA_AV)
+	case ParamType::LUA:
+	    	if (param->GetFormulaType() == FormulaType::LUA_AV)
 			return NULL;
 		ret = create_lua_data_block(buffer, param, year, month);
 	    break;
@@ -255,7 +255,7 @@ time_t
 szb_search_last(szb_buffer_t * buffer, TParam * param)
 {
 	switch(param->GetType()) {
-		case TParam::P_REAL:
+		case ParamType::REAL:
 			{
 				int year, month;
 				
@@ -284,7 +284,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 
 				return probe2time(size / 2 - 1, year, month);
 			}
-		case TParam::P_COMBINED:
+		case ParamType::COMBINED:
 			{
 				assert(param->GetNumParsInFormula() == 2);
 				TParam ** cache = param->GetFormulaCache();
@@ -299,7 +299,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 					t = szb_search_last(buffer, cache[1]);
 				return t;
 			}
-		case TParam::P_DEFINABLE:
+		case ParamType::DEFINABLE:
 			{
 				TParam ** cache = param->GetFormulaCache();
 				if (param->GetNumParsInFormula() == 0 || param->IsNUsed())
@@ -311,7 +311,7 @@ szb_search_last(szb_buffer_t * buffer, TParam * param)
 				return t;
 			}
 #ifndef NO_LUA
-		case TParam::P_LUA:
+		case ParamType::LUA:
 			{
 				time_t last_av_date = buffer->GetMeanerDate();
 				return last_av_date + param->GetLuaEndOffset();
@@ -330,17 +330,17 @@ szb_search_probe(szb_buffer_t * buffer, TParam * param, time_t start, time_t end
 		return -1;
 
 	switch (param->GetType()) {
-		case TParam::P_REAL:
+		case ParamType::REAL:
 			return szb_real_search_probe(buffer, param, start, end, direction, c_handle, condition);
 	    
-		case TParam::P_COMBINED:
+		case ParamType::COMBINED:
 			return szb_combined_search_probe(buffer, param, start, end, direction, c_handle, condition);
 	    
-		case TParam::P_DEFINABLE:
+		case ParamType::DEFINABLE:
 			return szb_definable_search_probe(buffer, param, start, end, direction, c_handle, condition);
 
 #ifndef NO_LUA
-		case TParam::P_LUA:
+		case ParamType::LUA:
 			return szb_lua_search_probe(buffer, param, start, end, direction, c_handle, condition);
 #endif
 		default:
@@ -353,17 +353,17 @@ time_t
 szb_search_data(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle, const szb_search_condition& condition)
 {
     switch(param->GetType()) {
-	case TParam::P_REAL:
+	case ParamType::REAL:
 	    return szb_real_search_data(buffer, param, start, end, direction, condition);
 	    
-	case TParam::P_COMBINED:
+	case ParamType::COMBINED:
 	    return szb_combined_search_data(buffer, param, start, end, direction, condition);
 	    
-	case TParam::P_DEFINABLE:
+	case ParamType::DEFINABLE:
 	    return szb_definable_search_data(buffer, param, start, end, direction, condition);
 
 #ifndef NO_LUA
-	case TParam::P_LUA:
+	case ParamType::LUA:
 	   return szb_lua_search_data(buffer, param, start, end, direction, condition);
 #endif
 	default:
@@ -379,7 +379,7 @@ time_t
 szb_search(szb_buffer_t * buffer, TParam * param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, SzbCancelHandle * c_handle, const szb_search_condition& condition)
 {
 #ifndef NO_LUA
-	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV)
+	if (param->GetType() == ParamType::LUA && param->GetFormulaType() == FormulaType::LUA_AV)
 		return szb_lua_search_by_value(buffer, param, probe, start, end, direction, condition);
 #endif
 	if (probe == PT_SEC10)
@@ -537,7 +537,7 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 	int count = 0;
 
 #ifndef NO_LUA
-	if (param->GetType() == TParam::P_LUA && param->GetFormulaType() == TParam::LUA_AV) {
+	if (param->GetType() == ParamType::LUA && param->GetFormulaType() == FormulaType::LUA_AV) {
 		bool f = true;
 		SZBASE_TYPE tmp = szb_lua_get_avg(buffer, param, start_time, end_time, psum, pcount, probe_type, f);
 		if (is_fixed)
@@ -651,16 +651,15 @@ szb_create_buffer(Szbase *szbase, const std::wstring &directory, int num, TSzarp
 #endif
 
 	ret->first_av_date = -1;
-	ret->first_param = ipk->getParamByIPC(0);
+	ret->first_param = ipk->GetFirstParam();
 
 	TParam * p = new TParam(NULL);
 	p->Configure(L"Status:Meaner3:program uruchomiony",
 			L"", L"", L"", NULL, 0, -1, 1);
 	ret->meaner3_param = p;
 
-	int ii = 0;
-	TParam *param;
-	while (ret->first_av_date < 0 && (param = ipk->getParamByIPC(ii++)))
+	TParam *param = ipk->GetFirstParam();
+	while (ret->first_av_date < 0 && (param = param->GetNextGlobal()))
 		ret->first_av_date = szb_search_first(ret, param);
 
 	time_t meaner_start = szb_search_first(ret, ret->meaner3_param);

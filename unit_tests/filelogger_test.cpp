@@ -19,11 +19,10 @@ class FileloggerTest : public CPPUNIT_NS::TestFixture
 };
 
 void FileloggerTest::test() {
-	remove("/tmp/test.log");
 	const std::string LOGFILE = "/tmp/test.log";
 
 	szlog::log().set_logger<szlog::FileLogger>(LOGFILE);
-	szlog::log() << szlog::critical << "0" << szlog::endl;
+	szlog::log() << szlog::critical << "0" << szlog::flush;
 
 	if ((fork()) > 0) {
 		/* parent */
@@ -33,13 +32,14 @@ void FileloggerTest::test() {
 		exit(0);
 	}
 
-	szlog::log() << szlog::flush;
 	std::ifstream logfile(LOGFILE);
 	std::string date, hour, level, msg;
 	logfile >> date >> hour >> level >> msg;
 	CPPUNIT_ASSERT_EQUAL(msg, std::string("0"));
+
 	logfile >> date >> hour >> level >> msg;
 	CPPUNIT_ASSERT(msg == std::string("1"));
+
 	CPPUNIT_ASSERT_EQUAL(remove("/tmp/test.log"), 0);
 }
 

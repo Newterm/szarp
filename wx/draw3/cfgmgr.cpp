@@ -639,7 +639,7 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	DrawInfo *pdi;
 	wxString name;
 
-	for (TParam *p = m_sc->GetFirstParam(); p; p = m_sc->GetNextParam(p)) {
+	for (TParam * p = c->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
 			pdi = new IPKDrawInfo(d, p, this);
 

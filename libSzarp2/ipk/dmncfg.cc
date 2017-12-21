@@ -40,6 +40,7 @@
 #include "liblog.h"
 #include "libpar.h"
 #include "xmlutils.h"
+#include "argsmgr.h"
 
 #define SZARP_CFG "/etc/" PACKAGE_NAME "/" PACKAGE_NAME ".cfg"
 
@@ -66,8 +67,6 @@ DaemonConfig::DaemonConfig(const char *name)
 	m_dumphex = 0;
 	m_noconf = 0;
 	m_sniff = 0;
-
-	m_units = NULL;
 }
 
 DaemonConfig::~DaemonConfig()
@@ -81,8 +80,6 @@ DaemonConfig::~DaemonConfig()
 		delete m_ipk;
 #undef FREE
 	xmlCleanupParser();
-
-	delete m_units;
 }
 	
 void DaemonConfig::SetUsageHeader(const char *header)
@@ -103,7 +100,7 @@ void DaemonConfig::SetUsageFooter(const char *footer)
 		m_usage_footer.clear();
 }
 
-int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int force_device_index, void* ) 
+int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg, int force_device_index) 
 {
 	assert (m_load_called == 0);
 	args_mgr.initLibpar();
@@ -115,12 +112,12 @@ int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int f
 
 	szlog::init(args_mgr, m_daemon_name);
 
-	m_parcook_path = *args_mgr.get<std::string>("parcook_path");
-	m_linex_path = *args_mgr.get<std::string>("linex_cfg");
+	ipc_info = IPCInfo{
+		*args_mgr.get<std::string>("parcook_path"),
+		*args_mgr.get<std::string>("linex_cfg")
+	};
 
-	m_ipk_path = *args_mgr.get<std::string>("IPK");
-	m_prefix = *args_mgr.get<std::string>("config_prefix");
-
+	ipk_path = *args_mgr.get<std::string>("IPK");
 	ParseCommandLine(args_mgr);
 	/* do not load params.xml */
 	if( sz_cfg ) {
@@ -135,124 +132,39 @@ int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg , int f
 			return 1;
 		}
 	/* load params.xml */
-	} else if (LoadXML(m_ipk_path.c_str())) {
+	} else if (LoadXML(ipk_path.c_str())) {
 		return 1;
 	}
 		
 	m_load_called = 1;
 
-	InitUnits();
+	m_timeval.tv_sec = GetDevice()->getAttribute<int>("sec_period", 10);
+	m_timeval.tv_usec = GetDevice()->getAttribute<int>("usec_period", 0);
+	if (m_timeval.tv_sec == 0 && m_timeval.tv_usec == 0) m_timeval.tv_sec = 10;
+
+	InitUnits(GetDevice()->GetFirstUnit());
 
 	return 0;
 }
 
-int DaemonConfig::Load(int *argc, char **argv, int libpardone , TSzarpConfig* sz_cfg , int force_device_index, void* ) 
+int DaemonConfig::Load(int *argc, char **argv, int libpardone, TSzarpConfig* sz_cfg, int force_device_index) 
 {
 	ArgsManager args_mgr(m_daemon_name);
 	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.initLibpar();
 
 	return Load(args_mgr, sz_cfg, force_device_index);
 }
 
-enum {
-	DEVICE=128,
-	SNIFF,
-	SCAN,
-	NOCONF,
-	DUMPHEX,
-	SPEED,
-	ASKDELAY,
-};
-
-/**Command line arguments recognized by DaemonConfig*/
-struct arguments
-{
-   	int single;
-	int diagno;
-	int device;
-	int noconf;
-	char* device_path;
-	int scanner;
-	char id1, id2;
-	int speed;
-	int dumphex;
-	int sniff;
-	int askdelay;
-};
-	
-static error_t parse_opt(int key, char *arg, struct argp_state *state)
-{
-        struct arguments *arguments = (struct arguments *)state->input;
-                                                                                
-        switch (key) {
-                case 'd':
-                case -1:
-                        break;
-                case 's':
-                        arguments->single = 1;
-                        break;
-
-		case 'b':
-                        arguments->diagno = 1;
-                        break;
-			
-		case ARGP_KEY_ARG:
-			if (state->arg_num > 0) 
-				break;
-			char *ptr;
-			arguments->device = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->device <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case DEVICE:
-			arguments->device_path = strdup(arg);
-			break;
-		case NOCONF:
-			arguments->noconf = 1;
-			break;
-		case SCAN:
-			arguments->scanner = 1;
-			if (sscanf(arg, "%c-%c", &arguments->id1, &arguments->id2) != 2) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case DUMPHEX:
-			arguments->dumphex = 1;
-			break;
-		case SNIFF:
-			arguments->sniff = 1;
-			break;
-		case SPEED:
-			arguments->speed = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->speed <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case ASKDELAY:
-			arguments->askdelay = strtol(arg, &ptr, 0);
-			if ((arg == NULL) || (ptr[0] != 0) || 
-					(arguments->askdelay <= 0)) {
-				argp_usage(state);
-				return -1;
-			}
-			break;
-		case ARGP_KEY_END:
-			break;
-		case ARGP_KEY_NO_ARGS:
-			break;
-                default:
-                        return ARGP_ERR_UNKNOWN;
-        }
-        return 0;
-}
-
 void DaemonConfig::ParseCommandLine(const ArgsManager& args_mgr) {
+	auto base_prefix = args_mgr.get<std::string>("config_prefix");
+	if (!base_prefix) {
+		sz_log(0, "Base prefix not specified, probably failed to load libpar");
+		exit(1);
+	}
+
+	m_prefix = SC::L2S(*base_prefix);
+
 	m_diagno = args_mgr.has("diagno");
 	m_single = args_mgr.has("single");
 	m_noconf = args_mgr.has("noconf");
@@ -324,7 +236,7 @@ int DaemonConfig::LoadXML(const char *path)
 	if (m_ipk->parseXML(doc))
 		return 1;
 
-	m_ipk->SetName(m_ipk->GetTitle(), SC::L2S(m_prefix));
+	m_ipk->SetPrefix(m_prefix);
 
 	m_device_obj = m_ipk->DeviceById(m_device);
 	if (m_device_obj == NULL)
@@ -343,27 +255,32 @@ int DaemonConfig::LoadNotXML( TSzarpConfig* cfg , int device_id )
 	return 0;
 }
 
-int DaemonConfig::GetLineNumber()
+int DaemonConfig::GetLineNumber() const
 {
 	assert (m_load_called != 0);
 	return m_device;
 }
 
+bool DaemonConfig::GetSingle() const
+{
+	assert (m_load_called != 0);
+	return m_single;
+}
 
 
-TSzarpConfig* DaemonConfig::GetIPK()
+TSzarpConfig* DaemonConfig::GetIPK() const
 {
 	assert (m_load_called != 0);
 	return m_ipk;
 }
 
-TDevice* DaemonConfig::GetDevice()
+TDevice* DaemonConfig::GetDevice() const
 {
 	assert (m_load_called != 0);
 	return m_device_obj;
 }
 
-xmlDocPtr DaemonConfig::GetDeviceXMLDoc()
+xmlDocPtr DaemonConfig::GetDeviceXMLDoc() const
 {
 	xmlDocPtr doc = GetXMLDoc();
 
@@ -378,7 +295,7 @@ xmlDocPtr DaemonConfig::GetDeviceXMLDoc()
 	return device_doc;
 }
 
-std::string DaemonConfig::GetDeviceXMLString()
+std::string DaemonConfig::GetDeviceXMLString() const
 {
 	xmlDocPtr device_doc = GetDeviceXMLDoc();
 	std::string xml_str = xmlToString(device_doc);
@@ -386,18 +303,18 @@ std::string DaemonConfig::GetDeviceXMLString()
 	return xml_str;
 }
 
-std::string DaemonConfig::GetPrintableDeviceXMLString()
+std::string DaemonConfig::GetPrintableDeviceXMLString() const
 {
 	return SC::printable_string(GetDeviceXMLString());
 }
 
-xmlDocPtr DaemonConfig::GetXMLDoc()
+xmlDocPtr DaemonConfig::GetXMLDoc() const
 {
 	assert (m_load_xml_called != 0);
 	return m_ipk_doc;
 }
 
-xmlNodePtr DaemonConfig::GetXMLDevice()
+xmlNodePtr DaemonConfig::GetXMLDevice() const
 {
 	assert (m_load_xml_called != 0);
 	return m_ipk_device;
@@ -413,28 +330,10 @@ void DaemonConfig::CloseXML(int clean_parser)
 	}
 }
 
-std::string& DaemonConfig::GetIPKPath()
+std::string DaemonConfig::GetIPKPath() const
 {
 	assert (m_load_xml_called != 0);
-	return m_ipk_path;
-}
-
-const char* DaemonConfig::GetParcookPath()
-{
-	assert (m_load_called != 0);
-	return m_parcook_path.c_str();
-}
-
-const char* DaemonConfig::GetLinexPath()
-{
-	assert (m_load_called != 0);
-	return m_linex_path.c_str();
-}
-
-int DaemonConfig::GetSingle()
-{
-	assert (m_load_called != 0);
-	return m_single;
+	return ipk_path;
 }
 
 int DaemonConfig::GetDiagno()
@@ -443,13 +342,13 @@ int DaemonConfig::GetDiagno()
 	return m_diagno;
 }
 
-const char* DaemonConfig::GetDevicePath() 
+const char* DaemonConfig::GetDevicePath() const
 {
 	assert (m_load_called != 0);
 	if (!m_device_path.empty())
 		return m_device_path.c_str();
 	if (m_device_obj) { 
-		m_device_path = SC::S2A(m_device_obj->GetPath());
+		m_device_path = m_device_obj->getAttribute("path");
 		return m_device_path.c_str();
 	}
 	return "/dev/INVALID";
@@ -461,7 +360,7 @@ int DaemonConfig::GetSpeed()
 	if (m_speed != 0)
 		return m_speed;
 	if (m_device_obj) 
-		return m_device_obj->GetSpeed();
+		return m_device_obj->getAttribute<int>("speed", -1);
 	return 0;
 }
 
@@ -499,34 +398,34 @@ int DaemonConfig::GetAskDelay() {
 	return m_askdelay;
 }
 
-void DaemonConfig::InitUnits() {
-	assert(m_ipk);
+void DaemonConfig::InitUnits(TUnit* unit) {
+	for (; unit; unit = unit->GetNext()) {
+		m_units.push_back(unit);
+	}
+}
 
-	UnitInfo *cu = NULL;
+size_t DaemonConfig::GetParamsCount() const {
+	return m_device_obj->GetParamsCount();
+}
 
-	for (TUnit* unit = GetDevice()->GetFirstRadio()->GetFirstUnit();
-			unit;
-			unit = unit->GetNext()) {
-		
-		UnitInfo* ui = new UnitInfo(unit);
-
-		if (cu) 
-			cu->SetNext(ui);
-		else
-			m_units = ui;	
-
-		cu = ui;
+size_t DaemonConfig::GetSendsCount() const {
+	size_t no_sends = 0;
+	
+	for (auto unit: m_units) {
+		no_sends += unit->GetSendParamsCount();
 	}
 
+	return no_sends;
 }
+
 
 void DaemonConfig::CloseIPK() {
 
 	if (m_device_path.empty()) 
-		m_device_path = SC::S2A(m_device_obj->GetPath());
+		m_device_path = m_device_obj->getAttribute("path");
 
 	if (m_speed == 0)
-		m_speed = m_device_obj->GetSpeed();
+		m_speed = m_device_obj->getAttribute<int>("speed", -1);
 
 	delete m_ipk;
 
@@ -534,41 +433,6 @@ void DaemonConfig::CloseIPK() {
 	m_device_obj = NULL;
 }
 
-DaemonConfig::UnitInfo* DaemonConfig::GetFirstUnitInfo() {
-	return m_units;
-}
-
-DaemonConfig::UnitInfo::UnitInfo(TUnit * unit) :  m_next(NULL)
-{
-	m_id = unit->GetId();
-	m_send_count = unit->GetSendParamsCount();
-	m_sender_msg_type = unit->GetSenderMsgType();
-}
-
-char DaemonConfig::UnitInfo::GetId() {
-	return m_id;
-}
-
-int DaemonConfig::UnitInfo::GetSendParamsCount() {
-	return m_send_count;
-}
-
-DaemonConfig::UnitInfo* DaemonConfig::UnitInfo::GetNext() {
-	return m_next;
-}
-
-
-void DaemonConfig::UnitInfo::SetNext(UnitInfo* next) {
-	m_next = next;
-}
-
-long DaemonConfig::UnitInfo::GetSenderMsgType() {
-	return m_sender_msg_type;
-}
-
-DaemonConfig::UnitInfo::~UnitInfo() {
-	delete m_next;
-}
 
 #endif 
 

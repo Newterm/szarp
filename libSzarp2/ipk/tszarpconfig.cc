@@ -152,18 +152,15 @@ swap_draws(int a, int b, void *data)
 
 
 TSzarpConfig::TSzarpConfig() :
-	read_freq(0), send_freq(0),
 	devices(NULL), defined(NULL),
 	drawdefinable(NULL), title(),
 	prefix(), seasons(NULL),
-	device_counter(1),
-	radio_counter(1),
 	unit_counter(1),
 	use_names_cache(false)
 {
 }
 
-TSzarpConfig::~TSzarpConfig(void)
+TSzarpConfig::~TSzarpConfig()
 {
 	if( devices )       delete devices      ;
 	if( defined )       delete defined      ;
@@ -171,20 +168,9 @@ TSzarpConfig::~TSzarpConfig(void)
 	if( seasons )       delete seasons      ;
 }
 
-
-TDevice* TSzarpConfig::createDevice(const std::wstring& _daemon, const std::wstring& _path)
+TUnit* TSzarpConfig::createUnit(TDevice* parent)
 {
-	return new TDevice(device_counter++, this, _daemon, _path);
-}
-
-TRadio* TSzarpConfig::createRadio(TDevice* parent, wchar_t _id, TUnit* _units)
-{
-	return new TRadio(radio_counter++, parent, _id, _units);
-}
-
-TUnit* TSzarpConfig::createUnit(TRadio* parent, wchar_t _id, int _type, int _subtype)
-{
-	return new TUnit(unit_counter++, parent, _id, _type, _subtype);
+	return new TUnit(unit_counter++, parent, this);
 }
 
 const std::wstring&
@@ -193,128 +179,10 @@ TSzarpConfig::GetTitle()
     return title;
 }
 
-const std::wstring&
-TSzarpConfig::GetDocumentationBaseURL()
-{
-    return documentation_base_url;
-}
-
-void TSzarpConfig::SetName(const std::wstring& _title, const std::wstring& _prefix)
-{
-    title = _title;
-    prefix = _prefix;
-}
-
 const std::wstring& 
 TSzarpConfig::GetPrefix() const
 {
     return prefix;
-}
-
-void
-TSzarpConfig::AddDefined(TParam * p)
-{
-    assert(p != NULL);
-    if (defined == NULL) {
-	defined = p;
-    } else {
-	defined->Append(p);
-    }
-}
-
-void
-TSzarpConfig::AddDrawDefinable(TParam * p)
-{
-    assert(p != NULL);
-    if (drawdefinable == NULL) {
-	drawdefinable = p;
-    } else {
-	drawdefinable->Append(p);
-    }
-}
-
-void TSzarpConfig::RemoveDrawDefinable(TParam *p)
-{
-	if (drawdefinable == p) {
-		drawdefinable = drawdefinable->GetNext(false);
-		return;
-	}
-
-
-	TParam *pv = drawdefinable, *c = drawdefinable->GetNext(false); 
-	while (c && c != p) {
-		pv = c;
-		c = c->GetNext(false);
-	}
-
-	if (c)
-		pv->SetNext(c->GetNext(false));
-}
-
-TParam *
-TSzarpConfig::getParamByIPC(int ipc_ind)
-{
-    TParam *p = GetFirstParam();
-    if (p == NULL)
-	return NULL;
-    return p->GetNthParam(ipc_ind, true);
-}
-
-xmlDocPtr
-TSzarpConfig::generateXML(void)
-{
-    using namespace SC;
-#define X (unsigned char *)
-#define ITOA(x) snprintf(buffer, 10, "%d", x)
-#define BUF X(buffer)
-    char buffer[10];
-    xmlDocPtr doc;
-    xmlNodePtr node;
-
-    doc = xmlNewDoc(X "1.0");
-    doc->children = xmlNewDocNode(doc, NULL, X "params", NULL);
-    xmlNewNs(doc->children, SC::S2U(IPK_NAMESPACE_STRING).c_str(), NULL);
-    xmlSetProp(doc->children, X "version", X "1.0");
-    ITOA(read_freq);
-    xmlSetProp(doc->children, X "read_freq", BUF);
-    ITOA(send_freq);
-    xmlSetProp(doc->children, X "send_freq", BUF);
-    if (!title.empty())
-	xmlSetProp(doc->children, X "title", S2U(title).c_str());
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	xmlAddChild(doc->children, d->generateXMLNode());
-    if (defined > 0) {
-	node = xmlNewChild(doc->children, NULL, X "defined", NULL);
-	for (TParam * p = defined; p; p = p->GetNext())
-	    xmlAddChild(node, p->generateXMLNode());
-    }
-    if (drawdefinable) {
-	node = xmlNewChild(doc->children, NULL, X "drawdefinable", NULL);
-	for (TParam * p = drawdefinable; p; p = p->GetNext())
-	    xmlAddChild(node, p->generateXMLNode());
-    }
-    if (seasons) {
-	node = seasons->generateXMLNode();
-	xmlAddChild(doc->children, node);
-    }
-    return doc;
-#undef X
-#undef ITOA
-#undef BUF
-}
-
-int
-TSzarpConfig::saveXML(const std::wstring &path)
-{
-    xmlDocPtr d;
-    int r;
-
-    d = generateXML();
-    if (d == NULL)
-	return -1;
-    r = xmlSaveFormatFile(SC::S2A(path).c_str(), d, 1);
-    xmlFreeDoc(d);
-    return r;
 }
 
 int
@@ -393,7 +261,9 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 	const char* ignored_trees[] = { "mobile", "checker:rules",  0 };
 	xw.SetIgnoredTrees(ignored_trees);
 
-	nativeLanguage = L"pl";
+	TAttribHolder::parseXML(reader);
+
+	size_t device_no = 0;
 
 	for (;;) {
 		if (xw.IsTag("params")) {
@@ -406,39 +276,13 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 				for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
 					const xmlChar *attr = xw.GetAttr();
-					try {
-						if (xw.IsAttr("read_freq")) {
-							read_freq = boost::lexical_cast<int>(attr);
-							if (read_freq <= 0)
-								xw.XMLError("read_freq attribute <= 0");
-						} else
-						if (xw.IsAttr("send_freq")) {
-							send_freq = boost::lexical_cast<int>(attr);
-							if (send_freq <= 0)
-								xw.XMLError("send_freq attribute <= 0");
-						} else
-						if (xw.IsAttr("version")) {
-							if (!xmlStrEqual(attr, (unsigned char*) "1.0")) {
-								xw.XMLError("incorrect version (1.0 expected)");
-							}
-						} else
-						if (xw.IsAttr("title")) {
-							title = SC::U2S(attr);
-						} else
-						if (xw.IsAttr("language")) {
-							nativeLanguage = SC::U2S(attr);
-						} else
-						if (xw.IsAttr("documentation_base_url")) {
-							documentation_base_url = SC::U2S(attr);
-						} else
-						if (xw.IsAttr("xmlns")) {
-						} else {
-							xw.XMLWarningNotKnownAttr();
-						}
-					} catch (boost::bad_lexical_cast &) {
-						xw.XMLErrorWrongAttrValue();
-					}
-				} 
+					storeAttribute(SC::U2L(xw.GetAttrName()), SC::U2L(attr));
+				}
+
+				if (!hasAttribute("version") || getAttribute<std::string>("version", "0.0") != "1.0") {
+					sz_log(0, "Error regarding \"version\" attribute!");
+					return 1;
+				}
 
 			} else {
 				break;
@@ -446,12 +290,19 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 		} else
 		if (xw.IsTag("device")) {
 			if (xw.IsBeginTag()) {
+				++device_no;
+
 				if (devices == NULL)
-					devices = td = createDevice();
+					devices = td = new TDevice(this);
 				else
-					td = td->Append(createDevice());
+					td = td->Append(new TDevice(this));
 				assert(devices != NULL);
-				td->parseXML(reader);
+				try {
+					td->parseXML(reader);
+				} catch(const std::exception& e) {
+					sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+					return 1;
+				}
 			}
 		} else
 		if (xw.IsTag("defined")) {
@@ -495,104 +346,45 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 int
 TSzarpConfig::parseXML(xmlDocPtr doc)
 {
-    using namespace SC;
-
-#define NEED(p, n) \
-	if (!p) { \
-	sz_log(1, "XML parsing error: expected '%s' (line %ld)", n, \
-			xmlGetLineNo(p)); \
-		return 1; \
-	} \
-	if (strcmp((const char*)p->name, n)) { \
-	sz_log(1, "XML parsing error: expected '%s', found '%s' \
- (line %ld)", \
-			n, U2A(p->name).c_str(), xmlGetLineNo(p)); \
-		return 1; \
-	}
-#define NOATR(p, n) \
-	{ \
-	sz_log(1, "XML parsing error: attribute '%s' in node '%s' not\
- found (line %ld)", \
- 			n, U2A(p->name).c_str(), xmlGetLineNo(p)); \
-			return 1; \
-	}
-#define NEEDATR(p, n) \
-	if (c) free(c); \
-	c = xmlGetNoNsProp(p, (xmlChar *)n); \
-	if (!c) NOATR(p, n);
-#define X (xmlChar *)
-
-    unsigned char *c = NULL;
-    int i;
-    int ret = 1;
-    xmlChar *_ps_addres, *_ps_port, *_documenation_base_url;
     TDevice *td = NULL;
     TParam *p = NULL;
     xmlNodePtr node, ch;
+	size_t device_no = 0;
 
     node = doc->children;
-    NEED(node, "params");
-    NEEDATR(node, "version");
+	if (!node || SC::U2A(node->name) != "params") {
+		sz_log(0, "No \"params\" node in xml! Cannot continue!");
+		return 1;
+	}
 
-    unsigned char* _language = xmlGetNoNsProp(node, X "language");
-    if (_language) {
-	nativeLanguage = SC::U2S(_language);
-	xmlFree(_language);
-    } else
-    	nativeLanguage = L"pl";
-	 
+	TAttribHolder::parseXML(node);
 
-    unsigned char* _title = xmlGetNoNsProp(node, X "title");
-    title = U2S(_title);
-    xmlFree(_title);
+	title = SC::L2S(getAttribute<std::string>("title", ""));
 
-    if (strcmp((char*)c, "1.0")) {
-sz_log(1, "XML parsing error: incorrect version (1.0 expected) (line %ld)", xmlGetLineNo(node));
-	goto at_end;
-    }
-
-    _documenation_base_url = xmlGetNoNsProp(node, X "documentation_base_url");
-    if (_documenation_base_url) {
-	    documentation_base_url = U2S(_documenation_base_url);
-	    xmlFree(_documenation_base_url);
-    }
-
-    _ps_addres =  xmlGetNoNsProp(node, X "ps_address");
-    _ps_port = xmlGetNoNsProp(node, X "ps_port");
-    if (_ps_addres)
-	    ps_address =  U2S(_ps_addres);
-    if (_ps_port)
-	    ps_port = U2S(_ps_port);
-    xmlFree(_ps_addres);
-    xmlFree(_ps_port);
-
-    NEEDATR(node, "read_freq");
-    if ((i = atoi((char*)c)) <= 0) {
-sz_log(1, "XML file error: read_freq attribute <= 0 (line %ld)", xmlGetLineNo(node));
-	goto at_end;
-    }
-    read_freq = i;
-    NEEDATR(node, "send_freq");
-    if ((i = atoi((char*)c)) <= 0) {
-sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(node));
-	goto at_end;
-    }
-    free(c);
-    c = NULL;
-    send_freq = i;
+	if (!hasAttribute("version") || getAttribute<std::string>("version", "0.0") != "1.0") {
+		sz_log(0, "Error regarding \"version\" attribute!");
+		return 1;
+	}
 
     assert(devices == NULL);
     assert(defined == NULL);
 
-    for (i = 0, ch = node->children; ch; ch = ch->next) {
+    for (ch = node->children; ch; ch = ch->next) {
 	if (!strcmp((char *) ch->name, "device")) {
+		++device_no;
+
 	    if (devices == NULL)
-		devices = td = createDevice();
+		devices = td = new TDevice(this);
 	    else
-		td = td->Append(createDevice());
+		td = td->Append(new TDevice(this));
 	    assert(devices != NULL);
-	    if (td->parseXML(ch))
-		goto at_end;
+
+		try {
+			td->parseXML(ch);
+		} catch(const std::exception& e) {
+			sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+			return 1;
+		}
 	}
 	else if (!strcmp((char *) ch->name, "defined")) {
 	    for (xmlNodePtr ch2 = ch->children; ch2; ch2 = ch2->next)
@@ -605,7 +397,7 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
 		    }
 		    assert(p != NULL);
 		    if (p->parseXML(ch2))
-			goto at_end;
+			return 1;
 		}
 	}
 	else if (!strcmp((char *) ch->name, "drawdefinable")) {
@@ -618,7 +410,7 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
 		    }
 		    assert(p != NULL);
 		    if (p->parseXML(ch2))
-			goto at_end;
+			return 1;
 		}
 	}
 	else if (!strcmp((char *)ch->name, "seasons")) {
@@ -626,22 +418,19 @@ sz_log(1, "XML file error: send_freq attribute <= 0 (line %ld)", xmlGetLineNo(no
 		if (seasons->parseXML(ch)) {
 			delete seasons;
 			seasons = NULL;
-			goto at_end;
+			return 1;
 		}
 	}
     }
     if (devices == NULL) {
-sz_log(1, "XML file error: 'device' elements not found");
-	goto at_end;
+		sz_log(1, "XML file error: 'device' elements not found");
+		return 1;
     }
 
     if (seasons == NULL)
 	    seasons = new TSSeason();
 
-    ret = 0;
-  at_end:
-    return ret;
-#undef X
+	return 0;
 }
 
 int
@@ -665,17 +454,17 @@ TSzarpConfig::PrepareDrawDefinable()
 }
 
 TParam *
-TSzarpConfig::getParamByName(const std::wstring& name)
+TSzarpConfig::getParamByName(const std::wstring& name) const
 {
 
     if (use_names_cache) {
-	std::map<std::wstring, TParam *>::iterator it = params_map.find(name);
+	auto it = params_map.find(name);
 	if (it == params_map.end())
 	    return NULL;
 	return it->second;
     }
 
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
+    for (TParam * p = GetFirstParam(); p; p = p->GetNextGlobal())
 	if (!p->GetName().empty() && !name.empty() && p->GetName() == name)
 	    return p;
 
@@ -686,79 +475,10 @@ TSzarpConfig::getParamByName(const std::wstring& name)
     return NULL;
 }
 
-TParam *
-TSzarpConfig::getParamByBaseInd(int base_ind)
+TParam * TSzarpConfig::GetFirstParam() const
 {
-    TParam *p;
-    int max, i;
-
-    for (p = GetFirstParam(); p; p = GetNextParam(p)) {
-	if (p->GetBaseInd() == base_ind) {
-	    return p;
-	}
-    }
-    /* draw definables have base indexes starting from max */
-    max = GetParamsCount() + GetDefinedCount();
-    for (i = max, p = drawdefinable; p; p = p->GetNext(), i++) {
-	if (i == base_ind) {
-	    return p;
-	}
-    }
-    return NULL;
-}
-
-std::wstring
-TSzarpConfig::absoluteName(const std::wstring &name, const std::wstring &ref)
-{
-    int i;
-    std::wstring w1, w2;
-
-    assert(!name.empty());
-    assert(!ref.empty());
-    w1 = name;
-    w2 = ref;
-    if (name.length() > 4 && name.substr(0, 4) == L"*:*:") {
-	i = w2.rfind(':');
-	w1.replace(0, 3, w2.substr(0, i));
-    } else if (name.length() > 2 && name.substr(0, 2) == L"*:") {
-	i = w2.find(':');
-	w1.replace(0, 1, w2.substr(0, i));
-    }
-    return w1;
-}
-
-int
-TSzarpConfig::AddDefined(const std::wstring &formula)
-{
-    TParam *p = new TParam(NULL, this, formula);
-
-    assert(p != NULL);
-    p->SetFormulaType(TParam::RPN);
-    if (defined == NULL)
-	defined = p;
-    else
-	defined->Append(p);
-    return GetParamsCount() + GetDefinedCount() - 1;
-}
-
-int
-TSzarpConfig::GetMaxBaseInd()
-{
-    int m = -1, n;
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p)) {
-	n = p->GetBaseInd();
-	if (n > m)
-	    m = n;
-    }
-    return m;
-}
-
-TParam *
-TSzarpConfig::GetFirstParam()
-{
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
-	for (TRadio * r = d->GetFirstRadio(); r; r = d->GetNextRadio(r))
-	    for (TUnit * u = r->GetFirstUnit(); u; u = r->GetNextUnit(u)) {
+    for (auto d = GetFirstDevice(); d; d = d->GetNext())
+	    for (TUnit * u = d->GetFirstUnit(); u; u = u->GetNext()) {
 		TParam *p = u->GetFirstParam();
 		if (p)
 		    return p;
@@ -770,36 +490,11 @@ TSzarpConfig::GetFirstParam()
     return NULL;
 }
 
-TParam *
-TSzarpConfig::GetNextParam(TParam * p)
-{
-    return (NULL == p ? NULL : p->GetNext(true));
-}
-
-TDevice *
-TSzarpConfig::AddDevice(TDevice * d)
-{
-    assert(d != NULL);
-    if (devices == NULL)
-	devices = d;
-    else
-	devices->Append(d);
-    return d;
-}
-
-TDevice *
-TSzarpConfig::GetNextDevice(TDevice * d)
-{
-    if (d == NULL)
-	return NULL;
-    return d->GetNext();
-}
-
 int
-TSzarpConfig::GetParamsCount()
+TSzarpConfig::GetParamsCount() const
 {
     int i = 0;
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
+    for (auto d = GetFirstDevice(); d; d = d->GetNext())
 	i += d->GetParamsCount();
     return i;
 }
@@ -808,7 +503,7 @@ int
 TSzarpConfig::GetDevicesCount()
 {
     int i = 0;
-    for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
+    for (auto d = GetFirstDevice(); d; d = d->GetNext())
 	i++;
     return i;
 }
@@ -826,26 +521,16 @@ int
 TSzarpConfig::GetDrawDefinableCount()
 {
     int i = 0;
-    for (TParam * p = drawdefinable; p; p = p->GetNext())
+    for (TParam * p = drawdefinable; p; p = p->GetNextGlobal())
 	i++;
     return i;
 }
 
-int
-TSzarpConfig::GetAllDefinedCount()
-{
-    int i = 0;
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
-	if ((!p->GetFormula().empty() || !p->GetParentUnit()) && (p->GetFormulaType() != TParam::DEFINABLE))
-	    i++;
-    return i;
-}
-
 TDevice *
-TSzarpConfig::DeviceById(int id)
+TSzarpConfig::DeviceById(int id) const
 {
-    TDevice *d;
-    for (d = GetFirstDevice(); d && (id > 1); d = GetNextDevice(d), id--);
+    auto d = GetFirstDevice();
+    for (; d && (id > 1); d = d->GetNext(), id--);
     return d;
 }
 
@@ -853,7 +538,7 @@ std::wstring
 TSzarpConfig::GetFirstRaportTitle()
 {
     std::wstring title;
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
+    for (TParam * p = GetFirstParam(); p; p = p->GetNextGlobal())
 	for (TRaport * r = p->GetRaports(); r; r = r->GetNext())
 	    if (title.empty() || r->GetTitle().compare(title) < 0)
 		title = r->GetTitle();
@@ -864,7 +549,7 @@ std::wstring
 TSzarpConfig::GetNextRaportTitle(const std::wstring &cur)
 {
     std::wstring title;
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
+    for (TParam * p = GetFirstParam(); p; p = p->GetNextGlobal())
 	for (TRaport * r = p->GetRaports(); r; r = r->GetNext())
 	    if (r->GetTitle().compare(cur) > 0 && (title.empty() || r->GetTitle().compare(title) < 0))
 		title = r->GetTitle();
@@ -874,196 +559,11 @@ TSzarpConfig::GetNextRaportTitle(const std::wstring &cur)
 TRaport *
 TSzarpConfig::GetFirstRaportItem(const std::wstring& title)
 {
-    for (TParam * p = GetFirstParam(); p; p = GetNextParam(p))
+    for (TParam * p = GetFirstParam(); p; p = p->GetNextGlobal())
 	for (TRaport * r = p->GetRaports(); r; r = r->GetNext())
 	    if (title == r->GetTitle())
 		return r;
     return NULL;
-}
-
-TRaport *
-TSzarpConfig::GetNextRaportItem(TRaport * cur)
-{
-    std::wstring title = cur->GetTitle();
-    for (TRaport * r = cur->GetNext(); r; r = r->GetNext())
-	if (title == r->GetTitle())
-	    return r;
-    for (TParam * p = GetNextParam(cur->GetParam()); p; p = GetNextParam(p))
-	for (TRaport * r = p->GetRaports(); r; r = r->GetNext())
-	    if (title == r->GetTitle())
-		return r;
-    return NULL;
-}
-
-bool TSzarpConfig::checkConfiguration()
-{
-	bool ret = true;
-	ret = checkRepetitions(false) && ret;
-	ret = checkFormulas()         && ret;
-	ret = checkSend()             && ret;
-	return ret;
-}
-
-bool TSzarpConfig::checkFormulas()
-{
-	bool ret = true;
-	bool lua_syntax_ok = true;
-	try {
-		PrepareDrawDefinable();
-	} catch( TCheckException& e) {
-		return false;
-	}
-
-	/** This loop checks every formula and return false if any is invalid */
-	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
-		try {
-			p->GetParcookFormula();
-		} catch( TCheckException& e ) {
-			ret = false;
-		}
-	for( TParam* p=GetFirstParam(); p ; p=GetNextParam(p) )
-		try {
-			p->GetDrawFormula();
-		} catch( TCheckException& e ) {
-			ret = false;
-		}
-
-	/** This loop checks every formula for lua syntax */
-	for(TParam* p = GetFirstParam(); p; p=GetNextParam(p)) {
-		if(p->GetLuaScript() && !checkLuaSyntax(p)){
-			lua_syntax_ok = false;
-		}
-	}
-
-	/** This loop check drawdefinables formulas for SZARP optimalization if lua syntax was correct */
-	if(lua_syntax_ok)	{
-		IPKContainer::Init(L"/opt/szarp/", L"/opt/szarp/", L"pl");
-		for(TParam* p = GetFirstDrawDefinable(); p; p = p->GetNext(false)) {
-			if(p->GetLuaScript() && !optimizeLuaParam(p)) {
-					ret = false;
-			}
-		}
-	}
-
-	ret = ret && lua_syntax_ok;
-	return ret;
-}
-
-bool TSzarpConfig::checkLuaSyntax(TParam *p)
-{
-	lua_State* lua = Lua::GetInterpreter();
-	if (compileLuaFormula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
-		return true;
-	else {
-		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
-		return false;
-	}
-}
-
-bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const char *formula_name)
-{
-	std::ostringstream paramfunction;
-
-	using std::endl;
-
-	paramfunction <<
-	"return function ()"	<< endl <<
-	"	local p = szbase"	<< endl <<
-	"	local PT_MIN10 = ProbeType.PT_MIN10" << endl <<
-	"	local PT_HOUR = ProbeType.PT_HOUR" << endl <<
-	"	local PT_HOUR8 = ProbeType.PT_HOUR8" << endl <<
-	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
-	"	local PT_WEEK = ProbeType.PT_WEEK" << endl <<
-	"	local PT_MONTH = ProbeType.PT_MONTH" << endl <<
-	"	local PT_YEAR = ProbeType.PT_YEAR" << endl <<
-	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
-	"	local szb_move_time = szb_move_time" << endl <<
-	"	local state = {}" << endl <<
-	"	return function (t,pt)" << endl <<
-	"		local v = nil" << endl <<
-	formula << endl <<
-	"		return v" << endl <<
-	"	end" << endl <<
-	"end"	<< endl;
-
-	std::string str = paramfunction.str();
-
-	const char* content = str.c_str();
-
-	int ret = luaL_loadbuffer(lua, content, std::strlen(content), formula_name);
-	if (ret != 0)
-		return false;
-
-	ret = lua_pcall(lua, 0, 1, 0);
-	if (ret != 0)
-		return false;
-
-	return true;
-}
-
-bool TSzarpConfig::optimizeLuaParam(TParam* p) {
-	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
-	p->SetLuaExecParam(ep);
-
-	IPKContainer* container = IPKContainer::GetObject();
-	if (LuaExec::optimize_lua_param(p, container))
-		return true;
-	return false;
-}
-
-bool TSzarpConfig::checkRepetitions(int quiet)
-{
-	std::vector<std::wstring> str;
-	int all_repetitions_number = 0, the_same_repetitions_number=1;
-
-	for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
-		str.push_back(p->GetSzbaseName());
-	}
-	std::sort(str.begin(), str.end());
-
-	for( size_t j=0 ; j<str.size() ; ++j )
-	{
-		if( j<str.size()-1 && str[j] == str[j+1] )
-			++the_same_repetitions_number;
-		else if( the_same_repetitions_number > 1 ) {
-			if( !quiet )
-				sz_log(1, "There are %d repetitions of: %s", the_same_repetitions_number, SC::S2L(str[j-1]).c_str());
-
-			all_repetitions_number += the_same_repetitions_number;
-			the_same_repetitions_number = 1;
-		}
-	}
-
-	return all_repetitions_number == 0;
-}
-
-bool TSzarpConfig::checkSend()
-{
-	bool ret = true;
-	for( TDevice* d = GetFirstDevice(); d; d = GetNextDevice(d) )
-		for( TRadio* r = d->GetFirstRadio(); r; r = d->GetNextRadio(r) )
-			for( TUnit* u = r->GetFirstUnit(); u; u = r->GetNextUnit(u) )
-				for( TSendParam* sp = u->GetFirstSendParam(); sp; sp = u->GetNextSendParam(sp) )
-				{
-					if( !sp->IsConfigured() || sp->GetParamName().empty() )
-						continue;
-
-					TParam* p = getParamByName(sp->GetParamName()); 
-					if( p == NULL ) {
-						sz_log(1, "Cannot find parameter to send (%s)", SC::S2A(sp->GetParamName()).c_str());
-						ret = false;
-					} else if( p->IsDefinable() ) {
-						sz_log(1, "Cannot use drawdefinable param in send (%s)", SC::S2A(sp->GetParamName()).c_str());
-						ret = false;
-					}
-				}
-	return ret;
-}
-
-
-void TSzarpConfig::ConfigureSeasonsLimits() {
-	if (seasons == NULL)
-		seasons = new TSSeason();
 }
 
 const TSSeason* TSzarpConfig::GetSeasons() const {
@@ -1081,5 +581,39 @@ void TSzarpConfig::AddParamToNamesCache(TParam * _param)
 		return;
 
 	params_map[_param->GetName()] = _param;
+}
+
+size_t TSzarpConfig::GetFirstParamIpcInd(const TDevice &d) const {
+	return d.GetFirstUnit()->GetFirstParam()->GetIpcInd();
+}
+
+const std::vector<size_t> TSzarpConfig::GetSendIpcInds(const TDevice &d) const {
+	std::vector<size_t> ret;
+
+	size_t no_sends = 0;
+	for (TUnit* u = d.GetFirstUnit(); u != nullptr; u = u->GetNext()) {
+		no_sends += u->GetSendParamsCount();
+	}
+
+	ret.reserve(no_sends);
+
+	for (TUnit* u = d.GetFirstUnit(); u != nullptr; u = u->GetNext()) {
+		for (TSendParam *s = u->GetFirstSendParam(); s; s = s->GetNext()) {
+			auto ipc_param = s->GetParamToSend();
+
+			if (ipc_param == nullptr) continue; // value-type send param (ignore it)
+			else ret.push_back(ipc_param->GetIpcInd());
+		}
+	}
+
+	return ret;
+}
+
+IPCParamInfo* TSzarpConfig::getIPCParamByName(const std::wstring& name) const {
+	return getParamByName(name);
+}
+
+TParam* TSzarpConfig::createParam(TUnit* parent) {
+	return new TParam(parent, this);
 }
 

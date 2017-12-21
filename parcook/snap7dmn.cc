@@ -132,7 +132,7 @@ public:
 protected:
 	virtual int ParseConfig(DaemonConfig * cfg);
 
-	int ConfigureParam(int param_ind, xmlNodePtr node, TSzarpConfig* ipk, TParam* p);
+	int ConfigureParam(int param_ind, xmlNodePtr node, TParam* p);
 
 	int ReadDB(int db, s7_db_map& ops);
 	int DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* data);
@@ -195,7 +195,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 
 	sz_log(9, "Configured with address: %s, rack: %d, slot: %d", address.c_str(), rack, slot);
 
-	TUnit* u = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit();
+	TUnit* u = cfg->GetDevice()->GetFirstUnit();
 	TParam *p = u->GetFirstParam();
 	for (int i = 1; i <= u->GetParamsCount(); i++) {
 		char *expr;
@@ -208,7 +208,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 		ASSERT(pnode);
 		free(expr);
 
-		if (ConfigureParam(i, pnode, u->GetSzarpConfig(), p))
+		if (ConfigureParam(i, pnode, p))
 			return 1;
 
 		p = p->GetNext();
@@ -217,7 +217,7 @@ int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
 	return 0;
 }
 
-int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TSzarpConfig* ipk, TParam* p)
+int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TParam* p)
 {
 	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("db"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
 	if (NULL == prop) {

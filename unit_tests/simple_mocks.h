@@ -5,9 +5,35 @@
 
 namespace mocks {
 
+class TSzarpConfigMock: public TSzarpConfig {
+public:
+	void SetName(const std::wstring& _title, const std::wstring& _prefix) {
+		title = _title;
+		prefix = _prefix;
+	}
+
+	void AddDrawDefinable(TParam* p) {
+		if (drawdefinable == nullptr) {
+			drawdefinable = p;
+		} else {
+			drawdefinable->Append(p);
+		}
+	}
+
+	void AddDefined(TParam* p) {
+		if (defined) defined->Append(p);
+		else defined = p;
+	}
+
+	void AddDevice(TDevice* d) {
+		if (devices) devices->Append(d);
+		else devices = d;
+	}
+};
+
 class IPKContainerMock {
 	TParam param;
-	TSzarpConfig config;
+	TSzarpConfigMock config;
 	int param_no;
 public:
 	IPKContainerMock() : param(NULL) {
@@ -32,11 +58,11 @@ public:
 class IPKContainerMockBase {
 protected:
 	TParam m_heartbeat_param;
-	TSzarpConfig m_config;
+	TSzarpConfigMock m_config;
 	int m_next_free_param_id;
 	static const int conf_id = 0;
 public:
-	IPKContainerMockBase() : m_heartbeat_param(NULL, NULL, std::wstring(), TParam::NONE, TParam::P_REAL) {
+	IPKContainerMockBase() : m_heartbeat_param(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL) {
 		m_next_free_param_id = 0;
 		m_heartbeat_param.SetConfigId(0);
 		m_heartbeat_param.SetParamId(m_next_free_param_id++);

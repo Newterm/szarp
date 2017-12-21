@@ -24,43 +24,53 @@
 #include "dmncfg.h"
 #include "ipcdefines.h"
 
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/msg.h>
+
+#include "ipcdefines.h"
+#include "msgtools.h"
+#include "liblog.h"
+
+
 /**
  * Handles communication with parcook and sender.
  */
-class           IPCHandler {
-      public:
+class IPCHandler {
+public:
+	IPCHandler(DaemonConfigInfo* cfg);
+
+	void InitIPC(const IPCInfo&);
+
 	/**
-	 * @param cfg pointer to daemon config info */
-	IPCHandler(DaemonConfig * cfg);
-	/** Initializes shared memory, semaphores and message queues.
-	 * @return 0 on success, 1 on error
-	 */
-	int             Init();
+	* Get data from sender.
+	*/
+	void GoSender();
+
 	/**
-	 * Get data from sender.
-	 */
-	void            GoSender();
-	/**
-	 * Puts data to parcook shared memory segment.
-	 */
-	void            GoParcook();
-      protected:
-	                DaemonConfig * m_cfg;
-				/**< pointer to daemon config info */
-	int             m_shm_d;/**< shared memory descriptor */
-	int             m_sem_d;/**< semaphore descriptor */
-	int             m_msgset_d;
-				/**< descriptor of queue for reading params
-				  from sender */
-	short          *m_segment;
-				/**< pointer to attached segment */
-      public:
-	int             m_params_count;
-				/**< number of params to read */
-	short          *m_read;	/**< buffer for params read*/
-	int             m_sends_count;
-				/**< number of params to send */
-	short          *m_send;	/**< buffer for params to send */
+	* Puts data to parcook shared memory segment.
+	*/
+	void GoParcook();
+
+protected:
+	const std::vector<UnitInfo*> units;
+
+	int m_shm_d;
+	int m_sem_d;
+	int m_msgset_d;
+
+	bool single;
+	short *m_segment;
+
+	int line_no;
+
+public:
+	int m_params_count;
+	short *m_read;
+	int m_sends_count;
+	short *m_send;
 };
 
 #endif /* MINGW32 */

@@ -44,186 +44,37 @@
 
 using namespace std;
 
-#define FREE(x)	if (x != NULL) free(x)
-
-xmlNodePtr TSendParam::generateXMLNode(void)
-{
-#define X (unsigned char *)
-#define ITOA(x) snprintf(buffer, 10, "%d", x)
-#define BUF X(buffer)
-	xmlNodePtr r;
-	char buffer[10];
-
-	r = xmlNewNode(NULL, X"send");
-	if (!configured)
-		return r;
-	if (!paramName.empty()) 
-		xmlSetProp(r, X"param", SC::S2U(paramName).c_str());
+int TSendParam::processAttributes() {
+	auto type_attr = getAttribute<std::string>("type", "probe");
+	if (type_attr == "probe")
+		type = PROBE;
+	else if (type_attr == "min")
+		type = MIN;
+	else if (type_attr == "min10")
+		type = MIN10;
+	else if (type_attr == "hour")
+		type = HOUR;
+	else if (type_attr == "day")
+		type = DAY;
 	else {
-		ITOA(value);
-		xmlSetProp(r, X"value", BUF);
+		throw std::runtime_error(std::string("Invalid probe type in send param") + SC::S2A(paramName));
 	}
-	switch (type) {
-		case (PROBE) :
-			xmlSetProp(r, X"type", X"probe");
-			break;
-		case (MIN) :
-			xmlSetProp(r, X"type", X"min");
-			break;
-		case (MIN10) :
-			xmlSetProp(r, X"type", X"min10");
-			break;
-		case (HOUR) :
-			xmlSetProp(r, X"type", X"hour");
-			break;
-		case (DAY) :
-			xmlSetProp(r, X"type", X"day");
-			break;
-	}
-	ITOA(repeat);
-	xmlSetProp(r, X"repeat", BUF);
-	if (sendNoData)
-		xmlSetProp(r, X"send_no_data", X"1");
-	return r;
-#undef X
-#undef ITOA
-#undef BUF
+
+	paramName = SC::L2S(getAttribute<std::string>("param", ""));
+
+	configured = hasAttribute("param") || hasAttribute("value");
+	return 0;
 }
 
-
 int TSendParam::parseXML(xmlTextReaderPtr reader) {
-
-#define X (unsigned char *)
-
-	XMLWrapper xw(reader);
-	if (xw.IsEmptyTag() && !xw.HasAttr())
-		return 0;
-
-	const char* need_attr_send[] = { "repeat" , "type", 0 };
-	if (!xw.AreValidAttr(need_attr_send)) {
-		throw XMLWrapperException();
-	}
-
-	bool isValue = false;
-	bool isParam = false;
-
-	for (bool isAttr = xw.IsFirstAttr(); isAttr == true; isAttr = xw.IsNextAttr()) {
-		const xmlChar *attr = xw.GetAttr();
-		try {
-			if (xw.IsAttr("param")) {
-				isParam = true;
-				paramName = SC::U2S(attr).c_str();
-			} else
-			if (xw.IsAttr("value")) {
-				isValue = true;
-				value = boost::lexical_cast<int>(attr);
-			} else
-			if (xw.IsAttr("repeat")) {
-				repeat = boost::lexical_cast<int>(attr);
-			} else
-			if (xw.IsAttr("send_no_data")) {
-				sendNoData = 1;
-			} else
-			if (xw.IsAttr("type")) {
-				if (!xmlStrcmp(attr, X"probe"))
-					type = PROBE;
-				else if (!xmlStrcmp(attr, X"min"))
-					type = MIN;
-				else if (!xmlStrcmp(attr, X"min10"))
-					type = MIN10;
-				else if (!xmlStrcmp(attr, X"hour"))
-					type = HOUR;
-				else if (!xmlStrcmp(attr, X"day"))
-					type = DAY;
-				else {
-					xw.XMLError("Unknown value for attribute 'type' in element <send>");
-				}
-			} else {
-				xw.XMLWarningNotKnownAttr();
-			}
-		} catch (boost::bad_lexical_cast &) {
-			xw.XMLErrorWrongAttrValue();
-		}
-	}
-
-	if (isParam || isValue)
-		configured = 1;
-
-#undef X
+	if (TAttribHolder::parseXML(reader)) return 1;
 	return 0;
 }
 
 int TSendParam::parseXML(xmlNodePtr node)
 {
-
-	unsigned char *c = NULL;
-
-#define NOATR(p, n) \
-	{ \
-		sz_log(1, "XML parsing error: attribute '%s' in node '%s' not\
- found (line %ld)", \
- 			n, SC::U2A(p->name).c_str(), xmlGetLineNo(p)); \
-			return 1; \
-	}
-#define NEEDATR(p, n) \
-	if (c) free(c); \
-	c = xmlGetNoNsProp(p, (xmlChar *)n); \
-	if (!c) NOATR(p, n);
-#define X (unsigned char *)
-	
-	unsigned char* _pn = xmlGetNoNsProp(node, X"param");
-	if (_pn == NULL) {
-		c = xmlGetNoNsProp(node, X"value");
-		if (c == NULL) 
-			return 0;
-		value = atoi((char*)c);
-		free(c);
-		c = NULL;
-	} else {
-		paramName = SC::U2S(_pn).c_str();
-		xmlFree(_pn);
-	}
-	configured = 1;
-	NEEDATR(node, "repeat");
-	repeat = atoi((char*)c);
-	free(c);
-	c = NULL;
-	if ((c = xmlGetNoNsProp(node, X"send_no_data"))) {
-		sendNoData = 1;
-	}
-	free(c);
-	c = NULL;
-	NEEDATR(node, "type");
-	if (!xmlStrcmp(c, X"probe"))
-		type = PROBE;
-	else if (!xmlStrcmp(c, X"min"))
-		type = MIN;
-	else if (!xmlStrcmp(c, X"min10"))
-		type = MIN10;
-	else if (!xmlStrcmp(c, X"hour"))
-		type = HOUR;
-	else if (!xmlStrcmp(c, X"day"))
-		type = DAY;
-	else {
-		sz_log(1, "Unknown value for attribute 'type' in element <send> \
-in line %ld", xmlGetLineNo(node));
-		free(c);
-		return 1;
-	}
-	free(c);
+	if (TAttribHolder::parseXML(node)) return 1;
 	return 0;
-#undef NEEDATR
-#undef NOATR
-#undef X
-}
-
-TSendParam* TSendParam::Append(TSendParam* s)
-{
-	TSendParam* t = this;
-	while (t->next)
-		t = t->next;
-	t->next = s;
-	return s;
 }
 
 TSendParam* TSendParam::GetNthParam(int n)
@@ -236,18 +87,35 @@ TSendParam* TSendParam::GetNthParam(int n)
 }
 
 void TSendParam::Configure(const std::wstring& paramName, int value, int repeat, 
-		TProbeType type, int sendNoData)
+		TProbeType _type, int sendNoData)
 {
 	this->paramName = paramName;
-	this->value = value;
-	this->repeat = repeat;
-	this->type = type;
-	this->sendNoData = sendNoData;
-	configured = 1;
-}
+	storeAttribute("value", std::to_string(value));
+	storeAttribute("repeat", std::to_string(repeat));
+	storeAttribute("send_no_data", std::to_string(sendNoData));
 
-TSendParam::~TSendParam()
-{
-	delete next;
-}
+	std::string type_str;
+	switch (_type) {
+	case PROBE:
+		type_str = "probe";
+		break;
+	case MIN:
+		type_str = "min";
+		break;
+	case MIN10:
+		type_str = "min10";
+		break;
+	case HOUR:
+		type_str = "hour";
+		break;
+	case DAY:
+		type_str = "day";
+		break;
+	default:
+		throw std::runtime_error("Invalid probe type specified.");
+	}
 
+	storeAttribute("type", type_str);
+
+	TSendParam::processAttributes();
+}

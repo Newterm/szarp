@@ -55,7 +55,7 @@ class DefinedParam : public DrawParam {
 
 	time_t m_start_time;
 
-	TParam::FormulaType m_type;
+	FormulaType m_type;
 
 	bool m_network_param;
 
@@ -67,7 +67,7 @@ public:
 
 
 	DefinedParam(wxString base_prefix, wxString name, wxString unit, wxString formula, int prec,
-			TParam::FormulaType type, time_t start_time, bool network_param = false);
+			FormulaType type, time_t start_time, bool network_param = false);
 
 	void SetParamName(wxString pn);
 
@@ -83,7 +83,7 @@ public:
 
 	void SetFormula(wxString formula);
 
-	void SetFormulaType(TParam::FormulaType type);
+	void SetFormulaType(FormulaType type);
 
 	virtual int GetPrec();
 
@@ -97,7 +97,7 @@ public:
 
 	wxString GetBasePrefix() const override;
 
-	TParam::FormulaType GetFormulaType();
+	FormulaType GetFormulaType();
 
 	void SetStartTime(time_t start_time);
 

@@ -162,7 +162,7 @@ void Defdmn::configure(int* argc, char** argv) {
 
 	configure_events();
 
-	if (m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
+	if (m_cfg->Load(argc, argv))
 		throw SzException("Could not load configuration");
 
 	m_cfg->GetIPK()->SetConfigId(0);
@@ -176,8 +176,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
-	dev->configureDeviceTimeval(boost::lexical_cast<long int>(libpar_getpar("sz4", "heartbeat_frequency", 1)));
-	m_cycle = dev->getDeviceTimeval();
+	m_cycle = m_cfg->GetDeviceTimeval();
 
 	sz4::live_cache_config* live_config = new sz4::live_cache_config();
 	live_config->retention = 1000;
@@ -188,14 +187,14 @@ void Defdmn::configure(int* argc, char** argv) {
 	char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1);
 
 	Defdmn::m_base.reset(new sz4::base(L"/opt/szarp", IPKContainer::GetObject(), live_config));
-	m_zmq.reset(new zmqhandler(m_cfg->GetIPK(), dev, *new zmq::context_t(1), sub_address, pub_address)); // TODO: in single publish on another address
+	m_zmq.reset(new zmqhandler(m_cfg.get(), context, sub_address, pub_address)); // TODO: in single publish on another address
 	sz_log(2, "ZMQ initialized successfully");
 
 	registerLuaFunctions();
 
-	int i = 0;
-	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext()) {
-		for (TParam * p = unit->GetFirstParam(); p; p = unit->GetNextParam(p)) {
+	size_t i = 0;
+	for (TUnit* unit = dev->GetFirstUnit(); unit; unit = unit->GetNext()) {
+		for (TParam * p = unit->GetFirstParam(); p; p = p->GetNext()) {
 			if (p->GetLuaScript()) {
 				std::shared_ptr<DefParamBase> ptr(sz4::factory<DefParamBase, LuaParamBuilder>::op(p, p, i++));
 				param_info.push_back(ptr);
@@ -271,6 +270,8 @@ float ChooseFun(float funid, float *parlst)
 
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
+	if (str == NULL)
+		return luaL_error(lua, "Invalid param name");
 
 	double result = Defdmn::IPCParamValue(str);
 
@@ -282,7 +283,7 @@ int ipc_value(lua_State *lua) {
 int sz4base_value(lua_State *lua) {
 	const char* param_name = luaL_checkstring(lua, 1);
 	if (param_name == NULL) 
-		luaL_error(lua, "Invalid param name");
+		return luaL_error(lua, "Invalid param name");
 
 	auto time = sz4::make_nanosecond_time((double) lua_tonumber(lua, 2), 0);
 	SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int) lua_tonumber(lua, 3)));

@@ -8,8 +8,6 @@ opt/szarp/bin/isdn_pooler.sh
 opt/szarp/bin/probes_client.py
 opt/szarp/bin/vrsh
 opt/szarp/bin/vrsh_d
-opt/szarp/bin/ipk2szarp
-opt/szarp/bin/ipkrep
 opt/szarp/bin/i2smo
 opt/szarp/bin/peakator
 opt/szarp/bin/agregator

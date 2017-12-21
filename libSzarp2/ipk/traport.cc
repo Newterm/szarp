@@ -51,6 +51,18 @@ TRaport::~TRaport()
 	delete next;
 }
 
+TRaport* TRaport::GetNext()
+{
+	if (next != nullptr) {
+		return next;
+	} else {
+		for (TParam * p = param->GetNextGlobal(); p; p = p->GetNextGlobal())
+			for (TRaport * r = p->GetRaports(); r; r = r->GetNext())
+				if (title == r->GetTitle())
+					return r;
+	}
+}
+
 void TRaport::Append(TRaport* rap)
 {
 	TRaport* t = this;

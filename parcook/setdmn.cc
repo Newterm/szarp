@@ -439,7 +439,7 @@ bool SetDaemon::Init()
 		free(c);
 	}
 
-	TParam *p = m_cfg.GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
+	TParam *p = m_cfg.GetDevice()->GetFirstUnit()->GetFirstParam();
 	size_t num = 0;
 	while (p != NULL) {
 		std::wstring name = p->GetName();
@@ -681,10 +681,11 @@ int main(int argc, char** argv)
 	if (cfg.Load(&argc, argv, false))
 		return 1;
 
-	IPCHandler ipc(&cfg);
-	if (not cfg.GetSingle()) {
-		if (ipc.Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(&cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 
 	g_debug = cfg.GetDiagno() or cfg.GetSingle();

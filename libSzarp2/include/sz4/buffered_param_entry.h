@@ -251,7 +251,7 @@ public:
 		m_param->SetLuaExecParam(NULL);
 		//go trough preparation procedure again
 		//XXX: reset cache as well
-		m_param->SetSz4Type(TParam::SZ4_NONE);
+		m_param->SetSz4Type(Sz4ParamType::NONE);
 		generic_param_entry::refferred_param_removed(param_entry);
 	}
 */
