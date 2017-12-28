@@ -62,6 +62,10 @@ function enable_all_units {
 case "$1" in
     configure)
 
+	# parstart shall be no more, it may break szarp-server if used
+	# (and is removed only by purge so will remain during upgrade)
+	rm -f /etc/init.d/parstart
+
 	if [ ! -d $UNITSELECT_PATH ]; then
 		mkdir -p $UNITSELECT_PATH
 	fi
