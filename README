@@ -5,7 +5,7 @@ http://www.szarp.org/
 
 Copyright (C) 1991-2010 Witold Kowalewski Praterm Automatyzacja Ciepłownictwa
 Copyright (C) 1995-2009 Praterm S.A.
-Copyright (C) 1991-2016 various authors (see AUTHORS file)
+Copyright (C) 1991-2018 various authors (see AUTHORS file)
 
 Table of contents
 -----------------
@@ -61,13 +61,12 @@ These device drivers are called "line daemons" (for historical reasons).
 The second layer consist of data collecting daemons that read data from
 drivers, calculate average probes and formulas (called "defined parameters")
 and finally save data to SZARP database. Probes are generally available with
-10-seconds resolution, but database contains 10-minutes average values. There
+any predefined resolution using the sz4 database (e.g. 1s or 1ms). There
 is also a web server available for serving parameters' values through HTTP.
 
 In the third layer there are client programs, including:
 
-* Raporter - a program for viewing current (10-seconds averages) values of
-  parameters.
+* Raporter - a program for viewing current values of parameters.
 * Controller - a program for signalizing parameters' values irregularities.
 * Ekstraktor - a program for exporting data from databases to spreadsheet
   files.
@@ -92,9 +91,9 @@ SZARP's development is Newterm (http://newterm.pl/) company.
 5. On what platform is SZARP running?
 -------------------------------------
 
-SZARP is developed and deployed for Debian GNU/Linux, but should compile
-and run on any modern Linux distribution on i386, amd64 and armel/armhf
-architectures. Client applications should also run on Windows XP/Vista/7
+SZARP is developed and deployed for Debian GNU/Linux and Raspbian, but should
+compile and run on any modern Linux distribution on i386, amd64 and armel/armhf
+architectures. Client applications should also run on Windows XP/Vista/7/10
 machines with NTFS filesystem.
 
 
@@ -125,26 +124,17 @@ See http://www.szarp.org/en/download.
 First install szarp-server and szarp-wx packages (for details see
 INSTALL):
 
-    # apt-get install szarp-server szarp-wx
+    apt-get install szarp-server szarp-wx
 
 In a configuration stage, you have to set 4-letter name of a configuration
 (called "configuration prefix"), for example use "test". Answer "yes" to a
-question about creating 'szbase' directory.
+question about creating 'szbase' directory. To use modern sz4 database backend,
+select sz4 from the list of available databases.
 
 Now look at the /etc/szarp directory. There are two files: 
 
- * parstart.cfg - this files defines what SZARP services should be run on
-   system start. By default computer is considered as SZARP server only when
-   the hostname equals to a configuration prefix - if that so, appropriate
-   services will be run. This is probably not your case, so modify the file
-   that it contains:
-
-    PARCOOK=1
-    MEANER3=1
-    SENDER=1
-    PARAMD=1
-    XSLTD=0
-    SSS=0
+ * parstart.cfg - obsolete. To choose which services will be run,
+   do: dpkg-reconfigure szarp-server, which will create systemd service links
 
  * szarp.cfg - this is a SZARP system configuration file. There are a lot of
    available options, but for now you only need to set configuration prefix.
@@ -176,7 +166,7 @@ load. Go to the directory /opt/szarp/test and create subdirectory called
 
 Then, in directory /opt/szarp/test/config run command:
 
-    $ /opt/szarp/bin/i2smo
+    /opt/szarp/bin/i2smo
 
 (this parses XML configuration, if every thing is ok, you should see "OK")
 
@@ -188,14 +178,14 @@ content:
 
 Save it and restart SZARP services:
 
-    # /etc/init.d/parstart restart
+    systemctl restart szarp-server.target
 
 
 And that's all, you should be able to point your browser to
 http://localhost:8081 and see your configured
-parameter. After full 10 minutes you can also run Draw3 program:
+parameter. You can also run Draw3 program:
 
-    $ /opt/szarp/bin/draw3
+    /opt/szarp/bin/draw3
 
 and analyze your system average load.
 
