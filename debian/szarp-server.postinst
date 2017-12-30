@@ -19,6 +19,7 @@ SZ3UNITS=(
 	"parcook"
 	"sender"
 	"paramd"
+	"parhub"
 	"prober"
 	"pserver-lite"
 )
