@@ -108,16 +108,16 @@ void CfgDealer::prepare_send_from_param(const std::pair<std::wstring, wptree>& s
 
 void CfgDealer::prepare_params() {
 	size_t param_ind = 0;
-	for (auto& device: tree.get_child(L"params")) {
+	for (const auto& device: tree.get_child(L"params")) {
 		if (device.first == L"device") {
-			for (auto& unit: device.second) {
+			for (const auto& unit: device.second) {
 				if (unit.first != L"unit") continue;
 				for (auto& param: unit.second) {
 					prepare_send_from_param(param, param_ind);
 				}
 			}
 		} else if (device.first == L"defined") {
-			for (auto& param: device.second) {
+			for (const auto& param: device.second) {
 				prepare_send_from_param(param, param_ind);
 			}
 		}
@@ -151,7 +151,7 @@ void CfgDealer::process_request(zmq::message_t& request) {
 	output_device_config(device_config);
 }
 
-const CfgDealer::wptree CfgDealer::get_device_config(const size_t device_no) {
+const CfgDealer::wptree CfgDealer::get_device_config(const size_t device_no) const {
 	wptree params_tree;
 
 	const auto attr_tree = tree.get_child(L"params.<xmlattr>");
@@ -168,10 +168,10 @@ const CfgDealer::wptree CfgDealer::get_device_config(const size_t device_no) {
 		for (auto& send_param: unit.second) {
 			if (send_param.first != L"send") continue;
 			const auto& name = send_param.second.get<std::wstring>(L"<xmlattr>.param");
-			auto send_pair = sends[name];
-			auto send_param_tree = send_pair.first;
-			send_param_tree.put(L"<xmlattr>.ipc_ind", send_pair.second);
-			sends_tree.add_child(L"param", send_param_tree);
+			auto send_pair = sends.at(name);
+			auto send_param_tree = std::move(send_pair.first);
+			send_param_tree.put(L"<xmlattr>.ipc_ind", std::move(send_pair.second));
+			sends_tree.add_child(L"param", std::move(send_param_tree));
 		}
 	}
 

@@ -13,7 +13,7 @@ public:
 	void serve();
 
 	using wptree = boost::property_tree::wptree;
-	const wptree get_device_config(const size_t device_no);
+	const wptree get_device_config(const size_t device_no) const;
 
 private:
 	void process_request(zmq::message_t& request);

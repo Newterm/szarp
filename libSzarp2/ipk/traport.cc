@@ -61,6 +61,8 @@ TRaport* TRaport::GetNext()
 				if (title == r->GetTitle())
 					return r;
 	}
+
+	return nullptr;
 }
 
 void TRaport::Append(TRaport* rap)

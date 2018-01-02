@@ -347,7 +347,7 @@ TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::ws
 	return AddConfig(prefix, file);
 }
 
-std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() {
+std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() const {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	return m_extra_params;
 }

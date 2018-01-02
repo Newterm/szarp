@@ -336,7 +336,7 @@ std::string DaemonConfig::GetIPKPath() const
 	return ipk_path;
 }
 
-int DaemonConfig::GetDiagno()
+int DaemonConfig::GetDiagno() const
 {
 	assert (m_load_called != 0);
 	return m_diagno;
@@ -354,7 +354,7 @@ const char* DaemonConfig::GetDevicePath() const
 	return "/dev/INVALID";
 }
 
-int DaemonConfig::GetSpeed() 
+int DaemonConfig::GetSpeed() const
 {
 	assert (m_load_called != 0);
 	if (m_speed != 0)

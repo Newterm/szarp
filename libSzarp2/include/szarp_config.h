@@ -126,7 +126,7 @@ public:
 	/**
 	 * @return title of configuration.
 	 */
-	const std::wstring& GetTitle();
+	const std::wstring& GetTitle() const;
 	const std::wstring& GetTranslatedTitle() { return !translatedTitle.empty() ? translatedTitle : title; }
 	void SetTranslatedTitle(const std::wstring &t) { translatedTitle = t; }
 
@@ -674,12 +674,12 @@ public:
 	bool IsMeterParam() const { return getAttribute("is_meter", false); }
 
 	// [deprecated]
-	const double GetSumDivisor() { return 6.; }
+	const double GetSumDivisor() const { return 6.; }
 
 	/** @return for param with real base index it returns base index, for others it
 	 * returns IPC index
 	 */
-	unsigned int GetVirtualBaseInd();
+	unsigned int GetVirtualBaseInd() const;
 
 	/** @return 1 if parameter is in base, 0 if not; for 'auto' base
 	 * indexes of new SzarpBase this method returns 1 and GetBaseInd()
@@ -1280,11 +1280,11 @@ public:
 	/** @return XML node representing raport item */
 	xmlNodePtr GenerateXMLNode();
 	/** @return title of raport */
-	const std::wstring& GetTitle()
+	const std::wstring& GetTitle() const
 	{
 		return title;
 	}
-	const std::wstring& GetTranslatedTitle()
+	const std::wstring& GetTranslatedTitle() const
 	{
 		return !translatedTitle.empty() ? translatedTitle : title;
 	}
@@ -1392,7 +1392,7 @@ class IPKContainer {
 
 	utf_hash_type m_utf_params;
 
-	boost::shared_mutex m_lock;
+	mutable boost::shared_mutex m_lock;
 
 	/**Szarp data directory*/
 	boost::filesystem::wpath szarp_data_dir;
@@ -1471,7 +1471,7 @@ public:
 	 * @return loaded config object, NULL if error occured during configuration load*/
 	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
 
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams();
+	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams() const;
 
 	/**@return the container object*/
 	static IPKContainer* GetObject();

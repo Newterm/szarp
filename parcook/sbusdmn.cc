@@ -1022,7 +1022,6 @@ void SBUSDaemon::Configure(DaemonConfigInfo* cfg) {
 
 	short* reads = m_ipc->m_read;
 
-	int i = 0;
 	for (auto unit: cfg->GetUnits()) {
 		SBUSUnit* u  = new SBUSUnit(this, m_event_base);
 		u->Configure(protocol, unit, reads, m_port, speed);
@@ -1030,7 +1029,6 @@ void SBUSDaemon::Configure(DaemonConfigInfo* cfg) {
 		m_units.push_back(u);
 
 		reads += unit->GetParamsCount();
-		++i;
 	}
 
 

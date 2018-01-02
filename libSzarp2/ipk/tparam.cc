@@ -607,7 +607,7 @@ TParam::GetNthParam(int n, bool global)
 }
 
 unsigned int
-TParam::GetVirtualBaseInd()
+TParam::GetVirtualBaseInd() const
 {
     return ((_baseInd >= 0) ? (unsigned int) _baseInd : GetIpcInd());
 }

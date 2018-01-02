@@ -154,7 +154,7 @@ public:
 	 */
 	xmlNodePtr GetXMLDevice() const;
 	/** Return 1 in 'diagno' mode, 0 otherwise. */
-	int GetDiagno();
+	int GetDiagno() const;
 	/** This method frees loaded IPK document. After calling this method,
 	 * GetXMLDoc() and GetXMLDevice() return NULL. Should be called after
 	 * loading configuration because, to reduce daemon memory usage.
@@ -181,7 +181,7 @@ public:
 	 * in command line arguments or, if configuraion is loaded,
 	 * path specified in the configuration.
 	 */
-	int GetSpeed();
+	int GetSpeed() const;
 
 	/**Returns 1 if user requested to not to load configuration, 0 otherwise*/
 	int GetNoConf();

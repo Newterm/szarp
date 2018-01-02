@@ -174,7 +174,7 @@ TUnit* TSzarpConfig::createUnit(TDevice* parent)
 }
 
 const std::wstring&
-TSzarpConfig::GetTitle()
+TSzarpConfig::GetTitle() const
 {
     return title;
 }

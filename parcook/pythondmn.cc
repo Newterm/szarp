@@ -309,12 +309,12 @@ int ipc::get_send(size_t index) {
 		return SZARP_NO_DATA;
 	}
 
-	if (m_read != nullptr) {
+	if (m_send != nullptr) {
 		sz_log(9, "ipc::set index (%zu) val: (%d)", index, m_send[index]);
 		return m_send[index];
-	} else {
-		return SZARP_NO_DATA;
 	}
+
+	return SZARP_NO_DATA;
 }
 
 void ipc::go_parcook() {
@@ -494,16 +494,26 @@ int main( int argc, char ** argv )
 
 	if (!args_mgr.has("use-cfgdealer")) {
 		auto cfg = new DaemonConfig("pythondmn");
-		if (int ret = cfg->Load(args_mgr))
+		if (int ret = cfg->Load(args_mgr)) {
+			sz_log(0, "Couldn't configure daemon - exiting");
 			return ret;
+		}
 
 		if (ipc.configure(cfg, args_mgr)) {
-			sz_log(2, "ipc::configure error -- exiting");
+			sz_log(0, "Couldn't configure ipc - exiting");
 			exit(1);
 		}
 	} else {
-		ConfigDealerHandler cfg(args_mgr);
-		ipc.configure(&cfg, args_mgr);
+		try {
+			ConfigDealerHandler cfg(args_mgr);
+			if (ipc.configure(&cfg, args_mgr)) {
+				sz_log(0, "Couldn't configure ipc - exiting");
+				exit(1);
+			}
+		} catch (const std::exception& e) {
+			sz_log(0, "Couldn't set up cfgdealer handler - exiting");
+			exit(1);
+		}
 	}
 
 	const std::string script_path = *args_mgr.get<std::string>("device-path");
