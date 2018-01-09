@@ -142,6 +142,7 @@ void connection_mgr::on_connected() {
 }
 
 void connection_mgr::on_error(const boost::system::error_code& ec) {
+	connection_cv = std::promise<void>();
 	if (ec != ba::error::operation_aborted)
 		connection_error_sig(ec);
 }

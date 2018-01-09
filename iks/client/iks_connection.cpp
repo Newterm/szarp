@@ -243,7 +243,7 @@ void IksConnection::connect()
 
 void IksConnection::disconnect() {
 	sz_log(10, "IksConnection(%p):disconnect", this);
-	socket->close();		
+	socket->close();
 }
 
 IksConnection::~IksConnection()
