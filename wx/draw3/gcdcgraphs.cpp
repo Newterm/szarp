@@ -266,10 +266,10 @@ void GCDCGraphs::DrawWindowInfo(wxGraphicsContext &dc) {
 
 		dc.SetFont(GetFont(), info->GetDrawColor());
 
-		name = info->GetShortName().c_str();
-		if (!name.IsEmpty()) {
-			dc.GetTextExtent(name, &namew, &nameh, &th, &tsel);
-			dc.DrawText(name, xpos, m_screen_margins.infotopmargin);
+		wxString short_name = info->GetShortName().c_str();
+		if (!short_name.IsEmpty()) {
+			dc.GetTextExtent(short_name, &namew, &nameh, &th, &tsel);
+			dc.DrawText(short_name, xpos, m_screen_margins.infotopmargin);
 			xpos += namew + param_name_shift;
 		} else {
 			xpos += param_name_shift;

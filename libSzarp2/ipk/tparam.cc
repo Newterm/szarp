@@ -323,7 +323,17 @@ int TParam::processAttributes() {
 
     _name = SC::L2S(getAttribute("name"));
 	_shortName = SC::L2S(getAttribute<std::string>("short_name", " * "));
-	_drawName = SC::L2S(getAttribute<std::string>("draw_name", " * "));
+	_drawName = SC::L2S(getAttribute<std::string>("draw_name", ""));
+
+	if (_drawName == L"") {
+		auto last_el_pos = _name.find_last_of(L":");
+		if (last_el_pos == std::string::npos) {
+			_drawName = _shortName;
+		} else {
+			_drawName = _name.substr(last_el_pos+1);
+		}
+	}
+
 	_unit = SC::L2S(getAttribute<std::string>("unit", "-"));
 
 	auto data_type_attr = getAttribute<std::string>("data_type", "short");
