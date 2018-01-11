@@ -45,7 +45,7 @@ int main( int argc , char** argv )
 
 	desc.add_options() 
 		("help,h", "Print this help messages")
-		("config_file", po::value<std::string>()->default_value(PREFIX "/iks/iks-server.ini"), "Custom configuration file.")
+		("config_file", po::value<std::string>()->default_value("/etc/szarp/iks-server.ini"), "Custom configuration file.")
 		("no_daemon", "If specified server will not daemonize.")
 		("force_syslog", "Log to syslog even if no_daemon is specified")
 		("pid_file", po::value<std::string>(), "Specify destination of pid file that should be used. If not set no file is created.")

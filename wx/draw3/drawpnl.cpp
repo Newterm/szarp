@@ -696,17 +696,10 @@ void DrawPanel::StartPSC()
 }
 
 void DrawPanel::ShowSummaryWindow(bool show) {
-#ifndef MINGW32
 	smw->Show(show);
 	if (show)
 		smw->Raise();
-#else
-	if (show) {
-		smw->Show(show);
-		GetParent()->Raise();
-	} else
-		smw->Show(show);
-#endif
+
 	if (active) {
 		smw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
@@ -721,17 +714,10 @@ void DrawPanel::OnSummaryWindow(wxCommandEvent & event)
 }
 
 void DrawPanel::ShowPieWindow(bool show) {
-#ifndef MINGW32
 	pw->Show(show);
 	if (show)
 		pw->Raise();
-#else
-	if (show) {
-		pw->Show(show);
-		GetParent()->Raise();
-	} else
-		pw->Show(show);
-#endif
+
 	if (active) {
 		pw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Pie"));
@@ -741,17 +727,10 @@ void DrawPanel::ShowPieWindow(bool show) {
 
 
 void DrawPanel::ShowRelWindow(bool show) {
-#ifndef MINGW32
 	rw->Show(show);
 	if (show)
 		rw->Raise();
-#else
-	if (show) {
-		rw->Show(show);
-		GetParent()->Raise();
-	} else
-		rw->Show(show);
-#endif
+
 	if (active) {
 		rw_show = show;
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Ratio"));

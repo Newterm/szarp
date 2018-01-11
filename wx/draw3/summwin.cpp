@@ -121,8 +121,8 @@ SummaryWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 {}
 
 SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) : 
-	wxDialog(parent, drawID_SUMMWIN, _("Summary values"), wxDefaultPosition, wxSize(100, 100), 
-			wxDEFAULT_DIALOG_STYLE),
+	wxDialog(NULL, drawID_SUMMWIN, _("Summary values"), wxDefaultPosition, wxSize(100, 100), 
+			wxDEFAULT_DIALOG_STYLE | wxDIALOG_NO_PARENT | wxSTAY_ON_TOP),
 	m_summary_draws_count(0),
 	m_update(false),
 	m_active(false),

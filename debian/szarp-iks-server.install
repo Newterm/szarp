@@ -1,3 +1,2 @@
 opt/szarp/bin/iks-server
-opt/szarp/iks/iks-server.ini.sample
 ../services/iks-server.service /lib/systemd/system/
