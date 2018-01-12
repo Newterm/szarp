@@ -552,9 +552,9 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 		szb_get_avg_data(buffer, param, start_time, end_time, sum, count, probe_type, is_fixed, first, last);
 
 	if (count <= 0) {
-		if (NULL != psum)
+		if (nullptr != psum)
 			*psum = SZB_NODATA;
-		if (NULL != pcount)
+		if (nullptr != pcount)
 			*pcount = 0;
 		if (first)
 			*first = SZB_NODATA;
@@ -563,13 +563,14 @@ szb_get_avg(szb_buffer_t * buffer, TParam * param,
 		return SZB_NODATA;
 	}
 
-	if (NULL != psum)
+	if (nullptr != psum) {
 		*psum = sum;
 		/* Workaround: getting proper sum in 30min range of szb data */
 		if (probe_type == PT_SEC10)
 			*psum /= 60;
-	if (NULL != pcount)
+	} if (nullptr != pcount) {
 		*pcount = count;
+	}
 	return sum / count;
 }
 

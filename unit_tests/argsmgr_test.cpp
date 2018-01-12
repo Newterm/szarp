@@ -39,6 +39,4 @@ void ArgsManagerTest::test1() {
 	CPPUNIT_ASSERT_EQUAL(*args_mgr.get<unsigned int>("debug"), (unsigned)10);
 	CPPUNIT_ASSERT(!args_mgr.has("help"));
 	CPPUNIT_ASSERT_EQUAL(*args_mgr.get<std::string>("prefix"), std::string("testprefix"));
-	CPPUNIT_ASSERT(!((bool)args_mgr.get<std::string>("testpar")));
-	CPPUNIT_ASSERT_EQUAL(*args_mgr.get<std::string>("testsect", "testpar"), std::string("testval"));
 }

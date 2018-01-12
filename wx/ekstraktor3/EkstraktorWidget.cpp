@@ -170,8 +170,6 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	mainWindow->SetStatusText(paramsnum +
 				  wxString(_(" parameters loaded")));
 	is_ok = 1;
-
-	sz4 = false;
 }
 
 EkstraktorWidget::~EkstraktorWidget()

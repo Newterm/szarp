@@ -32,6 +32,8 @@ void FileloggerTest::test() {
 		exit(0);
 	}
 
+	szlog::log() << szlog::flush;
+
 	std::ifstream logfile(LOGFILE);
 	std::string date, hour, level, msg;
 	logfile >> date >> hour >> level >> msg;

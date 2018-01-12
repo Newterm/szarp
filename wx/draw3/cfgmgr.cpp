@@ -89,7 +89,7 @@ wxString DrawParam::GetSumUnit() {
 	return m_param->GetSumUnit().c_str();
 }
 
-const double& DrawParam::GetSumDivisor() {
+const double DrawParam::GetSumDivisor() {
 	return m_param->GetSumDivisor();
 }
 
@@ -292,7 +292,7 @@ DrawInfo::GetSumUnit() {
 	return p->GetSumUnit();
 }
 
-const double&
+const double
 DrawInfo::GetSumDivisor() {
 	assert (p != NULL);
 	return p->GetSumDivisor();

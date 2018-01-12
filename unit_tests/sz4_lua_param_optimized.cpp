@@ -36,20 +36,20 @@ void Sz4LuaParamOptimized::tearDown() {
 namespace {
 
 class IPKContainerMock1 : public mocks::IPKContainerMockBase {
-	TParam param;
+	TParam* param;
 public:
-	IPKContainerMock1() : param(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA) {
-		param.SetName(L"A:B:C1");
-		param.SetLuaScript((const unsigned char*) 
+	IPKContainerMock1() : param(new TParam(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA)) {
+		param->SetName(L"A:B:C1");
+		param->SetLuaScript((const unsigned char*) 
 "if (t % 100) < 50 then "
 "	v = 0		"
 "else			"
 "	v = 1		"
 "end			"
 );
-		AddParam(&param);
+		AddParam(param);
 	}
-	TParam* DoGetParam(const std::wstring&) { return &param; }
+	TParam* DoGetParam(const std::wstring&) { return param; }
 };
 
 }
@@ -84,47 +84,47 @@ void Sz4LuaParamOptimized::test1() {
 namespace {
 
 class IPKContainerMock2 : public mocks::IPKContainerMockBase {
-	TParam param;
-	TParam param2;
-	TParam param4;
+	TParam* param;
+	TParam* param2;
+	TParam* param4;
 public:
-	IPKContainerMock2() : param(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL),
-				param2(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA),
-				param4(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::LUA)
+	IPKContainerMock2() : param(new TParam(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::REAL)),
+				param2(new TParam(NULL, NULL, std::wstring(), FormulaType::LUA_VA, ParamType::LUA)),
+				param4(new TParam(NULL, NULL, std::wstring(), FormulaType::NONE, ParamType::LUA))
 	 {
-		param.SetDataType(TParam::SHORT);
-		param.SetName(L"A:B:C");
-		AddParam(&param);
+		param->SetDataType(TParam::SHORT);
+		param->SetName(L"A:B:C");
+		AddParam(param);
 
-		param2.SetDataType(TParam::DOUBLE);
-		param2.SetName(L"A:B:D");
-		param2.SetLuaScript((const unsigned char*) 
+		param2->SetDataType(TParam::DOUBLE);
+		param2->SetName(L"A:B:D");
+		param2->SetLuaScript((const unsigned char*) 
 "v = p(\"BASE:A:B:C\", t, pt)"
 );
-		AddParam(&param2);
+		AddParam(param2);
 
-		param4.SetDataType(TParam::DOUBLE);
-		param4.SetName(L"A:B:E");
-		param4.SetLuaScript((const unsigned char*) 
+		param4->SetDataType(TParam::DOUBLE);
+		param4->SetName(L"A:B:E");
+		param4->SetLuaScript((const unsigned char*) 
 "if t > 0 then"
 "	v = 2 * p(\"BASE:A:B:E\", 0, pt) "
 "else"
 "	v = 1 "
 "end"
 );
-		AddParam(&param4);
+		AddParam(param4);
 
 	}
 
 	TParam* DoGetParam(const std::wstring& name) {
 		if (name == L"BASE:A:B:C")
-			return &param;
+			return param;
 
 		if (name == L"BASE:A:B:D")
-			return &param2;
+			return param2;
 
 		if (name == L"BASE:A:B:E")
-			return &param4;
+			return param4;
 
 		assert(false);
 		return NULL;

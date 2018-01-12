@@ -13,7 +13,6 @@ public:
 namespace {
 
 class IPKContainerMock : public mocks::IPKContainerMockBase {
-	mocks::TSzarpConfigMock m_config;
 	TParam *param;
 	TParam *param2;
 	TParam *param3;

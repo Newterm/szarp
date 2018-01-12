@@ -156,14 +156,15 @@ EkstraktorMainWindow::EkstraktorMainWindow(EkstraktorWidget *widget,
 	static_box = period_box_sizer->GetStaticBox();
 	static_box->SetToolTip(_("Sets type of result data"));
 
-	if (widget->IsProberConfigured()) {
+	if (widget->IsProberConfigured() || widget->IsSz4()) {
 		period_box_sizer->Add(new wxRadioButton(panel, ID_Sec10Period, _("10 SECONDS"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
 			0, wxEXPAND | wxRIGHT, 20);
 		period_box_sizer->Add(new wxRadioButton(panel, ID_Min10Period, _("10 MINUTES"), wxDefaultPosition, wxDefaultSize),
 			0, wxEXPAND | wxRIGHT, 20);
-	} else
+	} else {
 		period_box_sizer->Add(new wxRadioButton(panel, ID_Min10Period, _("10 MINUTES"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP),
 			0, wxEXPAND | wxRIGHT, 20);
+	}
 	period_box_sizer->Add(new wxRadioButton(panel, ID_HourPeriod, _("HOUR")), 0, wxEXPAND | wxRIGHT, 20);
 	period_box_sizer->Add(new wxRadioButton(panel, ID_8HourPeriod, _("8 HOURS")), 0, wxEXPAND | wxRIGHT, 20);
 	dayPeriodBtn = new wxRadioButton(panel, ID_DayPeriod, _("DAY"));

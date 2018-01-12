@@ -101,7 +101,7 @@ public:
 	double GetAverage(TParam* p, time_t start, time_t end, SZARP_PROBE_TYPE pt) {
 		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
 		if (szb)
-			return szb_get_avg(szb , p, start , end , NULL , NULL , pt );
+			return szb_get_avg(szb , p, start , end , nullptr , nullptr , pt );
 		else
 			return nan("");
 	}

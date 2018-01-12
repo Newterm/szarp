@@ -27,7 +27,7 @@ class ZmqHandlerTest : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST_SUITE_END();
 
 	DaemonConfigMock config;
-	mocks::TSzarpConfigMock ipk;
+	mocks::TSzarpConfigMock* ipk{new mocks::TSzarpConfigMock()};
 
 	std::unique_ptr<zmq::socket_t> sock;
 	std::unique_ptr<zmq::socket_t> sock2;
@@ -49,23 +49,23 @@ void delete_str(void *, void *buf) {
 }
 
 void ZmqHandlerTest::setUp() {
-	config.SetIPK(&ipk);
-	ipk.AddDevice(new TDevice(&ipk));
-	auto device = ipk.GetFirstDevice();
+	config.SetIPK(ipk);
+	ipk->AddDevice(new TDevice(ipk));
+	auto device = ipk->GetFirstDevice();
 	config.SetDevice(device);
-	TUnit * pu = device->AddUnit(ipk.createUnit(device));
+	TUnit * pu = device->AddUnit(ipk->createUnit(device));
 
-	auto param1 = new TParam(pu, &ipk);
+	auto param1 = new TParam(pu, ipk);
 	param1->SetConfigId(0);
 	param1->SetName(L"a:b:a");
 	param1->SetParamId(0);
 	pu->AddParam(param1);
 
-	auto param2 = new TParam(NULL, &ipk);
+	auto param2 = new TParam(NULL, ipk);
 	param2->SetConfigId(0);
 	param2->SetParamId(1);
 	param2->SetName(L"a:b:c");
-	ipk.AddDefined(param2);
+	ipk->AddDefined(param2);
 
 	auto sendparam = new TSendParam(pu);
 	sendparam->Configure(L"a:b:c", 1, 1, PROBE, 1);

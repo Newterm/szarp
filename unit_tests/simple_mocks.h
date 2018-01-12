@@ -50,6 +50,7 @@ public:
 		param->SetParamId(param_no++);
 		param->SetParentSzarpConfig(&config);
 
+		this->param = *param;
 	}
 	TSzarpConfig* GetConfig(const std::wstring&) { return (TSzarpConfig*) 1; }
 	template<class T> TParam* GetParam(const std::basic_string<T>&) { return &param; }

@@ -263,6 +263,8 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 
 	TAttribHolder::parseXML(reader);
 
+	title = SC::L2S(getAttribute<std::string>("title", ""));
+
 	size_t device_no = 0;
 
 	for (;;) {

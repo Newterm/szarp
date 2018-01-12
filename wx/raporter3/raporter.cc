@@ -272,7 +272,9 @@ bool szRaporter::LoadIPK()
 	if (!szServerDlg::GetReports(m_server,m_http, title, raports))
 		return false;
 
-	m_menu_template->SetLabel(ID_M_TEMPLATE_IPK, title);
+	if (title != wxEmptyString) {
+		m_menu_template->SetLabel(ID_M_TEMPLATE_IPK, title);
+	}
 
 	for (unsigned int i = 0; i < template_ipk_menu->GetMenuItemCount(); i++) {
 		template_ipk_menu->Delete(ID_M_TEMPLATE_IPK + i + 1);

@@ -74,7 +74,7 @@ public:
 
 	virtual wxString GetSumUnit();
 
-	const double& GetSumDivisor();
+	const double GetSumDivisor();
 
 	virtual int GetPrec();
 
@@ -119,7 +119,7 @@ class DrawInfo
 
 	virtual wxString GetSumUnit();
 
-	const double& GetSumDivisor();
+	const double GetSumDivisor();
 
 	virtual double GetScaleMax();
 
