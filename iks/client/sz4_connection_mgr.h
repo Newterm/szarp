@@ -7,6 +7,8 @@
 
 #include "iks_cmd_id.h"
 
+#include <future>
+
 class TParam;
 class IksConnection;
 
@@ -56,6 +58,7 @@ public:
 	loc_connection_ptr connection_for_base(const std::wstring& prefix);
 
 	void run();
+	std::promise<void> connection_cv;
 
 	boost::signals2::signal<void()> connected_sig;
 	boost::signals2::signal<void(const boost::system::error_code &)> connection_error_sig;

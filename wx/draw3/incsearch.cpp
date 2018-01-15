@@ -240,6 +240,7 @@ void IncSearch::Search() {
 
 	m_cur_items = new ItemsArray();
 
+#ifndef __MINGW32__
 	try {
 
 		std::wregex re = std::wregex(match.wc_str(), std::regex_constants::icase);
@@ -254,9 +255,29 @@ void IncSearch::Search() {
 	} catch(const std::regex_error& e) {
 		// ignore (m_cur_items is empty so we show nothing)
 	}
+#else
+	const std::wstring& castedMatch = match.ToStdWstring();
+	for (size_t i = 0; i < items_array.GetCount(); ++i) {
+		const std::wstring& name = items_array[i]->GetStdWName();
+		if (FindStringIC(name, castedMatch)) {
+			m_cur_items->Add(items_array[i]);
+		}
+	}
+#endif
 
 	UpdateItemList();
 };
+
+bool IncSearch::FindStringIC(const std::wstring& paramName, const std::wstring& pattern)
+{
+	auto it = std::search(
+			paramName.begin(), paramName.end(),
+			pattern.begin(), pattern.end(),
+			[](char ch1, char ch2) { return std::tolower(ch1) == std::tolower(ch2);}
+	);
+
+	return (it != paramName.end());
+}
 
 void IncSearch::OnOk(wxCommandEvent & eventt)
 {

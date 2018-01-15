@@ -194,10 +194,10 @@ DefinableDatablock::GetBlocksUsedInFormula(const double** blocks, TParam** param
 		params[i] = block->param;
 
 		switch (f_cache[i]->GetType()) {
-			case TParam::P_REAL:
-			case TParam::P_COMBINED:
-			case TParam::P_DEFINABLE:
-			case TParam::P_LUA:
+			case ParamType::REAL:
+			case ParamType::COMBINED:
+			case ParamType::DEFINABLE:
+			case ParamType::LUA:
 				fixedprobes = std::min(fixedprobes, block->GetFixedProbesCount());
 				block_timestamp = std::min(block_timestamp, block->GetBlockTimestamp());
 				break;

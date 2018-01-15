@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
 	printf("SHM_ALERT: \t %08x\n", ftok(parcookpat,SHM_ALERT));
 
 	int linenum = 0;
-	for (TDevice *d = ipk->GetFirstDevice(); d != NULL; d = ipk->GetNextDevice(d)) {
-		 linenum = d->GetNum() + 1;
-		 printf("SHM_LIN%d: \t %08x\n", (d->GetNum() + 1), ftok(linedmnpat, linenum));
+	for (TDevice *d = ipk->GetFirstDevice(); d != NULL; d = d->GetNext()) {
+		 ++linenum;
+		 printf("SHM_LIN%d: \t %08x\n", (linenum), ftok(linedmnpat, linenum));
 	}
 
 

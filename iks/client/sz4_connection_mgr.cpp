@@ -123,11 +123,15 @@ void connection_mgr::on_connected() {
 
 		if (!_ec) {
 			std::vector<remote_entry> remotes;
-			if (self->parse_remotes(data, remotes))
-				for (auto& e : remotes)
+			if (self->parse_remotes(data, remotes)) {
+				for (auto& e : remotes) {
 					self->connect_location(e.first, e.second);
-			else
+				}
+
+				self->connection_cv.set_value();
+			} else {
 				_ec = make_error_code(iks_client_error::invalid_server_response);
+			}
 		}
 
 		if (_ec)
@@ -138,6 +142,7 @@ void connection_mgr::on_connected() {
 }
 
 void connection_mgr::on_error(const boost::system::error_code& ec) {
+	connection_cv = std::promise<void>();
 	if (ec != ba::error::operation_aborted)
 		connection_error_sig(ec);
 }
@@ -188,9 +193,7 @@ connection_mgr::connection_mgr(IPKContainer *conatiner,
 				m_address(address),
 				m_port(port),
 				m_defined_param_prefix(defined_param_prefix),
-				m_io(io) {
-
-}
+				m_io(io) {}
 
 connection_mgr::loc_connection_ptr connection_mgr::connection_for_base(const std::wstring& prefix) {
 	auto i = m_location_connections.find(prefix);
@@ -203,5 +206,4 @@ void connection_mgr::run() {
 }
 
 }
-/* vim: set tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab : */
 

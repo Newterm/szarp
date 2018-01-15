@@ -229,25 +229,12 @@ void FrameManager::LoadConfig(DrawFrame *frame) {
 
 	wxString prefix = config_dialog->GetSelectedPrefix();
 
-	if (prefix == DefinedDrawsSets::DEF_PREFIX) {
-		DrawsSets *cfg = config_manager->GetConfigByPrefix(prefix);
-		if (cfg == NULL || cfg->GetDrawsSets().size() == 0) {
-			int ret = wxMessageBox(_("The are no user defined sets. Do you want to create one?"), _("Question"), wxICON_QUESTION | wxOK | wxCANCEL, frame);
-			if (ret == wxOK)  {
-				DrawPicker* dp = new DrawPicker(frame, config_manager, database_manager, remarks_handler);
-				if (dp->NewSet(prefix, false) == wxID_OK)
-					frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
-				dp->Destroy();
-			}
-			config_dialog->Destroy();
-			return;
-		}
+	if (frame) {
+		frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
+	} else {
+		CreateFrame(prefix, wxEmptyString, PERIOD_T_YEAR, time_t(-1), wxDefaultSize, wxDefaultPosition);
 	}
 
-	if (frame)
-		frame->AddDrawPanel(prefix, wxEmptyString, PERIOD_T_YEAR, 0);
-	else
-		CreateFrame(prefix, wxEmptyString, PERIOD_T_YEAR, time_t(-1), wxDefaultSize, wxDefaultPosition);
 	config_dialog->Destroy();
 }
 

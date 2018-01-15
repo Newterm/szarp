@@ -4,6 +4,7 @@ TESTS = ./run_tests.sh
 
 meaner4dir = @prefix@/lib/python/meaner4
 meaner4_PYTHON = config.py \
+	heartbeat.py \
 	lastentry.py \
 	meaner4.py \
 	meaner.py \

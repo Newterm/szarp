@@ -80,7 +80,7 @@ public:
 
 	time_t GetStartTime();
 
-	TParam::FormulaType GetFormulaType();
+	FormulaType GetFormulaType();
 
 	/**Cancel edition of of draw*/
 	void Cancel();

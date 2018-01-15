@@ -13,14 +13,13 @@ public:
 namespace {
 
 class IPKContainerMock : public mocks::IPKContainerMockBase {
-	TSzarpConfig config;
 	TParam *param;
 	TParam *param2;
 	TParam *param3;
 public:
-	IPKContainerMock() : param(new TParam(NULL, NULL, L"1", TParam::DEFINABLE, TParam::P_DEFINABLE))
-				, param2(new TParam(NULL, NULL, L"40000", TParam::DEFINABLE, TParam::P_DEFINABLE))
-				, param3(new TParam(NULL, NULL, L"(*:*:msw) (*:*:lsw) :", TParam::DEFINABLE, TParam::P_DEFINABLE)) {
+	IPKContainerMock() : param(new TParam(NULL, NULL, L"1", FormulaType::DEFINABLE, ParamType::DEFINABLE))
+				, param2(new TParam(NULL, NULL, L"40000", FormulaType::DEFINABLE, ParamType::DEFINABLE))
+				, param3(new TParam(NULL, NULL, L"(*:*:msw) (*:*:lsw) :", FormulaType::DEFINABLE, ParamType::DEFINABLE)) {
 
 		param->SetName(L"A:B:msw");
 		AddParam(param);

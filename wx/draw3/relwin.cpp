@@ -58,8 +58,8 @@ RelWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 {}
 
 RelWindow::RelWindow(wxWindow *parent, DrawPanel *panel) :
-	wxDialog(parent, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(default_dialog_width, default_dialog_height),
-			wxDEFAULT_DIALOG_STYLE),
+	wxDialog(NULL, wxID_ANY, _("Values ratio"), wxDefaultPosition, wxSize(default_dialog_width, default_dialog_height),
+			wxDEFAULT_DIALOG_STYLE | wxDIALOG_NO_PARENT | wxSTAY_ON_TOP),
 	m_update(false),
 	m_active(false),
 	m_panel(panel),

@@ -1451,7 +1451,7 @@ When in SZARP line daemon mode, the following options are available:\n");
         }
 
         sz_log(2, "Connecting to IPC...");
-        IPCHandler *ipc = new IPCHandler(config);
+		IPCHandler* ipc;
 
 		try {
 			ipc = new IPCHandler(config);
@@ -1467,7 +1467,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
         if (is_debug)
             std::cout << std::dec << "MBus daemon connection data:\n" 
-                      << "\tParcook line number: " << config->GetLineNumber() << "\n\tDevice: " << SC::S2A(config->GetDevice()->GetPath())
+                      << "\tParcook line number: " << config->GetLineNumber() << "\n\tDevice: " << config->GetDevice()->getAttribute("path")
                       << "\n\tParameters to report: " << ipc->m_params_count << "\n";
 
         MBusConfig mbus_config(config->GetXMLDevice());
@@ -1479,7 +1479,7 @@ When in SZARP line daemon mode, the following options are available:\n");
 
         sz_log(5, "Connecting to the device...");
 
-        long int connection_speed = config->GetDevice()->GetSpeed();
+        long int connection_speed = config->GetDevice()->getAttribute<int>("speed");
 
         if (connection_speed <= 0)
             connection_speed = 300;
@@ -1488,12 +1488,12 @@ When in SZARP line daemon mode, the following options are available:\n");
         while (true) try {
 
             if (is_debug)
-                std::cout << std::dec << "Connecting to the device " << SC::S2A(config->GetDevice()->GetPath()) 
+                std::cout << std::dec << "Connecting to the device " << config->GetDevice()->getAttribute("path") 
                         << " with baudrate " << connection_speed << "...\n";
 
             // Connect only when the connection died, not every time when we
             // want to retrieve data from the device
-            if (mbus_config.mbus->connect(SC::S2A(config->GetDevice()->GetPath()),
+            if (mbus_config.mbus->connect(config->GetDevice()->getAttribute("path"),
                              connection_speed, mbus_config.byte_interval, mbus_config.data_bits, 
                              mbus_config.stop_bits, mbus_config.parity)) {
                 sz_log(5, "Connected.");

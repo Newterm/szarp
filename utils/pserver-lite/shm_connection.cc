@@ -272,7 +272,7 @@ int ShmConnection::param_index_from_path(std::string path)
 		std::wstring szbase_name = param->GetSzbaseName();
 		if (szbase_name.compare(w_name_path) == 0)
 			return param->GetIpcInd();		
-		param = _szarp_config->GetNextParam(param);
+		param = param->GetNextGlobal();
 	}
 
 	sz_log(1, "ShmConnection::param_index_from_path: param not found!");

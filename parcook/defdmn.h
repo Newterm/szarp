@@ -77,8 +77,10 @@ protected:
 
 	static double getGlobalParamValue(const std::wstring& name);
 private:
+	const int NO_PROCESSING_THREADS = 1;
 	std::unique_ptr<IPCHandler> m_ipc;
 	std::unique_ptr<DaemonConfig> m_cfg;
+	zmq::context_t context{NO_PROCESSING_THREADS};
 	std::unique_ptr<zmqhandler> m_zmq;
 	std::unique_ptr<sz4::base> m_base;
 

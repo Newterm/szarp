@@ -34,9 +34,8 @@ build_iks_client(IPKContainer *container,
 boost::thread start_connection_manager(std::shared_ptr<sz4::connection_mgr> c) {
 	return boost::thread([c]() {
 #ifndef MINGW32
-			uselocale(newlocale(LC_ALL_MASK, "C", 0));
+		uselocale(newlocale(LC_ALL_MASK, "C", 0));
 #endif
-			c->run();
-		}
-	);
+		c->run();
+	});
 }

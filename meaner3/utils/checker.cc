@@ -1130,7 +1130,7 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 	ipk->loadXML(SC::L2S(path));
 
 
-	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ipk->GetNextParam(ppp)){
+	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ppp->GetNextGlobal()){
 		
 		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
 			IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");

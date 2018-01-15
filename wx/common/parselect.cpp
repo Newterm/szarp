@@ -244,7 +244,7 @@ void szParSelect::LoadParamsLikeInDraw()
 	std::map < std::wstring, wxTreeItemId > draws;
 	std::map < std::wstring, wxTreeItemId >::iterator draws_iter;
 
-	for (TParam * p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+	for (TParam * p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		if (m_filter && m_filter(p))
 			continue;
 		for (TDraw * d = p->GetDraws(); d; d = d->GetNext()) {
@@ -350,7 +350,7 @@ void szParSelect::LoadParams()
 			looked = tmp;
 		}
 
-	} while ((param_it = ipk->GetNextParam(param_it)) != NULL);
+	} while ((param_it = param_it->GetNextGlobal()) != NULL);
 
 	SortTree(root_id);
 	if (!last_param.IsSameAs(_T("NULL"))) {
@@ -533,7 +533,7 @@ void szParSelect::Search()
 
 		wxTreeItemId root_id = par_trct->AddRoot(wxString(ipk->GetTitle()));
 		wxTreeItemId looked;
-		for (TParam * param_it = ipk->GetFirstParam(); param_it; param_it = ipk->GetNextParam(param_it)) {
+		for (TParam * param_it = ipk->GetFirstParam(); param_it; param_it = param_it->GetNextGlobal()) {
 			const std::wstring& name = param_it->GetName();
 			if (!should_match || std::regex_search(name, re)) {
 				if (m_filter && m_filter(param_it)) {
@@ -608,7 +608,7 @@ void szParSelect::SearchLikeInDraw()
 		std::map < std::wstring, wxTreeItemId > draws;
 		std::map < std::wstring, wxTreeItemId >::iterator draws_iter;
 
-		for (TParam * p = ipk->GetFirstParam(); p; p = ipk->GetNextParam(p)) {
+		for (TParam * p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 			for (TDraw * d = p->GetDraws(); d; d = d->GetNext()) {
 				const auto& parameterTranslatedWindowName = d->GetTranslatedWindow();
 				const auto& parameterName = p->GetName();

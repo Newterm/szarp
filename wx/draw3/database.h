@@ -25,6 +25,7 @@
 #endif
 
 #include <list>
+#include <future>
 #include <ids.h>
 #include <boost/thread/thread.hpp>
 #include <tr1/tuple>
@@ -34,6 +35,7 @@
 #include "sz4/base.h"
 #include "sz4_iks_param_info.h"
 #include "sz4_iks_param_observer.h"
+#include "wx_exceptions.h"
 
 
 /**Query to the database*/
@@ -353,6 +355,8 @@ private:
 	IPKContainer* ipk_container;
 	boost::thread io_thread;
 
+	std::future<void> connection_cv;
+
 	std::map<std::pair<sz4::param_observer*, sz4::param_info>, std::shared_ptr<ObserverWrapper>> observers;
 
 	sz4::param_info ParamInfoFromParam(TParam* p);
@@ -365,6 +369,8 @@ public:
 			IPKContainer *ipk_conatiner);
 
 	~Sz4ApiBase();	
+
+	bool BlockUntilConnected(const unsigned int timeout_s = 10);
 
 	void RemoveConfig(const std::wstring& prefix,
 			bool poison_cache) ;
@@ -469,7 +475,6 @@ public:
 	void CleanOld(DatabaseQuery* q);
 
 };
-
 
 DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no = -1);
 

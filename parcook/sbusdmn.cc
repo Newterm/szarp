@@ -62,32 +62,12 @@
 #include "daemonutils.h"
 #include "custom_assert.h"
 
+#include "cfgdealer_handler.h"
+
 bool single;
 
 void dolog(int level, const char * fmt, ...)
   __attribute__ ((format (printf, 2, 3)));
-
-xmlChar* get_device_node_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
-	xmlChar *c;
-	char *e;
-	int ret = asprintf(&e, "./@%s", prop);
-	ASSERT(e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
-	free(e);
-	(void)ret;
-	return c;
-}
-
-xmlChar* get_device_node_extra_prop(xmlXPathContextPtr xp_ctx, const char* prop) {
-	xmlChar *c;
-	char *e;
-	int ret = asprintf(&e, "./@extra:%s", prop);
-	ASSERT(e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
-	free(e);
-	(void)ret;
-	return c;
-}
 
 std::string tohex(const unsigned char* buffer, size_t len) {
 	std::ostringstream oss;
@@ -208,7 +188,7 @@ unsigned int speed2const(int speed) {
 		case 38400:
 			return B38400;
 		default:
-			dolog(0, "WARNING: setting default port speed: 9600");
+			dolog(1, "WARNING: setting default port speed: 9600");
 			return B9600;
 	}
 }
@@ -414,17 +394,18 @@ long long Buffer::ReadSLongLong() {
 }
 
 struct Param {
-	int prec;
-	int msw;
-	int lsw;
-	int x_m_conv;
-	int y_m_conv;
-	int x_a_conv;
-	int y_a_conv;
+	int prec{ 0 };
+	int msw{ -1 };
+	int lsw{ -1 };
+	int x_m_conv{ 0 };
+	int y_m_conv{ 0 };
+	int x_a_conv{ 0 };
+	int y_a_conv{ 0 };
+
 	enum Type {
 		DECIMAL, 
 		FLOAT
-	} type;
+	} type = DECIMAL;
 };
 
 enum PROTOCOL_TYPE { SBUS, SBUS_PCD };
@@ -489,7 +470,7 @@ public:
 		m_param_count(0), m_read_attempts(0), m_state(IDLE),
 		m_daemon(daemon), m_event_base(base)
 	{}
-	bool Configure(PROTOCOL_TYPE protocol, TUnit *unit, xmlNodePtr xmlunit,
+	void Configure(PROTOCOL_TYPE protocol, UnitInfo *unit,
 		short *params, BaseSerialPort *port, int speed);
 	static void TimerCallback(int fd, short event, void* thisptr);
 	void QueryAll();
@@ -526,8 +507,8 @@ void SBUSUnit::SetPortParity(PARITY parity)
 	m_port->SetConfiguration(m_serial_conf);
 }
 
-bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
-		xmlNodePtr xmlunit, short *params, BaseSerialPort *port, int speed) {
+void SBUSUnit::Configure(PROTOCOL_TYPE protocol, UnitInfo *unit,
+		short *params, BaseSerialPort *port, int speed) {
 	m_protocol = protocol;
 	m_buffer = params;
 	m_port = port;
@@ -536,165 +517,51 @@ bool SBUSUnit::Configure(PROTOCOL_TYPE protocol, TUnit *unit,
 	dolog(6, "setting port speed to %d", speed);
 	m_serial_conf.char_size = SerialPortConfiguration::CS_8;
 
-	char *endptr;
-
 	if (protocol != SBUS_PCD) {
-		xmlChar* _id = xmlGetNsProp(xmlunit, BAD_CAST("id"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (_id == NULL) {
-			dolog(0, "%s: Attribbute sbus:id not present in unit element, line no (%ld)",
-				GetId(), xmlGetLineNo(xmlunit)); 
-			return false;
-		}
-
-		m_id = atoi((char*)_id);
+		m_id = unit->getAttribute<int>("extra:id");
 		dolog(5, "%s: Attribbute sbus:id is %d", GetId(), int(m_id));
-		xmlFree(_id);
 	} else {
 		m_id = 0;
 	}
 	
+	m_read_timeout = unit->getAttribute<unsigned long>("extra:read_timeout", 10);
+	m_max_read_attempts = unit->getAttribute<unsigned long>("extra:max_read_attempts", 1);
 
-	m_read_timeout = 10;
-	xmlChar* _read_timeout = xmlGetNsProp(xmlunit, BAD_CAST("read_timeout"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (_read_timeout != NULL) {
-		m_read_timeout = strtoul((char*)_read_timeout, &endptr, 0);
-		xmlFree(_read_timeout);
-	}
-	
-	m_max_read_attempts = 1;
-	xmlChar* _max_read_attempts = xmlGetNsProp(xmlunit, BAD_CAST("max_read_attempts"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (_max_read_attempts != NULL) {
-		m_max_read_attempts = strtoul((char*)_max_read_attempts, &endptr, 0);
-		xmlFree(_max_read_attempts);
-	}
+	int i = 0;
+	for (auto param: unit->GetParams()) {
+		try {
+			unsigned short address = param->getAttribute<unsigned long>("extra:address");
 
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(xmlunit->doc);
-	xp_ctx->node = xmlunit;
-
-	int ret;
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	(void)ret;
-
-	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST "./ipk:param", xp_ctx);
-
-	for (int i = 0; i < rset->nodesetval->nodeNr; ++i) {
-		xmlNodePtr n = rset->nodesetval->nodeTab[i];
-		xmlChar* _address = xmlGetNsProp(n,
-				BAD_CAST("address"), 
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-
-		if (_address == NULL) {
-			dolog(0, "%s: Error, attribute sbus:address missing in param definition, line(%ld)", GetId(), xmlGetLineNo(n));
-			return false;
-		}
-
-		unsigned short address = strtoul((char*)_address, &endptr, 0);
-		if (*endptr != 0) {
-			dolog(0, "%s: Error, invalid value of parameter sbus:address in param definition, line(%ld)",
-				GetId(), xmlGetLineNo(n));
-			return false;
-		}
-
-	       	int prec = 0;
-		xmlChar* _prec = xmlGetNsProp(n,
-				BAD_CAST("prec"), 
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (_prec != NULL) {
-			prec = strtol((char*)_prec, &endptr, 0);
-			if (*endptr != 0) {
-				dolog(0, "%s: Error, invalid value of parameter sbus:prec in param definition, line(%ld)",
-					GetId(), xmlGetLineNo(n));
-				return false;
+			if (m_params.find(address) == m_params.end()) {
+				Param a; 
+				m_params[address] = a;
 			}
-			xmlFree(_prec);
-			dolog(5, "%s: Got prec %d", GetId(), prec);
+
+			Param& a = m_params[address];
+
+			bool is_msw = param->getAttribute<std::string>("extra:word", "lsw") == "msw";
+
+			if (is_msw)
+				a.msw = i;
+			else
+				a.lsw = i;
+
+			a.prec = param->getAttribute<unsigned long>("extra:prec", 0);
+			a.type = param->getAttribute<std::string>("extra:type", "") == "float"? Param::FLOAT : Param::DECIMAL;
+
+			a.x_m_conv = param->getAttribute("extra:x_m_conv", 0);
+			a.y_m_conv = param->getAttribute("extra:y_m_conv", 0);
+			a.x_a_conv = param->getAttribute("extra:x_a_conv", 0);
+			a.y_a_conv = param->getAttribute("extra:y_a_conv", 0);
+
+			++i;
+		} catch (const std::exception& e) {
+			throw std::runtime_error(std::string("Error while configuring param ") + SC::S2A(param->GetName()) + std::string(": ") + std::string(e.what()));
 		}
-
-		bool is_msw = false;
-
-		xmlChar* _is_msw = xmlGetNsProp(n,
-				BAD_CAST("word"), 
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (_is_msw && !xmlStrcmp(_is_msw, BAD_CAST("msw"))) 
-			is_msw = true;
-		xmlFree(_is_msw);
-
-		bool has_type = false;
-		Param::Type type = Param::DECIMAL;
-		xmlChar* _type = xmlGetNsProp(n,
-				BAD_CAST("type"),
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		if (_type != NULL) {
-			has_type = true;
-			if (!xmlStrcmp(_type, BAD_CAST "float"))
-				type = Param::FLOAT;
-			xmlFree(_type);
-		}
-
-		xmlChar* _x_m_conv = xmlGetNsProp(n,
-				BAD_CAST("x_m_conv"),
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		xmlChar* _y_m_conv = xmlGetNsProp(n,
-				BAD_CAST("y_m_conv"),
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		xmlChar* _x_a_conv = xmlGetNsProp(n,
-				BAD_CAST("x_a_conv"),
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-		xmlChar* _y_a_conv = xmlGetNsProp(n,
-				BAD_CAST("y_a_conv"),
-				BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-
-		if (m_params.find(address) == m_params.end()) {
-			Param a; 
-
-			a.x_m_conv = 0;
-			a.y_m_conv = 0;
-
-			a.x_a_conv = 0;
-			a.y_a_conv = 0;
-
-			a.prec = 0;
-
-			a.type = Param::DECIMAL;
-
-			a.lsw = -1;
-			a.msw = -1;
-
-			m_params[address] = a;
-		}
-
-		Param& a = m_params[address];
-
-		if (is_msw)
-			a.msw = i;
-		else
-			a.lsw = i;
-
-		if (prec)
-			a.prec = prec;
-
-		if (has_type)
-			a.type = type;
-
-		if (_x_m_conv)
-			a.x_m_conv = atoi((char*) _x_m_conv);
-		if (_y_m_conv)
-			a.y_m_conv = atoi((char*) _y_m_conv);
-		if (_x_a_conv)
-			a.x_a_conv = atoi((char*) _x_a_conv);
-		if (_y_a_conv)
-			a.y_a_conv = atoi((char*) _y_a_conv);
-
-		xmlFree(_x_a_conv);
-		xmlFree(_y_a_conv);
-		xmlFree(_x_m_conv);
-		xmlFree(_y_m_conv);
 	}
 
 	evtimer_set(&m_ev_timer, TimerCallback, this);
 	event_base_set(m_event_base, &m_ev_timer);
-	return true;
 }
 
 Buffer EncodeB5Values(const Buffer &b) {
@@ -840,7 +707,7 @@ void SBUSUnit::PCDInitStart() {
 		m_state = PCD_INIT;
 		dolog(10, "%s: port open", GetId());
 	} catch (const SerialPortException &ex) {
-		dolog(0, "%s: Exception occured in PCDInitStart: %s", GetId(), ex.what());
+		dolog(1, "%s: Exception occured in PCDInitStart: %s", GetId(), ex.what());
 		BadResponse();
 	}
 }
@@ -860,7 +727,7 @@ void SBUSUnit::PCDInitContinue() {
 	try {
 		m_state = PCD_INITIALIZED;
 		if (!m_port->Ready()) {
-			dolog(0, "%s: Error: port isn't ready in PCDInitContinue", GetId());
+			dolog(1, "%s: Error: port isn't ready in PCDInitContinue", GetId());
 			BadResponse();
 		}
 		if (m_protocol == SBUS_PCD) {
@@ -872,7 +739,7 @@ void SBUSUnit::PCDInitContinue() {
 			ScheduleNext();
 		}
 	} catch (const SerialPortException &ex) {
-		dolog(0, "%s: Exception occured in PCDInitContinue: %s", GetId(), ex.what());
+		dolog(1, "%s: Exception occured in PCDInitContinue: %s", GetId(), ex.what());
 		BadResponse();
 	}
 }
@@ -887,7 +754,7 @@ void SBUSUnit::PCDInitFinish() {
 			ScheduleNext();
 		}
 	} catch (const SerialPortException &ex) {
-		dolog(0, "%s: Exception occured in PCDInitFinish: %s", GetId(), ex.what());
+		dolog(1, "%s: Exception occured in PCDInitFinish: %s", GetId(), ex.what());
 		BadResponse();
 	}
 }
@@ -895,7 +762,7 @@ void SBUSUnit::PCDInitFinish() {
 void SBUSUnit::SendQuery() {
 	try {
 		if (!m_port->Ready()) {
-			dolog(0, "%s: Error: port isn't ready in SendQuery", GetId());
+			dolog(1, "%s: Error: port isn't ready in SendQuery", GetId());
 			BadResponse();
 		}
 		m_response.Clear();
@@ -910,7 +777,7 @@ void SBUSUnit::SendQuery() {
 		dolog(8, "Waiting for data");
 		ScheduleNext(m_read_timeout * 1000);	// timer used as timeout
 	} catch (const SerialPortException &ex) {
-		dolog(0, "%s: Exception occured in SendQuery: %s", GetId(), ex.what());
+		dolog(1, "%s: Exception occured in SendQuery: %s", GetId(), ex.what());
 		BadResponse();
 	}
 }
@@ -1103,7 +970,7 @@ public:
 	{
 		m_event_base = event_base_new();
 	}
-	bool Configure(DaemonConfig* cfg);
+	void Configure(DaemonConfigInfo* cfg);
 	void Start();
 	virtual void UnitFinished();
 	static void TimerCallback(int fd, short event, void* thisptr);
@@ -1121,135 +988,43 @@ void SBUSDaemon::TimerCallback(int fd, short event, void* thisptr)
         reinterpret_cast<SBUSDaemon*>(thisptr)->Do();
 }
 
-bool SBUSDaemon::Configure(DaemonConfig *cfg) {
+void SBUSDaemon::Configure(DaemonConfigInfo* cfg) {
 	m_ipc = new IPCHandler(cfg);
-	if (m_ipc->Init()) {
-		dolog(0, "Initialization of IPCHandler failed");
-		return false;
-	}
 
-	TDevice* dev = cfg->GetDevice();
-	xmlNodePtr xdev = cfg->GetXMLDevice();
+	DeviceInfo* dev = cfg->GetDeviceInfo();
 
-	m_read_freq = 10;
+	m_read_freq = dev->getAttribute("extra:read_freq", 10);
+	auto protocol = dev->getAttribute<std::string>("extra:protocol", "SBUS") == "PCD"? SBUS_PCD : SBUS;
 
-	PROTOCOL_TYPE protocol = SBUS;
+	auto tcp_ip_attr = dev->getOptAttribute<std::string>("extra:tcp-ip");
+	if (tcp_ip_attr) {
+		m_ip = *tcp_ip_attr;
+		m_data_port = dev->getAttribute("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
+		m_cmd_port = dev->getAttribute("extra:tcp-cmd-port", SerialAdapter::DEFAULT_CMD_PORT);
 
-	xmlChar* _read_freq = xmlGetNsProp(xdev, BAD_CAST("read_freq"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (_read_freq != NULL) {
-		char *endptr;
-		m_read_freq = strtoul((char*)_read_freq, &endptr, 0);
-		if (*endptr) {
-			dolog(0, "Invalid value for sbus:read_freq attribute device element, line no (%ld)", xmlGetLineNo(xdev)); 
-			xmlFree(_read_freq);
-			return false;
-		}
-		xmlFree(_read_freq);
-	}
-
-	xmlChar* _protocol = xmlGetNsProp(xdev, BAD_CAST("protocol"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (_protocol && !xmlStrcmp(_protocol, BAD_CAST "PCD")) {
-		protocol = SBUS_PCD;
-		xmlFree(_protocol);
-		dolog(2, "Using SBUS PCD protocol");
-	} else {
-		dolog(2, "Using SBUS serial protocol");
-		protocol = SBUS;
-	}
-
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(xdev->doc);
-	xp_ctx->node = xdev;
-
-	/* prepare xpath */
-	ASSERT(xp_ctx != NULL);
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
-			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra",
-			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	ASSERT(ret == 0);
-	(void)ret;
-
-	xp_ctx->node = cfg->GetXMLDevice();
-
-	xmlChar *c = get_device_node_extra_prop(xp_ctx, "tcp-ip");
-	if (c == NULL) {
-		xmlChar *path = get_device_node_prop(xp_ctx, "path");
-		if (path == NULL) {
-			dolog(0, "ERROR!: neither IP nor device path has been specified");
-			return false;
-		}
-		m_path.assign((const char*)path);
-		xmlFree(path);
-
-		m_str_id = m_path;
-	} else {
-		m_ip.assign((const char*)c);
-		xmlFree(c);
-
-		xmlChar* tcp_data_port = get_device_node_extra_prop(xp_ctx, "tcp-data-port");
-		if (tcp_data_port == NULL) {
-			m_data_port = SerialAdapter::DEFAULT_DATA_PORT;
-			dolog(2, "Unspecified tcp data port, assuming default port: %hu", m_data_port);
-		} else {
-			std::istringstream istr((char*) tcp_data_port);
-			bool conversion_failed = (istr >> m_data_port).fail();
-			if (conversion_failed) {
-				dolog(0, "ERROR!: Invalid data port value: %s", tcp_data_port);
-				return false;
-			}
-		}
-		xmlFree(tcp_data_port);
-
-		xmlChar* tcp_cmd_port = get_device_node_extra_prop(xp_ctx, "tcp-cmd-port");
-		if (tcp_cmd_port == NULL) {
-			m_cmd_port = SerialAdapter::DEFAULT_CMD_PORT;
-			dolog(2, "Unspecified cmd port, assuming default port: %hu", m_cmd_port);
-		} else {
-			std::istringstream istr((char*) tcp_cmd_port);
-			bool conversion_failed = (istr >> m_cmd_port).fail();
-			if (conversion_failed) {
-				dolog(0, "ERROR!: Invalid cmd port value: %s", tcp_cmd_port);
-				return false;
-			}
-		}
-		xmlFree(tcp_cmd_port);
-
-		std::stringstream istr;
-		std::string data_port_str;
-		istr << m_data_port;
-		istr >> data_port_str;
-		m_str_id = m_ip + ":" + data_port_str;
-	}
-	int speed = cfg->GetSpeed();	// TODO if configured with IP, this returns -1
-	if (m_ip.compare("") != 0) {
+		m_str_id = m_ip + ":" + std::to_string(m_data_port);
+		
 		SerialAdapter *client = new SerialAdapter(m_event_base);
 		m_port = client;
 		client->InitTcp(m_ip, m_data_port, m_cmd_port);
 	} else {
+		auto path_attr = dev->getOptAttribute<std::string>("path");
+		if (!path_attr) throw std::runtime_error("Neither ip nor path are specified.");
+		m_path = *path_attr;
+		m_str_id = m_path;
+
 		SerialPort *port = new SerialPort(m_event_base);
 		m_port = port;
 		port->Init(m_path);
 	}
 
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "sbus", BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	ASSERT(ret == 0);
-
-
-	xmlXPathObjectPtr rset = xmlXPathEvalExpression(BAD_CAST ".//ipk:unit", xp_ctx);
+	int speed = dev->getAttribute("speed", -1);
 
 	short* reads = m_ipc->m_read;
 
-	int i = 0;
-	for (TUnit *unit = dev->GetFirstRadio()->GetFirstUnit(); unit; unit = unit->GetNext(), i++) {
-		ASSERT(i < rset->nodesetval->nodeNr);
-
+	for (auto unit: cfg->GetUnits()) {
 		SBUSUnit* u  = new SBUSUnit(this, m_event_base);
-		if (u->Configure(protocol, unit, rset->nodesetval->nodeTab[i], reads, m_port, speed) == false)
-			return false;
+		u->Configure(protocol, unit, reads, m_port, speed);
 
 		m_units.push_back(u);
 
@@ -1259,7 +1034,6 @@ bool SBUSDaemon::Configure(DaemonConfig *cfg) {
 
 	evtimer_set(&m_ev_timer, TimerCallback, this);
 	event_base_set(m_event_base, &m_ev_timer);
-	return true;
 }
 
 void SBUSDaemon::Start() {
@@ -1328,18 +1102,31 @@ void SBUSDaemon::UnitFinished() {
 }
 
 int main(int argc, char *argv[]) {
-	DaemonConfig* cfg = new DaemonConfig("sbusdmn");
+	try {
+		ArgsManager args_mgr("sbusdmn");
+		args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
+		args_mgr.initLibpar();
 
-	if (cfg->Load(&argc, argv))
-		return 1;
+		DaemonConfigInfo* cfg;
+		if (args_mgr.has("use-cfgdealer")) {
+			cfg = new ConfigDealerHandler(args_mgr);
+		} else {
+			DaemonConfig* cfg = new DaemonConfig("sbusdmn");
+			if (cfg->Load(&argc, argv)) {
+				throw std::runtime_error("Error while loading configuration, exiting");
+			}
+		}
 
-	single = cfg->GetSingle() || cfg->GetDiagno();
+		single = args_mgr.has("single");
 
-	SBUSDaemon daemon;
-	if (daemon.Configure(cfg) == false) 
-		return 1;
+		SBUSDaemon daemon;
+		daemon.Configure(cfg);
 
-	daemon.Start();
+		daemon.Start();
+
+	} catch (const std::exception& e) {
+		sz_log(0, "Error: %s, exiting", e.what());
+	}
 
 	return 1;
 }

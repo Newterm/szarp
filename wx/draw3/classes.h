@@ -111,7 +111,6 @@ class GLGraphs;
 class DrawGraphs;
 class DrawPscFrame;
 class DrawPsc;
-class DrawPscSystemConfigurationEditor;
 class CodeEditor;
 class VersionChecker;
 class DrawTreeDialog;

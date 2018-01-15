@@ -25,7 +25,27 @@
 #define IPKEXTRA_NAMESPACE_STRING "http://www.praterm.com.pl/SZARP/ipk-extra"
 
 #include "szarp_config.h"
+#include "config_info.h"
 #include "argsmgr.h"
+
+
+class DaemonConfigInfo {
+public:
+	virtual ~DaemonConfigInfo() {}
+	virtual std::vector<UnitInfo*> GetUnits() const = 0;
+	virtual DeviceInfo* GetDeviceInfo() const = 0;
+	virtual const IPCInfo& GetIPCInfo() const = 0;
+	virtual bool GetSingle() const = 0;
+	virtual std::string GetIPKPath() const = 0;
+	virtual int GetLineNumber() const = 0;
+	virtual size_t GetParamsCount() const = 0;
+	virtual size_t GetSendsCount() const = 0;
+	virtual size_t GetFirstParamIpcInd() const = 0;
+	virtual std::vector<size_t> GetSendIpcInds() const = 0;
+
+	virtual std::string GetPrintableDeviceXMLString() const = 0;
+	virtual struct timeval GetDeviceTimeval() const = 0;
+};
 
 /**
  * This class implements configuration loader for SZARP line daemon. It loads
@@ -47,40 +67,10 @@
  *   possible, especially for 'device' element, so you can use libxml2 DOM API
  *   to read extra data.
  */
-class DaemonConfig {
+class DaemonConfig: public DaemonConfigInfo {
+	std::vector<UnitInfo*> m_units;
+
 public:
-	/**holds information on unit asscociated with daemon*/
-	class UnitInfo {
-		/**unit identifier*/
-		char m_id;
-
-		/**number of params sent to the unit*/
-		int m_send_count;
-
-		/**pointer to next unit on units' list*/
-		UnitInfo* m_next;
-
-		long m_sender_msg_type;
-	public:
-		UnitInfo(TUnit * unit);
-
-		/**@return next unit info on a list*/
-		UnitInfo* GetNext();
-
-		/**@return unit identifier*/
-		char GetId();
-
-		/**@return number of params sent to this unit*/
-		int GetSendParamsCount();
-		
-		/**sets next object on units' list*/
-		void SetNext(UnitInfo *unit);
-
-		long GetSenderMsgType();
-
-		~UnitInfo();
-	};
-
 	/** Default constructor. 
 	 * @param daemon name, used for logging and as a szarp.cfg section
 	 * name, cannot be NULL; string is copied and deleted in 
@@ -94,12 +84,14 @@ public:
 	 * with assertion.
 	 * @param header usage info header, use NULL to fall back to default
 	 */
+	// [deprecated]
 	virtual void SetUsageHeader(const char *header);
 	/** Set string printed at the end of usage info. The default one
 	 * is '\n'. Copy of string is made. There is no point to use this 
 	 * method after call to Load() - this is checked with assertion.
 	 * @param footer usage info footer, use NULL to fall back to default
 	 */
+	// [deprecated]
 	virtual void SetUsageFooter(const char *footer);
 	/** Read configuration - parses command line, loads values
 	 * from szarp.cfg, loads IPK configuration, initializes logging.
@@ -125,49 +117,44 @@ public:
 	 * @return 0 on success, 1 on error (you should exit), 2 if usage
 	 * info was printed (you should exit)
 	 */
-	virtual int Load(int *argc, char **argv, int libpardone = 1, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
-	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = nullptr, int force_device_index = -1, void* as_ctx = nullptr );
-
+	virtual int Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg = nullptr , int force_device_index = -1);
+	// [deprecated]
+	virtual int Load(int *argc, char **argv, int libpardone = 1 , TSzarpConfig* sz_cfg = nullptr , int force_device_index = -1);
 	/** Returns number of daemon's line. All Get* functions must be called
 	 * AFTER successfull call to Load() - otherwise assertion fails. */
-	int GetLineNumber();
+	int GetLineNumber() const;
 	/** Return pointer to IPK configuration info. */
-	TSzarpConfig* GetIPK();
+	TSzarpConfig* GetIPK() const;
 	/** Return pointer to device element for daemon. You can use methods
 	 * like GetParamsCount(), GetPath(), GetSpeed(), GetStopBits(),
-	 * GetProtocol(), GetFirstRadio(), GetNextRadio(), IsSpecial(),
 	 * GetOptions(). @see TDevice class. Returns NULL if configuration
 	 * was not loaded at user's request or CloseIPK was called.
 	 */
-	TDevice* GetDevice();
+	TDevice* GetDevice() const;
+	DeviceInfo* GetDeviceInfo() const override { return GetDevice(); }
+	struct timeval GetDeviceTimeval() const { return m_timeval; }
 
 	/** Return XML document containing only this device data
 	 * all root and document attributes are copied as well.
 	 */
-	xmlDocPtr GetDeviceXMLDoc();
+	xmlDocPtr GetDeviceXMLDoc() const;
 
 	/** Return XML string containing only this device data */
-	std::string GetDeviceXMLString();
+	std::string GetDeviceXMLString() const;
 
 	/** Get XML string printable e.g. by SZARP logger */
-	std::string GetPrintableDeviceXMLString();
+	std::string GetPrintableDeviceXMLString() const;
 
 	/** Return pointer to whole XML document. */
-	xmlDocPtr GetXMLDoc();
+	xmlDocPtr GetXMLDoc() const;
 	/** Return pointer to XML node with daemon configuration. Search for
 	 * elements with "http://www.praterm.com.pl/SZARP/ipk-extra"
 	 * namespace. Return NULL if configuration is not loaded at user's 
 	 * request.
 	 */
-	xmlNodePtr GetXMLDevice();
-	/** Return pointer to parcook path (IPC identifiers key). */
-	const char* GetParcookPath();
-	/** Return pointer to lineX.cfg path (IPC identifiers key). */
-	const char* GetLinexPath();
-	/** Return 1 in 'single' mode, 0 otherwise. */
-	int GetSingle();
+	xmlNodePtr GetXMLDevice() const;
 	/** Return 1 in 'diagno' mode, 0 otherwise. */
-	int GetDiagno();
+	int GetDiagno() const;
 	/** This method frees loaded IPK document. After calling this method,
 	 * GetXMLDoc() and GetXMLDevice() return NULL. Should be called after
 	 * loading configuration because, to reduce daemon memory usage.
@@ -183,19 +170,18 @@ public:
 	 */
 	void CloseIPK();
 
-	/**@return object holding info on first unit associated with a daemon
-	 * (this is also first element of the units info's list)*/
-	UnitInfo* GetFirstUnitInfo();
+	std::vector<UnitInfo*> GetUnits() const { return m_units; }
 
-	const char* GetDevicePath();
 
-	std::string& GetIPKPath();
+	const IPCInfo& GetIPCInfo() const { return ipc_info; }
+
+	const char* GetDevicePath() const;
 
 	/** Returns port speed. Returns either value supplied by 
 	 * in command line arguments or, if configuraion is loaded,
 	 * path specified in the configuration.
 	 */
-	int GetSpeed();
+	int GetSpeed() const;
 
 	/**Returns 1 if user requested to not to load configuration, 0 otherwise*/
 	int GetNoConf();
@@ -213,6 +199,15 @@ public:
 
 	/**Returns delay between querying units*/
 	int GetAskDelay();
+
+	size_t GetParamsCount() const;
+	size_t GetSendsCount() const;
+
+	bool GetSingle() const;
+	std::string GetIPKPath() const override;
+
+	size_t GetFirstParamIpcInd() const override { return m_ipk->GetFirstParamIpcInd(*m_device_obj); }
+	std::vector<size_t> GetSendIpcInds() const override { return m_ipk->GetSendIpcInds(*m_device_obj); }
 
 protected:
 	/** Parses command line parameters. Internal use.
@@ -238,11 +233,10 @@ protected:
 	 */
 	int LoadNotXML( TSzarpConfig* cfg , int device_id );
 
-	/**Inits UnitsInfo. IPK shall be loaded when this method is called*/
-	void InitUnits();
+	void InitUnits(TUnit* unit);
 	
-private:
-	UnitInfo* m_units;
+protected:
+	IPCInfo ipc_info;
 
 	std::string m_daemon_name;	/**< name of daemon, used for logging and
 				  as libpar section name */
@@ -253,22 +247,23 @@ private:
 	bool m_load_called;	/**< true if Load() method was already called */
 	bool m_load_xml_called;	/**< true if LoadXML() method was already called */
 
-	std::string m_prefix = "";
-	std::string m_parcook_path;	/**< path to parcook config file, used for IPC
-				  identifiers */
 	std::string m_linex_path;	/**< path to lineX.cfg file, used for IPC
 				  identifiers */
-	std::string m_ipk_path; /**< path to params.xml file */
 	xmlDocPtr m_ipk_doc;	/**< IPK configuration as XML document */
 	xmlNodePtr m_ipk_device;/**< XML 'device' element for daemon */
 	TSzarpConfig *m_ipk;	/**< pointer to IPK configuration */ 
 	TDevice *m_device_obj;	/**< pointer to IPK device object */
 
+	std::wstring m_prefix;
+	std::string ipk_path;
+
+	struct timeval m_timeval{10, 0};
+
 	int m_single;		/**< 1 if signle mode*/
 	int m_diagno;		/**< 1 if diagno mode*/
 	int m_device;		/**< device numer*/
 	int m_noconf;		/**< true if configuration is not loaded*/
-	std::string m_device_path;	/**< path to device given in command line arguments*/
+	mutable std::string m_device_path;	/**< path to device given in command line arguments*/
 	int m_scanner;		/**< true if device should act as scanner*/
 	char m_id1,m_id2;	/**< range of ids that driver should scan*/
 	int m_sniff;		/**< 1 if daemon should work in sniffer mode*/

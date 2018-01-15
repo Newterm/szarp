@@ -146,7 +146,7 @@ protected:
 	 */
 	int ParseCommandLine();
 
-        wxLocale locale;
+	wxLocale locale;
                         /**< Program's locale object. */
 	wxString m_base; /**< Base name. */
 

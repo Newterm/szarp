@@ -116,8 +116,8 @@ void GCDCGraphs::DrawBackground(wxGraphicsContext &dc) {
 		wxBitmap right_arrow;
 
 #ifndef __MINGW32__
-		left_arrow.LoadFile("../../resources/wx/images/left-arrow.png", wxBITMAP_TYPE_PNG);
-		right_arrow.LoadFile("../../resources/wx/images/right-arrow.png", wxBITMAP_TYPE_PNG);
+		left_arrow.LoadFile("/opt/szarp/resources/wx/images/left-arrow.png", wxBITMAP_TYPE_PNG);
+		right_arrow.LoadFile("/opt/szarp/resources/wx/images/right-arrow.png", wxBITMAP_TYPE_PNG);
 #else
 		wxString left_arrow_path = wxGetApp().GetSzarpDir() + _T("\\resources\\wx\\images\\left-arrow.png");
 		wxString right_arrow_path = wxGetApp().GetSzarpDir() + _T("\\resources\\wx\\images\\right-arrow.png");
@@ -266,10 +266,10 @@ void GCDCGraphs::DrawWindowInfo(wxGraphicsContext &dc) {
 
 		dc.SetFont(GetFont(), info->GetDrawColor());
 
-		name = info->GetShortName().c_str();
-		if (!name.IsEmpty()) {
-			dc.GetTextExtent(name, &namew, &nameh, &th, &tsel);
-			dc.DrawText(name, xpos, m_screen_margins.infotopmargin);
+		wxString short_name = info->GetShortName().c_str();
+		if (!short_name.IsEmpty()) {
+			dc.GetTextExtent(short_name, &namew, &nameh, &th, &tsel);
+			dc.DrawText(short_name, xpos, m_screen_margins.infotopmargin);
 			xpos += namew + param_name_shift;
 		} else {
 			xpos += param_name_shift;

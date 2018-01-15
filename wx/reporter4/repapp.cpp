@@ -133,6 +133,10 @@ bool repApp::ParseCMDLineOptions() {
 
 		if ( vm.count("base") ) {
 			m_base = SC::A2S(vm["base"].as<std::string>());
+			if (m_base.substr(0,4) == L"ase=" || m_base.substr(0,4) == L"ase:" || m_base.substr(0,4) == L"ase ") {
+				// deprecated "-base=..."
+				m_base = m_base.substr(4);
+			}
 		}
 
 		if ( m_base.empty() ) {

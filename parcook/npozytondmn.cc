@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv, 0))
 		return 1;
-	int params_count = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->
+	int params_count = cfg->GetDevice()->GetFirstUnit()->
 		                            GetParamsCount();
 
 	char *plugin_path;

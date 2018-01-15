@@ -73,8 +73,8 @@ int ConfigureMELS(MELSDaemonInterface *mels, DaemonConfig *cfg, IPCHandler* ipc)
 	ASSERT(ret == 0);
 
 	int i, j;
-	TParam *param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstParam();
-	TSendParam *send_param = cfg->GetDevice()->GetFirstRadio()->GetFirstUnit()->GetFirstSendParam();
+	TParam *param = cfg->GetDevice()->GetFirstUnit()->GetFirstParam();
+	TSendParam *send_param = cfg->GetDevice()->GetFirstUnit()->GetFirstSendParam();
 	for (i = 0, j = 0; j < ipc->m_params_count + ipc->m_sends_count; ++i, j++) {
 		if (j == ipc->m_params_count)
 			i = 0;

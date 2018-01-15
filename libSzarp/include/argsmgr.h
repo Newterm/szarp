@@ -4,6 +4,35 @@
 #include <boost/optional.hpp>
 #include "libpar.h"
 #include "cmdlineparser.h"
+#include <type_traits>
+
+template <typename RT>
+typename std::enable_if<
+     std::is_signed<RT>::value,
+RT>::type cast_numeric_val(const std::string& v_str) {
+	try {
+		return boost::lexical_cast<RT>(v_str);
+	} catch (...) {
+		return std::stoll(v_str, nullptr, 0);
+	}
+}
+
+template <typename RT>
+typename std::enable_if<
+	std::is_unsigned<RT>::value,
+RT>::type cast_numeric_val(const std::string& v_str) {
+	try {
+		return boost::lexical_cast<RT>(v_str);
+	} catch (...) {
+		return std::stoull(v_str, nullptr, 0);
+	}
+}
+
+template <typename RT>
+RT cast_val(const std::string& v_str) {
+	return cast_numeric_val<RT>(v_str);
+}
+
 
 class ArgsManager {
 	std::string base_arg;
@@ -71,11 +100,9 @@ public:
 
 	bool has(const std::string& section, const std::string& arg) const {
 		if (cmd.count(arg)) return true;
-		auto lpv = libpar_getpar(section.c_str(), arg.c_str(), 0);
-		if (lpv) {
-			free(lpv);
-			return true;
-		}
+
+		auto libp_arg = get_libparval<std::string>(section, arg);
+		if (libp_arg) if (!libp_arg->empty()) return true;
 
 		return false;
 	}
@@ -96,9 +123,6 @@ private:
 	// Getting parameters from cfg file (to refactor later on).
 	template <typename T>
 	boost::optional<T> get_libparval(const std::string& section, const std::string& arg) const;
-
-	template <typename RT>
-	RT cast_val(const std::string& at) const;
 
 	std::string name;
 	CmdLineParser cmd;
@@ -131,6 +155,8 @@ boost::optional<T> ArgsManager::get_cmdval(const std::string& arg) const {
 
 template <typename T>
 boost::optional<T> ArgsManager::get_libparval(const std::string& section, const std::string& arg) const { 
+	if (!libpar_initialized) return boost::none;
+
 	char* libpar_val;
 	if (section.empty()) 
 		libpar_val = libpar_getpar(name.c_str(), arg.c_str(), 0);
@@ -165,33 +191,31 @@ boost::optional<T> ArgsManager::get_overriden(const std::string& section, const 
 	return boost::none;
 }
 
-template <typename RT>
-RT ArgsManager::cast_val(const std::string& v_str) const {
-	return boost::lexical_cast<RT>(v_str);
-}
+template <>
+bool cast_val(const std::string& v_str);
 
 template <>
-const char* ArgsManager::cast_val(const std::string& v_str) const;
+const char* cast_val(const std::string& v_str);
 
 template <>
-char* ArgsManager::cast_val(const std::string& v_str) const;
+char* cast_val(const std::string& v_str);
 
 template <>
-const wchar_t* ArgsManager::cast_val(const std::string& v_str) const;
+const wchar_t* cast_val(const std::string& v_str);
 
 template <>
-wchar_t* ArgsManager::cast_val(const std::string& v_str) const;
+wchar_t* cast_val(const std::string& v_str);
 
 template <>
-const std::string ArgsManager::cast_val(const std::string& v_str) const;
+const std::string cast_val(const std::string& v_str);
 
 template <>
-std::string ArgsManager::cast_val(const std::string& v_str) const;
+std::string cast_val(const std::string& v_str);
 
 template <>
-const std::wstring ArgsManager::cast_val(const std::string& v_str) const;
+const std::wstring cast_val(const std::string& v_str);
 
 template <>
-std::wstring ArgsManager::cast_val(const std::string& v_str) const;
+std::wstring cast_val(const std::string& v_str);
 
 #endif

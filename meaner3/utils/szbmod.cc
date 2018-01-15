@@ -332,7 +332,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		if (!p->IsInBase() && p->GetType() != TParam::P_COMBINED) {
+		if (!p->IsInBase() && p->GetType() != ParamType::COMBINED) {
 			std::wcerr << "Parameter '" << arguments.params[i] << "' is not in base and in not combined param\n\n";;
 			return 1;
 		}
@@ -363,7 +363,7 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < params.size(); i++) {
 		TParam *p = params[i];
 		double pw = pow(10.0, p->GetPrec());
-		if (p->GetType() == TParam::P_COMBINED)
+		if (p->GetType() == ParamType::COMBINED)
 			save_combined_param(pw, p, vals, szb, i);
 		else
 			save_real_param(pw, p, vals, szb, i);

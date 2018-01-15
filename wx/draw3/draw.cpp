@@ -188,7 +188,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 	if (GetEnable() == false)
 		return q;
 
-	bool no_max_probes = !m_draw_info->IsValid() || m_draw_info->GetParam()->GetIPKParam()->GetFormulaType() == TParam::LUA_AV;
+	bool no_max_probes = !m_draw_info->IsValid() || m_draw_info->GetParam()->GetIPKParam()->GetFormulaType() == FormulaType::LUA_AV;
 	for (size_t i = 0; i < m_values.len(); ++i) {
 		ValueInfo &v = m_values.Get(i);
 
@@ -638,7 +638,6 @@ void ValuesTable::UpdateStats(int idx) {
 
 	const double& val = v.val;
 
-	bool is_30min = m_draw->m_draws_controller->GetPeriod() == PERIOD_T_30MINUTE;
 	if (m_count) {
 		m_max = std::max(val, m_max);
 		m_min = std::min(val, m_min);

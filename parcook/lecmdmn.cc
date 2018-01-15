@@ -424,9 +424,9 @@ int main(int argc, char *argv[])
 
 	if (cfg->Load(&argc, argv))
 		return 1;
-	mbinfo = new LecMbus(cfg->GetDevice()->GetFirstRadio()->
+	mbinfo = new LecMbus(cfg->GetDevice()->
 				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->GetFirstRadio()->
+				cfg->GetDevice()->
 				GetFirstUnit()->GetSendParamsCount());
 
 	if (cfg->GetSingle()) {
@@ -436,11 +436,11 @@ device: %s\n\
 params in: %d\n", cfg->GetLineNumber(), SC::S2A(cfg->GetDevice()->GetPath()).c_str(), mbinfo->m_params_count);
 	}
 
-
-	ipc = new IPCHandler(cfg);
-	if (!cfg->GetSingle()) {
-		if (ipc->Init())
-			return 1;
+	try {
+		auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg));
+		ipc = ipc_.release();
+	} catch(...) {
+		return 1;
 	}
 	
 	sz_log(2, "starting main loop");

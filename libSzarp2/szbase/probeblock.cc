@@ -344,18 +344,18 @@ szb_probeblock_t* szb_create_probe_block(szb_buffer_t *buffer, TParam *param, ti
 	}
 
 	switch (param->GetType()) {
-		case TParam::P_REAL:
+		case ParamType::REAL:
 			ret = new szb_probeblock_real_t(buffer, param, time);
 			break;
-		case TParam::P_COMBINED:
+		case ParamType::COMBINED:
 			ret = new szb_probeblock_combined_t(buffer, param, time);
 			break;
-		case TParam::P_DEFINABLE:
+		case ParamType::DEFINABLE:
 			ret = new szb_probeblock_definable_t(buffer, param, time);
 			break;
 #ifndef NO_LUA
-		case TParam::P_LUA:
-			if (param->GetFormulaType() == TParam::LUA_AV)
+		case ParamType::LUA:
+			if (param->GetFormulaType() == FormulaType::LUA_AV)
 				return NULL;
 			ret = create_lua_probe_block(buffer, param, time);
 			break;

@@ -33,9 +33,7 @@ void LogHandlerTest::test() {
 	szlog::log().set_logger(lh);
 	szlog::log().set_log_treshold(2);
 
-	szlog::log() << szlog::info << "This should not be logged" << szlog::endl;
-
-	szlog::log() << szlog::flush;
+	szlog::log() << szlog::info << "This should not be logged" << szlog::flush;
 
 	CPPUNIT_ASSERT(!dh->msg_logged);
 

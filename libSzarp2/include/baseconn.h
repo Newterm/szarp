@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-/** @file Virtual connection using observer pattern
+/** Virtual connection using observer pattern
  */
 
 class BaseConnection;

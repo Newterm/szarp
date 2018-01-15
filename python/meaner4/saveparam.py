@@ -188,7 +188,8 @@ class SaveParam:
 
 		except lastentry.TimeError, e:
 			print "Ignoring value for param %s (with time:%s) as more recent value is present (time:%s)" \
-					% (self.param_path.param_path, e.msg_time, e.current_time)
+				% (self.param_path.param_path, e.msg_time, e.current_time)
+
 
 
 	def process_msg(self, msg):

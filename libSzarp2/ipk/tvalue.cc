@@ -64,24 +64,6 @@ TValue *TValue::createValue(int prec)
 	}
 }
 
-xmlNodePtr TValue::generateXMLNode(void)
-{
-#define X (unsigned char *)
-#define ITOA(x) snprintf(buffer, 10, "%d", x)
-#define BUF X(buffer)
-	char buffer[10];
-	xmlNodePtr r;
-	
-	r = xmlNewNode(NULL, X"value");
-	ITOA(intValue);
-	xmlSetProp(r, X"int", BUF);
-	xmlSetProp(r, X"name", SC::S2U(name).c_str());
-	return r;
-#undef X
-#undef ITOA
-#undef BUF
-}
-
 TValue* TValue::Append(TValue* v)
 {
 	TValue* t = this;

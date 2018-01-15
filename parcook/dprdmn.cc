@@ -69,6 +69,7 @@
 #include "liblog.h"
 #include "ipchandler.h"
 #include "custom_assert.h"
+#include <exception>
 
 #define MAX_UNIT_ADDRESS 0xFFU
 #define MAX_PARAM_ADDRESS 0xFFU
@@ -86,7 +87,7 @@ enum DataType {
 };
 
 /** Describe paramter */
-struct ParamType {
+struct DPRParamType {
 	const char* name;	/**<parameter's name in szarp's params.xml config*/
 	DataType data_type;	/**<type of parameter data*/
 	unsigned data_size;	/**<size of a paramter (number of filelds occupied by paramter value in a packet)*/
@@ -95,7 +96,7 @@ struct ParamType {
 
 
 /**list of supported paramters*/
-const ParamType Parameters[] = { 
+const DPRParamType Parameters[] = { 
 	{"input", FLOAT, 0x4, 0x18 },	/*regular input (analog, math..)*/
 	{"alarm", BIT, 0x1, 0x01 },	/*alarm*/
 	{"batch", FLOAT, 0x4, 0x02 },	/*batch ??*/
@@ -117,8 +118,8 @@ class Daemon {
 
 		class Unit {
 			/**Holds info on various parameters of a param*/
-			class ParamInfo {
-				ParamInfo() {}; 
+			class DPRParamInfo {
+				DPRParamInfo() {}; 
 				unsigned prec; /**<precision of paramter*/
 				unsigned addr; /**<parameter device's addres*/
 				unsigned param_code; /**<paramter code*/
@@ -145,45 +146,36 @@ class Daemon {
 				unsigned GetDataType() {
 					return data_type;
 				}
-				/*Creates ParamInfo object
-				 * @param node node to a param element in params.xml
+				/*Creates DPRParamInfo object
 				 * @param tp pointer to TParam object
-				 * @return ParamInfo object*/
-				static ParamInfo* Create(xmlNodePtr node,TParam *tp) {
-					ParamInfo* pi = new ParamInfo();
-					char *str = NULL;
+				 * @return DPRParamInfo object*/
+				static DPRParamInfo* Create(TParam *tp) {
+					DPRParamInfo* pi = new DPRParamInfo();
 					try {
-						str = (char*) xmlGetNsProp(node, BAD_CAST("address"),
-							BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-						if (str == NULL)
-							throw ParseEx("Attribute dprdmn:address not present in a param element",xmlGetLineNo(node));
-						if (sscanf(str, "%x", &pi->addr) != 1 ||
-								pi->addr >= MAX_PARAM_ADDRESS )
-							throw ParseEx("Invalid address atribute in a param element",xmlGetLineNo(node));
-						xmlFree(str);
-						str = (char*) xmlGetNsProp(node, BAD_CAST("param_type"),
-							BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-						if (str == NULL)
-							throw ParseEx("Attribute dprdmn:param_type not present in a param element",xmlGetLineNo(node));
+						pi->addr = tp->getAttribute<unsigned>("extra:address");
+						if (pi->addr >= MAX_PARAM_ADDRESS) {
+							sz_log(0, "Invalid address attribute in a param %ls", tp->GetName().c_str());
+							throw std::runtime_error((std::string("Invalid address attribute in param ") + SC::S2A(tp->GetName())).c_str());
+						}
+
+						auto str = tp->getAttribute<std::string>("extra:param_type");
 						bool found = false;
-						for (unsigned i = 0; i < sizeof(Parameters)/sizeof(ParamType) ; ++i)
-							if (!strcmp(str, Parameters[i].name)) {
+						for (unsigned i = 0; i < sizeof(Parameters)/sizeof(DPRParamType) ; ++i)
+							if (str == Parameters[i].name) {
 								pi->data_type = Parameters[i].data_type;
 								pi->param_code = Parameters[i].param_code;
 								found = true;
 								break;
 							}
-						if (!found)
-							throw ParseEx("Unknown param_type",xmlGetLineNo(node));
-
-						xmlFree(str);
+						if (!found) {
+							sz_log(0, "Unknown param_type in a param %ls", tp->GetName().c_str());
+							throw std::runtime_error((std::string("Invalid param_type attribute in param ") + SC::S2A(tp->GetName())).c_str());
+						}
 
 						pi->prec = tp->GetPrec();
 					}
-					catch (ParseEx& e)
+					catch (const std::exception& e)
 					{
-						if (str)
-							xmlFree(str);
 						delete pi;
 						throw;
 					}
@@ -191,7 +183,7 @@ class Daemon {
 				}
 
 			};
-			typedef vector<ParamInfo*> VP;
+			typedef vector<DPRParamInfo*> VP;
 			unsigned unit_no;		/**<unit numer*/
 			short *param_buf;		/**<pointer to param values buffer*/
 			VP params;			/**<holds "naitive" numer of each param*/
@@ -216,35 +208,26 @@ class Daemon {
 			 * @param node node to unit element in params.xml
 			 * @tu pointer to a TUnit object
 			 * @return ptr to unit object*/
-			static Unit* Create(xmlNodePtr node,TUnit* tu) {
-				ASSERT(node != NULL);
+			static Unit* Create(TUnit* tu) {
 				ASSERT(tu != NULL);
-				char *str = NULL;
 				Unit* unit = new Unit();
 				unit->param_buf = NULL;
 				try {
-					str = (char *) xmlGetNsProp(node,
-						BAD_CAST("address"),
-						BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-					if (str == NULL) 
-						throw ParseEx("Attribute dprdmn:address not present in an unit element",xmlGetLineNo(node));
-					if (sscanf(str, "%x", &unit->unit_no) != 1 
-							|| unit->unit_no >= MAX_UNIT_ADDRESS )
-						throw ParseEx(string("Invalid unit addres:") + str,xmlGetLineNo(node));
-					xmlFree(str);
+					unit->unit_no = tu->getAttribute<unsigned>("extra:address");
+					if (unit->unit_no >= MAX_UNIT_ADDRESS) {
+						sz_log(10, "Invalid unit address in unit number %d", tu->GetUnitNo());
+						throw std::runtime_error((std::string("Invalid unit address int unit no ") + std::to_string(tu->GetUnitNo())).c_str());
+					}
+
 					/*parse params for a unit*/
 					TParam *tp = tu->GetFirstParam();
-					for (node = node->children; node && tp; node = node->next) {
-						if (strcmp((char *) node->name, "param"))
-								continue;
-						unit->params.push_back(ParamInfo::Create(node,tp));
-						tp = tu->GetNextParam(tp);
+					for (; tp != nullptr; tp = tp->GetNext()) {
+						unit->params.push_back(DPRParamInfo::Create(tp));
+						tp = tp->GetNext();
 					}
 
 				}
-				catch (ParseEx& e) {
-					if (str)
-						xmlFree(str);
+				catch (const std::exception& e) {
 					delete unit;
 					throw;
 				}
@@ -307,7 +290,7 @@ class Daemon {
 				vector<unsigned>::const_iterator i; 
 				for (i = d.values.begin(); i != d.values.end(); ++i,++start_addr) 
 					if (FindParam(start_addr, d.param_code, index)) {
-						ParamInfo *pi = params[index];
+						DPRParamInfo *pi = params[index];
 						switch (pi->GetDataType()) {
 							case BIT: 
 								param_buf[index] = (short)*i;
@@ -371,28 +354,22 @@ class Daemon {
 			TDevice* td = cfg->GetDevice();
 			ASSERT(td != NULL);
 
-			TRadio *tr = td->GetFirstRadio();
-			ASSERT(tr != NULL);
-
 			xmlNodePtr device_node = cfg->GetXMLDevice();
 			ASSERT(device_node != NULL);
 
 			UnitsList *ul = new UnitsList();
 
 			try {
-				TUnit *tu = tr->GetFirstUnit();
-				for (xmlNodePtr node = device_node->children; node && tu ; node = node->next) 
-					if (!strcmp( (char*) node->name, "unit")) {
-						ASSERT(tu != NULL);
-						Unit* u = Unit::Create(node, tu);
-						ul->buf_size += u->GetReqBufferSize();
-						ul->units.push_back(u);
-						tu = tr->GetNextUnit(tu);
-					}
+				TUnit *tu = td->GetFirstUnit();
+				for (;tu != nullptr; tu = tu->GetNext()) {
+					ASSERT(tu != NULL);
+					Unit* u = Unit::Create(tu);
+					ul->buf_size += u->GetReqBufferSize();
+					ul->units.push_back(u);
+					tu = tu->GetNext();
+				}
 
 				ul->ipc = new IPCHandler(cfg);
-				if (ul->ipc->Init())
-					throw Exception("Error connecting to parcook");
 				ul->param_buf = ul->ipc->m_read;
 				
 				/*Assign part of a buffer for each unit*/
@@ -570,7 +547,7 @@ class Daemon {
 			}
 			req_packet.param_code = val & 0xffu;
 
-			for (unsigned i = 0; i < sizeof(Parameters)/sizeof(ParamType); ++i) 
+			for (unsigned i = 0; i < sizeof(Parameters)/sizeof(DPRParamType); ++i) 
 				if (Parameters[i].param_code == req_packet.param_code) {
 					req_packet.data_size = Parameters[i].data_size;
 					req_packet.data_type = Parameters[i].data_type;
@@ -877,10 +854,6 @@ class Daemon {
 	};
 
 	/**Exception generated by error while extracting data from params.xml*/
-	struct ParseEx : public Exception {
-		int line_no;	/**<line in which error ocurred*/
-		ParseEx(const string& _what = "",int _line_no = -1) : Exception(_what) , line_no(_line_no) {};
-	};
 	UnitsList* ul; 	/**<@see UnitsList*/
 	SerialPort* sp; /**<@see SerialPort*/
 	PacketHandler* ph;	/**<@see PacketHandler*/
@@ -896,20 +869,15 @@ class Daemon {
 			sp = new SerialPort();
 			ph = new PacketHandler();
 		}
-		catch (ParseEx& pe) {
-			sz_log(0,"Error while parsing params.xml: %s, line:%d.", pe.what.c_str(), pe.line_no);
-			exit(1);
-		}
-		catch (Exception &e) {
-			sz_log(0,"Initialization error:%s.", e.what.c_str());
+		catch (const std::exception& e) {
 			exit(1);
 		}
 
 		TDevice* dev = dc->GetDevice();
-		if (!sp->Open(SC::S2A(dev->GetPath()).c_str(),
-				dev->GetSpeed(),
-				dev->GetStopBits())) {
-			sz_log(0,"Unable to open serial port %ls.",dev->GetPath().c_str());
+		if (!sp->Open(dev->getAttribute("path").c_str(),
+				dev->getAttribute<int>("speed"),
+				dev->getAttribute<int>("extra:stopbits"))) {
+			sz_log(0,"Unable to open serial port %s.",dev->getAttribute("path").c_str());
 			exit(1);
 		}
 

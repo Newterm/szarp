@@ -101,7 +101,7 @@ public:
 	double GetAverage(TParam* p, time_t start, time_t end, SZARP_PROBE_TYPE pt) {
 		szb_buffer_t* szb = base->GetBuffer(p->GetSzarpConfig()->GetPrefix());
 		if (szb)
-			return szb_get_avg(szb , p, start , end , NULL , NULL , pt );
+			return szb_get_avg(szb , p, start , end , nullptr , nullptr , pt );
 		else
 			return nan("");
 	}
@@ -822,7 +822,7 @@ SzbExtractor::ExtractStartEndTime(TSzarpConfig *ipk,
 	num_of_params = 0;
 
 	int i = 0;
-	for (TParam *prm = ipk->GetFirstParam(); prm != NULL; prm = ipk->GetNextParam(prm)) {
+	for (TParam *prm = ipk->GetFirstParam(); prm != NULL; prm = prm->GetNextGlobal()) {
 		if (progress_watcher)
 			progress_watcher(i++ * 100 / max, watcher_data);
 		if (!prm->IsReadable())

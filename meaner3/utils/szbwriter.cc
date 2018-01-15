@@ -175,7 +175,6 @@ protected:
 
 	unordered_map<std::wstring, int> m_draws_count;
 
-	bool m_new_par; 	/**< if new parameter was added */
 	size_t m_last_type;	/**< last type of probe to write + 1 */
 
 	struct tm m_tm; /**< last time */
@@ -372,13 +371,11 @@ SzbaseWriter::SzbaseWriter(
 	if (write_10sec)
 		m_writers.push_back(new DataWriter(this, DataWriter::SEC10, cache_dir, _fill_how_many_sec));
 
-	m_new_par = false;
-
 	/* set up map for fast param searching */
 	UseNamesCache();
 
 	if (loadXML(ipk_path) == 0) {
-		for (TParam* p = GetFirstParam(); p; p = GetNextParam(p)) {
+		for (TParam* p = GetFirstParam(); p; p = p->GetNextGlobal()) {
 			for (TDraw* d = p->GetDraws(); d; d = d->GetNext()) {
 				std::wstring w = d->GetWindow();
 				std::wstring c;
@@ -395,23 +392,9 @@ SzbaseWriter::SzbaseWriter(
 			}
 		}
 		return;
+	} else {
+		throw std::runtime_error("Could not load params.xml, cannot continue.");
 	}
-
-	/* create empty configuration */
-	read_freq = send_freq = 10;
-	AddDevice(createDevice(L"/bin/true", L"fake"));
-	TRadio * pr = GetFirstDevice()->AddRadio(createRadio(devices));
-	TUnit * pu = pr->AddUnit(createUnit(pr, 'x'));
-	TParam* p = new TParam(pu);
-	pu->AddParam(p);
-	
-	p->SetFormula(L"fake");
-	p->Configure(L"fake:fake:fake", L"fake", L"fake"
-			, NULL, 0);
-	
-	p->SetAutoBase();
-
-	m_new_par = true;
 }
 
 SzbaseWriter::~SzbaseWriter()

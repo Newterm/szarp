@@ -286,6 +286,9 @@ private:
 	/** Fills widget with values that match current search criteria*/
 	void Search();
 
+	/** Check if pattern exists in paramName (insensitive) */
+	bool FindStringIC(const std::wstring& paramName, const std::wstring& pattern);
+
 	void AddWindowItems(SortedSetsArray *sorted);
 
 	void AddDrawsItems(SortedSetsArray *array);

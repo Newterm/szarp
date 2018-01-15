@@ -470,13 +470,13 @@ void Szbase::AddParamMonitor(SzbParamObserver *observer, const std::vector<TPara
 			TParam* p = to_process.back();
 			to_process.pop_back();
 
-			if (p->GetType() == TParam::P_REAL) {
+			if (p->GetType() == ParamType::REAL) {
 				std::string path(SC::S2A((m_szarp_dir / p->GetSzarpConfig()->GetPrefix() / L"szbase" / p->GetSzbaseName()).file_string()));
 				paths.push_back(path);
 				continue;
 			}
 
-			assert(p->GetType() == TParam::P_LUA);
+			assert(p->GetType() == ParamType::LUA);
 			std::vector<std::wstring> strings;
 			if (!extract_strings_from_formula(p->GetFormula(), strings))
 				continue;

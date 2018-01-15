@@ -70,12 +70,14 @@ int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[],
 namespace {
 
 void blockSignals() {
+#ifndef __MINGW32__
 	std::atomic_signal_fence(std::memory_order_relaxed);
 
 	// block all signals and close after destructor is called (e.g. exit handler)
 	sigset_t mask;
 	sigfillset(&mask);
 	sigprocmask(SIG_SETMASK, &mask, NULL);
+#endif
 }
 
 }
@@ -112,7 +114,7 @@ void Logger::parse_args(const ArgsManager& args_mgr) {
 	treshold = priority(args_mgr.get<unsigned int>("debug").get_value_or(log_level));
 
 	max_log_msgs = *args_mgr.get<unsigned int>("max_q_size");
-	drop_policy = *args_mgr.get<bool>("no_dropping")? DropPolicy::NODROP : DropPolicy::DROP;
+	drop_policy = args_mgr.has("nodrop")? DropPolicy::NODROP : DropPolicy::DROP;
 }
 
 void Logger::flush() {
@@ -211,7 +213,7 @@ void sz_logdone(void) {
 }
 
 void sz_log(int level, const char * msg_format, ...) {
-	if (level > szlog::log().get_log_treshold()) return;
+	if (szlog::PriorityForLevel(level) > szlog::log().get_log_treshold()) return;
 
 	va_list fmt_args;
 	va_start(fmt_args, msg_format);
@@ -221,7 +223,7 @@ void sz_log(int level, const char * msg_format, ...) {
 
 
 void vsz_log(int level, const char * msg_format, va_list fmt_args) {
-	if (level > szlog::log().get_log_treshold()) return;
+	if ((unsigned) level > szlog::log().get_log_treshold()) return;
 
 	char *msg;
 	if (vasprintf(&msg, msg_format, fmt_args) != -1) {
@@ -300,23 +302,6 @@ std::string format_date(tm* localtime_t) {
 	}
 
 	return oss.str();
-}
-
-const std::string msg_priority_for_level(szlog::priority p) {
-	switch (p) {
-	case szlog::debug:
-		return "DEBUG";
-	case szlog::info:
-		return "INFO";
-	case szlog::warning:
-		return "WARN";
-	case szlog::error:
-		return "ERROR";
-	case szlog::critical:
-		return "CRITICAL";
-	}
-
-	return "";
 }
 
 Logger& log() {

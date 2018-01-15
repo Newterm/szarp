@@ -15,12 +15,14 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 
-#include "libpar.h"
 #include "zmqhandler.h"
 #include <event.h>
 #include <evdns.h>
 #include <iostream>
 #include <ctime>
+
+#include "argsmgr.h"
+#include "cfgdealer_handler.h"
 
 namespace py = boost::python;
 
@@ -28,12 +30,10 @@ namespace szarp {
 
 class ipc {
 public:
-	ipc() : m_cfg(nullptr), m_ipc(nullptr), m_read(nullptr), m_read_count(0), m_send_count(0), m_zmq(nullptr), m_zmq_ctx(new zmq::context_t(1))
+	ipc() : m_ipc(nullptr), m_read(nullptr), m_read_count(0), m_send_count(0), m_zmq(nullptr), m_zmq_ctx(new zmq::context_t(1))
 		{}
 
-	DaemonConfig* getConfig() { return m_cfg; }
-
-	int configure(int *argc, char *argv[]);
+	int configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr);
 	int configure_events();
 
 	int get_line_number();
@@ -63,12 +63,13 @@ public:
 	inline zmqhandler* getZmq() { return m_zmq; }
 
 protected:
-	DaemonConfig * m_cfg;
 	IPCHandler* m_ipc;
 	short * m_read;
 	short * m_send;
 	size_t m_read_count;
 	size_t m_send_count;
+	int line_number;
+	std::string ipk_path;
 	std::string m_conf_str;
 
 	bool m_sz3_auto = false;
@@ -102,49 +103,46 @@ int ipc::configure_events() {
 	return 0;
 }
 
-int ipc::configure(int *argc, char *argv[]) {
-	m_cfg = new DaemonConfig("pythondmn");
-
+int ipc::configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr) {
 	configure_events();
-	if (int ret = m_cfg->Load(argc, argv, 0, NULL, 0, m_event_base))
-		return ret;
 
-	m_ipc = new IPCHandler(m_cfg);
+	m_read_count = cfg->GetParamsCount();
+	m_send_count = cfg->GetSendsCount();
 
-	if (!m_cfg->GetSingle()) {
-		if (m_ipc->Init())
+	if (!args_mgr.has("no-parcook")) {
+		try {
+
+			auto ipc_ = std::unique_ptr<IPCHandler>(new IPCHandler(cfg));
+			m_ipc = ipc_.release();
+
+			m_read = m_ipc->m_read;
+			m_send = m_ipc->m_send;
+
+			sz_log(2, "m_read_count: %zu, m_send_count: %zu", m_read_count, m_send_count);
+
+		} catch(...) {
 			return 1;
-		sz_log(2, "IPC initialized successfully");
-	} else {
-		sz_log(2, "Single mode, ipc not intialized!!!");
+		}
 	}
 
-	m_conf_str = m_cfg->GetPrintableDeviceXMLString();
+	m_conf_str = cfg->GetPrintableDeviceXMLString();
 
-	TDevice * dev = m_cfg->GetDevice();
-	for (TUnit* unit = dev->GetFirstRadio()->GetFirstUnit();
-			unit; unit = unit->GetNext()) {
+	line_number = cfg->GetLineNumber();
+	ipk_path = cfg->GetIPKPath();
 
-		m_read_count += unit->GetParamsCount();
-		m_send_count += unit->GetSendParamsCount();
-	}
-
-	m_read = m_ipc->m_read;
-	m_send = m_ipc->m_send;
-
-	sz_log(2, "m_read_count: %lu, m_send_count: %lu", m_read_count, m_send_count);
 
 	if (!m_event_base)
 		return 0;
 
-	m_cycle.tv_sec  = 10;
-	m_cycle.tv_usec = 0;
+	m_cycle = cfg->GetDeviceTimeval();
 
 	try {
-		char* sub_address = libpar_getpar("parhub", "pub_conn_addr", 1);
-		char* pub_address = libpar_getpar("parhub", "sub_conn_addr", 1); // we publish on parhub's subscribe address
-		m_zmq = new zmqhandler(m_cfg->GetIPK(), m_cfg->GetDevice(), *m_zmq_ctx, sub_address, pub_address);
+
+		const char* sub_address = *args_mgr.get<const char*>("parhub", "pub_conn_addr");
+		const char* pub_address = *args_mgr.get<const char*>("parhub", "sub_conn_addr"); // we publish on parhub's subscribe address
+		m_zmq = new zmqhandler(cfg, *m_zmq_ctx, sub_address, pub_address);
 		sz_log(2, "ZMQ initialized successfully");
+
 	} catch (zmq::error_t& e) {
 		m_zmq = nullptr;
 		sz_log(1, "ZMQ not initialized!");
@@ -163,36 +161,39 @@ void ipc::cycle_timer_callback(int fd, short event, void* arg) {
 }
 
 int ipc::get_line_number() {
-	return m_cfg->GetLineNumber();
+	return line_number;
 }
 
 const std::string& ipc::get_ipk_path() {
-	return m_cfg->GetIPKPath();
+	return ipk_path;
 }
 
 void ipc::set_read(size_t index, py::object & val) {
 	if (m_force_sz4) { 
 		set_read_sz4_int(index, val);
-		return;
 	}
 
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_read ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
+		sz_log(7, "ipc::set_read ERROR index (%zu) greater than params count (%zu)", index, m_read_count);
 		return;
 	}
 
 	if (Py_None == val.ptr()) {
-		sz_log(9, "ipc::set_read got None, setting %lu to NO_DATA", index);
-		m_read[index] = SZARP_NO_DATA;
+		sz_log(9, "ipc::set_read got None, setting %zu to NO_DATA", index);
+		if (m_read != nullptr)
+			m_read[index] = SZARP_NO_DATA;
 		return;
 	}
 
 	try {
-		m_read[index] = py::extract<int>(val);
-		sz_log(9, "ipc::set_read setting value %lu to %d", index, m_read[index]);
+		if (m_read != nullptr) {
+			m_read[index] = py::extract<int>(val);
+			sz_log(9, "ipc::set_read setting value %zu to %d", index, m_read[index]);
+		}
 	} catch (py::error_already_set const &) {
-		sz_log(9, "ipc::set_read extract error, setting %lu to NO_DATA", index);
-		m_read[index] = SZARP_NO_DATA;
+		sz_log(9, "ipc::set_read extract error, setting %zu to NO_DATA", index);
+		if (m_read != nullptr)
+			m_read[index] = SZARP_NO_DATA;
 		PyErr_Clear();
 	}
 }
@@ -200,9 +201,13 @@ void ipc::set_read(size_t index, py::object & val) {
 bool ipc::check_for_no_data(size_t index, py::object & val) {
 	if (Py_None == val.ptr()) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int got NONE at %lu", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		m_read[index] = SZARP_NO_DATA;
+		sz_log(9, "Pythondmn sz4_int got NONE at %zu", index);
+		if (m_zmq)
+			m_zmq->set_value(index, timev, SZARP_NO_DATA);
+
+		if (m_read != nullptr) 
+			m_read[index] = SZARP_NO_DATA;
+
 		if (m_sz4_auto) go_sz4();
 		return true;
 	}
@@ -219,7 +224,7 @@ void ipc::set_read_sz4_int(size_t index, py::object & val) {
 		set_read_sz4<int>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int extract error, setting %lu to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_int extract error, setting %zu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -234,7 +239,7 @@ void ipc::set_read_sz4_float(size_t index, py::object & val) {
 		set_read_sz4<float>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_float extract error, setting %lu to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_float extract error, setting %zu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -249,7 +254,7 @@ void ipc::set_read_sz4_double(size_t index, py::object & val) {
 		set_read_sz4<double>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_double extract error, setting %lu to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_double extract error, setting %zu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -264,7 +269,7 @@ void ipc::set_read_sz4_short(size_t index, py::object & val) {
 		set_read_sz4<short>(index, got);
 	} catch (py::error_already_set const &) {
 		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_short extract error, setting %lu to NO_DATA", index);
+		sz_log(9, "Pythondmn sz4_short extract error, setting %zu to NO_DATA", index);
 		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
 		if (m_sz4_auto) go_sz4();
 		PyErr_Clear();
@@ -273,7 +278,7 @@ void ipc::set_read_sz4_short(size_t index, py::object & val) {
 
 template <typename T> void ipc::set_read_sz4(size_t index, T val) {
 	if (index >= m_read_count) {
-		sz_log(7, "Pythondmn ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
+		sz_log(7, "Pythondmn ERROR index (%zu) greater than params count (%zu)", index, m_read_count);
 		return;
 	}
 
@@ -290,11 +295,12 @@ template void ipc::set_read_sz4<>(size_t index, double val);
 
 void ipc::set_no_data(size_t index) {
 	if (index >= m_read_count) {
-		sz_log(7, "ipc::set_no_data ERROR index (%lu) greater than params count (%lu)", index, m_read_count);
+		sz_log(7, "ipc::set_no_data ERROR index (%zu) greater than params count (%zu)", index, m_read_count);
 		return;
 	}
 
-	m_read[index] = SZARP_NO_DATA;
+	if (m_read != nullptr)
+		m_read[index] = SZARP_NO_DATA;
 }
 
 int ipc::get_send(size_t index) {
@@ -303,19 +309,31 @@ int ipc::get_send(size_t index) {
 		return SZARP_NO_DATA;
 	}
 
-	sz_log(9, "ipc::set index (%lu) val: (%d)", index, m_send[index]);
-	return m_send[index];
+	if (m_send != nullptr) {
+		sz_log(9, "ipc::set index (%zu) val: (%d)", index, m_send[index]);
+		return m_send[index];
+	}
+
+	return SZARP_NO_DATA;
 }
 
 void ipc::go_parcook() {
 	if (m_ipc) {
 		m_ipc->GoParcook();
 	}
+
+	if (m_force_sz4) {
+		go_sz4();
+	}
 }
 
 void ipc::go_sender() {
 	if (m_ipc) {
 		m_ipc->GoSender();
+	}
+
+	if (m_zmq) {
+		m_zmq->receive();
 	}
 }
 
@@ -436,27 +454,72 @@ void pyszbase::set_prober_server_address(const std::wstring &prefix,
 
 }	// namespace szarp
 
+class PythonDaemonArgs: public ArgsHolder {
+public:
+	po::options_description get_options() const override {
+		po::options_description desc{"Pythondmn arguments"};
+		desc.add_options()
+			("single,s", "Forbid writing via IPC")
+			("use-cfgdealer", "Enables configuring via config dealer")
+			("cfgdealer-address", po::value<std::string>()->default_value("tcp://localhost:5555"), "Config dealer's address")
+			("no-parcook", "Do not connect to parcook.")
+			("device-no", po::value<unsigned int>(), "Device number in config file")
+			("device-path", po::value<std::string>()->default_value("/dev/null"), "Device path attribute");
+
+		return desc;
+	}
+
+	void add_positional_options(po::positional_options_description& p_opts) const override {
+		p_opts.add("device-no", 1);
+		p_opts.add("device-path", 1);
+	}
+
+	void parse(const po::parsed_options&, const po::variables_map& vm) const override {
+		if (vm.count("device-no") == 0) throw std::runtime_error("Device number not specified! Cannot process!");
+		if (vm.count("device-path") == 0) throw std::runtime_error("Device path not specified! Cannot process!");
+	}
+};
 
 int main( int argc, char ** argv )
 {
+	ArgsManager args_mgr("pythondmn");
+	args_mgr.parse(argc, argv, DefaultArgs(), PythonDaemonArgs());
+	args_mgr.initLibpar();
+
+	if (!args_mgr.has("device-path")) {
+		throw std::runtime_error("Path is required!");
+	}
+
 	szarp::ipc ipc;
 
-	if (ipc.configure(&argc, argv)) {
-		sz_log(2, "ipc::configure error -- exiting");
-		exit(1);
+	if (!args_mgr.has("use-cfgdealer")) {
+		auto cfg = new DaemonConfig("pythondmn");
+		if (int ret = cfg->Load(args_mgr)) {
+			sz_log(0, "Couldn't configure daemon - exiting");
+			return ret;
+		}
+
+		if (ipc.configure(cfg, args_mgr)) {
+			sz_log(0, "Couldn't configure ipc - exiting");
+			exit(1);
+		}
+	} else {
+		try {
+			ConfigDealerHandler cfg(args_mgr);
+			if (ipc.configure(&cfg, args_mgr)) {
+				sz_log(0, "Couldn't configure ipc - exiting");
+				exit(1);
+			}
+		} catch (const std::exception& e) {
+			sz_log(0, "Couldn't set up cfgdealer handler - exiting");
+			exit(1);
+		}
 	}
 
-	DaemonConfig* cfg = ipc.getConfig();
-
-	const char *device_name = strdup(cfg->GetDevicePath());
-	if (!device_name) {
-		sz_log(2, "No device specified -- exiting");
-		exit(1);
-	}
-
-	FILE * fp = fopen(device_name, "r");
+	const std::string script_path = *args_mgr.get<std::string>("device-path");
+	FILE * fp = fopen(script_path.c_str(), "r");
 	if (NULL == fp) {
-		sz_log(0, "Script %s doesn't exists -- exiting", device_name);
+		sz_log(0, "Script %s doesn't exists -- exiting", script_path.c_str());
 		exit(1);
 	}
 
@@ -516,7 +579,7 @@ int main( int argc, char ** argv )
 			.value("PT_YEAR", PT_YEAR)
 			;
 
-		py::handle<> ignored(( PyRun_File(fp, device_name,
+		py::handle<> ignored(( PyRun_File(fp, script_path.c_str(),
 										Py_file_input,
 										main_namespace.ptr(),
 										main_namespace.ptr() ) ));

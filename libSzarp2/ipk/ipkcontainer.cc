@@ -57,7 +57,7 @@ TSzarpConfig* IPKContainer::GetConfig(const std::basic_string<unsigned char>& pr
 TSzarpConfig* IPKContainer::GetConfig(const std::wstring& prefix) {
 	boost::upgrade_lock<boost::shared_mutex> lock(m_lock);
 
-	CM::iterator i = configs.find(prefix.c_str());
+	CM::iterator i = configs.find(prefix);
 	if (i == configs.end()) {
 		boost::upgrade_to_unique_lock<boost::shared_mutex> unique(lock);
 		i = configs.find(prefix);
@@ -315,7 +315,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	configs[prefix] = ipk;
 
 	unsigned id = 0;
-	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNext(true)) {
+	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		p->SetParamId(id++);
 		p->SetConfigId(ca._configId);
 		AddParamToHash(p);
@@ -347,7 +347,7 @@ TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::ws
 	return AddConfig(prefix, file);
 }
 
-std::map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() {
+std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() const {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	return m_extra_params;
 }

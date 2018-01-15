@@ -25,6 +25,7 @@
 #include "protobuf/paramsvalues.pb.h"
 
 #include "szarp_config.h"
+#include "dmncfg.h"
 
 class zmqhandler {
 	zmq::socket_t m_sub_sock;
@@ -37,12 +38,12 @@ class zmqhandler {
 	std::unordered_map<size_t, size_t> m_send_map;
 
 	void process_msg(szarp::ParamsValues& values);
+
 public:
-	zmqhandler(TSzarpConfig* cfg,
-			TDevice *device,
-			zmq::context_t& context,
-			const std::string& sub_address,
-			const std::string& pub_address);
+	zmqhandler(DaemonConfigInfo* config,
+		zmq::context_t& context,
+		const std::string& sub_address,
+		const std::string& pub_address);
 
 	template<class T, class V> void set_value(size_t i, const T& t, const V& value);
 	szarp::ParamValue& get_value(size_t i);

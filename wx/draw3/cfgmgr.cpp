@@ -89,7 +89,7 @@ wxString DrawParam::GetSumUnit() {
 	return m_param->GetSumUnit().c_str();
 }
 
-const double& DrawParam::GetSumDivisor() {
+const double DrawParam::GetSumDivisor() {
 	return m_param->GetSumDivisor();
 }
 
@@ -292,7 +292,7 @@ DrawInfo::GetSumUnit() {
 	return p->GetSumUnit();
 }
 
-const double&
+const double
 DrawInfo::GetSumDivisor() {
 	assert (p != NULL);
 	return p->GetSumDivisor();
@@ -639,7 +639,7 @@ IPKConfig::IPKConfig(TSzarpConfig *c, ConfigManager *mgr) : DrawsSets(mgr), defi
 	DrawInfo *pdi;
 	wxString name;
 
-	for (TParam *p = m_sc->GetFirstParam(); p; p = m_sc->GetNextParam(p)) {
+	for (TParam * p = c->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		for (TDraw *d = p->GetDraws(); d; d = d->GetNext()) {
 			pdi = new IPKDrawInfo(d, p, this);
 

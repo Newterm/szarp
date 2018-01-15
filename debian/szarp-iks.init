@@ -32,7 +32,7 @@ get_iks_port () {
 	PATH=/sbin:/usr/sbin:/bin:/usr/bin
 	subsection=0
 	default_port=9002
-	ini="/opt/szarp/iks/iks-server.ini"
+	ini="/etc/szarp/iks-server.ini"
 	if [ ! -e "$ini" ]; then
 		echo $default_port
 		exit 0

@@ -1,5 +1,8 @@
 #include "atcconn.h"
 
+const int AtcConnection::DEFAULT_DATA_PORT;
+const int AtcConnection::DEFAULT_CONTROL_PORT;
+
 AtcConnection::AtcConnection(struct event_base* base)
 	:TcpConnection(base), m_event_base(base), m_action_queued(NO_ACTION),
 	m_open_finished_pending(true), m_control_port(DEFAULT_CONTROL_PORT)
