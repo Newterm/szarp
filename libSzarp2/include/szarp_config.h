@@ -406,6 +406,8 @@ protected:
 	size_t radio_counter; /**< numer of created TRadio objects */
 
 	size_t unit_counter; /**< numer of created TUnit objects */
+
+	std::wstring extra_ns{};
 };
 
 
@@ -564,6 +566,8 @@ protected:
 	TDevice *next;
 			/**< Next list element */
 	bool parcookDevice; /**< Do parcook need to send params from this device to meaner4. */
+
+	std::map<std::wstring, std::wstring> extra_attrs;
 };
 
 /**
@@ -1318,6 +1322,8 @@ protected:
 
 	/** parameter type as classified by Sz4 code*/
 	Sz4ParamType _sz4ParamType;
+
+	std::map<std::wstring, std::wstring> extra_attrs;
 };
 
 /**

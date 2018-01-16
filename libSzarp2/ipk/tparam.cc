@@ -213,7 +213,13 @@ int TParam::parseXML(xmlTextReaderPtr reader)
 				_forbidden_val = boost::lexical_cast<short>(attr);
 				_has_forbidden = true;
 			} else {
-				xw.XMLWarningNotKnownAttr();
+				const std::wstring attr_name = SC::U2S(xw.GetAttrName());
+				const std::wstring prefix = L"extra:";
+				if (attr_name.substr(0, prefix.size()) == prefix) {
+					extra_attrs[attr_name] = SC::U2S(attr);
+				} else {
+					xw.XMLWarningNotKnownAttr();
+				}
 			}
 		} catch (boost::bad_lexical_cast &) {
 			xw.XMLErrorWrongAttrValue();
@@ -728,6 +734,9 @@ TParam::generateXMLNode(void)
     else if (IsAutoBase()) {
 	xmlSetProp(r, X "base_ind", X "auto");
     }
+	for (auto &x : extra_attrs) {
+		xmlSetProp(r, SC::S2U(x.first).c_str(), SC::S2U(x.second).c_str());
+	}
 
 #ifndef NO_LUA
     if (GetType() == P_LUA) {

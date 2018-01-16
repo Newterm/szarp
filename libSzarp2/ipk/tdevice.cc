@@ -167,7 +167,13 @@ int TDevice::parseXML(xmlTextReaderPtr reader)
 		if (xw.IsAttr("options")) {
 			options = SC::U2S(attr);
 		} else {
-			xw.XMLWarningNotKnownAttr();
+			const std::wstring attr_name = SC::U2S(xw.GetAttrName());
+			const std::wstring prefix = L"extra:";
+			if (attr_name.substr(0, prefix.size()) == prefix) {
+				extra_attrs[attr_name] = SC::U2S(attr);
+			} else {
+				xw.XMLWarningNotKnownAttr();
+			}
 		}
 	}
 
@@ -274,6 +280,9 @@ xmlNodePtr TDevice::generateXMLNode(void)
 	}
 	if (!options.empty()) 
 		xmlSetProp(r, X"options", SC::S2U(options).c_str());
+	for (auto &x : extra_attrs) {
+		xmlSetProp(r, SC::S2U(x.first).c_str(), SC::S2U(x.second).c_str());
+	}
 	if (GetFirstRadio()->GetId())
 		for (TRadio* rd = GetFirstRadio(); rd; rd = GetNextRadio(rd)) 
 			xmlAddChild(r, rd->generateXMLNode());

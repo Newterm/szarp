@@ -286,6 +286,8 @@ TSzarpConfig::generateXML(void)
     xmlSetProp(doc->children, X "send_freq", BUF);
     if (!title.empty())
 	xmlSetProp(doc->children, X "title", S2U(title).c_str());
+	if (!extra_ns.empty())
+	xmlSetProp(doc->children, X "xmlns:extra", S2U(extra_ns).c_str());
     for (TDevice * d = GetFirstDevice(); d; d = GetNextDevice(d))
 	if (d->GetDaemon() != L"/opt/szarp/bin/logdmn") xmlAddChild(doc->children, d->generateXMLNode());
     if (defined > 0) {
@@ -463,6 +465,9 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 							documentation_base_url = SC::U2S(attr);
 						} else
 						if (xw.IsAttr("xmlns")) {
+						} else
+						if (xw.IsAttr("xmlns:extra")) {
+							extra_ns = SC::U2S(attr);
 						} else {
 							xw.XMLWarningNotKnownAttr();
 						}
