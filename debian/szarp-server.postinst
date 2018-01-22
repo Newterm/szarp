@@ -68,19 +68,19 @@ case "$1" in
 
 	if [ ! -d $UNITSELECT_PATH ]; then
 		mkdir -p $UNITSELECT_PATH
-	fi
 
-	# create default configuration
-	db_get szarp/szbase_type
-	if [ "x$RET" = "xsz4" ]; then
-		switch_to_sz4_units
-	elif [ "x$RET" = "xsz3" ]; then
-		switch_to_sz3_units
-	elif [ "x$RET" = "xsz3+sz4" ]; then
-		enable_all_units
-	else
-		echo "unknown database type: $RET" 1>&2
-		exit 10;
+		# create default configuration
+		db_get szarp/szbase_type
+		if [ "x$RET" = "xsz4" ]; then
+			switch_to_sz4_units
+		elif [ "x$RET" = "xsz3" ]; then
+			switch_to_sz3_units
+		elif [ "x$RET" = "xsz3+sz4" ]; then
+			enable_all_units
+		else
+			echo "unknown database type: $RET" 1>&2
+			exit 10;
+		fi
 	fi
 
     	db_get szarp/prefix; 
