@@ -154,9 +154,6 @@ log=paramd
 # list of servers to run
 servers=local_paramd remote_paramd paramd_for_raporter
 
-:pserver_lite
-log=pserver-lite
-
 :sender
 log=sender
 
