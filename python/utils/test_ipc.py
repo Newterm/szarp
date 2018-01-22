@@ -118,4 +118,16 @@ class TestIPC:
 			print "%s = %s" % (self.param_list[i].name, val)
 		self.read_buffer = []
 
+	def sz4_ready(self):
+		return True
+
+	def autopublish_sz4(self):
+		return None
+
+	def force_sz4(self):
+		return None
+
+	def set_read_sz4_float(self, idx, val):
+		return None
+
 # end of class TestIPC

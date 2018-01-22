@@ -5,6 +5,7 @@ BindsTo=parcook.service
 PartOf=szarp-server.target parcook.service
 ConditionPathExists=/etc/szarp/units-enabled/paramd
 [Service]
+LimitNOFILE=49152
 Type=forking
 ExecStart=/opt/szarp/bin/paramd
 StandardOutput=journal

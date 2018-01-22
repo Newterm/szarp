@@ -1,0 +1,13 @@
+[Unit]
+Description=SZARP Scada Software Server Pserver Lite
+After=parcook.service meaner3.service
+PartOf=szarp-server.target
+ConditionPathExists=/etc/szarp/units-enabled/pserver-lite
+[Service]
+LimitNOFILE=49152
+Type=simple
+ExecStart=/opt/szarp/bin/pserver-lite -n
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=szarp-server.target

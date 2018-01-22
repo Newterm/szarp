@@ -5,6 +5,7 @@ BindsTo=parcook.service
 PartOf=szarp-server.target parcook.service
 ConditionPathExists=/etc/szarp/units-enabled/meaner3
 [Service]
+LimitNOFILE=49152
 Type=simple
 ExecStart=/opt/szarp/bin/meaner3 -n
 [Install]
