@@ -5,6 +5,7 @@ BindsTo=parcook.service
 PartOf=szarp-server.target parcook.service
 ConditionPathExists=/etc/szarp/units-enabled/prober
 [Service]
+LimitNOFILE=49152
 Type=simple
 ExecStart=/opt/szarp/bin/prober -n
 StandardOutput=journal

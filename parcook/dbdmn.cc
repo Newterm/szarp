@@ -441,6 +441,7 @@ void init_signals()
 	sigdelset(&block_mask, SIGSTOP);
 	sa.sa_flags = SA_RESTART;
 	sa.sa_handler = terminate_handler;
+	sa.sa_mask = block_mask;
 	ret = sigaction(SIGTERM, &sa, NULL);
 	ASSERT(ret == 0);
 	ret = sigaction(SIGINT, &sa, NULL);

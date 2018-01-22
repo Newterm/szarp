@@ -6,6 +6,7 @@
 ../services/meaner3.service /lib/systemd/system/
 ../services/paramd.service /lib/systemd/system/
 ../services/prober.service /lib/systemd/system/
+../services/pserver-lite.service /lib/systemd/system/
 ../services/probes-server.service /lib/systemd/system/
 ../services/szarp-server.target /lib/systemd/system/
 ../../utils/szlist /usr/bin/
