@@ -20,7 +20,7 @@ SZ3UNITS=(
 	"sender"
 	"paramd"
 	"prober"
-	"probes-server"
+	"pserver-lite"
 )
 
 function switch_to_sz4_units {
