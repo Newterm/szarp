@@ -414,17 +414,9 @@ ParamFormulaInfo::PrepareDefinable()
 	_f_N = true;
 
     // check if combined parameter (function ':')
-    if (_parsed_formula.find(L" :") != std::wstring::npos) {
-	size_t ps;
-	if ((ps = _parsed_formula.find_first_of(L"+-/*&$?<>~^")) != std::wstring::npos)
-	    _param_type = ParamType::COMBINED;
-	else {
-	    if (_parsed_formula[ps - 1] == L' ')
-		_param_type = ParamType::DEFINABLE;
-	    else
+	if (_parsed_formula.find(L" :") != std::wstring::npos) {
 		_param_type = ParamType::COMBINED;
 	}
-    }
 }
 
 std::wstring
