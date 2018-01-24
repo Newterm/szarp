@@ -147,7 +147,7 @@ int ipc::configure(int *argc, char *argv[]) {
 		sz_log(2, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
 		m_zmq = nullptr;
-		sz_log(1, "ZMQ not initialized!");
+		sz_log(1, "ZMQ not initialized! '%s'", e.what());
 	}
 
 	evtimer_add(&m_timer, &m_cycle);
