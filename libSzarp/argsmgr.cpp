@@ -26,7 +26,7 @@ bool cast_val(const std::string& v_str) {
 
 template <>
 const char* cast_val(const std::string& v_str) {
-	return v_str.c_str();
+	return strdup(v_str.c_str());
 }
 
 template <>
@@ -36,7 +36,7 @@ char* cast_val(const std::string& v_str) {
 
 template <>
 const wchar_t* cast_val(const std::string& v_str) {
-	return SC::A2S(v_str).c_str();
+	return wcsdup(SC::A2S(v_str).c_str());
 }
 
 template <>
