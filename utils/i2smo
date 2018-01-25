@@ -451,7 +451,7 @@ if stderr:
 		printerr(error, '')
 
 if not quiet:
-	add_note("if configuration has changed: /etc/init.d/parstart restart")
+	add_note("if configuration has changed run: systemctl restart szarp-server.target")
 szarp_path, params_path = get_szarp_path()
 params = get_params_scheme()
 params_root, elements = parse_config_file()
