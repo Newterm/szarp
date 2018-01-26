@@ -1,0 +1,13 @@
+This folder contains example szarp_server base, that can be run on any computer or on remote server, given that user has python libaries :
+	pafy
+	pyowm
+	psutil
+	requests
+
+Remember that scripts given here should not be used or modified to violate rules or laws of services or libaries they use. Newterm takes no responsibility for how they are used.
+
+Scripts given here are only simple example of how a single user can use our software. Showing all available options would create document far exceeding readable example borders. If you're curious about other uses of our software feel free to check our documentation located at:
+	https://szarp.org//documentation/new/ipk/html/szarp/html
+
+If you want to contribute to our project checkout our Github website :
+	https://github.com/Newterm/szarp

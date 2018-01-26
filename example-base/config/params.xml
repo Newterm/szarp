@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" xmlns:checker="http://www.praterm.com.pl/SZARP/ipk-checker" xmlns:extra="http://www.praterm.com.pl/SZARP/ipk-extra" xmlns:icinga="http://www.praterm.com.pl/SZARP/ipk-icinga" version="1.0" read_freq="10" send_freq="10" title="Testowa konfiguracja" documentation_base_url="http://www.szarp.com">
+	<!-- Device represents single daemon inside SZARP. It determines type of daemon used and its options  -->
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_git.py">
+		<!-- Daemons are divided into units used for passing different options to daemons like borutadmn.
+	   		 Check documentation for more information.	-->
+		<unit id="1" type="1" subtype="1" bufsize="1">
+			<!-- Every parameter which value is gathered is represented as param element with arguments :
+			name - consists of three parts, separated by ":" sign. Name must be unique and serves as parameter key.
+			short_name - short name of parameter shown on the top of the draw3 window
+			draw_name - name of the parameter shown as a graph description - last part of name if none specified.
+			unit - unit shown next to the parameter, "-" for none
+			prec - parameter precision. For sz3 database it's floating point shift.
+			For sz4 databse with data_type set to float its a value round-up.
+			base_ind - sets param order inside daemon memory segment, best to always use "auto"-->
+		  <param name="Repository:Szarp:Lines" short_name="lns" unit="-" prec="0" base_ind="auto">
+			 <!-- Add raport node to show values inside raporter.py -->
+			<raport title="System report" order="1"/>
+			 <!-- Add draw node to show value inside draw3 -->
+			<draw title="Repository" min="0" max="500000" order="1"/>
+		  </param>
+		   <param name="Repository:Szarp:Files" short_name="fls" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="Repository" min="0" max="1000" order="2"/>
+		  </param>
+		   <param name="Repository:Szarp:Commits" short_name="cmmt" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Repository" min="0" max="3500" order="3"/>
+		  </param>
+		</unit>
+	</device>
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_ram.py">
+		<unit id="1" type="1" subtype="1" bufsize="1">
+		  <param name="System:Memory:All" short_name="all" unit="MB" prec="0" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="System" min="0" max="10000" order="1"/>
+		  </param>
+		   <param name="System:Memory:Used" short_name="used" unit="MB" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="System" min="0" max="10000" order="2"/>
+		  </param>
+		   <param name="System:Memory:Available" short_name="aval" unit="MB" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="System" min="0" max="10000" order="3"/>
+		  </param>
+		</unit>
+	</device>
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_instagram.py">
+		<unit id="1" type="1" subtype="1" bufsize="1">
+		  <param name="Instagram:Photo:Likes" short_name="L" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="Instagram" min="0" max="200" order="1"/>
+		  </param>
+		  <param name="Instagram:Photo:Comments" short_name="C" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="Instagram" min="0" max="150" order="2"/>
+		  </param>
+		   <param name="Instagram:Account:Followers" short_name="fers" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="Instagram" min="0" max="1500" order="3"/>
+		  </param>
+		  <param name="Instagram:Account:Following" short_name="fing" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Instagram" min="0" max="1000" order="4"/>
+		  </param>
+		  <param name="Instagram:Account:Posts" short_name="p" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Instagram" min="0" max="100" order="5"/>
+		  </param>
+		</unit>
+	</device>
+	<!-- You can also use configuration to pass values to daemons. -->
+	<!-- Here we use extra:url to pass URL to video via units -->
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_youtube.py">
+		<unit id="1" type="1" subtype="1" bufsize="1" extra:url="url_to_video">
+		  <param name="Youtube:Szarp tutorial:Views" short_name="V" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="Youtube" min="0" max="1500" order="1"/>
+		  </param>
+		   <param name="Youtube:Szarp tutorial:Likes" short_name="likes" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="Youtube" min="0" max="1500" order="2"/>
+		  </param>
+		  <param name="Youtube:Szarp tutorial:Dislikes" short_name="dlikes" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Youtube" min="0" max="200" order="3"/>
+		  </param>
+		  <param name="Youtube:Szarp tutorial:Rating" short_name="rate" unit="-" prec="1" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Youtube" min="0" max="10" order="4"/>
+		  </param>
+		</unit>
+		<unit id="2" type="1" subtype="1" bufsize="1" extra:url="url_to_video">
+		  <param name="Youtube:Szarp usage:Views" short_name="V" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="Youtube" min="0" max="1500" order="1"/>
+		  </param>
+		   <param name="Youtube:Szarp usage:Likes" short_name="likes" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="Youtube" min="0" max="1500" order="2"/>
+		  </param>
+		  <param name="Youtube:Szarp usage:Dislikes" short_name="dlikes" unit="-" prec="0" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Youtube" min="0" max="200" order="3"/>
+		  </param>
+		  <param name="Youtube:Szarp usage:Rating" short_name="rate" unit="-" prec="1" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Youtube" min="0" max="10" order="4"/>
+		  </param>
+		</unit>
+	</device>
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_weather.py">
+		<unit id="1" type="1" subtype="1" bufsize="1">
+		  <param name="Location:Weather:Temperature" short_name="temp" unit="°C" prec="1" base_ind="auto">
+			<raport title="System report" order="1"/>
+			<draw title="Weather" min="-30" max="40" order="1"/>
+		  </param>
+		   <param name="Location:Weather:Pressure" short_name="pres" unit="hPa" prec="0" base_ind="auto">
+			<raport title="System report" order="2"/>
+			<draw title="Weather" min="800" max="1200" order="2"/>
+		  </param>
+		  <param name="Location:Weather:Wind speed" short_name="spd" unit="m/s" prec="1" base_ind="auto">
+			<raport title="System report" order="3"/>
+			<draw title="Weather" min="-10" max="20" order="3"/>
+		  </param>
+		</unit>
+	</device>
+	<!-- In sz4 database type use parcook_device="no" to skip saving data to parcook -->
+	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_cpu.py" parcook_device="no">
+		<unit id="1" type="1" subtype="1" bufsize="1">
+		   <!-- For sz4 daemons you can specify data_type to simplify values loading. -->
+		  <param name="System:CPU:Running processes" short_name="RP" unit="-" prec="0" base_ind="auto" data_type="integer">
+			<raport title="System report" order="1"/>
+			<draw title="Processor" min="0" max="500" order="1"/>
+		  </param>
+		   <param name="System:CPU:Core 1 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
+			<raport title="System report" order="2"/>
+			<draw title="Processor" min="0" max="100" order="2"/>
+		  </param>
+		   <param name="System:CPU:Core 2 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
+			<raport title="System report" order="3"/>
+			<draw title="Processor" min="0" max="100" order="2"/>
+		  </param>
+		   <param name="System:CPU:Core 3 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
+			<raport title="System report" order="4"/>
+			<draw title="Processor" min="0" max="100" order="2"/>
+		  </param>
+		   <param name="System:CPU:Core 4 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
+			<raport title="System report" order="5"/>
+			<draw title="Processor" min="0" max="100" order="2"/>
+		  </param>
+		   <param name="System:Memory:Load" short_name="load" unit="-" prec="2" base_ind="auto" data_type="double">
+			<raport title="System report" order="5"/>
+			<draw title="Processor" min="0" max="30" order="2"/>
+		  </param>
+		</unit>
+	</device>
+	<!-- Use defdmn to create new values based existing params using RPN formulas.
+		 Remember to put param names inside brackets. Values may also come from other bases - but you need to specify base index-->
+	<device daemon="/opt/szarp/bin/defdmn" path="/dev/null" parcook_device="no" sec_period="10">
+		<unit id="1" type="1" subtype="1" bufsize="1">
+			  <param name="Repository:Szarp:Lines Average" short_name="avg" unit="-" prec="0" base_ind="auto">
+				<define type="RPN" formula="(Repository:Szarp:Lines) (example-base:Repository:Szarp:Files) /"/>
+				<draw title="Repository" min="0" max="1500" order="1"/>
+			  </param>
+			  <param name="Instagram:Account:Popularity" short_name="pop" unit="-" prec="0" base_ind="auto">
+				<define type="RPN" formula="(Instagram:Account:Followers) (example-base:Instagram:Account:Following) -"/>
+				<draw title="Instagram" min="-300" max="300" order="1"/>
+			  </param>
+		</unit>
+	</device>
+
+  <defined>
+	  <!-- Old version of defined parameters, left for backwards compatibility, use defdmn instead. -->
+  </defined>
+<drawdefinable>
+	<!-- Use to calculate new values vased on existing params, but values are not saved inside database-->
+    <param draw_name="Follow-sign" name="Instagram:Account:Follow_sign" prec="0" short_name="Fs" unit="%">
+		<!-- Use wildcard "*" to set same name segment as in the param name -->
+		<define formula="(*:*:Followers) (*:*:Following) - (*:*:Following) / 100 *" type="DRAWDEFINABLE"/>
+      <raport title="System report" order="6"/>
+      <draw title="Instagram" max="200" min="-200" order="6"/>
+    </param>
+</drawdefinable>
+</params>
+
