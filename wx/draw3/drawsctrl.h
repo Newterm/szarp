@@ -339,7 +339,14 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 		int m_day;
 		wxDateTime::WeekDay m_wday;
 		int m_hour;
+		
+		// hols 10 minutes multiples
+		int m_10minute;
+
+		// holds minutes mod 10
 		int m_minute;
+
+		int m_10second;
 		int m_second;
 		int m_milisecond;
 	public:
@@ -387,7 +394,7 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 
 	void FetchData() override;
 
-	void SendQueryToDatabase(DatabaseQuery* query) override { QueryDatabase(query); }
+	void SendQueryToDatabase(DatabaseQuery* query) override;
 
 	DatabaseQuery* CreateQuery(const std::vector<time_t> &times) const;
 

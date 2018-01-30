@@ -325,7 +325,6 @@ void DrawsController::WaitDataBoth::CheckForDataPresence(Draw *draw) {
 	m_c->EnterState(SEARCH_BOTH, m_time_to_go);
 }
 
-
 const DTime& DrawsController::SearchState::GetStateTime() const {
 	return m_search_time;
 }
@@ -444,8 +443,9 @@ DTime DrawsController::SearchBoth::FindCloserTime(const DTime& reference, const 
 	if (!right.IsValid())
 		return left;
 
-	wxTimeSpan dl = reference.GetTime() - left.GetTime();
-	wxTimeSpan dr = right.GetTime() - reference.GetTime();
+	// abs() won't work for wxTimeSpan as it does not work for values less than 0
+	wxTimeSpan dl = reference > left? reference.GetTime() - left.GetTime() : left.GetTime() - reference.GetTime();
+	wxTimeSpan dr = right > reference? right.GetTime() - reference.GetTime() : reference.GetTime() - right.GetTime();
 
 	return dr > dl ? left : right;
 }
@@ -463,7 +463,7 @@ void DrawsController::SearchBothPreferCloser::HandleRightResponse(wxDateTime& ti
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
+		SendSearchQuery(m_search_time.GetTime(),
 			wxInvalidDateTime,
 			-1);
 	}
@@ -769,6 +769,11 @@ DrawsController::~DrawsController() {
 
 	m_config_manager->DeregisterConfigObserver(this);
 }
+
+void DrawsController::SendQueryToDatabase(DatabaseQuery* query) {
+	QueryDatabase(query);
+}
+
 
 void DrawsController::DisableDisabledDraws() {
 	bool any_disabled_draw_present = false;
@@ -1171,6 +1176,7 @@ void DrawsController::Set(PeriodType period_type) {
 
 	DTime state_time = m_state->GetStateTime();
 	DTime time = m_time_reference.Adjust(period_type, state_time);
+	time.AdjustToPeriod();
 
 	m_current_time = DTime();
 	m_current_index = -1;
@@ -1330,8 +1336,10 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 	m_day = now.GetDay();
 	m_wday = now.GetWeekDay();
 	m_hour = now.GetHour();
-	m_minute = now.GetMinute();
-	m_second = now.GetSecond();
+	m_minute = now.GetMinute() % 10;
+	m_10minute = now.GetMinute() - (now.GetMinute() % 10);
+	m_second = now.GetSecond() % 10;
+	m_10second = now.GetSecond() - (now.GetSecond() % 10);
 	m_milisecond = now.GetMillisecond();
 }
 
@@ -1342,10 +1350,12 @@ void DrawsController::TimeReference::Update(const DTime& time) {
 		case PERIOD_T_MINUTE:
 			m_milisecond = wxt.GetMillisecond();
 		case PERIOD_T_5MINUTE:
+			m_second = wxt.GetSecond() % 10;
 		case PERIOD_T_30MINUTE:
-			m_second = wxt.GetSecond();
+			m_10second = wxt.GetSecond() - (wxt.GetSecond() % 10);
+			m_minute = wxt.GetMinute() % 10;
 		case PERIOD_T_DAY:
-			m_minute = wxt.GetMinute();
+			m_10minute = wxt.GetMinute() - (wxt.GetMinute() % 10);
 			m_hour = wxt.GetHour();
 		case PERIOD_T_WEEK:
 			m_wday = wxt.GetWeekDay();
@@ -1373,10 +1383,19 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 		case PERIOD_T_MINUTE:
 			t.SetMillisecond(m_milisecond);
 		case PERIOD_T_5MINUTE:
+			t.SetSecond(m_second + m_10second);
+			t.SetMinute(m_minute + m_10minute);
+			t.SetHour(m_hour);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
+			break;
 		case PERIOD_T_30MINUTE:
-			t.SetSecond(m_second);
+			t.SetSecond(m_10second);
+			t.SetMinute(m_minute + m_10minute);
+			t.SetHour(m_hour);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
+			break;
 		case PERIOD_T_DAY:
-			t.SetMinute(m_minute);
+			t.SetMinute(m_10minute);
 			t.SetHour(m_hour);
 			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
 			break;
