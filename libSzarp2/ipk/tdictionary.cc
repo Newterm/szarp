@@ -86,6 +86,7 @@ void TDictionary::LoadDictionary(const std::wstring &from_lang, const std::wstri
 				m_dictionary[section_name].push_back(e);
 		}
 	}
+	xmlFreeDoc(doc);
 }
 
 std::wstring TDictionary::TranslateEntry(const std::wstring &section, const std::wstring &sstring) {

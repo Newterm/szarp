@@ -19,11 +19,12 @@
 
 """
 
-import sys
+import fcntl, sys, os, struct
 sys.path.append("/opt/szarp/lib/python")
 import meaner
 from libpar import LibparReader
 
+lock_file = '/var/lock/meaner4.lock'
 
 def go():
 	lpr = LibparReader()
@@ -40,4 +41,24 @@ def go():
 	m.run()
 
 if __name__ == "__main__":
-	go()
+    process_id = os.getpid()
+    """
+	    struct flags {
+		    ...
+		    short l_type;    / Type of lock: F_RDLCK, F_WRLCK, F_UNLCK /
+		    short l_whence;  / How to interpret l_start: SEEK_SET, SEEK_CUR, SEEK_END /
+		    off_t l_start;   / Starting offset for lock /
+		    off_t l_len;     / Number of bytes to lock /
+		    pid_t l_pid;     / PID of process blocking our lock (set by F_GETLK and F_OFD_GETLK) /
+		    ...
+	    };
+    """
+    flags = struct.pack('hhllh', fcntl.F_WRLCK, os.SEEK_SET, 0, 100, process_id)
+    with open(lock_file, 'w+') as fp:
+        try:
+            fcntl.fcntl(fp, fcntl.F_SETLK, flags)
+            print("File is not locked, starting")
+            go()
+        except:
+            print("Cannot set lock, exiting")
+            exit(1) #TODO print pid number of process locking file
