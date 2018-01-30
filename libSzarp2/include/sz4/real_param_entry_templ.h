@@ -337,8 +337,8 @@ template<class V, class T, class base>
 void real_param_entry_in_buffer<V, T, base>::refresh_if_needed() {
 	if (m_has_paths_to_update) {
 		boost::mutex::scoped_lock lock(m_mutex);
-		for (std::vector<std::string>::iterator i = m_paths_to_update.begin(); i != m_paths_to_update.end(); i++) {
-			refresh_file(*i);
+		for (const auto& path : m_paths_to_update) {
+			refresh_file(path);
 		}
 		m_paths_to_update.clear();
 		m_has_paths_to_update = false;
@@ -474,7 +474,7 @@ void real_param_entry_in_buffer<V, T, base>::deregister_from_monitor(generic_par
 template<class V, class T, class base>
 void real_param_entry_in_buffer<V, T, base>::param_data_changed(TParam*, const std::string& path) {
 	boost::mutex::scoped_lock lock(m_mutex);
-	m_paths_to_update.push_back(path);
+	m_paths_to_update.insert(path);
 	m_has_paths_to_update = true;
 }
 

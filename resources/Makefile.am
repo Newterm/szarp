@@ -3,7 +3,7 @@
 SUBDIRS = documentation
 
 MAINTAINERCLEANFILES = Makefile.in
-CLEANFILES = szarp.cfg szarp_in.cfg parstart parstart.cfg
+CLEANFILES = szarp.cfg szarp_in.cfg
 
 helpcommand = @HELPCOMMAND@
 
@@ -18,7 +18,6 @@ RESOURCES = \
 		@srcdir@/qt4 \
 		@srcdir@/xsltd \
 		@srcdir@/szarp_in.cfg \
-		@srcdir@/parstart_cfg_TEMPLATE \
 		@srcdir@/rsyslog_conf_TEMPLATE \
 		@srcdir@/SZARP_CFG_TEMPLATE \
 		@srcdir@/ssc.desktop \
@@ -50,18 +49,6 @@ szarp_cfg: DATABASE_PREFIX
 	$(INSTALL) -m 644 szarp.cfg @prefix@/`cat @srcdir@/DATABASE_PREFIX`/szarp.cfg
 	mkdir -p /etc/szarp/
 	ln -sf @prefix@/`cat DATABASE_PREFIX`/szarp.cfg $(DESTDIR)/etc/szarp/szarp.cfg
-
-parstart_cfg: DATABASE_PREFIX
-	@( if [ ! -d $(DESTDIR)/etc/szarp ] ; then $(INSTALL) -d $(DESTDIR)/etc/szarp ; fi )
-	cat parstart_cfg_TEMPLATE | \
-		sed s+__INSTALL_DIR__+`@prefix@+ | \
-		sed s+__PREFIX__+`cat DATABASE_PREFIX`+g \
-		> parstart.cfg
-	[ ! -f $(DESTDIR)/etc/szarp/parstart.cfg ] && ( \
-		$(INSTALL) -m 644 parstart.cfg $(DESTDIR)@prefix@/`cat DATABASE_PREFIX` ; \
-		ln -sf @prefix@/`cat DATABASE_PREFIX`/parstart.cfg \
-				$(DESTDIR)/etc/szarp/parstart.cfg \
-	)
 
 if !DEB_BUILD
 vim:

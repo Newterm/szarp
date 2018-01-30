@@ -105,7 +105,7 @@ protected:
 
 	TParam* m_param;
 	const boost::filesystem::wpath m_param_dir;
-	std::vector<std::string> m_paths_to_update;
+	std::set<std::string> m_paths_to_update;
 
 	boost::mutex m_mutex;
 
