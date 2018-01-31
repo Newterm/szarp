@@ -100,6 +100,7 @@ case "$1" in
 	fi
 
 	if [ ! -e /opt/szarp/$PREFIX/iks/iks-server.ini ]; then
+		mkdir -p /opt/szarp/$PREFIX/iks/
 		echo -e "base_live_cache_retention = 3600\n\n[ $PREFIX ]\ntype = szbase\nbase = $PREFIX\nhub_url = tcp://127.0.0.1:56662" > /opt/szarp/$PREFIX/iks/iks-server.ini
 	fi
 
