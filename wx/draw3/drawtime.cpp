@@ -480,6 +480,7 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 	if (m_number_of_values == default_units_count[time.GetPeriod()] * PeriodMult[time.GetPeriod()]) {
 		switch (time.GetPeriod()) {
 			case PERIOD_T_DECADE :
+				dt.SetYear(dt.GetYear() - (dt.GetYear() % m_number_of_values));
 			case PERIOD_T_YEAR :
 				dt.SetMonth(wxDateTime::Jan);
 			case PERIOD_T_MONTH :
