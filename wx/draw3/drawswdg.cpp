@@ -327,7 +327,7 @@ int DrawsWidget::GetSelectedDrawIndex() {
 
 void DrawsWidget::OnJumpToDate() {
 
-	wxDateTime date = m_draws_controller->GetCurrentTime();
+	wxDateTime date = GetCurrentTime();
 
 	if (date.IsValid() == false)
 		return;
@@ -570,7 +570,7 @@ wxString DrawsWidget::GetUrl(bool with_infinity) {
 	if (with_infinity && m_draws_controller->AtTheNewestValue()) {
 		t = std::numeric_limits<time_t>::max();
 	} else {
-		t = m_draws_controller->GetCurrentTime().GetTicks();
+		t = GetCurrentTime().GetTicks();
 	}
 
 	wxString prefix = m_draws_controller->GetSet()->GetDrawsSets()->GetPrefix();

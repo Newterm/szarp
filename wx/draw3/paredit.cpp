@@ -661,8 +661,7 @@ void ParamEdit::FormulaCompiledForExpression(DatabaseQuery *q) {
 	q->search_data.period_type = m_draws_ctrl->GetPeriod();
 	q->search_data.search_condition = new non_zero_search_condition;
 
-	wxDateTime t = m_current_search_date.IsValid() ? m_current_search_date.GetTicks() : m_draws_ctrl->GetCurrentTime();
-	DTime dt(m_draws_ctrl->GetPeriod(), t);
+	DTime dt = m_current_search_date.IsValid() ? DTime(m_draws_ctrl->GetPeriod(), m_current_search_date.GetTicks()) : m_draws_ctrl->GetCurrentTime();
 	dt.AdjustToPeriod();
 	TimeIndex time_index(m_draws_ctrl->GetPeriod());
 	switch (m_search_direction) {

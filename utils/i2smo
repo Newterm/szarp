@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 """
-Wrapper for running ipk2szarp configuration parser
+Configuration parser for checking its correctness
 and for displaying suggestions to user.
 """
 
@@ -424,9 +424,9 @@ def test_isl_file():
 
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
-	help='XML config file (default is params.xml), passed to ipk2szarp')
+	help='XML config file (default is params.xml)')
 parser.add_argument('-d', '--debug', type=int,
-	help='debug level from 0 (errors only) to 9, passed to ipk2szarp')
+	help='debug level from 0 (errors only) to 9')
 parser.add_argument('-a', '--additional-test', action='store_true',
 	help='do additional test, including testing isls stored in ' + os.path.realpath("/etc/szarp/default"))
 parser.add_argument('-q', '--quiet', action='store_true',
@@ -434,25 +434,7 @@ parser.add_argument('-q', '--quiet', action='store_true',
 
 args = parser.parse_args()
 
-conf_parser = "/opt/szarp/bin/ipk2szarp"
-command = [conf_parser]
-
-if args.debug:
-	command.append('--debug=' + str(args.debug))
-
-if args.input_file:
-	command.append(args.input_file)
-
 quiet = args.quiet
-
-process = Popen(command, stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
-if stdout:
-	for note in stdout.strip().splitlines():
-		add_note(note)
-if stderr:
-	for error in stderr.strip().splitlines():
-		printerr(error, '')
 
 if not quiet:
 	add_note("if configuration has changed run: systemctl restart szarp-server.target")

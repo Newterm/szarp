@@ -43,7 +43,7 @@ static const size_t MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS = 12;
 
 szb_nan_search_condition DrawsController::search_condition;
 
-void DrawsController::State::SetDrawsController(DrawsController *c) {
+void DrawsController::State::SetDrawsController(StateController *c) {
 	m_c = c;
 }
 
@@ -56,7 +56,7 @@ void DrawsController::State::MoveScreenLeft() {}
 void DrawsController::State::MoveScreenRight() {}
 
 void DrawsController::State::GoToLatestDate() {
-	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
+	const TimeIndex& index = m_c->GetCurrentTimeWindow();
 
 	///XXX:
 	wxDateTime t = wxDateTime(31, wxDateTime::Dec, 2036, 23, 59, 59)
@@ -82,18 +82,16 @@ void DrawsController::State::SetNumberOfUnits() {
 }
 
 void DrawsController::State::ParamDataChanged(TParam* param) {
-	for (std::vector<Draw*>::iterator i = m_c->m_draws.begin();
-			i != m_c->m_draws.end();
-			i++) {
-		if (!(*i)->GetEnable())
+	for (auto& draw: m_c->GetDraws()) {
+		if (!draw->GetEnable())
 			continue;
 
-		if (param != (*i)->GetDrawInfo()->GetParam()->GetIPKParam())
+		if (param != draw->GetDrawInfo()->GetParam()->GetIPKParam())
 			continue;
 
-		DatabaseQuery *q = (*i)->GetDataToFetch(true);
+		DatabaseQuery *q = draw->GetDataToFetch(true);
 		if (q)
-			m_c->QueryDatabase(q);
+			m_c->SendQueryToDatabase(q);
 	}
 }
 
@@ -101,86 +99,85 @@ void DrawsController::State::NewValuesAdded(Draw *draw, bool non_fixed)
 { }
 
 void DrawsController::DisplayState::MoveCursorLeft(int n) {
-	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index - n);
+	DTime t = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex() - n);
 	m_c->EnterState(WAIT_DATA_LEFT, t);
 }
 
 void DrawsController::DisplayState::MoveCursorRight(int n) {
-	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index + n);
+	DTime t = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex() + n);
 	m_c->EnterState(WAIT_DATA_RIGHT, t);
 }
 
 void DrawsController::DisplayState::MoveScreenLeft() {
-	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index - m_c->GetNumberOfValues(m_c->GetPeriod()));
-	m_c->EnterState(WAIT_DATA_RIGHT, t);
+	DTime t = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex());
+	m_c->EnterState(MOVE_SCREEN_LEFT, t);
 }
 
 void DrawsController::DisplayState::MoveScreenRight() {
-	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetTimeOfIndex(m_c->m_current_index + m_c->GetNumberOfValues(m_c->GetPeriod()));
-	m_c->EnterState(WAIT_DATA_RIGHT, t);
+	DTime t = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex());
+	m_c->EnterState(MOVE_SCREEN_RIGHT, t);
 }
 
 void DrawsController::DisplayState::MoveCursorBegin() {
-	DTime t = m_c->m_draws[m_c->m_selected_draw]->GetStartTime();
+	DTime t = m_c->GetSelectedDraw()->GetStartTime();
 	m_c->EnterState(WAIT_DATA_NEAREST, t);
 }
 
 void DrawsController::DisplayState::MoveCursorEnd() {
-	m_c->EnterState(WAIT_DATA_NEAREST, m_c->m_draws[m_c->m_selected_draw]->GetLastTime());
+	m_c->EnterState(WAIT_DATA_NEAREST, m_c->GetSelectedDraw()->GetLastTime());
 }
 
 void DrawsController::DisplayState::SetNumberOfUnits() {
 	m_c->FetchData();
-	m_c->m_current_index = -1;
-	m_c->EnterState(WAIT_DATA_NEAREST, m_c->m_current_time);
+	m_c->SetCurrentIndex(-1);
+	m_c->EnterState(WAIT_DATA_NEAREST, m_c->GetCurrentTime());
 }
 
 void DrawsController::DisplayState::Reset() {
 	m_c->FetchData();
-	m_c->EnterState(WAIT_DATA_NEAREST, m_c->m_current_time);
+	m_c->EnterState(WAIT_DATA_NEAREST, m_c->GetCurrentTime());
 }
 
 void DrawsController::DisplayState::Enter(const DTime& time) {
 	Draw *d = m_c->GetSelectedDraw();
 
 	int dist = 0;
-	int pi = m_c->m_current_index;
+	int pi = m_c->GetCurrentIndex();
 
-	m_c->m_current_time = time;
-	m_c->m_current_index = d->GetIndex(m_c->m_current_time);
+	m_c->SetCurrentTime(time);
+	m_c->SetCurrentIndex(d->GetIndex(m_c->GetCurrentTime()));
 
-	if (m_c->m_double_cursor) {
+	if (m_c->GetDoubleCursor()) {
 		int ssi = d->GetStatsStartIndex();
 		wxLogInfo(_T("Statistics start index: %d"), ssi);
-		dist = m_c->m_current_index - ssi;
-		for (std::vector<Draw*>::iterator i = m_c->m_draws.begin();
-				i != m_c->m_draws.end();
-				i++)
-			(*i)->DragStats(dist);
+		dist = m_c->GetCurrentIndex() - ssi;
+		for (auto& draw: m_c->GetDraws()) {
+			draw->DragStats(dist);
+		}
 	}
-	wxLogInfo(_T("Entering display state current index set to: %d"),  m_c->m_current_index);
+	wxLogInfo(_T("Entering display state current index set to: %d"),  m_c->GetCurrentIndex());
 
-	m_c->m_time_reference.Update(time);
+	m_c->UpdateTimeReference(time);
 
-	m_c->m_observers.NotifyCurrentProbeChanged(d, pi, m_c->m_current_index, dist);
+	m_c->NotifyStateChanged(d, pi, m_c->GetCurrentIndex(), dist);
 
 	std::vector<TParam*> to_sub;
-	for (int i = 0; i < m_c->m_active_draws_count; i++) {
-		if (!m_c->m_draws[i]->HasUnfixedData())
+	for (auto& draw: m_c->GetDraws()) {
+		if (!draw->HasUnfixedData())
 			continue;
 
-		if (m_c->m_draws[i]->GetSubscribed())
+		if (draw->GetSubscribed())
 			continue;
 
-		auto di = m_c->m_draws[i]->GetDrawInfo();
+		auto di = draw->GetDrawInfo();
 		if (!di->IsValid())
 			continue;
 
 		to_sub.push_back(di->GetParam()->GetIPKParam());
-		m_c->m_draws[i]->SetSubscribed(true);
+		draw->SetSubscribed(true);
 	}
 
-	m_c->ChangeObservedParamsRegistration({ }, to_sub);
+	m_c->ChangeDBObservedParamsRegistration({ }, to_sub);
 
 
 	if (wxIsBusy())
@@ -193,7 +190,7 @@ void DrawsController::DisplayState::Leaving() {
 }
 
 const DTime& DrawsController::DisplayState::GetStateTime() const {
-	return m_c->m_current_time;
+	return m_c->GetCurrentTime();
 }
 
 void DrawsController::DisplayState::NewValuesAdded(Draw *draw, bool non_fixed)
@@ -202,13 +199,13 @@ void DrawsController::DisplayState::NewValuesAdded(Draw *draw, bool non_fixed)
 		if (draw->GetSubscribed())
 			return;
 		if (draw->GetDrawInfo()->IsValid())
-			m_c->ChangeObservedParamsRegistration({}, { draw->GetDrawInfo()->GetParam()->GetIPKParam() });
+			m_c->ChangeDBObservedParamsRegistration({}, { draw->GetDrawInfo()->GetParam()->GetIPKParam() });
 		draw->SetSubscribed(true);
 	} else {
 		if (!draw->GetSubscribed() || draw->HasUnfixedData())
 			return;
 		if (draw->GetDrawInfo()->IsValid())
-			m_c->ChangeObservedParamsRegistration({ draw->GetDrawInfo()->GetParam()->GetIPKParam() }, {});
+			m_c->ChangeDBObservedParamsRegistration({ draw->GetDrawInfo()->GetParam()->GetIPKParam() }, {});
 		draw->SetSubscribed(false);
 	}
 }
@@ -232,9 +229,9 @@ void DrawsController::WaitState::Reset() {
 }
 
 void DrawsController::WaitState::NewDataForSelectedDraw() {
-	assert(m_c->m_selected_draw >= 0);
+	assert(m_c->GetSelectedDrawNo() >= 0);
 
-	Draw* draw = m_c->m_draws[m_c->m_selected_draw];
+	Draw* draw = m_c->GetSelectedDraw();
 	int current_index = draw->GetIndex(m_time_to_go);
 
 	const Draw::VT& values = draw->GetValuesTable();
@@ -252,11 +249,11 @@ void DrawsController::WaitState::NewDataForSelectedDraw() {
 void DrawsController::WaitState::Enter(const DTime& time) {
 	m_time_to_go = time;
 
-	assert(m_c->m_selected_draw >= 0);
+	assert(m_c->GetSelectedDrawNo() >= 0);
 
 	m_c->FetchData();
 
-	CheckForDataPresence(m_c->m_draws[m_c->m_selected_draw]);
+	CheckForDataPresence(m_c->GetSelectedDraw());
 }
 
 const DTime& DrawsController::WaitState::GetStateTime() const {
@@ -328,38 +325,37 @@ void DrawsController::WaitDataBoth::CheckForDataPresence(Draw *draw) {
 	m_c->EnterState(SEARCH_BOTH, m_time_to_go);
 }
 
-
 const DTime& DrawsController::SearchState::GetStateTime() const {
 	return m_search_time;
 }
 
 void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction) {
-	assert(m_c->m_selected_draw >= 0);
+	assert(m_c->GetSelectedDrawNo() >= 0);
 
-	wxLogInfo(_T("Sending search query, start time:%s, end_time: %s, direction: %d"),
+	wxLogInfo(_T("Sending search query, start time:%ls, end_time: %ls, direction: %d"),
 			start.IsValid() ? start.Format().c_str() : L"none",
 			end.IsValid() ? end.Format().c_str() : L"none",
 			direction);
 
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
-	q->draw_info = m_c->m_draws[m_c->m_selected_draw]->GetDrawInfo();
+	q->draw_info = m_c->GetSelectedDraw()->GetDrawInfo();
 	if (q->draw_info->IsValid())
 		q->param = q->draw_info->GetParam()->GetIPKParam();
 	else
 		q->param = NULL;
-	q->draw_no = m_c->m_selected_draw;
+	q->draw_no = m_c->GetSelectedDrawNo();
 	ToNanosecondTime(start,
 		q->search_data.start_second,
 		q->search_data.start_nanosecond);
 	ToNanosecondTime(end,
 		q->search_data.end_second,
 		q->search_data.end_nanosecond);
-	q->search_data.period_type = m_c->m_draws[m_c->m_selected_draw]->GetPeriod();
+	q->search_data.period_type = m_c->GetSelectedDraw()->GetPeriod();
 	q->search_data.direction = direction;
 	q->search_data.search_condition = &DrawsController::search_condition;
 
-	m_c->QueryDatabase(q);
+	m_c->SendQueryToDatabase(q);
 
 }
 
@@ -373,7 +369,7 @@ void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 	wxDateTime start = ToWxDateTime(data.start_second, data.start_nanosecond);
 	wxDateTime end = ToWxDateTime(data.end_second, data.end_nanosecond);
 
-	wxLogInfo(_T("Search response dir: %d, start: %s, end: %s,  response: %s"),
+	wxLogInfo(_T("Search response dir: %d, start: %ls, end: %ls,  response: %ls"),
 			data.direction,
 			start.Format().c_str(),
 			end.IsValid() ? end.Format().c_str() : L"none",
@@ -397,10 +393,7 @@ void DrawsController::SearchState::HandleRightResponse(wxDateTime& time) {}
 
 void DrawsController::SearchLeft::Enter(const DTime& search_from) {
 	m_search_time = search_from;
-	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-	const auto& time_just_before = (search_from + index.GetTimeRes() + index.GetDateRes()).TimeJustBefore();
-
-	SendSearchQuery(time_just_before, wxInvalidDateTime, -1);
+	SendSearchQuery(search_from.GetTime(), wxInvalidDateTime, -1);
 }
 
 void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
@@ -409,7 +402,7 @@ void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
 		m_c->MoveToTime(m_c->ChooseStartDate(draw_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, draw_time);
 	} else {
-		m_c->EnterState(DISPLAY, m_c->m_current_time);
+		m_c->EnterState(DISPLAY, m_c->GetCurrentTime());
 	}
 }
 
@@ -421,7 +414,23 @@ void DrawsController::SearchRight::Enter(const DTime& search_from) {
 void DrawsController::SearchRight::HandleRightResponse(wxDateTime& time) {
 	if (time.IsValid()) {
 		DTime draw_time(m_c->GetPeriod(), time);
-		m_c->MoveToTime(m_c->ChooseStartDate(draw_time));
+
+		DTime e_time = m_c->GetSelectedDraw()->GetLastTime();
+		const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
+		int n_res_probes = TimeIndex::PeriodMult[m_c->GetPeriod()];
+		int d_t = e_time.GetDistance(draw_time);
+
+		int mod = d_t%n_res_probes;
+		if (mod != 0) {
+			// take ceiling for alignment with start period (AdjustToPeriod but with ceiling not floor)
+			d_t = d_t + n_res_probes - mod;
+		}
+
+		auto tr = d_t * index.GetTimeRes();
+		auto dr = d_t * index.GetDateRes();
+		auto new_start = index.GetStartTime() + tr + dr;
+
+		m_c->MoveToTime(new_start);
 		m_c->EnterState(WAIT_DATA_NEAREST, draw_time);
 	} else {
 		GoToLatestDate();
@@ -434,8 +443,9 @@ DTime DrawsController::SearchBoth::FindCloserTime(const DTime& reference, const 
 	if (!right.IsValid())
 		return left;
 
-	wxTimeSpan dl = reference.GetTime() - left.GetTime();
-	wxTimeSpan dr = right.GetTime() - reference.GetTime();
+	// abs() won't work for wxTimeSpan as it does not work for values less than 0
+	wxTimeSpan dl = reference > left? reference.GetTime() - left.GetTime() : left.GetTime() - reference.GetTime();
+	wxTimeSpan dr = right > reference? right.GetTime() - reference.GetTime() : reference.GetTime() - right.GetTime();
 
 	return dr > dl ? left : right;
 }
@@ -453,7 +463,7 @@ void DrawsController::SearchBothPreferCloser::HandleRightResponse(wxDateTime& ti
 		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
+		SendSearchQuery(m_search_time.GetTime(),
 			wxInvalidDateTime,
 			-1);
 	}
@@ -466,11 +476,13 @@ void DrawsController::SearchBothPreferCloser::HandleLeftResponse(wxDateTime& tim
 		m_c->MoveToTime(m_c->ChooseStartDate(found, m_start_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, found);
 	} else {
-		m_c->m_draws[m_c->m_selected_draw]->SetNoData(true);
-		m_c->m_observers.NotifyNoData(m_c->m_draws[m_c->m_selected_draw]);
+		m_c->GetSelectedDraw()->SetNoData(true);
+		m_c->NotifyStateNoData(m_c->GetSelectedDraw());
 
-		if (!SwitchToGraphThatMayHaveData())
-			m_c->ThereIsNoData(m_search_time);
+		if (!SwitchToGraphThatMayHaveData()) {
+			m_c->EnterState(STOP, m_search_time);
+			m_c->NotifyStateNoData();
+		}
 	}
 }
 
@@ -480,9 +492,10 @@ bool DrawsController::SearchBothPreferCloser::SwitchToGraphThatMayHaveData() {
 
 	int selected_draw = -1;
 
-	for (int i = 1; i < m_c->m_active_draws_count; i++) {
-		int j = (m_c->m_selected_draw + i) % m_c->m_active_draws_count;
-		if (m_c->m_draws[j]->GetEnable() && !m_c->m_draws[j]->GetNoData()) {
+	const auto& draws = m_c->GetDraws();
+	for (int i = 1; i < m_c->GetActiveDrawsCount(); i++) {
+		int j = (m_c->GetSelectedDrawNo() + i) % m_c->GetActiveDrawsCount();
+		if (draws[j]->GetEnable() && !draws[j]->GetNoData()) {
 			selected_draw = j;
 			break;
 		}
@@ -494,9 +507,9 @@ bool DrawsController::SearchBothPreferCloser::SwitchToGraphThatMayHaveData() {
 		return true;
 	}
 
-	for (int i = 1; i < m_c->m_active_draws_count; i++) {
-		int j = (m_c->m_selected_draw + i) % m_c->m_active_draws_count;
-		if (!m_c->m_draws[j]->GetNoData()) {
+	for (int i = 1; i < m_c->GetActiveDrawsCount(); i++) {
+		int j = (m_c->GetSelectedDrawNo() + i) % m_c->GetActiveDrawsCount();
+		if (!draws[j]->GetNoData()) {
 			selected_draw = j;
 			break;
 		}
@@ -512,108 +525,187 @@ bool DrawsController::SearchBothPreferCloser::SwitchToGraphThatMayHaveData() {
 	return false;
 }
 
-void DrawsController::SearchBothPreferRight::Enter(const DTime& search_from) {
-	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-
-	m_search_time = search_from;
-	m_start_time = index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod();
-
-	SendSearchQuery(search_from.GetTime(),
-			index.GetStartTime().TimeJustBefore(),
-			1);
+void DrawsController::MoveScreenWindowLeft::Enter(const DTime&) {
+	const TimeIndex& index = m_c->GetCurrentTimeWindow();
+	m_start_time = index.GetStartTime();
+	m_start_time.AdjustToPeriod();
+	SendSearchQuery(m_start_time.TimeJustBefore(), wxInvalidDateTime, LEFT);
 }
 
-void DrawsController::SearchBothPreferRight::HandleRightResponse(wxDateTime& time) {
-	m_right_result = DTime(m_c->GetPeriod(), time);
-	if (m_right_result == m_search_time) {
-		m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
-		m_c->EnterState(WAIT_DATA_RIGHT, m_right_result);
-	} else {
-		SendSearchQuery(m_search_time.TimeJustBefore(),
-			wxInvalidDateTime,
-			-1);
+void DrawsController::MoveScreenWindowLeft::HandleLeftResponse(wxDateTime& time) {
+	if (!time.IsValid()) {
+		m_c->EnterState(DISPLAY, m_c->GetCurrentTime());
+		return;
 	}
-}
 
-void DrawsController::SearchBothPreferRight::HandleLeftResponse(wxDateTime& time) {
-	DTime left_result(m_c->GetPeriod(), time);
-	if (left_result.IsValid())
-		if (m_right_result.IsValid()) {
-			const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-			if (left_result < index.GetStartTime() - index.GetDatePeriod() - index.GetTimePeriod()) {
-				m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
-				m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
-			} else {
-				DTime closer = FindCloserTime(m_search_time, left_result, m_right_result);
-				m_c->MoveToTime(m_c->ChooseStartDate(closer, m_start_time));
-				m_c->EnterState(WAIT_DATA_NEAREST, closer);
-			}
-		} else {
-			m_c->MoveToTime(m_c->ChooseStartDate(left_result, m_start_time));
-			m_c->EnterState(WAIT_DATA_NEAREST, left_result);
-		}
-	else
-		if (m_right_result.IsValid()) {
-			m_c->MoveToTime(m_c->ChooseStartDate(m_right_result, m_start_time));
-			m_c->EnterState(WAIT_DATA_NEAREST, m_right_result);
-		} else {
-			m_c->EnterState(DISPLAY, m_c->m_current_time);
-		}
+	const TimeIndex& index = m_c->GetCurrentTimeWindow();
+	auto tp = index.GetTimePeriod(); 
+	auto dp = index.GetDatePeriod();
+	auto period = m_c->GetPeriod();
+
+	DTime data_found(period, time);
+	data_found.AdjustToPeriod();
+
+	DTime c_start = m_start_time;
+	DTime c_time = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex());
+
+	// take period start on the left of the cursor (but it has to be on the screen)
+	DTime c_period_start = index.AdjustToPeriodSpan(c_time);
+	if (c_period_start < c_start) {
+		c_period_start = c_period_start + tp + dp;
+	}
+
+	// this is to be preserved (index of period start probe)
+	int c_adj = c_start.GetDistance(c_period_start);
+
+	auto tr = index.GetTimeRes();
+	auto dr = index.GetDateRes(); 
+
+	// find new period start and adjust window to preserve distance to period start
+	DTime period_start = index.AdjustToPeriodSpan(data_found);
+	DTime window_start = period_start - c_adj * tr - c_adj * dr;
+
+	if (data_found < window_start) {
+		window_start = period_start - tp - dp;
+		window_start = window_start - c_adj * tr - c_adj * dr;
+	}
+
+	auto no_of_probes = m_c->GetNumberOfValues(period);
+	if (window_start.GetDistance(data_found) > no_of_probes) {
+		// DST adjustment
+		window_start = window_start + tr * TimeIndex::PeriodMult[period] + dr * TimeIndex::PeriodMult[period];
+	}
+
+	// preserve index (go to index)
+	auto c_ind = m_c->GetCurrentIndex();
+	auto searched_time = window_start + c_ind * tr + c_ind * dr;
+
+	searched_time.AdjustToPeriod();
+
+	m_c->MoveToTime(window_start);
+	m_c->EnterState(SEARCH_BOTH_PREFER_LEFT, searched_time);
 }
 
 void DrawsController::SearchBothPreferLeft::Enter(const DTime& search_from) {
-	const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-
+	const TimeIndex& index = m_c->GetCurrentTimeWindow();
 	m_search_time = search_from;
-	m_start_time = index.GetStartTime() + index.GetDatePeriod() + index.GetTimePeriod();
 
-	SendSearchQuery(search_from.GetTime(),
-			index.GetFirstNotDisplayedTime().GetTime(),
-			-1);
+	SendSearchQuery(m_search_time.GetTime(), index.GetStartTime(), LEFT);
 }
 
 void DrawsController::SearchBothPreferLeft::HandleLeftResponse(wxDateTime& time) {
-	m_left_result = DTime(m_c->GetPeriod(), time);
-	if (m_left_result == m_search_time) {
-		m_c->MoveToTime(m_c->ChooseStartDate(m_left_result, m_start_time));
-		m_c->EnterState(WAIT_DATA_RIGHT, m_left_result);
+	DTime left_result(m_c->GetPeriod(), time);
+	left_result.AdjustToPeriod();
+	if (left_result.IsValid()) {
+		m_c->EnterState(WAIT_DATA_NEAREST, left_result);
 	} else {
-		SendSearchQuery(m_search_time.GetTime() - wxTimeSpan::Seconds(10),
-					wxInvalidDateTime,
-					1);
+		const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
+		SendSearchQuery(m_search_time,
+			index.GetLastTime(),
+			RIGHT);
 	}
 }
 
 void DrawsController::SearchBothPreferLeft::HandleRightResponse(wxDateTime& time) {
 	DTime right_result(m_c->GetPeriod(), time);
-	if (right_result.IsValid())
-		if (m_left_result.IsValid()) {
-			const TimeIndex& index = m_c->m_draws[m_c->m_selected_draw]->GetTimeIndex();
-			if (right_result >= index.GetStartTime() + 2 * index.GetDatePeriod() + 2 * index.GetTimePeriod()) {
-				m_c->MoveToTime(m_c->ChooseStartDate(m_left_result, m_start_time));
-				m_c->EnterState(WAIT_DATA_NEAREST, m_left_result);
-			} else {
-				DTime closer = FindCloserTime(m_search_time, m_left_result, right_result);
-				m_c->MoveToTime(m_c->ChooseStartDate(closer, m_start_time));
-				m_c->EnterState(WAIT_DATA_NEAREST, closer);
-			}
-		} else {
-			m_c->MoveToTime(m_c->ChooseStartDate(right_result, m_start_time));
-			m_c->EnterState(WAIT_DATA_NEAREST, right_result);
-		}
-	else
-		if (m_left_result.IsValid()) {
-			m_c->MoveToTime(m_c->ChooseStartDate(m_left_result, m_start_time));
-			m_c->EnterState(WAIT_DATA_NEAREST, m_left_result);
-		} else {
-			m_c->EnterState(DISPLAY, m_c->m_current_time);
-		}
+	right_result.AdjustToPeriod();
+	if (right_result.IsValid()) {
+		m_c->EnterState(WAIT_DATA_NEAREST, right_result);
+	} else {
+		m_c->EnterState(SEARCH_LEFT, m_c->GetCurrentTime());
+	}
 }
 
 
 
+void DrawsController::MoveScreenWindowRight::Enter(const DTime&) {
+	const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
+	SendSearchQuery(index.GetFirstNotDisplayedTime(),
+	        wxInvalidDateTime,
+	        RIGHT);
+}
+
+void DrawsController::MoveScreenWindowRight::HandleRightResponse(wxDateTime& time) {
+	if (!time.IsValid()) {
+		m_c->EnterState(DISPLAY, m_c->GetCurrentTime());
+		return;
+	}
+
+	auto period = m_c->GetPeriod();
+
+	DTime data_found(period, time);
+	data_found.AdjustToPeriod();
+
+	const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
+	DTime c_start = index.GetStartTime();
+	DTime c_time = m_c->GetSelectedDraw()->GetTimeOfIndex(m_c->GetCurrentIndex());
+	DTime c_period_start = index.AdjustToPeriodSpan(c_time);
+
+	auto tp = index.GetTimePeriod(); 
+	auto dp = index.GetDatePeriod();
+	if (c_period_start < c_start) {
+		c_period_start = c_period_start + tp + dp;
+	}
+
+	int c_adj = c_start.GetDistance(c_period_start);
+
+	auto tr = index.GetTimeRes();
+	auto dr = index.GetDateRes(); 
+
+	DTime period_start = index.AdjustToPeriodSpan(data_found);
+	DTime window_start = period_start - c_adj * tr - c_adj * dr;
+
+	DTime window_end = window_start + tp + dp;
+	if (data_found >= window_end) {
+		window_start = period_start + tp + dp;
+		window_start = window_start - c_adj * tr - c_adj * dr;
+	}
+
+	window_start.AdjustToPeriod();
+
+	// preserve index (go to index)
+	auto c_ind = m_c->GetCurrentIndex();
+	auto searched_time = window_start + c_ind * tr + c_ind * dr;
+
+	m_c->MoveToTime(window_start);
+	m_c->EnterState(SEARCH_BOTH_PREFER_RIGHT, searched_time);
+}
+
+void DrawsController::SearchBothPreferRight::Enter(const DTime& search_from) {
+	const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
+	m_search_time = search_from;
+
+	SendSearchQuery(m_search_time.GetTime(), index.GetFirstNotDisplayedTime().TimeJustBefore(), RIGHT);
+}
+
+void DrawsController::SearchBothPreferRight::HandleRightResponse(wxDateTime& time) {
+	DTime right_result(m_c->GetPeriod(), time);
+	right_result.AdjustToPeriod();
+	if (right_result.IsValid()) {
+		m_c->EnterState(WAIT_DATA_NEAREST, right_result);
+	} else {
+		const TimeIndex& index = m_c->GetCurrentTimeWindow();
+		SendSearchQuery(index.GetFirstNotDisplayedTime().TimeJustBefore(),
+			index.GetStartTime(),
+			LEFT);
+	}
+}
+
+void DrawsController::SearchBothPreferRight::HandleLeftResponse(wxDateTime& time) {
+	DTime left_result(m_c->GetPeriod(), time);
+	left_result.AdjustToPeriod();
+	if (left_result.IsValid()) {
+		m_c->EnterState(WAIT_DATA_NEAREST, left_result);
+	} else {
+		m_c->EnterState(SEARCH_RIGHT, m_c->GetCurrentTime());
+	}
+}
+
+
 DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager) :
 	DBInquirer(database_manager),
+	ConfigObserver(),
+	StateController(),
 	m_time_reference(wxDateTime::Now()),
 	m_config_manager(config_manager),
 	m_current_time(PERIOD_T_OTHER),
@@ -655,6 +747,8 @@ DrawsController::DrawsController(ConfigManager *config_manager, DatabaseManager 
 	m_states[SEARCH_LEFT] = new SearchLeft();
 	m_states[SEARCH_RIGHT] = new SearchRight();
 	m_states[SEARCH_BOTH] = new SearchBothPreferCloser();
+	m_states[MOVE_SCREEN_RIGHT] = new MoveScreenWindowRight();
+	m_states[MOVE_SCREEN_LEFT] = new MoveScreenWindowLeft();
 	m_states[SEARCH_BOTH_PREFER_LEFT] = new SearchBothPreferLeft();
 	m_states[SEARCH_BOTH_PREFER_RIGHT] = new SearchBothPreferRight();
 
@@ -675,6 +769,11 @@ DrawsController::~DrawsController() {
 
 	m_config_manager->DeregisterConfigObserver(this);
 }
+
+void DrawsController::SendQueryToDatabase(DatabaseQuery* query) {
+	QueryDatabase(query);
+}
+
 
 void DrawsController::DisableDisabledDraws() {
 	bool any_disabled_draw_present = false;
@@ -807,13 +906,17 @@ DTime DrawsController::ChooseStartDate(const DTime& _found_time, const DTime& su
 	else
 		if (found_time < start_time
 				+ 2 * index.GetDatePeriod()
-				+ 2 * index.GetTimePeriod())
+				+ 2 * index.GetTimePeriod()) {
+			auto tp = index.GetTimePeriod(); 
+			auto dp = index.GetDatePeriod();
+			auto pmtr = TimeIndex::PeriodMult[m_period_type] * index.GetTimeRes();
+			auto pmdr = TimeIndex::PeriodMult[m_period_type] * index.GetDateRes(); 
 			ret = found_time
-					- index.GetTimePeriod()
-					- index.GetDatePeriod()
-					+ TimeIndex::PeriodMult[m_period_type] * index.GetTimeRes()
-					+ TimeIndex::PeriodMult[m_period_type] * index.GetDateRes();
-		else
+					- tp
+					- dp
+					+ pmtr
+					+ pmdr;
+		} else
 			ret = index.AdjustToPeriodSpan(found_time);
 
 	return ret;
@@ -1073,6 +1176,7 @@ void DrawsController::Set(PeriodType period_type) {
 
 	DTime state_time = m_state->GetStateTime();
 	DTime time = m_time_reference.Adjust(period_type, state_time);
+	time.AdjustToPeriod();
 
 	m_current_time = DTime();
 	m_current_index = -1;
@@ -1220,7 +1324,7 @@ DTime DrawsController::SetSelectedDraw(int draw_no) {
 	return time;
 }
 
-void DrawsController::EnterState(STATE state, const DTime &time) {
+void DrawsController::EnterState(StateController::STATE state, const DTime &time) {
 	m_state->Leaving();
 	m_state = m_states[state];
 	m_state->Enter(time);
@@ -1232,8 +1336,10 @@ DrawsController::TimeReference::TimeReference(const wxDateTime &datetime) {
 	m_day = now.GetDay();
 	m_wday = now.GetWeekDay();
 	m_hour = now.GetHour();
-	m_minute = now.GetMinute();
-	m_second = now.GetSecond();
+	m_minute = now.GetMinute() % 10;
+	m_10minute = now.GetMinute() - (now.GetMinute() % 10);
+	m_second = now.GetSecond() % 10;
+	m_10second = now.GetSecond() - (now.GetSecond() % 10);
 	m_milisecond = now.GetMillisecond();
 }
 
@@ -1244,10 +1350,12 @@ void DrawsController::TimeReference::Update(const DTime& time) {
 		case PERIOD_T_MINUTE:
 			m_milisecond = wxt.GetMillisecond();
 		case PERIOD_T_5MINUTE:
+			m_second = wxt.GetSecond() % 10;
 		case PERIOD_T_30MINUTE:
-			m_second = wxt.GetSecond();
+			m_10second = wxt.GetSecond() - (wxt.GetSecond() % 10);
+			m_minute = wxt.GetMinute() % 10;
 		case PERIOD_T_DAY:
-			m_minute = wxt.GetMinute();
+			m_10minute = wxt.GetMinute() - (wxt.GetMinute() % 10);
 			m_hour = wxt.GetHour();
 		case PERIOD_T_WEEK:
 			m_wday = wxt.GetWeekDay();
@@ -1275,10 +1383,19 @@ DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
 		case PERIOD_T_MINUTE:
 			t.SetMillisecond(m_milisecond);
 		case PERIOD_T_5MINUTE:
+			t.SetSecond(m_second + m_10second);
+			t.SetMinute(m_minute + m_10minute);
+			t.SetHour(m_hour);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
+			break;
 		case PERIOD_T_30MINUTE:
-			t.SetSecond(m_second);
+			t.SetSecond(m_10second);
+			t.SetMinute(m_minute + m_10minute);
+			t.SetHour(m_hour);
+			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
+			break;
 		case PERIOD_T_DAY:
-			t.SetMinute(m_minute);
+			t.SetMinute(m_10minute);
 			t.SetHour(m_hour);
 			t.SetDay(std::min(m_day, (int)wxDateTime::GetNumberOfDays(t.GetMonth(), t.GetYear())));
 			break;
@@ -1306,11 +1423,6 @@ bool DrawsController::AtTheNewestValue() {
 	return false;
 }
 
-void DrawsController::ThereIsNoData(const DTime& time) {
-	EnterState(STOP, time);
-	m_observers.NotifyNoData(this);
-}
-
 DrawInfo* DrawsController::GetCurrentDrawInfo() {
 	if (m_selected_draw >= 0)
 		return m_draws[m_selected_draw]->GetDrawInfo();
@@ -1318,11 +1430,15 @@ DrawInfo* DrawsController::GetCurrentDrawInfo() {
 		return NULL;
 }
 
-wxDateTime DrawsController::GetCurrentTime() {
+const DTime& DrawsController::GetCurrentTime() const {
 	return m_current_time;
 }
 
-bool DrawsController::GetDoubleCursor() {
+const TimeIndex& DrawsController::GetCurrentTimeWindow() const {
+	return m_draws[m_selected_draw]->GetTimeIndex();
+}
+
+bool DrawsController::GetDoubleCursor() const {
 	return m_double_cursor;
 }
 
@@ -1356,7 +1472,7 @@ Draw* DrawsController::GetSelectedDraw() const {
 	return ret;
 }
 
-const PeriodType& DrawsController::GetPeriod() {
+const PeriodType& DrawsController::GetPeriod() const {
 	return m_period_type;
 }
 
@@ -1374,7 +1490,7 @@ void DrawsController::SetFilter(int filter) {
 
 }
 
-size_t DrawsController::GetNumberOfValues(const PeriodType& period_type) {
+size_t DrawsController::GetNumberOfValues(const PeriodType& period_type) const {
 	return m_units_count[period_type] * TimeIndex::PeriodMult[period_type];
 }
 

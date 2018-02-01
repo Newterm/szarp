@@ -58,8 +58,9 @@ public:
 
 };
 
-class DrawsController : public DBInquirer, public ConfigObserver {
-
+// interface for testing
+class StateController {
+public:
 	enum STATE {
 		/**Parameter is stoped, no queries to database are issued*/
 		STOP = 0,
@@ -85,6 +86,9 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		/**Draw waits for data to appear as close as it is possible on any side of the cursor 
 		* or m_suggested_time*/
 		WAIT_DATA_NEAREST,
+		/** Move screen fixing start time */
+		MOVE_SCREEN_LEFT,
+		MOVE_SCREEN_RIGHT,
 		/**Database is searched in both directions from proposed time, left search result
 		 * is choosen if data is found on the left side, otherwise time neareset to proposed
 		 * time is set*/
@@ -95,14 +99,55 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		SEARCH_BOTH_PREFER_RIGHT,
 
 		FIRST_UNUSED_STATE_ID
-
 	};
+
+	virtual ~StateController() {}
+
+	virtual bool GetDoubleCursor() const = 0;
+
+	virtual const TimeIndex& GetCurrentTimeWindow() const = 0;
+	virtual const PeriodType& GetPeriod() const = 0;
+	virtual size_t GetNumberOfValues(const PeriodType& period) const = 0;	
+	virtual const DTime& GetCurrentTime() const = 0;
+	virtual Draw* GetSelectedDraw() const = 0;
+	virtual const std::vector<Draw*>& GetDraws() const = 0;
+
+	virtual void EnterState(STATE state, const DTime &time) = 0;
+	virtual void MoveToTime(const DTime& time) = 0;
+	virtual DTime ChooseStartDate(const DTime& found_time, const DTime& suggested_start_time = DTime()) = 0;
+
+	virtual void NotifyStateChanged(Draw *draw, int pi, int ni, int d) = 0;
+
+	// TODO: add direct interface to database
+	virtual void FetchData() = 0;
+	virtual void SendQueryToDatabase(DatabaseQuery* query) = 0;
+	virtual void ChangeDBObservedParamsRegistration(const std::vector<TParam*> &to_deregister, const std::vector<TParam*> &to_register) = 0;
+
+	// TODO: remove (use regular DTime)
+	virtual void UpdateTimeReference(const DTime& time) = 0;
+
+	virtual int GetActiveDrawsCount() const = 0;
+	virtual int GetSelectedDrawNo() const = 0;
+	virtual int GetCurrentIndex() const = 0;
+
+	virtual void SetCurrentIndex(int i) = 0;
+	virtual void SetCurrentTime(const DTime& time) = 0;
+	virtual DTime SetSelectedDraw(int draw_to_select) = 0;
+	virtual bool SetDrawEnabled(int draw_no, bool enable) = 0;
+
+	virtual void NotifyStateNoData(Draw*) = 0;
+	virtual void NotifyStateNoData(DrawsController* = nullptr) = 0;
+
+};
+
+
+class DrawsController : public DBInquirer, public ConfigObserver, public StateController {
 
 	class State {
 	protected:
-		DrawsController *m_c;
+		StateController *m_c;
 	public:
-		void SetDrawsController(DrawsController *c);
+		void SetDrawsController(StateController *c);
 		
 		virtual void HandleDataResponse(DatabaseQuery *query);
 
@@ -140,6 +185,8 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 		virtual ~State() {};
 
+		const int RIGHT = 1;
+		const int LEFT = -1;
 	};
 
 	class StopState : public State {
@@ -256,6 +303,18 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		virtual void HandleRightResponse(wxDateTime& time);
 	};
 
+	class MoveScreenWindowLeft : public SearchBoth {
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleLeftResponse(wxDateTime& time);
+	};
+
+	class MoveScreenWindowRight: public SearchBoth {
+	public:
+		virtual void Enter(const DTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
+	};
+
 	class SearchBothPreferLeft : public SearchBoth {
 		DTime m_left_result;
 	public:
@@ -265,7 +324,6 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 	};
 
 	class SearchBothPreferRight : public SearchBoth {
-		DTime m_right_result;
 	public:
 		virtual void Enter(const DTime& time);
 		virtual void HandleLeftResponse(wxDateTime& time);
@@ -281,7 +339,14 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 		int m_day;
 		wxDateTime::WeekDay m_wday;
 		int m_hour;
+		
+		// hols 10 minutes multiples
+		int m_10minute;
+
+		// holds minutes mod 10
 		int m_minute;
+
+		int m_10second;
 		int m_second;
 		int m_milisecond;
 	public:
@@ -327,18 +392,17 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 	void DisableDisabledDraws();
 
-	void FetchData();
+	void FetchData() override;
 
-	/**Issues queriers for probes in @see m_values table that are is empty state*/
-	void TriggerSearch();
+	void SendQueryToDatabase(DatabaseQuery* query) override;
 
 	DatabaseQuery* CreateQuery(const std::vector<time_t> &times) const;
 
 	void NoDataFound();
 
-	void MoveToTime(const DTime &time);
+	void MoveToTime(const DTime &time) override;
 
-	DTime ChooseStartDate(const DTime& found_time, const DTime& suggested_start_time = DTime());
+	DTime ChooseStartDate(const DTime& found_time, const DTime& suggested_start_time = DTime()) override;
 
 	void DoSet(DrawSet *set);
 
@@ -346,11 +410,9 @@ class DrawsController : public DBInquirer, public ConfigObserver {
 
 	DTime DoSetSelectedDraw(int draw_to_select);
 
-	void ThereIsNoData(const DTime& time);
+	DTime SetSelectedDraw(int draw_to_select) override;
 
-	DTime SetSelectedDraw(int draw_to_select);
-
-	void EnterState(STATE state, const DTime &time);
+	void EnterState(StateController::STATE state, const DTime &time) override;
 
 public:
 	DrawsController(ConfigManager *config_manager, DatabaseManager *database_manager);
@@ -362,7 +424,7 @@ public:
 	void HandleDataResponse(DatabaseQuery *query);
 
 	std::vector<TParam*> GetSubscribedParams() const;
-	
+
 	/**Moves cursor right*/
 	void MoveCursorRight(int n = 1);
 
@@ -414,7 +476,7 @@ public:
 	void SetBlocked(int draw_no, bool blocked);
 
 
-	bool SetDrawEnabled(int draw_no, bool enable);
+	bool SetDrawEnabled(int draw_no, bool enable) override;
 
 	bool GetDrawEnabled(int draw_no);
 
@@ -425,8 +487,9 @@ public:
 
 	bool GetFollowLatestData();
 
-	bool GetDoubleCursor();
+	bool GetDoubleCursor() const override;
 
+	const std::vector<Draw*>& GetDraws() const override { return m_draws; }
 
 	Draw* GetDraw(size_t draw_no);
 
@@ -441,13 +504,22 @@ public:
 
 	void SendQueryForEachPrefix(DatabaseQuery::QueryType qt);
 
+	void NotifyStateNoData(Draw *draw) override { m_observers.NotifyNoData(draw); }
+	void NotifyStateNoData(DrawsController *draws_controller = nullptr) override { draws_controller == nullptr ? m_observers.NotifyNoData(this) : m_observers.NotifyNoData(draws_controller); }
+
 	/**@return current param, queries for values of this param will have higher priority than queries to other params*/
 	virtual DrawInfo* GetCurrentDrawInfo();
 
 	/**@return current time, used for queries prioritization*/
-	virtual wxDateTime GetCurrentTime();
+	virtual const DTime& GetCurrentTime() const override;
+
+	const TimeIndex& GetCurrentTimeWindow() const override;
 
 	virtual void ConfigurationWasReloaded(wxString prefix);
+
+	void SetCurrentIndex(int i) override { m_current_index = i; }
+
+	void SetCurrentTime(const DTime& time) override { m_current_time = time; }
 
 	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
 
@@ -455,20 +527,29 @@ public:
 
 	virtual void SetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
 
-	int GetCurrentIndex() const;
+	void NotifyStateChanged(Draw *draw, int pi, int ni, int d) override { m_observers.NotifyCurrentProbeChanged(draw, pi, ni, d); }
+
+	void ChangeDBObservedParamsRegistration(const std::vector<TParam*> &to_deregister, const std::vector<TParam*> &to_register) override {
+		ChangeObservedParamsRegistration(to_deregister, to_register);
+	}
+
+	int GetCurrentIndex() const override;
+
+	int GetActiveDrawsCount() const override { return m_active_draws_count; };
+
+	int GetSelectedDrawNo() const override { return m_selected_draw; }
 
 	/**method is called when response from db is received
 	 * @param query object holding response from database, the same instance that was sent to the database via 
 	 * @see QueryDatabase method but with proper fields filled*/
 	virtual void DatabaseResponse(DatabaseQuery *query);
 
-
-	Draw* GetSelectedDraw() const;
+	Draw* GetSelectedDraw() const override;
 
 	DrawSet *GetSet();
 
 
-	const PeriodType& GetPeriod();
+	const PeriodType& GetPeriod() const override;
 
 
 	void AttachObserver(DrawObserver *observer);
@@ -476,7 +557,7 @@ public:
 	void DetachObserver(DrawObserver *observer);
 
 
-	size_t GetNumberOfValues(const PeriodType& period);	
+	size_t GetNumberOfValues(const PeriodType& period) const override;	
 
 	void SetNumberOfUnits(size_t number_of_units);
 
@@ -499,6 +580,8 @@ public:
 	void SortDraws(SORTING_CRITERIA criteria);
 
 	void ParamDataChanged(TParam* param);
+
+	void UpdateTimeReference(const DTime& time) override { m_time_reference.Update(time); }
 };
 
 #endif
