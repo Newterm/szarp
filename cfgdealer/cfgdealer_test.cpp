@@ -66,6 +66,12 @@ int main (int argc, char ** argv) {
 
 	pt::wptree conf_tree;
 	pt::read_xml(ss, conf_tree);
-	pt::write_xml(std::wcout, conf_tree, pt::xml_parser::xml_writer_make_settings(L' ', 2));
-    return 0;
+
+#if BOOST_VERSION >= 105800
+	pt::write_xml(std::wcout, conf_tree, pt::xml_parser::xml_writer_make_settings<std::wstring>(L' ', 2));
+#else
+	pt::write_xml(std::wcout, conf_tree, pt::xml_parser::xml_writer_make_settings<wchar_t>(L' ', 2));
+#endif
+
+	return 0;
 }
