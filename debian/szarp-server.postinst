@@ -8,6 +8,7 @@ set -e;
 UNITSELECT_PATH="/etc/szarp/units-enabled"
 
 SZ4UNITS=(
+	"cfgdealer"
 	"meaner4"
 	"parcook"
 	"sender"
@@ -15,6 +16,7 @@ SZ4UNITS=(
 )
 
 SZ3UNITS=(
+	"cfgdealer"
 	"meaner3"
 	"parcook"
 	"sender"
