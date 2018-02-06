@@ -308,7 +308,12 @@ void configureHubs(sz4::live_cache_config* live_config) {
 		if (_prefix != NULL) {
 			std::string address(_address);
 			std::wstring prefix = SC::A2S(_prefix);
-			live_config->urls.push_back(std::make_pair(address, IPKContainer::GetObject()->GetConfig(prefix)));
+			auto ipk = IPKContainer::GetObject()->GetConfig(prefix);
+			if (ipk) {
+				live_config->urls.push_back(std::make_pair(address, ipk));
+			} else {
+				sz_log(1, "Error while configuring IPK for base %ls.", prefix.c_str());
+			}
 		}
 		std::free(_prefix);
 		std::free(_address);
