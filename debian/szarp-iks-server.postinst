@@ -15,3 +15,43 @@ touch "$UNITSELECT_PATH/iks-server"
 systemctl unmask iks-server
 systemctl enable iks-server
 # iks-server will be started by szarp-server
+
+
+case "$1" in
+	configure)
+
+	db_get szarp/prefix;
+	if [ "x$RET" = "x" ]; then
+		exit 10;
+	fi;
+	PREFIX=$RET;
+
+	if [ -d /opt/szarp/iks ]; then
+		if [ ! -d /opt/szarp/$PREFIX/iks ]; then
+			mv /opt/szarp/iks /opt/szarp/$PREFIX/iks
+			echo "WARNING: Moving current iks configuration to /opt/szarp/base/iks"
+		else
+			echo "WARNING: Configuration in /opt/szarp/base/iks already exists"
+		fi
+	fi
+
+	if [ ! -e /opt/szarp/$PREFIX/iks/iks-server.ini ]; then
+		mkdir -p /opt/szarp/$PREFIX/iks/
+		echo -e "base_live_cache_retention = 3600\n\n[ $PREFIX ]\ntype = szbase\nbase = $PREFIX\nhub_url = tcp://127.0.0.1:56662" > /opt/szarp/$PREFIX/iks/iks-server.ini
+	fi
+	ln -sf /opt/szarp/$PREFIX/iks/iks-server.ini /etc/szarp/iks-server.ini
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        exit 0
+    ;;
+esac
+
+db_stop;
+
+exit 0
