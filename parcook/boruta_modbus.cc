@@ -457,13 +457,15 @@ protected:
 
 	virtual void pushValOp(parcook_modbus_val_op* op, TAttribHolder* param);
 
-	int configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_param(TAttribHolder*, IPCParamInfo* param, bool send);
+	int configure_int_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_bcd_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_long_float_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_double_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal2_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+	int configure_decimal3_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
+
+	int configure_param(TAttribHolder*, int, bool);
+	int configure_send(SendParamInfo*, IPCParamInfo*);
 
 	const char* error_string(const unsigned char& error);
 
@@ -1301,7 +1303,21 @@ void modbus_unit::pushValOp(parcook_modbus_val_op* op, TAttribHolder* param) {
 	}
 }
 
-int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+std::string get_param_name(TAttribHolder* param, bool send = false) {
+	if (send) {
+		if (param->hasAttribute("param")) {
+			return param->getAttribute<std::string>("param") + " (send)";
+		} else if (param->hasAttribute("value")) {
+			return "sent param (value)";
+		} else {
+			return "(unknown)";
+		}
+	} else {
+		return param->getAttribute<std::string>("name");
+	}
+}
+
+int modbus_unit::configure_int_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send)
 		m_sender_ops.push_back(new short_sender_modbus_val_op(m_nodata_value, m_registers[addr], &m_log));
@@ -1314,19 +1330,19 @@ int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned 
 	else
 		m_sent.insert(std::make_pair(rt, addr));
 
-	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: integer", param ? SC::S2L(param->GetName()).c_str() : "send param", m_id, addr);
+	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: integer", get_param_name(param, send).c_str(), m_id, addr);
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_bcd_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	m_registers[addr] = new modbus_register(this, &m_log);
 	if (send) {
-		m_log.log(1, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
+		m_log.log(1, "Unsupported bcd value type for send param %s", get_param_name(param, send).c_str());
 		return 1;
 	}
 	pushValOp(new bcd_parcook_modbus_val_op(m_registers[addr], &m_log), param);
 
-	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
+	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", get_param_name(param, send).c_str(), m_id, addr);
 
 	if (!send)
 		m_received.insert(std::make_pair(rt, addr));
@@ -1416,7 +1432,7 @@ int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsi
 	return 0;
 }
 
-int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_double_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	unsigned short addrs[4];
 
 	FLOAT_ORDER float_order;
@@ -1470,7 +1486,7 @@ int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsign
 	} else if (val_op2 == "MSD") {
 		is_lsd = false;
 	} else {
-		m_log.log(1, "Unsupported val_op2 attribute value - %s, %ls", val_op2.c_str(), param->GetName().c_str());
+		m_log.log(1, "Unsupported val_op2 attribute value - %s, %s", val_op2.c_str(), get_param_name(param, send).c_str());
 		return 1;
 	}
 	auto op = new double_parcook_modbus_val_op(prec, is_lsd, &m_log);
@@ -1490,7 +1506,7 @@ int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsign
 	return 0;
 }
 
-int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_long_float_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");
 	if (val_type.empty())
 		return 1;
@@ -1509,11 +1525,11 @@ int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, un
 	if (!send) {
 		if (val_type == "float")  {
 			op = new long_parcook_modbus_val_op<float>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log);
-			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part, lsw: %hu, msw: %hu", get_param_name(param, send).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		} else {
 			op = new long_parcook_modbus_val_op<unsigned int>(m_registers[lsw], m_registers[msw], prec, is_lsw, &m_log);
 			m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, params holds %s part, lsw: %hu, msw: %hu",
-				SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+				get_param_name(param, send).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 		}
 
 		if (op != nullptr) {
@@ -1523,9 +1539,9 @@ int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, un
 		if (val_type == "float")  {
 			m_sender_ops.push_back(new float_sender_modbus_val_op(m_nodata_value, m_registers[lsw], m_registers[msw], prec, &m_log));
 			m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float, params holds %s part",
-				param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
+				get_param_name(param, send).c_str(), m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
 		} else {
-			m_log.log(1, "Unsupported long value type for send param no %ls, exiting!", param->GetName().c_str());
+			m_log.log(1, "Unsupported long value type for send param no %s, exiting!", get_param_name(param, send).c_str());
 			return 1;
 		}
 	}
@@ -1536,7 +1552,7 @@ int modbus_unit::configure_long_float_register(IPCParamInfo* param, int prec, un
 	return 0;
 }
 
-int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal2_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	bool is_lsw;
 	unsigned short msw, lsw;
 	modbus_register* regs[2];
@@ -1564,11 +1580,11 @@ int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsi
 		op->set_regs(regs);
 		pushValOp(op, param);
 		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part, lsw: %hu, msw: %hu",
-			       	SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
+			       	get_param_name(param, send).c_str(), m_parcook_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw", lsw, msw);
 	} else {
 		m_sender_ops.push_back(new decimal2_sender_modbus_val_op(m_nodata_value, regs[0], regs[1], prec, &m_log));
 		m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal2, params holds %s part",
-			param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
+			get_param_name(param, send).c_str(), m_sender_ops.size(), m_id, addr, is_lsw ? "lsw" : "msw");
 	}
 
 	m_received.insert(std::make_pair(rt, lsw));
@@ -1577,9 +1593,9 @@ int modbus_unit::configure_decimal2_register(IPCParamInfo* param, int prec, unsi
 	return 0;
 }
 
-int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
+int modbus_unit::configure_decimal3_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
 	if (send) {
-		m_log.log(1, "Unsupported decimal3 value type for send param %ls, exiting!", param->GetName().c_str());
+		m_log.log(1, "Unsupported decimal3 value type for send param %s, exiting!", get_param_name(param, send).c_str());
 		return 1;
 	}
 
@@ -1590,7 +1606,7 @@ int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsi
 	} else if (val_op == "MSW") {
 		is_lsw = false;
 	} else {
-		m_log.log(1, "Unsupported val_op attribute value - %s, line %ls", val_op.c_str(), param->GetName().c_str());
+		m_log.log(1, "Unsupported val_op attribute value - %s, line %s", val_op.c_str(), get_param_name(param, send).c_str());
 		return 1;
 	}
 
@@ -1612,15 +1628,21 @@ int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsi
 	op->set_regs(regs);
 	pushValOp(op, param);
 	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, params holds %s part, reg1: %hu, reg2: %hu, reg3: %hu",
-		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
+		get_param_name(param, send).c_str(), m_parcook_ops.size(), m_id, addr,
 		is_lsw ? "lsw" : "msw", addrs[0], addrs[1], addrs[2]);
 
 	return 0;
 }
 
-int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
+int modbus_unit::configure_send(SendParamInfo* send, IPCParamInfo* param) {
+	int prec_e = send->getAttribute("extra:prec", param? param->GetPrec() : 0);
+	int prec = exp10(prec_e);
+	return configure_param(send, prec, true);
+}
+
+int modbus_unit::configure_param(TAttribHolder* param, int prec, bool send) { 
 	unsigned short addr;
-	long l = el->getAttribute<unsigned long>("extra:address", -1);
+	long l = param->getAttribute<unsigned long>("extra:address", -1);
 	if (l < 0 || l > 65535) {
 		m_log.log(1, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
 		return 1;
@@ -1629,7 +1651,7 @@ int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool se
 	addr = l;
 
 	REGISTER_TYPE rt;
-	auto reg_type_attr = el->getAttribute<std::string>("extra:register_type", "holding_register");
+	auto reg_type_attr = param->getAttribute<std::string>("extra:register_type", "holding_register");
 	if (reg_type_attr == "holding_register")
 		rt = HOLDING_REGISTER;
 	else if (reg_type_attr == "input_register")
@@ -1639,18 +1661,11 @@ int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool se
 		return 1;
 	}
 
-	std::string val_type = el->getAttribute<std::string>("extra:val_type", "");
-	if (val_type.empty())
+	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");
+	if (val_type.empty()) {
+		m_log.log(1, "No extra:val_type specified in param %s", get_param_name(param, send).c_str());
 		return 1;
-
-	int prec_e;
-	if (send) {
-		prec_e = el->getAttribute("extra:prec", param? param->GetPrec() : 0);
-	} else {
-		prec_e = param->GetPrec();
 	}
-
-	int prec = exp10(prec_e);
 
 	int ret;
 	if (val_type == "integer") {
@@ -1666,7 +1681,7 @@ int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool se
 	} else if (val_type == "decimal3") {
 		ret = configure_decimal3_register(param, prec, addr, send, rt);
 	} else {
-		m_log.log(1, "Unsupported value type: %s");
+		m_log.log(1, "Unsupported value type: %s", val_type.c_str());
 		ret = 1;
 	}
 
@@ -1700,14 +1715,15 @@ int modbus_unit::configure_unit(UnitInfo* u) {
 	}
 
 	for (auto p: u->GetParams()) {
-		if (configure_param(p, p, false)) {
+		int prec = exp10(p->GetPrec());
+		if (configure_param(p, prec, false)) {
 			m_log.log(1, "Error in param %ls", p->GetName().c_str());
 			return 1;
 		}
 	}
 
 	for (auto p: u->GetSendParams()) {
-		if (configure_param(p, p->GetParamToSend(), true)) {
+		if (configure_send(p, p->GetParamToSend())) {
 			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
 			return 1;
 		}

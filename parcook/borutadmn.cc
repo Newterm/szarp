@@ -1287,7 +1287,7 @@ struct evdns_base* boruta_daemon::get_evdns_base() {
 class BorutadmnArgs: public ArgsHolder {
 public:
 	po::options_description get_options() const override {
-		po::options_description desc{"Pythondmn arguments"};
+		po::options_description desc{"Daemon arguments"};
 		desc.add_options()
 			("single,s", "Forbid writing via IPC")
 			("use-cfgdealer", "Enables configuring via config dealer")
