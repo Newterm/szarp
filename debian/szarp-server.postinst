@@ -101,8 +101,6 @@ case "$1" in
 		fi;
 	fi;
 
-	/opt/szarp/bin/config_deb Parstart /opt/szarp/$PREFIX $PREFIX
-
 	if [ ! -e /opt/szarp/$PREFIX/sss_key.pem ]; then
 
 		cat > /tmp/sss_ssl.conf <<END
