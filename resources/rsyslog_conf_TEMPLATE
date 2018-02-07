@@ -1,5 +1,8 @@
 # rsyslogd confguration for SZARP
 
+if $programname == 'cfgdealer' then /var/log/szarp/cfgdealer.log
+& DISCARD_ACTION
+
 if $programname == 'meaner3' then /var/log/szarp/meaner3.log
 & DISCARD_ACTION
 
