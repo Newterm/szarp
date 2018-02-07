@@ -200,6 +200,8 @@ public:
 
 	void OnExportDataToFile(wxCommandEvent& e);
 
+	void OnIksConnectionFailed(wxCommandEvent&);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 

@@ -129,6 +129,7 @@ public:
 	virtual int GetActiveDrawsCount() const = 0;
 	virtual int GetSelectedDrawNo() const = 0;
 	virtual int GetCurrentIndex() const = 0;
+	virtual wxString GetCurrentPrefix() const = 0;
 
 	virtual void SetCurrentIndex(int i) = 0;
 	virtual void SetCurrentTime(const DTime& time) = 0;
@@ -538,6 +539,8 @@ public:
 	int GetActiveDrawsCount() const override { return m_active_draws_count; };
 
 	int GetSelectedDrawNo() const override { return m_selected_draw; }
+
+	wxString GetCurrentPrefix() const override { return m_current_prefix; }
 
 	/**method is called when response from db is received
 	 * @param query object holding response from database, the same instance that was sent to the database via 

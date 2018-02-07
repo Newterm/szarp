@@ -307,6 +307,11 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
 	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
+	//setting current prefix before creating panel, so that database 
+	//queries will go to right base_handler prefix
+	db_mgr->SetCurrentPrefix(GetPrefix());
+	db_mgr->AddBaseHandler(GetPrefix());
+
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
 #endif
@@ -1060,6 +1065,9 @@ void DrawPanel::SetActive(bool _active) {
 		ShowRelWindow(active);
 	if (pw_show)
 		ShowPieWindow(active);
+
+	if (active)
+		db_mgr->SetCurrentPrefix(GetPrefix());
 
 	if (active) {
 		DrawsController *dc = dw->GetSelectedDraw()->GetDrawsController();

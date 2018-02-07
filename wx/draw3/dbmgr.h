@@ -39,6 +39,7 @@
 #include <vector>
 
 #include "sz4/param_observer.h"
+#include "database.h"
 
 /**Event encapsulating response from database*/
 class DatabaseResponse : public wxCommandEvent {
@@ -57,6 +58,8 @@ public:
 };
 
 DECLARE_EVENT_TYPE(DATABASE_RESP, -1) 
+wxDECLARE_EVENT(IKS_CONNECTION_FAILED, wxCommandEvent);
+
 
 typedef void (wxEvtHandler::*DatabaseResponseEventFunction)(DatabaseResponse&);
 
@@ -116,6 +119,12 @@ class SyncedPrefixSet {
 };
 
 
+class ConfigurationFileChangeHandler{
+	public:
+		static DatabaseManager *database_manager;
+		static void handle(std::wstring file, std::wstring prefix);
+};
+
 /**Class managing draw inquirers*/
 class DatabaseManager : public wxEvtHandler, public sz4::param_observer {
 	typedef std::tr1::unordered_map<InquirerId, DBInquirer*> IH;
@@ -131,12 +140,33 @@ class DatabaseManager : public wxEvtHandler, public sz4::param_observer {
 	InquirerId free_inquirer_id;
 	/**Panels hash*/
 	IH inquirers;
+	/** drawframe controller */
+	wxEvtHandler *frame_controller;
 
 	SyncedPrefixSet reloadingDatabases;
+
+	BaseHandler::ptr base_handler{nullptr};
 
 public:
 	DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager);
 	/**Sets current inquirer identifier*/
+
+	void SetFrameController(wxEvtHandler* c)
+	{ frame_controller = c; }
+
+	void SetCurrentPrefix(const wxString& prefix);
+	wxString GetCurrentPrefix() const;
+
+	void AddBaseHandler(const wxString& prefix);
+
+	void OnIksConnectionFailed(wxCommandEvent &event);
+
+	void SetBaseHandler(BaseHandler::ptr bh)
+	{ base_handler = bh; }
+
+	BaseHandler::ptr GetBaseHandler() const
+	{ return base_handler; }
+
 	void SetCurrentInquirer(InquirerId id);
 	/**Forces recalulcation of priorities in @see DatabaseQueryQueue*/
 	void InquirerStateChanged();
@@ -156,7 +186,7 @@ public:
 
 	/**Sends clean old request to @see DatabaseQueryQueue*/
 	void CleanDatabase(DatabaseQuery *query);
-	
+
 	/**Inserts query into @see DatabaseQueryQueue*/
 	void QueryDatabase(DatabaseQuery *query);
 
@@ -186,7 +216,7 @@ public:
 	void ChangeObservedParamsRegistration(const std::vector<TParam*>& to_deregister, const std::vector<TParam*>& to_register);
 
 	void param_data_changed(TParam *param);
-	
+
         DECLARE_EVENT_TABLE()
 };
 #endif
