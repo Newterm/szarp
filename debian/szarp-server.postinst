@@ -67,7 +67,10 @@ case "$1" in
 	# (and is removed only by purge so will remain during upgrade)
 	rm -f /etc/init.d/parstart
 
-	if [ ! -d $UNITSELECT_PATH ]; then
+	# create new unit files if dir doesn't exist, or..
+	# ..if it exists, but there are no other files except (possibly missing) iks-server
+	# it's necessary as szarp-iks-server will always be installed before szarp-server
+	if [ ! -d $UNITSELECT_PATH ] || ( [ -d $UNITSELECT_PATH ] && [ `ls $UNITSELECT_PATH | grep -v "iks-server" | wc -l` -eq 0 ] ); then
 		mkdir -p $UNITSELECT_PATH
 
 		# create default configuration
