@@ -353,7 +353,8 @@ def check_under_device_elements():
 			if not found:
 				printerr("could not find param " + send_param + " to send (line " +
 					str(send.sourceline) + ")")
-			elif attr == "min" or attr == "max":
+		for attr, value in send.items():
+			if attr == "min" or attr == "max":
 				if "," in value:
 					printerr("min/max in 'send' contains comma, dot symbol requested (line " + str(send.sourceline) + ")")
 

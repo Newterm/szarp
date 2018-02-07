@@ -56,25 +56,6 @@ konfiguracja() {
 	fi;
 }
 
-parstart() {
-	DIR=$1;
-	PREFIX=$2;
-
-	[ -d $DIR ] || install -d $DIR;
-
-	if [ ! -e $DIR/parstart.cfg ]; then
-		#"fix" the old configuration style and handle case when package configuration
-		#is not in sync with real configuration
-		sed -e s/__INSTALL_DIR__/`echo $SZARPDIR | sed s/'\/'/'\\\\\/'/g`/g \
-		    -e s/__PREFIX__/$PREFIX/g \
-		    < $RESDIR/parstart_cfg_TEMPLATE \
-		    > $DIR/parstart.cfg 
-	fi	
-
-	ln -sf $DIR/parstart.cfg /etc/szarp
-
-}
-
 [ -d $SZARPDIR ] || install -d $SZARPDIR;
 [ -d /etc/szarp ] || install -d /etc/szarp;
 
@@ -84,9 +65,6 @@ shift;
 case $COMMAND in 
 		Konfiguracja)
 			konfiguracja "$@"
-		;;
-		Parstart)
-			parstart "$@"
 		;;
 		*)
 			exit 1;

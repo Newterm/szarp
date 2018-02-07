@@ -1,0 +1,4 @@
+Template: szarp/prefix
+Type: string
+_Description: Configuration prefix
+ Enter configuration prefix.

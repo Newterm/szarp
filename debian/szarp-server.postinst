@@ -69,7 +69,10 @@ case "$1" in
 	# (and is removed only by purge so will remain during upgrade)
 	rm -f /etc/init.d/parstart
 
-	if [ ! -d $UNITSELECT_PATH ]; then
+	# create new unit files if dir doesn't exist, or..
+	# ..if it exists, but there are no other files except (possibly missing) iks-server
+	# it's necessary as szarp-iks-server will always be installed before szarp-server
+	if [ ! -d $UNITSELECT_PATH ] || ( [ -d $UNITSELECT_PATH ] && [ `ls $UNITSELECT_PATH | grep -v "iks-server" | wc -l` -eq 0 ] ); then
 		mkdir -p $UNITSELECT_PATH
 
 		# create default configuration
@@ -92,24 +95,9 @@ case "$1" in
 	fi;
 	PREFIX=$RET;
 
-	if [ -d /opt/szarp/iks ]; then
-		if [ ! -d /opt/szarp/$PREFIX/iks ]; then
-			mv /opt/szarp/iks /opt/szarp/$PREFIX/iks
-			echo "WARNING: Moving current iks configuration to /opt/szarp/base/iks"
-		else
-			echo "WARNING: Configuration in /opt/szarp/base/iks already exists"
-		fi
-	fi
-
-	if [ ! -e /opt/szarp/$PREFIX/iks/iks-server.ini ]; then
-		mkdir -p /opt/szarp/$PREFIX/iks/
-		echo -e "base_live_cache_retention = 3600\n\n[ $PREFIX ]\ntype = szbase\nbase = $PREFIX\nhub_url = tcp://127.0.0.1:56662" > /opt/szarp/$PREFIX/iks/iks-server.ini
-	fi
-
 	/opt/szarp/bin/config_deb Konfiguracja /opt/szarp/$PREFIX $PREFIX
 	ln -sf /opt/szarp/$PREFIX/szarp.cfg /etc/szarp/szarp.cfg
 	ln -sfn /opt/szarp/$PREFIX /etc/szarp/default
-	ln -sf /opt/szarp/$PREFIX/iks/iks-server.ini /etc/szarp/iks-server.ini
 
 	if [ ! -d /opt/szarp/$PREFIX/szbase ] ; then
 		db_get szarp-server/db_catalog;
@@ -117,8 +105,6 @@ case "$1" in
 			install -d /opt/szarp/$PREFIX/szbase;
 		fi;
 	fi;
-
-	/opt/szarp/bin/config_deb Parstart /opt/szarp/$PREFIX $PREFIX
 
 	if [ ! -e /opt/szarp/$PREFIX/sss_key.pem ]; then
 
