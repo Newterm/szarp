@@ -111,6 +111,10 @@ public:
 		return cmd.count(arg);
 	}
 
+	const CmdLineParser get_cmdlineparser() const {
+		return cmd;
+	}
+
 private:
 	// Getting -D... parameters from cmd line. This is for backward compatibility.
 	template <typename T>

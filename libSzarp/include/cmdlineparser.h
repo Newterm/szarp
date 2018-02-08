@@ -147,6 +147,8 @@ void CmdLineParser::parse(int argc, const char ** argv, const ArgsHolder& main_a
 
 		_parse(parsed_opts, vm, main_args, as...);
 	} catch(po::error& e) { 
+		// make sure the user sees the message
+		std::cerr << "Error while parsing arguments: " << e.what() << std::endl;
 		sz_log(0, "Options parse error: %s", e.what());
 		exit(1);
 	}
