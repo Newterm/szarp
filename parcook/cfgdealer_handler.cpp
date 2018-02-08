@@ -46,73 +46,73 @@ ConfigDealerHandler::ConfigDealerHandler(const ArgsManager& args_mgr) {
 		throw std::runtime_error("Got no configuration from cfgdealer (is it running?).");
 	}
 
-	std::wistringstream ss(SC::L2S(std::move(conf_str)));
-	boost::property_tree::wptree conf_tree;
+	std::istringstream ss(std::move(conf_str));
+	boost::property_tree::ptree conf_tree;
 	boost::property_tree::read_xml(ss, conf_tree);
 
-	for (const auto& params_child: conf_tree.get_child(L"params")) {
-		if (params_child.first == L"sends") {
+	for (const auto& params_child: conf_tree.get_child("params")) {
+		if (params_child.first == "sends") {
 			for (const auto& sends_child: params_child.second) {
-				if (sends_child.first == L"param") {
+				if (sends_child.first == "param") {
 					parseSentParam(sends_child.second);
 				}
 			}
 		}
 	}
 
-	for (const auto& params_child: conf_tree.get_child(L"params")) {
-		if (params_child.first == L"device") {
+	for (const auto& params_child: conf_tree.get_child("params")) {
+		if (params_child.first == "device") {
 			parseDevice(params_child.second);
 		}
 	}
 }
 
-void ConfigDealerHandler::parseDevice(const boost::property_tree::wptree& device_conf) {
-	device_xml = SC::S2A(device_conf.data());
-	ipc_offset = device_conf.get<int>(L"<xmlattr>.initial_param_no") - 1;
+void ConfigDealerHandler::parseDevice(const boost::property_tree::ptree& device_conf) {
+	device_xml = SC::S2A(SC::L2S(device_conf.data()));
+	ipc_offset = device_conf.get<int>("<xmlattr>.initial_param_no") - 1;
 	device = new CDevice();
 	device->parseXML(device_conf);
 	// TODO: configure timeval
 	for (const auto& unit_conf: device_conf) {
-		if (unit_conf.first == L"unit") {
+		if (unit_conf.first == "unit") {
 			units.push_back(new CUnit(this, unit_conf.second, ipc_offset + params_count));
 			params_count += units.back()->GetParamsCount();
 		}
 	}
 }
 
-void ConfigDealerHandler::parseSentParam(const boost::property_tree::wptree& send) {
-	auto param = new CParam(send, send.get<size_t>(L"<xmlattr>.ipc_ind"));
+void ConfigDealerHandler::parseSentParam(const boost::property_tree::ptree& send) {
+	auto param = new CParam(send, send.get<size_t>("<xmlattr>.ipc_ind"));
 	sent_params[param->GetName()] = param;
 	sends_inds.push_back(param->GetIpcInd());
 }
 
 
-ConfigDealerHandler::CUnit::CUnit(ConfigDealerHandler* parent, const boost::property_tree::wptree& conf, size_t offset) {
+ConfigDealerHandler::CUnit::CUnit(ConfigDealerHandler* parent, const boost::property_tree::ptree& conf, size_t offset) {
 	TAttribHolder::parseXML(conf);
 	unit_no = getAttribute<size_t>("unit_no");
 
-	params.reserve(conf.count(L"param"));
-	sends.reserve(conf.count(L"send"));
+	params.reserve(conf.count("param"));
+	sends.reserve(conf.count("send"));
 
 	size_t param_no = offset;
 	for (const auto& param_conf: conf) {
-		if (param_conf.first == L"param") {
+		if (param_conf.first == "param") {
 			params.push_back(new CParam(param_conf.second, param_no++));
-		} else if (param_conf.first == L"send") {
+		} else if (param_conf.first == "send") {
 			sends.push_back(new CSend(parent, param_conf.second));
 		}
 	}
 }
 
 
-ConfigDealerHandler::CParam::CParam(const boost::property_tree::wptree& conf, size_t _ipc_ind): ipc_ind(_ipc_ind) {
+ConfigDealerHandler::CParam::CParam(const boost::property_tree::ptree& conf, size_t _ipc_ind): ipc_ind(_ipc_ind) {
 	TAttribHolder::parseXML(conf);
-	SetName(conf.get<std::wstring>(L"<xmlattr>.name"));
+	SetName(SC::L2S(conf.get<std::string>("<xmlattr>.name")));
 }
 
 
-ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree& conf): parent(_parent) {
+ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::property_tree::ptree& conf): parent(_parent) {
 	TAttribHolder::parseXML(conf);
 	sent_param_name = SC::L2S(getAttribute<std::string>("param", ""));
 	ParseSentParam();
@@ -121,6 +121,8 @@ ConfigDealerHandler::CSend::CSend(ConfigDealerHandler* _parent, const boost::pro
 void ConfigDealerHandler::CSend::ParseSentParam() {
 	const std::vector<std::string> ignored_params = {"extra:address"};
 	IPCParamInfo* param_to_send = GetParamToSend();
+	if (!param_to_send) return;
+
 	std::vector<std::pair<std::string, std::string>> attributes = param_to_send->getAllAttributes();
 	for (const auto& attr_pair: attributes) {
 		const std::string& attr_name = attr_pair.first;
