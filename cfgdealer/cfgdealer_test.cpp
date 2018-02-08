@@ -62,15 +62,15 @@ int main (int argc, char ** argv) {
 		return 1;
 	}
 
-	std::wistringstream ss(SC::L2S(std::move(conf_str)));
+	std::istringstream ss(std::move(conf_str));
 
-	pt::wptree conf_tree;
+	pt::ptree conf_tree;
 	pt::read_xml(ss, conf_tree);
 
 #if BOOST_VERSION >= 105800
-	pt::write_xml(std::wcout, conf_tree, pt::xml_parser::xml_writer_make_settings<std::wstring>(L' ', 2));
+	pt::write_xml(std::cout, conf_tree, pt::xml_parser::xml_writer_make_settings<std::string>(' ', 2));
 #else
-	pt::write_xml(std::wcout, conf_tree, pt::xml_parser::xml_writer_make_settings<wchar_t>(L' ', 2));
+	pt::write_xml(std::cout, conf_tree, pt::xml_parser::xml_writer_make_settings<char>(' ', 2));
 #endif
 
 	return 0;

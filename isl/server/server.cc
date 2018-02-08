@@ -799,7 +799,7 @@ ParsedURI::~ParsedURI(void)
 }
 
 
-void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh, bool should_die_with_parent)
+void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh)
 {
 	char * sections = cloader->getString("servers", NULL);
 	char **toks = NULL;
@@ -857,14 +857,13 @@ void Server::StartAll(ConfigLoader *cloader, AbstractContentHandler *conh, bool 
 				tokenize(NULL, &toks, &tokc);
 				delete cloader;
 
-				if (should_die_with_parent) {
+				{
 					auto pr_ok = prctl(PR_SET_PDEATHSIG, SIGINT);
 					if (pr_ok != 0) throw std::runtime_error("Could not register signal on parent death");
 				}
 
 				server->start(); // never returns
-				sz_log(1, "http server exiting on error");
-				throw std::runtime_error("server exited");
+				exit(0);
 			case -1 : //error
 				sz_log(1, "fork() error");
 				throw std::runtime_error("fork() failed");

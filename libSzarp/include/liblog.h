@@ -87,6 +87,10 @@ class Logger {
 	void log(const std::string& msg, priority p);
 
 public:
+	~Logger() {
+		flush();
+	}
+
 	void flush();
 
 	void log_later(std::shared_ptr<LogEntry> msg);

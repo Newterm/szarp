@@ -79,8 +79,6 @@
 
 #include <libxml/parser.h>
 
-#ifdef LIBXML_XPATH_ENABLED
-
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
@@ -96,8 +94,6 @@
 #include <boost/tokenizer.hpp>
 using std::string;
 
-#define DAEMON_INTERVAL 10
-
 /**
  * Modbus communication config.
  */
@@ -107,13 +103,12 @@ public :
 	 * @param params number of params to read
 	 */
 	ExecDaemon(int params);
-	~ExecDaemon();
 
 	/** 
 	 * Parses XML 'device' element.
 	 * @return - 0 on success, 1 on error 
 	 */
-	int ParseConfig(DaemonConfig * cfg);
+	int ParseConfig(DaemonConfig * cfg, const ArgsManager& args_mgr);
 
 	/**
 	 * Tries to execute program.
@@ -125,18 +120,13 @@ public :
 	/** Wait for next cycle. */
 	void Wait();
 	
-protected :
-	/** helper function for XML parsing 
-	 * @return 1 on error, 0 otherwise */
-	int XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num);
-	
-	int m_single;		/**< are we in 'single' mode */
-	public:
+private:
 	int m_params_count;	/**< size of params array */
-	protected:
-	char ** m_argvp;	/**< command to execute */
-	int m_freq;		/**< execute frequency */
-	time_t m_last;
+
+	bool m_single{false};		/**< are we in 'single' mode */
+	char ** m_argvp{nullptr};	/**< command to execute */
+	int m_freq{10};		/**< execute frequency */
+	time_t m_last{0};
 };
 
 /**
@@ -146,107 +136,46 @@ protected :
 ExecDaemon::ExecDaemon(int params) 
 {
 	ASSERT(params >= 0);
-
 	m_params_count = params;
-	m_freq = DAEMON_INTERVAL;
-	m_single = 0;
-	m_last = 0;
-	m_argvp = NULL;
 }
 
-ExecDaemon::~ExecDaemon() 
+int ExecDaemon::ParseConfig(DaemonConfig * cfg, const ArgsManager& args_mgr)
 {
-}
-
-
-int ExecDaemon::XMLCheckFreq(xmlXPathContextPtr xp_ctx, int dev_num)
-{
-	char *e;
-	xmlChar *c;
-	long l;
-
-	int ret = asprintf(&e, "/ipk:params/ipk:device[position()=%d]/@exec:frequency",
-			dev_num);
-	(void)ret;
-	ASSERT(e != NULL);
-	c = uxmlXPathGetProp(BAD_CAST e, xp_ctx, false);
-	free(e);
-	if (c == NULL)
-	{
-		sz_log(2, "using exec default frequency %d", m_freq);
-		return 0;
+	std::vector<std::string> script_opts{};
+	const auto& cmdline = args_mgr.get_cmdlineparser();
+	if (cmdline.has("script-options")) {
+		script_opts = cmdline.get<std::vector<std::string>>("script-options").get();
 	}
-	l = strtol((char *)c, &e, 0);
-	if ((*c == 0) || (*e != 0)) {
-		sz_log(1, "incorrect value '%s' for exec:frequency, number expected",
-				(char *)c);
-		xmlFree(c);
+
+	if (!args_mgr.has("device-path")) {
+		sz_log(0, "No script path specified!");
 		return 1;
 	}
-	xmlFree(c);
-	if (l < DAEMON_INTERVAL) {
-		sz_log(1, "value '%ld' for exec:frequency to small", l);
-		return 1;
+
+	std::string options;
+	const std::string& path = *args_mgr.get<std::string>("device-path");
+
+	TDevice* device = cfg->GetDevice();
+	m_freq = device->getAttribute<int>("extra:frequency", 10);
+
+	m_single = args_mgr.has("single");
+
+	m_argvp = (char **) malloc(sizeof(char *) * script_opts.size() + 2); // +2 for path and NULL terminator
+	m_argvp[0] = strdup(path.c_str());
+
+	int j = 1;
+	for (const auto& opt: script_opts) {
+		m_argvp[j++] = strdup(opt.c_str());
+		if (m_single) {
+			options += opt;
+		}
 	}
-	m_freq = (int)l;
-	sz_log(2, "using exec frequency %d", m_freq);
-	return 0;
-}
 
-int ExecDaemon::ParseConfig(DaemonConfig * cfg)
-{
-	xmlDocPtr doc;
-	xmlXPathContextPtr xp_ctx;
-	int dev_num;
-	int ret;
-	
-	/* get config data */
-	ASSERT(cfg != NULL);
-	dev_num = cfg->GetLineNumber();
-	ASSERT(dev_num > 0);
-	doc = cfg->GetXMLDoc();
-	ASSERT(doc != NULL);
+	m_argvp[j] = NULL;
 
-	/* prepare xpath */
-	xp_ctx = xmlXPathNewContext(doc);
-	ASSERT(xp_ctx != NULL);
-
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
-			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "exec",
-			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	ASSERT(ret == 0);
-
-	if (XMLCheckFreq(xp_ctx, dev_num))
-		return 1;
-
-	xmlXPathFreeContext(xp_ctx);
-	
-	m_single = cfg->GetSingle();
-	
-	std::string path = cfg->GetDevice()->getAttribute("path");
-	std::string options = cfg->GetDevice()->getAttribute<std::string>("options", "");
 	if (m_single) {
-		printf("Using command '%s'\n", (path + " " + options).c_str());
+		std::cerr << "Using command " << path << " " << options << " with frequency " << m_freq << std::endl;
 	}
-
-	using namespace boost;
-        typedef escaped_list_separator<char, std::char_traits<char> > sep;
-        typedef tokenizer<sep, std::string::const_iterator, std::string> tokenizer;
-        sep esp("\\", " ", "\"'");
-        tokenizer tok(options, esp);
-        std::vector<char *> argv_v;
-        for (tokenizer::iterator i = tok.begin(); i != tok.end(); i++) {
-                argv_v.push_back(strdup((*i).c_str()));
-        }
-        m_argvp = (char **) malloc(sizeof(char *) * argv_v.size() + 2);
-        m_argvp[0] = strdup(path.c_str());
-        int j = 1;
-        for (std::vector<char *>::iterator i = argv_v.begin(); i != argv_v.end(); i++, j++) {
-                m_argvp[j] = *i;
-        }
-        m_argvp[j] = NULL;
 
 	return 0;
 }
@@ -272,8 +201,10 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 {
 	char *ret;
 
-	for (int i = 0; i < m_params_count; i++) {
-		ipc->m_read[i] = SZARP_NO_DATA;
+	if (!m_single) {
+		for (int i = 0; i < m_params_count; i++) {
+			ipc->m_read[i] = SZARP_NO_DATA;
+		}
 	}
 			
 	ret = execute_substv(m_argvp[0], m_argvp);
@@ -299,7 +230,13 @@ int ExecDaemon::Exec(IPCHandler *ipc)
 		} else {
 			sz_log(10, "Got string for param i: '%s', converted to value %d", ret+b, d);
 		}
-		ipc->m_read[i] = d;
+
+		if (m_single) {
+			std::cout << "Got value " << d << " for param " << i << "\n";
+		} else {
+			ipc->m_read[i] = d;
+		}
+
 		ret[e]= t;
 	}
 
@@ -334,32 +271,41 @@ void init_signals()
 	ASSERT(ret == 0);
 }
 
+class ScriptExecDaemonArgs: public ArgsHolder {
+public:
+	po::options_description get_options() const override {
+		po::options_description desc{"Script options"};
+		desc.add_options()
+			("script-options", po::value<std::vector<std::string>>()->multitoken(), "Set script options on execution");
+
+		return desc;
+	}
+};
+
+
 int main(int argc, char *argv[])
 {
-	DaemonConfig   *cfg;
-	IPCHandler     *ipc;
-	ExecDaemon *dmn;
+	ArgsManager args_mgr("execdmn");
+	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs(), ScriptExecDaemonArgs());
 
-	xmlInitParser();
-	LIBXML_TEST_VERSION
-	xmlLineNumbersDefault(1);
-
-	cfg = new DaemonConfig("execdmn");
+	DaemonConfig* cfg = new DaemonConfig("execdmn");
 	ASSERT(cfg != NULL);
 
-	if (cfg->Load(&argc, argv)) {
+	if (cfg->Load(args_mgr)) {
 		sz_log(0, "Error loading configuration, exiting.");
 		return 1;
 	}
 
-	dmn = new ExecDaemon(cfg->GetDevice()->
-			GetFirstUnit()->GetParamsCount());
+	ExecDaemon* dmn = new ExecDaemon(cfg->GetDevice()->GetFirstUnit()->GetParamsCount());
+
 	ASSERT(dmn != NULL);
 
-	if (dmn->ParseConfig(cfg)) {
+	if (dmn->ParseConfig(cfg, args_mgr)) {
 		sz_log(0, "Error parsing config, exiting.");
 		return 1;
 	}
+
+	IPCHandler *ipc;
 
 	try {
 		ipc = new IPCHandler(cfg);
@@ -380,14 +326,3 @@ int main(int argc, char *argv[])
 	}
 	return 0;
 }
-
-#else /* LIBXML_XPATH_ENABLED */
-
-int main(void)
-{
-	printf("libxml2 XPath support not enabled!\n");
-	return 1;
-}
-
-#endif /* LIBXML_XPATH_ENABLED */
-

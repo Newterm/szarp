@@ -17,7 +17,7 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 
 	public:
 		CParam(unsigned _ind): ipc_ind(_ind) {}
-		CParam(const boost::property_tree::wptree&, size_t);
+		CParam(const boost::property_tree::ptree&, size_t);
 		unsigned int GetIpcInd() const override { return ipc_ind; }
 
 	};
@@ -27,7 +27,7 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 		std::wstring sent_param_name;
 		
 	public:
-		CSend(ConfigDealerHandler* _parent, const boost::property_tree::wptree&);
+		CSend(ConfigDealerHandler* _parent, const boost::property_tree::ptree&);
 
 		void ParseSentParam();
 
@@ -48,7 +48,7 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 
 	class CUnit: public UnitInfo {
 	public:
-		CUnit(ConfigDealerHandler* parent, const boost::property_tree::wptree&, size_t inds_offset);
+		CUnit(ConfigDealerHandler* parent, const boost::property_tree::ptree&, size_t inds_offset);
 
 		size_t GetSenderMsgType() const { return unit_no + 256L; }
 		size_t GetParamsCount() const { return params.size(); }
@@ -76,8 +76,8 @@ public:
 
 private:
 	void parseArgs(const ArgsManager&);
-	void parseDevice(const boost::property_tree::wptree&);
-	void parseSentParam(const boost::property_tree::wptree&);
+	void parseDevice(const boost::property_tree::ptree&);
+	void parseSentParam(const boost::property_tree::ptree&);
 
 public:
 

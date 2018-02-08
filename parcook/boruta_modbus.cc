@@ -1717,14 +1717,14 @@ int modbus_unit::configure_unit(UnitInfo* u) {
 	for (auto p: u->GetParams()) {
 		int prec = exp10(p->GetPrec());
 		if (configure_param(p, prec, false)) {
-			m_log.log(1, "Error in param %ls", p->GetName().c_str());
+			m_log.log(1, "Error in param %s", SC::S2L(p->GetName()).c_str());
 			return 1;
 		}
 	}
 
 	for (auto p: u->GetSendParams()) {
 		if (configure_send(p, p->GetParamToSend())) {
-			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
+			m_log.log(1, "Error in send %s", SC::S2L(p->GetParamName()).c_str());
 			return 1;
 		}
 	}
