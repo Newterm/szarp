@@ -36,14 +36,18 @@ public:
 	virtual void setZmqVal(zmqhandler&) const = 0;
 	virtual void sendValueToParcook(short*) const = 0;
 
-	virtual void executeAndUpdate(zmqhandler&) = 0;
+	virtual void update(zmqhandler& zmq) {
+		this->setZmqVal(zmq);
+	}
+
+	virtual void execute() = 0;
 
 	void param_data_changed(TParam *p) override { /* needed for sz4 to update */ }
 
 	void subscribe_on_params(sz4::base* base) {
 		std::vector<TParam*> params_to_register;
 
-		const auto pushParamsToRegister = [&params_to_register](const std::wstring& name) {
+		const auto pushParamsToRegister = [this, &params_to_register](const std::wstring& name) {
 			TParam* param_to_register = IPKContainer::GetObject()->GetParam(name);
 			if (!param_to_register) {
 				return;
@@ -51,6 +55,8 @@ public:
 			if (std::find(params_to_register.begin(), params_to_register.end(), param_to_register) != params_to_register.end()) return;
 			params_to_register.push_back(param_to_register);
 			sz_log(6, "Added param %S to observed of LUA function in param s", param_to_register->GetGlobalName().c_str());
+
+			this->precisions.insert({name, param_to_register->GetPrec()});
 		};
 		
 		std::for_each(preparedParams.cbegin(), preparedParams.cend(), pushParamsToRegister);
@@ -61,6 +67,7 @@ protected:
 	TParam *param;
 	const size_t index;
 	std::vector<std::wstring> preparedParams;
+	std::map<std::wstring, int> precisions;
 };
 
 template <class data_type, class time_type>
@@ -82,11 +89,12 @@ public:
 			val_to_parcook*= 10;
 		}
 
-		if (val_to_parcook > std::numeric_limits<short>::max() || val_to_parcook < std::numeric_limits<short>::min()) read[index] = SZARP_NO_DATA;
+		if (val_to_parcook > (data_type) std::numeric_limits<short>::max() || val_to_parcook < (data_type) std::numeric_limits<short>::min()) read[index] = SZARP_NO_DATA;
 		else read[index] = (short) val_to_parcook;
 	}
 
 	void setVal(double d) override { // copy the value
+		sz_log(9, "Setting value %f for param %ls", d / exp10(param->GetPrec()), param->GetName().c_str());
 		val = d;
 	}
 
@@ -137,7 +145,7 @@ public:
 		this->param->SetLuaParamRef(luaL_ref(lua, LUA_REGISTRYINDEX)); // register the lua function to call later
 	}
 
-	void executeAndUpdate(zmqhandler& zmq) override {
+	void execute() override {
 		assert(this->param->GetLuaParamReference() != LUA_NOREF);
 
 		lua_State* lua = Defdmn::getObject().get_lua_interpreter().lua();
@@ -152,7 +160,6 @@ public:
 			lua_pop(lua, -1);
 
 			this->setVal(sz4::no_data<double>());
-			this->setZmqVal(zmq);
 
 			throw SzException(std::string("Execution error for param ") + SC::S2A(this->param->GetName()) + std::string(". Reason: ") + msg);
 		}
@@ -163,7 +170,6 @@ public:
 		sz_log(10, "Value calculated for param %ls is %f.", this->param->GetName().c_str(), result);
 
 		this->setVal(result);
-		this->setZmqVal(zmq);
 	}
 
 };
@@ -185,9 +191,10 @@ public:
 			tab = tab.substr(0, idx);
 	}
 
-	void executeAndUpdate(zmqhandler& zmq) override
+	void execute() override
 	{
 		const wchar_t *chptr;
+		unsigned long lsw, msw, value;
 		constexpr int SS = 30;
 		double stack[SS+1];
 		char nodata[SS+1];
@@ -196,8 +203,10 @@ public:
 		short parcnt;
 		int NullFormula = 0;
 		int p_no = 0;
-		float val_op = 0.0f; 
-		this->setVal(sz4::no_data<double>());
+		float val_op = 0.0f;
+
+		// maps stack index to precision
+		std::map<int, int> precs_on_stack;
 
 		CalculNoData = 0;
 
@@ -212,9 +221,12 @@ public:
 			if (iswdigit(*chptr)) {
 				tmp = wcstof(chptr, NULL);
 				chptr = wcschr(chptr, L' ');
-				double par_val = Defdmn::IPCParamValue(this->preparedParams[p_no++]);
+				auto pname = this->preparedParams[p_no++];
+				double par_val = Defdmn::IPCParamValue(pname);
 				if (par_val == sz4::no_data<double>()) nodata[sp] = 1; // check if val is not nan
 				else nodata[sp] = 0;
+
+				precs_on_stack.insert({sp, this->precisions[pname]});
 
 				stack[sp++] = par_val;	
 			} else {
@@ -388,6 +400,22 @@ public:
 						} else 
 							this->setVal(stack[sp - 1]);
 						break;
+					case L':': /* combined param */
+						if (sp-- < 2)
+							break;
+
+						if (nodata[sp] || nodata[sp-1]) {
+							CalculNoData = 1;
+							break;
+						}
+
+						// this will work as double has enough precision to represent 32 bit integers precisely
+						msw = static_cast<unsigned long>(round(stack[sp - 1] * exp10(precs_on_stack[sp - 1])));
+						lsw = static_cast<unsigned long>(round(stack[sp] * exp10(precs_on_stack[sp])));
+						value = (msw << 16) | lsw;
+
+						stack[sp - 1] = static_cast<double>(value);
+						break;
 					case L' ':
 						break;
 					default:
@@ -396,8 +424,6 @@ public:
 				}
 			}
 		} while (*(++chptr) != 0);
-			
-		this->setZmqVal(zmq);
 	}
 };
 

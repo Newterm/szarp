@@ -120,10 +120,15 @@ void Defdmn::go() {
 void Defdmn::executeScripts() {
 	for (auto& i: param_info) {
 		try {
-			i->executeAndUpdate(*m_zmq);
-			if (connectToParcook) i->sendValueToParcook(m_ipc->m_read);
+			i->execute();
+			if (!single) i->update(*m_zmq);
+			if (!single && connectToParcook) i->sendValueToParcook(m_ipc->m_read);
 		} catch (SzException &e) {
-			sz_log(1, "%s", e.what());
+			sz_log(1, "Error while calculating param: %s", e.what());
+
+			// set nodata
+			i->setVal(sz4::no_data<double>());
+			if (!single) i->update(*m_zmq);
 		}
 	}
 }
@@ -166,6 +171,7 @@ void Defdmn::configure(int* argc, char** argv) {
 		throw SzException("Could not load configuration");
 
 	m_cfg->GetIPK()->SetConfigId(0);
+	single = m_cfg->GetSingle();
 
 	try {
 		m_ipc.reset(new IPCHandler(m_cfg.get()));
