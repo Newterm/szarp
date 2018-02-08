@@ -112,7 +112,7 @@ bool repApp::ParseCMDLineOptions() {
 
 	libpar_init();
 
-	char ** normal_argv;
+	char ** normal_argv = nullptr;
 
 	try { 
 		normal_argv = new char*[argc+1];
@@ -178,7 +178,7 @@ bool repApp::ParseCMDLineOptions() {
 		return false; 
 	} 
 
-	if (normal_argv) delete normal_argv;
+	if (normal_argv) delete[] normal_argv;
 
 	libpar_done();
 	return true;
