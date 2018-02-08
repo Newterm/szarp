@@ -52,16 +52,6 @@
 #include <sys/wait.h>
 
 /**
- * SIGINT handler - log and exit.
- * @param signum ignored
- */
-void int_handler(int signum)
-{
-	sz_log(2, "paramd exiting on signal");
-	exit(0);
-}
-
-/**
  * Main program function. Reads configuration data, initializes connection with
  * parcook, starts HTTP server. Also, initializes xmllib to enter thread-safe
  * mode.
@@ -125,7 +115,6 @@ int main(int argc, char **argv)
 		should_daemonize = false;
 	}
 
-
 	if (should_daemonize) {
 		// go into background
 		go_daemon();
@@ -133,23 +122,14 @@ int main(int argc, char **argv)
 
 	sz_log(1, "paramd: started");
 	
-	signal(SIGINT, int_handler);
-
 	try {
-		Server::StartAll(cloader, &conh, !should_daemonize);
+		Server::StartAll(cloader, &conh);
 	} catch (const std::exception& e) {
 		sz_log(0, e.what());
 		exit(1);
 	}
 
-	if (!should_daemonize) {
-		signal(SIGTERM, int_handler);
-		signal(SIGQUIT, int_handler);
-		signal(SIGHUP,  int_handler);
-		signal(SIGCHLD, int_handler);
-
-		wait(NULL);
-	}
+	wait(NULL);
 
 	return 0;
 }

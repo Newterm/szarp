@@ -67,7 +67,7 @@ public:
 
 	virtual int parseXML(xmlNodePtr node);
 	virtual int parseXML(xmlTextReaderPtr reader);
-	virtual int parseXML(const boost::property_tree::wptree&);
+	virtual int parseXML(const boost::property_tree::ptree&);
 
 	virtual int processAttributes() { return 0; }
 

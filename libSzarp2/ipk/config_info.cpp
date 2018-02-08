@@ -25,10 +25,10 @@ int TAttribHolder::parseXML(xmlTextReaderPtr reader) {
 	return TAttribHolder::parseXML(xmlTextReaderCurrentNode(reader));
 }
 
-int TAttribHolder::parseXML(const boost::property_tree::wptree& tree) {
-	auto attrs = tree.get_child(L"<xmlattr>");
+int TAttribHolder::parseXML(const boost::property_tree::ptree& tree) {
+	auto attrs = tree.get_child("<xmlattr>");
 	for (const auto& attr: attrs) {
-		auto attr_name = SC::S2L(attr.first);
+		auto attr_name = attr.first;
 		size_t sep_pos = attr_name.find_first_of(":");
 		if (sep_pos != std::string::npos) {
 			auto ns_prefix = attr_name.substr(0, sep_pos);
@@ -39,7 +39,7 @@ int TAttribHolder::parseXML(const boost::property_tree::wptree& tree) {
 			}
 		}
 
-		storeAttribute(attr_name, SC::S2L(attr.second.data()));
+		storeAttribute(attr_name, attr.second.data());
 	}
 
 	return processAttributes();

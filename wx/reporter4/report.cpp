@@ -58,7 +58,7 @@ void ToXML(boost::property_tree::wptree& pt, const ReportInfo& report) {
 ReportInfo FromFile(const std::string& file) {
 	boost::property_tree::wptree report;
 
-	read_xml(file, report, 0, std::locale("pl_PL.UTF-8"));
+	read_xml(file, report, 0, std::locale(""));
 	return FromXML(report);
 }
 
@@ -109,7 +109,7 @@ std::vector<ReportInfo> FromParams(const std::string& params_path, const std::ws
 	std::map<std::wstring, ReportInfo*> reports;
 
 	boost::property_tree::wptree pt;
-	read_xml(params_path, pt, 0, std::locale("pl_PL.UTF-8"));
+	read_xml(params_path, pt, 0, std::locale(""));
 
 	for (const auto& device: pt.get_child(L"params")) {
 		if (device.first == L"device") {
