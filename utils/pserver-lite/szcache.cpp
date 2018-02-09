@@ -782,15 +782,16 @@ std::vector<int16_t> SzCache::getShmData(SzPath path)
 	if (!_shm_conn.configured()) _shm_conn.configure();
 	if (!_shm_conn.connected()) _shm_conn.connect();
 
-	_shm_conn.update_segment();
-	
 	try {
+		_shm_conn.update_segment();
 		index = _shm_conn.param_index_from_path(path);
-	} catch (std::runtime_error e) {
-		logMsg(0, "SzCache::getShmData: Failed to get shared memory for %s" + path);
+		return _shm_conn.get_values(index);
+	} catch (const ShmError& e) {
+		logMsg(0, std::string("SzCache error: ") + e.what());
+	} catch (const std::runtime_error& e) {
+		logMsg(0, "SzCache::getShmData: Failed to get shared memory for " + path);
 	}
-	
-	return _shm_conn.get_values(index);
+	return std::vector<int16_t>();
 }
 
 void SzCache::logMsg(int level, std::string msg)
