@@ -9,21 +9,34 @@
 #include "szbdefines.h"
 
 volatile sig_atomic_t g_signals_blocked = 0;
-volatile sig_atomic_t g_should_exit = 0;
+volatile sig_atomic_t g_signum_received = 0;
 
-RETSIGTYPE g_CriticalHandler(int signum)
-{
-	signal(signum, SIG_DFL);
-	raise(signum);
-}
+const void* SHMAT_ERROR = (void*)-1;
 
-RETSIGTYPE g_TerminateHandler(int signum)
+RETSIGTYPE g_SignalHandler(int signum)
 {
 	if (g_signals_blocked) {
-		g_should_exit = 1;
+		g_signum_received = signum;
 	} else {
 		signal(signum, SIG_DFL);
 		raise(signum);
+	}
+}
+
+void lock_signals()
+{
+	g_signals_blocked = 1;
+}
+
+void unlock_signals()
+{
+	if (g_signum_received != 0) {
+		int signum = g_signum_received;
+		g_signum_received = 0;
+		g_signals_blocked = 0;
+		raise(signum);
+	} else {
+		g_signals_blocked = 0;
 	}
 }
 
@@ -38,35 +51,18 @@ _values_count(0)
 {
 }
 
-ShmConnection::~ShmConnection()
-{
-}
-
 void ShmConnection::register_signals()
 {
-	int ret;
-	struct sigaction sa;
-	sigset_t block_mask;
-	
+	int ret = 0;
+	struct sigaction sa{};
+	sigset_t block_mask{};
+
 	sigfillset(&block_mask);
-	sigdelset(&block_mask, SIGKILL);
-	sigdelset(&block_mask, SIGSTOP);
-	/* set no-cleanup handlers for critical signals */
-	sa.sa_handler = g_CriticalHandler;
 	sa.sa_mask = block_mask;
-	sa.sa_flags = 0;
-	ret = sigaction(SIGFPE, &sa, NULL);
-	assert (ret == 0);
-	ret = sigaction(SIGQUIT, &sa, NULL);
-	assert (ret == 0);
-	ret = sigaction(SIGILL, &sa, NULL);
-	assert (ret == 0);
-	ret = sigaction(SIGSEGV, &sa, NULL);
-	assert (ret == 0);
-	ret = sigaction(SIGBUS, &sa, NULL);
-	assert (ret == 0);
-	/* cleanup handlers for termination signals */
-	sa.sa_handler = g_TerminateHandler;
+
+	// deliver following signals using custom signal handler
+	// to avoid leaving attached shared memory
+	sa.sa_handler = g_SignalHandler;
 	sa.sa_flags = SA_RESTART;
 	ret = sigaction(SIGTERM, &sa, NULL);
 	assert (ret == 0);
@@ -136,7 +132,9 @@ bool ShmConnection::connect()
 	key_t shm_key;
 	key_t sem_key;
 	const int max_attempts_no = 60;
-	
+
+	assert(_values_count >= 0);
+	assert(_params_count >= 0);
 	_shm_segment.resize(_values_count * _params_count + SHM_PROBES_BUF_DATA_OFF);
 
 	shm_key = ftok(_parcook_path.c_str(), SHM_PROBES_BUF);
@@ -176,7 +174,7 @@ bool ShmConnection::connect()
 	return true;
 }
 
-void ShmConnection::shm_open(struct sembuf* semaphores)
+bool ShmConnection::shm_open(struct sembuf* semaphores)
 {
 	semaphores[0].sem_num = SEM_PROBES_BUF + 1;
 	semaphores[0].sem_op = 0;
@@ -186,11 +184,10 @@ void ShmConnection::shm_open(struct sembuf* semaphores)
 	semaphores[1].sem_flg = SEM_UNDO;
 
 	if (semop(_sem_desc, semaphores, 2) == -1) {
-		sz_log(1, "ShmConnection:shm_open(): cannot open semaphore, errno %d, exiting", errno);
-		g_signals_blocked = 0;
-		/* we use non-existing signal '0' */
-		g_TerminateHandler(0);
+		sz_log(1, "ShmConnection:shm_open(): cannot open semaphore, errno %d", errno);
+		return false;
 	}
+	return true;
 }
 
 void ShmConnection::shm_close(struct sembuf* semaphores)
@@ -199,55 +196,54 @@ void ShmConnection::shm_close(struct sembuf* semaphores)
 	semaphores[0].sem_op = -1;
 	semaphores[0].sem_flg = SEM_UNDO;
 	if (semop(_sem_desc, semaphores, 1) == -1) {
-		sz_log(1, "ShmConnection:shm_close: cannot release semaphore, errno %d, exiting", errno);
-		g_signals_blocked = 0;
-		/* we use non-existing signal '0' */
-		g_TerminateHandler(0);
+		sz_log(1, "ShmConnection:shm_close: cannot release semaphore, errno %d", errno);
 	}
 }
 
-void ShmConnection::attach(int16_t** segment) 
-{	
+int16_t* ShmConnection::attach() 
+{
+	int16_t* segment = nullptr;
 	do { 
-		*segment = (int16_t*)shmat(_shm_desc, 0, SHM_RDONLY); 
+		segment = (int16_t*)shmat(_shm_desc, nullptr, SHM_RDONLY); 
 
-	} while((*segment == (void*)-1) && errno == EINTR);
+	} while((segment == SHMAT_ERROR) && errno == EINTR);
 
-	if (*segment != (void*)-1) return;
+	if (segment == SHMAT_ERROR) {
+		sz_log(1, "ShmConnection:update_segment(): cannot attach segment, errno %d", errno);
+	}
 
-	sz_log(1, "ShmConnection:update_segment(): cannot attach segment, errno %d, exiting", errno);
-	g_signals_blocked = 0;
-	g_TerminateHandler(0);
+	return segment;
 }
 
 void ShmConnection::detach(int16_t** segment) 
 {
-	if (shmdt(*segment) != -1) return;
-
-	sz_log(1, "ShmConnection::update_segment(): cannot detache segment, errno %d, exiting", errno);
-	g_signals_blocked = 0;
-	g_TerminateHandler(0);
+	if (shmdt(*segment) == -1) {
+		sz_log(1, "ShmConnection::update_segment(): cannot detach segment, errno %d", errno);
+	}
 }
 
 void ShmConnection::update_segment()
 {
-	int16_t* attached_segment = nullptr;
-	struct sembuf semaphores[2];	
+	bool success = false;
+	struct sembuf semaphores[2];
 
-	g_signals_blocked = 1;
-	
-	shm_open(semaphores);
-	attach(&attached_segment);
-	
-	std::copy(attached_segment, attached_segment + _shm_segment.size(), _shm_segment.begin());
+	lock_signals();
+	if (shm_open(semaphores)) {
+		int16_t* attached_segment = attach();
+		if (attached_segment != SHMAT_ERROR) {
+			assert(_shm_segment.size() >= 0);
+			std::copy(attached_segment, attached_segment + _shm_segment.size(), _shm_segment.begin());
+			detach(&attached_segment);
+			success = true;
+		}
+		shm_close(semaphores);
+	}
+	unlock_signals();
 
-	detach(&attached_segment);
-	shm_close(semaphores);
-
-	g_signals_blocked = 0;
-
-	if (g_should_exit) 
-		g_TerminateHandler(0);
+	if (!success) {
+		_shm_segment.clear();
+		throw ShmError("ShmConnection: couldn't attach shared memory");
+	}
 }
 
 int ShmConnection::param_index_from_path(std::string path)
@@ -281,11 +277,15 @@ int ShmConnection::param_index_from_path(std::string path)
 
 int ShmConnection::get_count() 
 {
+	if (_shm_segment.empty()) return -1;
+
 	return _shm_segment[SHM_PROBES_BUF_CNT_INDEX]; 			
 }
 	
 int ShmConnection::get_pos() 
 {
+	if (_shm_segment.empty()) return -1;
+
 	return _shm_segment[SHM_PROBES_BUF_POS_INDEX];
 }
 
@@ -296,7 +296,7 @@ std::vector<int16_t> ShmConnection::get_values(int param_index)
 	int16_t count = _shm_segment[SHM_PROBES_BUF_CNT_INDEX]; 				
 	int16_t pos = _shm_segment[SHM_PROBES_BUF_POS_INDEX]; 				
 				
-	std::vector<int16_t>::iterator data = _shm_segment.begin() + SHM_PROBES_BUF_DATA_OFF;
+	auto data = _shm_segment.begin() + SHM_PROBES_BUF_DATA_OFF;
 
 	int param_off = _values_count * param_index;
 	int param_end_off = param_off + _values_count - 1;

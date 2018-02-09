@@ -6,6 +6,7 @@
 #endif
 
 #include "szarp_config.h"
+#include "exception.h"
 
 #include <string>
 #include <vector>
@@ -21,14 +22,15 @@
 #include <signal.h>
 
 extern volatile sig_atomic_t g_signals_blocked;
-extern volatile sig_atomic_t g_should_exit;
-RETSIGTYPE g_CriticalHandler(int signum);
-RETSIGTYPE g_TerminateHandler(int signum);
+extern volatile sig_atomic_t g_signum_received;
+
+class ShmError : public SzException {
+	SZ_INHERIT_CONSTR(ShmError, SzException)
+};
 
 class ShmConnection {
 	public:
 		ShmConnection();
-		~ShmConnection();
 		
 		void register_signals();
 		
@@ -51,16 +53,16 @@ class ShmConnection {
 		bool connected()
 		{ return _connected; }
 
-	protected:
+	private:
 		bool _registered;
 		bool _configured;
 		bool _connected;
 		
 		std::unique_ptr<TSzarpConfig> _szarp_config;
 			
-		void shm_open(struct sembuf* semaphores);
+		bool shm_open(struct sembuf* semaphores);
 		void shm_close(struct sembuf* semaphores);
-		void attach(int16_t** segment);
+		int16_t* attach();
 		void detach(int16_t** segment);
 
 		std::string _parcook_path;
