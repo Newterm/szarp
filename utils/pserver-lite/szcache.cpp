@@ -532,7 +532,7 @@ SzCache::SzIndex SzCache::lastIndex(SzPath path)
 	try { 	
 		to_read = toReadFromShm(path);
 	} catch (std::runtime_error re) {
-		logMsg(0, "SzCache::lastIndex: Exception: " + std::string(re.what()));	
+		logMsg(1, "SzCache::lastIndex: Exception: " + std::string(re.what()));
 	}
 	return (in_file + to_read - 1);
 }
@@ -787,15 +787,14 @@ std::vector<int16_t> SzCache::getShmData(SzPath path)
 		index = _shm_conn.param_index_from_path(path);
 		return _shm_conn.get_values(index);
 	} catch (const ShmError& e) {
-		logMsg(0, std::string("SzCache error: ") + e.what());
+		logMsg(1, std::string("SzCache error: ") + e.what());
 	} catch (const std::runtime_error& e) {
-		logMsg(0, "SzCache::getShmData: Failed to get shared memory for " + path);
+		logMsg(1, "SzCache::getShmData: Failed to get shared memory for " + path);
 	}
 	return std::vector<int16_t>();
 }
 
 void SzCache::logMsg(int level, std::string msg)
 {
-	std::cout << msg << std::endl;
+	sz_log(level, msg.c_str());
 }
-
