@@ -875,8 +875,6 @@ private:
 	void ConfigureDaemon(DaemonConfig *cfg);
 	/**Object responsible for communication with sender and parcook*/
 	IPCHandler *m_ipc;
-	/**DaemonConfig - daemon configuration*/
-	DaemonConfig *m_cfg;
 	/**Head of list of units present on the line*/
 	deque<UnitExaminator*> m_units;
 	/**Object communicating with serial port*/
@@ -916,7 +914,7 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 			exit(1);
 		}
 		try {
-			m_ipc = new IPCHandler(m_cfg);
+			m_ipc = new IPCHandler(cfg);
 		} catch(const std::exception& e) {
 			sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 			exit(1);
