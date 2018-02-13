@@ -544,3 +544,7 @@ const wxDateSpan& TimeIndex::GetDatePeriod() const {
 	return m_dateperiod;
 }
 
+DTime TimeIndex::GetNextProbeTime(const DTime& time, int dist) const {
+	return time + dist * m_timeres + dist * m_dateres;
+}
+

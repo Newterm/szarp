@@ -140,6 +140,8 @@ public:
 	/**@return date span for given period*/
 	const wxDateSpan& GetDatePeriod() const;
 
+	DTime GetNextProbeTime(const DTime& time, int dist = 1) const;
+
 	static const size_t default_units_count[PERIOD_T_LAST];
 
 	static const int PeriodMult[PERIOD_T_LAST];

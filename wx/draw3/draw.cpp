@@ -132,8 +132,9 @@ void Draw::MoveToTime(const DTime& time) {
 }
 
 void Draw::SetPeriod(const DTime& time, size_t number_of_values) {
-
-	m_index.SetStartTime(time, number_of_values);
+	if (time.IsValid()) {
+		m_index.SetStartTime(time, number_of_values);
+	}
 
 	m_values.SetNumberOfValues(number_of_values);
 
@@ -144,6 +145,7 @@ void Draw::SetPeriod(const DTime& time, size_t number_of_values) {
 }
 
 void Draw::SetStartTimeAndNumberOfValues(const DTime& start_time, size_t number_of_values) {
+	assert(start_time.IsValid());
 	m_index.SetStartTime(start_time);
 
 	m_values.SetNumberOfValues(number_of_values);
@@ -180,7 +182,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 
 	int d = m_values.m_view.Start();
 
-	DatabaseQuery* q = NULL;
+	DatabaseQuery* q = nullptr;
 
 	if (m_draw_info == NULL)
 		return q;
@@ -207,7 +209,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 
 		v.state = ValueInfo::PENDING;
 		
-		if (q == NULL)
+		if (q == nullptr)
 			q = CreateDataQuery(m_draw_info, period, m_draw_no);
 		AddTimeToDataQuery(q, pt.GetTime()).count = v.max_probes;
 	}
