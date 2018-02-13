@@ -81,7 +81,7 @@ class Logger {
 	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
 
 	szlog::priority treshold = szlog::priority::error;
-	std::shared_ptr<LogHandler> _logger;
+	std::shared_ptr<LogHandler> _logger{new COutLogger()};
 
 	void log_messages();
 	void log(const std::string& msg, priority p);
