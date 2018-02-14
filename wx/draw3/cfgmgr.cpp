@@ -584,6 +584,13 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 	if (config_path == wxEmptyString)
 		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
 
+	if ( ipk == NULL) {
+		errorStruct.continueOnParseError = true;
+		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
+		errorStruct.continueOnParseError = false;
+		wxLogWarning(_("Reading from deprecated params.xml"));
+	}
+
 	DrawsSets* ret;
 	if (ipk == NULL)
 		ret = NULL;

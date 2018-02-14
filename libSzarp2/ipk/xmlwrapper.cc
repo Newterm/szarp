@@ -44,6 +44,8 @@
 #include "ekrncor.h"
 #include "liblog.h"
 
+ParseErrors errorStruct{false};
+
 using namespace std;
 
 
@@ -184,7 +186,9 @@ void XMLWrapper::XMLErrorAttr(const xmlChar* tag_name, const char* attr_name) {
 void XMLWrapper::XMLErrorNotKnownTag(const char* current_tag) {
 	sz_log(1, "XML file error: not known tag <%s> was found inside '<%s>' (line,%d)", name, current_tag,
 		xmlTextReaderGetParserLineNumber(r));
-	throw XMLWrapperException();
+	if(!errorStruct.continueOnParseError) {
+		throw XMLWrapperException();
+	}
 }
 
 void XMLWrapper::XMLErrorWrongAttrValue() {
