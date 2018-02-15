@@ -228,7 +228,6 @@ void RealDatablock::Refresh() {
 
 	/* check if file size changed */
 	int i = size / sizeof(SZB_FILE_TYPE);
-	assert(i >= this->probes_from_file);
 
 	if (i <= this->probes_from_file)
 		return;
