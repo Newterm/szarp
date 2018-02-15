@@ -261,7 +261,9 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 {
 	if (draw_panel->IsUserDefined())  {
 		DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
-		dp->EditSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), draw_panel->GetPrefix());
+		if (dp->EditSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), draw_panel->GetPrefix()) == wxID_OK) {
+			config_manager->SaveDefinedDrawsSets();
+		}
 		dp->Destroy();
 	} else
 		wxMessageBox(_("You may edit only user defined sets."),
@@ -277,6 +279,7 @@ void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
+		config_manager->SaveDefinedDrawsSets();
 	}
 	dp->Destroy();
 }
@@ -328,6 +331,7 @@ void DrawFrame::OnAdd(wxCommandEvent& event)
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
+		config_manager->SaveDefinedDrawsSets();
 	}
 	dp->Destroy();
 }
