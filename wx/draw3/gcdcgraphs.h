@@ -68,6 +68,8 @@ class GCDCGraphs: public wxWindow, public DrawGraphs, public SetInfoDropReceiver
 
 	bool isShowArrowsChecked = false;
 
+	int graphSizeMultiplier = 2;
+
 	void DrawWindowInfo(wxGraphicsContext &dc);
 
 	void DrawBackground(wxGraphicsContext &dc);
@@ -134,7 +136,7 @@ public:
 
 	virtual void Refresh();
 
-	virtual void FullRefresh();
+	virtual void FullRefresh() override;
 
 	virtual void NewRemarks(Draw *draw);
 
@@ -205,6 +207,10 @@ public:
 	bool GetShowArrowsChecked();
 
 	void SetShowArrowsChecked(bool setArrow);
+
+	int GetGraphThickness();
+
+	void SetGraphThickness(int thickness) override;
 
 	DECLARE_EVENT_TABLE()
 

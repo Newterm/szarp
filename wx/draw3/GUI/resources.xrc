@@ -1299,6 +1299,30 @@
                 <checkable>1</checkable>
             </object>
             <object class="separator"/>
+            <object class="wxMenu">
+                <label>Graph thickness</label>
+                <object class="wxMenuItem" name="Thickness1">
+                    <label>1</label>
+                    <radio>1</radio>
+                </object>
+                <object class="wxMenuItem" name="Thickness2">
+                    <label>2</label>
+                    <radio>1</radio>
+                </object>
+                <object class="wxMenuItem" name="Thickness3">
+                    <label>3</label>
+                    <radio>1</radio>
+                </object>
+                <object class="wxMenuItem" name="Thickness4">
+                    <label>4</label>
+                    <radio>1</radio>
+                </object>
+                <object class="wxMenuItem" name="Thickness5">
+                    <label>5</label>
+                    <radio>1</radio>
+                </object>
+            </object>
+            <object class="separator"/>
             <object class="wxMenuItem" name="LATEST_DATA_FOLLOW">
                 <label>Latest data following mode</label>
                 <checkable>1</checkable>

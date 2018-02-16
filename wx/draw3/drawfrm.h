@@ -283,6 +283,9 @@ protected:
 	/** Toggles split cursor mode*/
 	void OnSplitCursor(wxCommandEvent &event);
 
+	/** Changes graph thickness */
+	void OnChangeGraphThickness(wxCommandEvent &event);
+
 	void OnLatestDataFollow(wxCommandEvent &event);
 
 	/** Idle event handler*/

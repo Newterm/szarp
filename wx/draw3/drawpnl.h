@@ -142,6 +142,9 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/* toggles split cursor icon on toolbar */
 	void ToggleSplitCursorIcon(bool is_double);
 
+	/** Changes graph thickness */
+	void ChangeGraphThickness(int thickness);
+
 	void SetLatestDataFollow(bool follow);
 
 	/**Handles priting request.

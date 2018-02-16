@@ -797,6 +797,11 @@ void DrawPanel::ToggleSplitCursorIcon(bool is_double)
 	}
 }
 
+void DrawPanel::ChangeGraphThickness(int thickness) {
+	dg->SetGraphThickness(thickness);
+	dg->FullRefresh();
+}
+
 void DrawPanel::SelectSet(DrawSet *set) {
 	dw->SetSet(set);
 }
@@ -1074,6 +1079,8 @@ void DrawPanel::SetActive(bool _active) {
 		item->Check(smw->IsShown());
 
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
+
+		menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {

@@ -22,6 +22,7 @@
 #include <wx/tokenzr.h>
 #include <map>
 #include "cconv.h"
+#include <assert.h>
 
 #include "version.h"
 #include "szhlpctrl.h"
@@ -624,6 +625,28 @@ void DrawFrame::OnFullScreen(wxCommandEvent &event) {
 void DrawFrame::OnSplitCursor(wxCommandEvent &event) {
 	if (ignore_menu_events == false)
 		draw_panel->ToggleSplitCursor(event);
+}
+
+void DrawFrame::OnChangeGraphThickness(wxCommandEvent &event) {
+	if (ignore_menu_events)
+		return;
+
+	int thickness;
+	int id = event.GetId();
+	if (id == XRCID("Thickness1"))
+		thickness = 1;
+	else if (id == XRCID("Thickness2"))
+		thickness = 2;
+	else if (id == XRCID("Thickness3"))
+		thickness = 3;
+	else if (id == XRCID("Thickness4"))
+		thickness = 4;
+	else if (id == XRCID("Thickness5"))
+		thickness = 5;
+	else
+		assert(!"Bad thickness!");
+
+	draw_panel->ChangeGraphThickness(thickness);
 }
 
 void DrawFrame::OnLatestDataFollow(wxCommandEvent &event) {
@@ -1295,6 +1318,11 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("StatsWin"), DrawFrame::OnStatDialog)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)
+    EVT_MENU(XRCID("Thickness1"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness2"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness3"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness4"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness5"), DrawFrame::OnChangeGraphThickness)
     EVT_MENU(XRCID("LATEST_DATA_FOLLOW"), DrawFrame::OnLatestDataFollow)
     EVT_MENU(XRCID("DECADE_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("YEAR_RADIO"), DrawFrame::OnAverageChange)
