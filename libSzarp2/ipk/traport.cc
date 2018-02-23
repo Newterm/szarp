@@ -53,17 +53,8 @@ TRaport::~TRaport()
 
 TRaport* TRaport::GetNext()
 {
-	if (next != nullptr) {
+	if (next != nullptr)
 		return next;
-	} else {
-		for (TParam * p = param->GetNextGlobal(); p; p = p->GetNextGlobal()) {
-			for (TRaport * r = p->GetRaports(); r; r = r->next) {
-				if (title == r->GetTitle()) {
-					return r;
-				}
-			}
-		}
-	}
 
 	return nullptr;
 }

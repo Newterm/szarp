@@ -132,12 +132,15 @@ void IPKLoader::insert_raport(xmlNodePtr node, const std::wstring raportTitle, P
 
 	n = create_node(n, raportTitle);
 
-	for (TRaport* rap = szarpConfig->GetFirstRaportItem(raportTitle); rap; rap = rap->GetNext()) {
-		double order = rap->GetOrder();
-		xmlNodePtr pn = insert_param(n, rap->GetParam(), X"unknown", false, &order, rap->GetDescr());
-		insert_into_map(pn, rap->GetParam(), dynamic_tree);
+	for (TParam* p = szarpConfig->GetFirstParam(); p != nullptr; p = p->GetNextGlobal()) {
+		for (TRaport * r = p->GetRaports(); r; r = r->GetNext()) {
+			if (r->GetTitle() == raportTitle) {
+				double order = r->GetOrder();
+				xmlNodePtr pn = insert_param(n, r->GetParam(), X"unknown", false, &order, r->GetDescr());
+				insert_into_map(pn, r->GetParam(), dynamic_tree);
+			}
+		}
 	}
-
 }
 
 void IPKLoader::insert_into_map(xmlNodePtr node, TParam *p, ParamDynamicTreeData &dynamic_tree) {
