@@ -171,6 +171,8 @@ struct DatabaseQuery {
 	/** prefix of query*/
 	std::wstring prefix;
 
+	size_t q_id;
+
 	/**Id of panel asking for data*/
 	InquirerId inquirer_id;
 	/**Number of draw in panel*/

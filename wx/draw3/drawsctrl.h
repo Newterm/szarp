@@ -271,6 +271,7 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 
 	class SearchState : public State {
 	protected:
+		size_t m_search_query_id = 0;
 		DTime m_search_time;
 		/**Sends a search query to the db
 		 * @param start - search start time
@@ -318,8 +319,8 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 
 	class SearchLatest : public SearchState {
 	public:
-		virtual void Enter(const DTime&);
-		virtual void HandleLeftResponse(wxDateTime& time);
+		void Enter(const DTime&) override;
+		void HandleLeftResponse(wxDateTime& time) override;
 	};
 
 
@@ -539,7 +540,7 @@ public:
 
 	void SetCurrentIndex(int i) override { m_current_index = i; }
 
-	void SetCurrentTime(const DTime& time) override { m_current_time = time; }
+	void SetCurrentTime(const DTime& time) override;
 
 	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
 

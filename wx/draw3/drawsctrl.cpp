@@ -39,6 +39,8 @@
 #include "dbmgr.h"
 #include "cfgmgr.h"
 
+#include "custom_assert.h"
+
 static const size_t MAXIMUM_NUMBER_OF_INITIALLY_ENABLED_DRAWS = 12;
 
 szb_nan_search_condition DrawsController::search_condition;
@@ -140,6 +142,11 @@ void DrawsController::DisplayState::Reset() {
 }
 
 void DrawsController::DisplayState::Enter(const DTime& time) {
+	if (!time.IsValid()) {
+		ASSERT(!"Cannot enter into invalid time!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
+
 	Draw *d = m_c->GetSelectedDraw();
 
 	int dist = 0;
@@ -179,7 +186,6 @@ void DrawsController::DisplayState::Enter(const DTime& time) {
 	}
 
 	m_c->ChangeDBObservedParamsRegistration({ }, to_sub);
-
 
 	if (wxIsBusy())
 		wxEndBusyCursor();
@@ -236,7 +242,10 @@ void DrawsController::WaitState::Reset() {
 }
 
 void DrawsController::WaitState::NewDataForSelectedDraw() {
-	assert(m_c->GetSelectedDrawNo() >= 0);
+	if (m_c->GetSelectedDrawNo() < 0) {
+		ASSERT(!"Invalid or no draw selected!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
 
 	Draw* draw = m_c->GetSelectedDraw();
 	int current_index = draw->GetIndex(m_time_to_go);
@@ -254,17 +263,19 @@ void DrawsController::WaitState::NewDataForSelectedDraw() {
 }
 
 void DrawsController::WaitState::Enter(const DTime& time) {
+	if (m_c->GetSelectedDrawNo() < 0) {
+		ASSERT(!"Invalid or no draw selected!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
+
 	m_time_to_go = time;
+	m_c->FetchData();
 
 	Draw* draw = m_c->GetSelectedDraw();
 	if (draw->GetIndex(time) == -1) {
 		// not on current screen
 		return onDataNotOnScreen();
 	}
-
-	assert(m_c->GetSelectedDrawNo() >= 0);
-
-	m_c->FetchData();
 
 	CheckForDataPresence(m_c->GetSelectedDraw());
 }
@@ -279,6 +290,7 @@ bool DrawsController::WaitState::checkIndex(const Draw::VT& values, int i) {
 			wxLogInfo(_T("Stopping scan because value at index: %d has data"), i);
 			return true;
 		} else {
+			m_c->NotifyStateNoData(m_c->GetSelectedDraw());
 			wxLogInfo(_T("Stopping scan because value at index: %d might have data"), i);
 			return true;
 		}
@@ -373,7 +385,10 @@ const DTime& DrawsController::SearchState::GetStateTime() const {
 }
 
 void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, const wxDateTime& end, int direction) {
-	assert(m_c->GetSelectedDrawNo() >= 0);
+	if (m_c->GetSelectedDrawNo() < 0) {
+		ASSERT(!"Invalid or no draw selected!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
 
 	wxLogInfo(_T("Sending search query, start time:%ls, end_time: %ls, direction: %d"),
 			start.IsValid() ? start.Format().c_str() : L"none",
@@ -398,6 +413,8 @@ void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, cons
 	q->search_data.direction = direction;
 	q->search_data.search_condition = &DrawsController::search_condition;
 
+	q->q_id = ++m_search_query_id;
+
 	m_c->SendQueryToDatabase(q);
 
 }
@@ -408,6 +425,12 @@ void DrawsController::SearchState::Reset() {
 
 void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 	DatabaseQuery::SearchData& data = query->search_data;
+
+	if (query->q_id != m_search_query_id) {
+		// dropping, late response
+		return;
+	}
+
 	wxDateTime time = ToWxDateTime(data.response_second, data.response_nanosecond);
 	wxDateTime start = ToWxDateTime(data.start_second, data.start_nanosecond);
 	wxDateTime end = ToWxDateTime(data.end_second, data.end_nanosecond);
@@ -426,7 +449,7 @@ void DrawsController::SearchState::HandleSearchResponse(DatabaseQuery* query) {
 			HandleRightResponse(time);
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 	}
 }
 
@@ -843,6 +866,15 @@ DrawsController::~DrawsController() {
 	m_config_manager->DeregisterConfigObserver(this);
 }
 
+void DrawsController::SetCurrentTime(const DTime& time) {
+	if (!time.IsValid()) {
+		ASSERT(!"Invalid time set!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
+
+	m_current_time = time;
+}
+
 void DrawsController::SendQueryToDatabase(DatabaseQuery* query) {
 	QueryDatabase(query);
 }
@@ -889,7 +921,7 @@ void DrawsController::DatabaseResponse(DatabaseQuery *query) {
 			HandleDataResponse(query);
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 			break;
 	}
 }
@@ -1071,7 +1103,10 @@ void DrawsController::FetchData() {
 }
 
 void DrawsController::MoveToTime(const DTime &time) {
-	assert(time.IsValid());
+	if (!time.IsValid()) {
+		ASSERT(!"Cannot move to invalid time!");
+		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+	}
 
 	std::vector<size_t> moved;
 	wxLogInfo(_T("Moving to time: %s"), time.GetTime().Format().c_str());
@@ -1080,19 +1115,20 @@ void DrawsController::MoveToTime(const DTime &time) {
 	if (d->GetBlocked()) {
 		d->MoveToTime(time);
 		moved.push_back(d->GetDrawNo());
-	} else
-		for (size_t i = 0; i < m_draws.size(); i++)
+	} else {
+		for (size_t i = 0; i < m_draws.size(); i++) {
 			if (m_draws[i]->GetBlocked() == false) {
 				m_draws[i]->MoveToTime(time);
-				if (m_draws[i]->GetDrawInfo())
+				if (m_draws[i]->GetDrawInfo()) {
 					moved.push_back(i);
-
+				}
 			}
+		}
+	}
 
-	for (std::vector<size_t>::iterator i = moved.begin();
-			i != moved.end();
-			i++)
-		m_observers.NotifyDrawMoved(m_draws[*i], time.GetTime());
+	for (auto draw: moved) {
+		m_observers.NotifyDrawMoved(m_draws[draw], time.GetTime());
+	}
 }
 
 void DrawsController::DoSet(DrawSet *set) {
@@ -1114,8 +1150,10 @@ void DrawsController::DoSet(DrawSet *set) {
 		}
 		for (size_t i = m_draws.size(); i < draws->size(); i++) {
 			Draw* draw = new Draw(this, &m_observers, i);
-			if (selected_draw)
-				draw->SetStartTimeAndNumberOfValues(start_time, GetNumberOfValues(m_period_type));
+			if (selected_draw) {
+				draw->Set(start_time, m_period_type, GetNumberOfValues(m_period_type));
+			}
+
 			m_draws.push_back(draw);
 		}
 	}
@@ -1144,19 +1182,24 @@ void DrawsController::ConfigurationWasReloaded(wxString prefix) {
 	m_active_draws_count = 0;
 
 	DrawsSets *dss = m_config_manager->GetConfigByPrefix(prefix);
-	assert(dss);
+
+	if (!dss) {
+		ASSERT(!"Could not get config manager!");
+		return EnterState(STOP, m_current_time);
+	}
 
 	DrawSetsHash& dsh = dss->GetDrawsSets();
 	DrawSetsHash::iterator i = dsh.find(m_current_set_name);
-	if (i != dsh.end())
+	if (i != dsh.end()) {
 		DoSet(i->second);
-	else {
+	} else {
 		SortedSetsArray sets = dss->GetSortedDrawSetsNames();
 		DoSet(sets[0]);
 	}
 
-	if (m_selected_draw >= m_active_draws_count)
+	if (m_selected_draw >= m_active_draws_count) {
 		m_selected_draw = 0;
+	}
 
 	DisableDisabledDraws();
 
@@ -1250,22 +1293,37 @@ void DrawsController::Set(PeriodType period_type) {
 	m_double_cursor = false;
 
 	DTime state_time = m_state->GetStateTime();
-	DTime time = m_time_reference.Adjust(period_type, state_time);
-	time.AdjustToPeriod();
-
 	m_current_time = DTime();
 	m_current_index = -1;
 
-	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(time, GetNumberOfValues(period_type));
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws.at(i)->SetPeriod(period_type, GetNumberOfValues(period_type));
+	}
 
 	for (int i = 0; i < m_active_draws_count; i++)
 		m_observers.NotifyPeriodChanged(m_draws[i], period_type);
+
+	if (!state_time.IsValid()) {
+		// currently no data in set
+		return GoToLatestDate();
+	}
+
+	DTime time = m_time_reference.Adjust(period_type, state_time);
+	time.AdjustToPeriod();
+
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws.at(i)->SetStartTime(time);
+	}
 
 	EnterState(SEARCH_BOTH, time);
 }
 
 void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_select) {
+	if (!time.IsValid()) {
+		ASSERT(!"Cannot set invalid time!");
+		return EnterState(STOP, m_current_time);
+	}
+
 	if (m_period_type == pt)
 		return Set(draw_to_select, time);
 
@@ -1279,8 +1337,9 @@ void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_sel
 		m_observers.NotifyDrawDeselected(m_draws.at(psel));
 
 	m_period_type = pt;
-	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(period_time, GetNumberOfValues(pt));
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws.at(i)->Set(period_time, pt, GetNumberOfValues(pt));
+	}
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyPeriodChanged(m_draws[i], pt);
@@ -1292,6 +1351,11 @@ void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_sel
 }
 
 void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, int draw_to_select) {
+	if (!time.IsValid()) {
+		ASSERT(!"Cannot set invalid time!");
+		return EnterState(STOP, m_current_time);
+	}
+
 	if (m_draw_set == set)
 		return Set(pt, time, draw_to_select);
 
@@ -1311,8 +1375,9 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 	DisableDisabledDraws();
 
 	m_period_type = pt;
-	for (size_t i = 0; i < m_draws.size(); i++)
-		m_draws.at(i)->SetPeriod(period_time, GetNumberOfValues(pt));
+	for (size_t i = 0; i < m_draws.size(); i++) {
+		m_draws.at(i)->Set(period_time, pt, GetNumberOfValues(pt));
+	}
 
 	for (size_t i = 0; i < m_draws.size(); i++)
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
@@ -1323,6 +1388,11 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 }
 
 void DrawsController::Set(int draw_to_select, const wxDateTime& time) {
+	if (!time.IsValid()) {
+		ASSERT(!"Cannot set invalid time!");
+		return EnterState(STOP, m_current_time);
+	}
+
 	if (m_selected_draw == draw_to_select)
 		return Set(time);
 
@@ -1343,6 +1413,11 @@ void DrawsController::Set(int draw_to_select, const wxDateTime& time) {
 }
 
 void DrawsController::Set(const wxDateTime& _time) {
+	if (!_time.IsValid()) {
+		ASSERT(!"Cannot set invalid time!");
+		return EnterState(STOP, m_current_time);
+	}
+
 	DTime time(m_draws[m_selected_draw]->GetPeriod(), _time);
 	time.AdjustToPeriod();
 	EnterState(WAIT_DATA_NEAREST, time);
@@ -1442,16 +1517,17 @@ void DrawsController::TimeReference::Update(const DTime& time) {
 		case PERIOD_T_DECADE:
 			break;
 		default:
-			assert(false);
+			ASSERT(false);
 	}
 }
 
 DTime DrawsController::TimeReference::Adjust(PeriodType pt, const DTime& time) {
-	wxDateTime t = time.GetTime();
-
 	if (!time.IsValid()) {
-		return DTime(pt, t);
+		ASSERT(!"Cannot adjust invalid time!");
+		return DTime(pt, time.GetTime());
 	}
+
+	wxDateTime t = time.GetTime();
 
 	switch (pt) {
 		default:
@@ -1694,7 +1770,11 @@ void DrawsController::RefreshData(bool auto_refresh) {
 		m_draws[i]->RefreshData(auto_refresh);
 
 	if (m_follow_latest_data_mode) {
-		assert(m_selected_draw >= 0);
+		if (m_selected_draw < 0) {
+			ASSERT(!"Draw invalid or not set!");
+			return EnterState(STOP, m_current_time);
+		}
+
 		GoToLatestDate();
 	} else {
 		FetchData();

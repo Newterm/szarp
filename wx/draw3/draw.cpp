@@ -35,6 +35,8 @@
 #include "cfgmgr.h"
 #include "cconv.h"
 
+#include "custom_assert.h"
+
 void print_time(const wxDateTime &s) {
 	wxLogWarning(_T("%s"), s.Format().c_str());
 }
@@ -105,24 +107,21 @@ void Draw::PrintTimeOfIndex(int i) {
 	print_time(GetTimeOfIndex(i));
 }
 
-void Draw::SetNumberOfValues(size_t values_number) {
-	m_values.SetNumberOfValues(values_number);
-	m_index.SetNumberOfValues(values_number);
-}
-
 int Draw::GetIndex(const DTime& time, int* dist) const {
 	return m_index.GetIndex(time, dist);
 }
 
 void Draw::MoveToTime(const DTime& time) {
-
 	const DTime& start_time = m_index.GetStartTime();
 
-	assert(start_time.IsValid());
-
-	if (start_time == time || !time.IsValid())
+	if (!time.IsValid() || !start_time.IsValid()) {
+		ASSERT(!"Invalid time passed or not valid start time!");
 		return;
+	}
 
+	if (start_time == time)
+		return;
+	
 	int d = start_time.GetDistance(time);
 
 	m_index.SetStartTime(time);
@@ -131,25 +130,56 @@ void Draw::MoveToTime(const DTime& time) {
 
 }
 
-void Draw::SetPeriod(const DTime& time, size_t number_of_values) {
-	if (time.IsValid()) {
-		m_index.SetStartTime(time, number_of_values);
+void Draw::Set(const DTime& time, const PeriodType& pt, size_t number_of_values) {
+	if (!time.IsValid()) {
+		ASSERT(!"Invalid time passed!");
+		return;
 	}
 
-	m_values.SetNumberOfValues(number_of_values);
+	m_index.SetStartTime(time);
+	SetNumberOfValues(number_of_values);
 
-	m_param_has_data = true;
-
-	for (size_t i = 0; i < m_values.len(); ++i)
-		m_values.Get(i).state = ValueInfo::EMPTY;
+	ResetData();
 }
 
-void Draw::SetStartTimeAndNumberOfValues(const DTime& start_time, size_t number_of_values) {
-	assert(start_time.IsValid());
-	m_index.SetStartTime(start_time);
+void Draw::SetPeriod(const PeriodType& pt, size_t number_of_values) {
+	if (pt == m_index.GetStartTime().GetPeriod()) {
+		return SetNumberOfValues(number_of_values);
+	}
+
+	auto ctime = m_index.GetStartTime();
+
+	if (!ctime.IsValid()) {
+		ASSERT(!"Cannot set period for invalid time!");
+		return;
+	}
+
+	DTime ntime(pt, ctime);
+	ntime.AdjustToPeriod();
 
 	m_values.SetNumberOfValues(number_of_values);
+	m_index.SetStartTime(ntime, number_of_values);
 
+	ResetData();
+}
+
+void Draw::SetStartTime(const DTime& time) {
+	if (!time.IsValid() || m_index.GetStartTime().GetPeriod() != time.GetPeriod()) {
+		ASSERT(!"Invalid time passed!");
+		return;
+	}
+
+	m_index.SetStartTime(time);
+
+	ResetData();
+}
+
+void Draw::SetNumberOfValues(size_t number_of_values) {
+	m_values.SetNumberOfValues(number_of_values);
+	m_index.SetNumberOfValues(number_of_values);
+}
+
+void Draw::ResetData() {
 	m_param_has_data = true;
 
 	for (size_t i = 0; i < m_values.len(); ++i)
@@ -176,7 +206,11 @@ bool ShouldFetchNewValue(ValueInfo& vi, bool fetch_present_no_data) {
 
 DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 	const DTime& start_time = m_index.GetStartTime();
-	assert(start_time.IsValid());
+
+	if (!start_time.IsValid()) {
+		ASSERT(!"Cannot get data to fetch for draw with invalid start time!");
+		return nullptr;
+	}
 
 	PeriodType period = start_time.GetPeriod();
 
@@ -503,7 +537,7 @@ void ValuesTable::RecalculateStats() {
 
 void ValuesTable::SetNumberOfValues(size_t number_of_values) {
 
-	assert(m_draw->m_draws_controller->GetDoubleCursor() == false);
+	ASSERT(m_draw->m_draws_controller->GetDoubleCursor() == false);
 	m_values.clear();
 	m_values.resize(number_of_values + 2 * m_draw->m_draws_controller->GetFilter());
 	m_view.m_start = m_draw->m_draws_controller->GetFilter();
