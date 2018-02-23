@@ -27,9 +27,7 @@ IPCHandler::IPCHandler(DaemonConfigInfo* cfg): units(cfg->GetUnits())
 	m_params_count = cfg->GetParamsCount();
 	m_sends_count = cfg->GetSendsCount();
 
-	if (!single) {
-		InitIPC(ipc_info);
-	}
+	InitIPC(ipc_info);
 }
 
 
@@ -48,6 +46,11 @@ void IPCHandler::InitIPC(const IPCInfo& ipc_info)
 			m_send[i] = SZARP_NO_DATA;
 	} else
 		m_send = NULL;
+
+	if (single) {
+		sz_log(2, "In single, not connecting to parcook and sender.");
+		return;
+	}
 
 	key_t key;
 	const auto& linex_key = ipc_info.linex_path.c_str();
@@ -125,8 +128,12 @@ void IPCHandler::GoParcook()
 {
 	if (m_read == NULL)
 		return;
-	if (single)
+	if (single) {
+		for (int i = 0; i < m_params_count; ++i) {
+			sz_log(10, "In single, param at %d is %d", i, m_read[i]);
+		}
 		return;
+	}
 
 	struct sembuf semset[2];
 

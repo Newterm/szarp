@@ -875,8 +875,6 @@ private:
 	void ConfigureDaemon(DaemonConfig *cfg);
 	/**Object responsible for communication with sender and parcook*/
 	IPCHandler *m_ipc;
-	/**DaemonConfig - daemon configuration*/
-	DaemonConfig *m_cfg;
 	/**Head of list of units present on the line*/
 	deque<UnitExaminator*> m_units;
 	/**Object communicating with serial port*/
@@ -897,7 +895,7 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 	}
 
 	int speed = cfg->GetSpeed();
-	int stopbits = cfg->GetNoConf() ? 1 : cfg->GetDevice()->GetFirstUnit()->getAttribute<int>("extra:stopbits", 1);
+	int stopbits = cfg->GetDevice()->GetFirstUnit()->getAttribute<int>("extra:stopbits", 1);
 	int wait_time;
 
 	int dumphex = cfg->GetDumpHex();
@@ -911,12 +909,8 @@ void Daemon::ConfigureDaemon(DaemonConfig *cfg)
 		wait_time = WAIT_TIME;
 		m_cycle_duration = 0;
 	} else {	/* we are acting as a regular daemon*/
-		if (cfg->GetNoConf()) {
-			sz_log(0, "Cannot act as daemon if no configuration is loaded");
-			exit(1);
-		}
 		try {
-			m_ipc = new IPCHandler(m_cfg);
+			m_ipc = new IPCHandler(cfg);
 		} catch(const std::exception& e) {
 			sz_log(0, "Error while initializing IPC: %s, exiting", e.what());
 			exit(1);
@@ -1057,12 +1051,6 @@ int main(int argc, char *argv[]) {
 
 	try {
 		Daemon daemon(cfg);
-		if (cfg->GetNoConf() == 0) {
-			/* performs libxml cleanup ! */
-			cfg->CloseXML(1);
-			/* performs IPK cleanup ! */
-			cfg->CloseIPK();
-		}
 		daemon.Go();
 	} catch (std::exception&) {
 		sz_log(1, "Daemon died");
