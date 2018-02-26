@@ -869,7 +869,7 @@ DrawsController::~DrawsController() {
 void DrawsController::SetCurrentTime(const DTime& time) {
 	if (!time.IsValid()) {
 		ASSERT(!"Invalid time set!");
-		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+		return EnterState(STOP, GetCurrentTime());
 	}
 
 	m_current_time = time;
@@ -1105,7 +1105,7 @@ void DrawsController::FetchData() {
 void DrawsController::MoveToTime(const DTime &time) {
 	if (!time.IsValid()) {
 		ASSERT(!"Cannot move to invalid time!");
-		return m_c->EnterState(STOP, m_c->GetCurrentTime());
+		return EnterState(STOP, GetCurrentTime());
 	}
 
 	std::vector<size_t> moved;
