@@ -29,6 +29,7 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "custom_assert.h"
 
 #include "drawtime.h"
 #include "coobs.h"
@@ -1080,7 +1081,30 @@ void DrawPanel::SetActive(bool _active) {
 
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
 
-		menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+		int thickness = wxConfig::Get()->Read(_T("GRAPHS_THICKNESS"), thickness);
+		switch(thickness) {
+			case 1:
+				menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
+				break;
+			case 2:
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				break;
+			case 3:
+				menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
+				break;
+			case 4:
+				menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
+				break;
+			case 5:
+				menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
+				break;
+			default:
+				thickness = 2;
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				ASSERT(!"Bad thickness!");
+		}
+
+		dg->SetGraphThickness(thickness);
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {

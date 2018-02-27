@@ -22,7 +22,7 @@
 #include <wx/tokenzr.h>
 #include <map>
 #include "cconv.h"
-#include <assert.h>
+#include "custom_assert.h"
 
 #include "version.h"
 #include "szhlpctrl.h"
@@ -631,7 +631,7 @@ void DrawFrame::OnChangeGraphThickness(wxCommandEvent &event) {
 	if (ignore_menu_events)
 		return;
 
-	int thickness;
+	int thickness = 2;
 	int id = event.GetId();
 	if (id == XRCID("Thickness1"))
 		thickness = 1;
@@ -644,9 +644,11 @@ void DrawFrame::OnChangeGraphThickness(wxCommandEvent &event) {
 	else if (id == XRCID("Thickness5"))
 		thickness = 5;
 	else
-		assert(!"Bad thickness!");
+		ASSERT(!"Bad thickness!");
 
 	draw_panel->ChangeGraphThickness(thickness);
+	wxConfig::Get()->Write(_T("GRAPHS_THICKNESS"), thickness);
+	wxConfig::Get()->Flush();
 }
 
 void DrawFrame::OnLatestDataFollow(wxCommandEvent &event) {
