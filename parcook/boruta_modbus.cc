@@ -650,7 +650,7 @@ public:
 };
 
 class serial_rtu_parser : public serial_parser {
-	enum { ADDR, FUNC_CODE, DATA } m_state;
+	enum { ADDR, FUNC_CODE, DATA, NOK } m_state;
 	size_t m_data_read;
 
 	int m_timeout_1_5_c;
@@ -2480,7 +2480,7 @@ void serial_parser::write_timer_callback(int fd, short event, void* parser) {
 	((serial_parser*) parser)->write_timer_event();
 }
 
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, driver_logger* log) : serial_parser(serial_handler, log), m_state(FUNC_CODE) {
+serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, driver_logger* log) : serial_parser(serial_handler, log), m_state(ADDR) {
 	reset();
 }
 
@@ -2564,6 +2564,11 @@ void serial_rtu_parser::read_data(struct bufferevent *bufev) {
 			m_data_read += r;
 			start_read_timer(m_timeout_1_5_c);
 			break;
+		case NOK:
+			m_is_3_5_c_timeout = true;
+			start_read_timer(m_timeout_3_5_c);
+			break;
+			
 	}
 }
 
@@ -2574,7 +2579,7 @@ void serial_rtu_parser::read_timer_event() {
 	m_log->log(8, "serial_rtu_parser - read timer expired, didn't get any data for %fTc , checking crc",
 		m_is_3_5_c_timeout ? 3.5 : 1.5);
 
-	if (check_crc()) {
+	if (m_state != NOK && check_crc()) {
 		m_is_3_5_c_timeout = false;
 
 		m_state = ADDR;
@@ -2588,6 +2593,7 @@ void serial_rtu_parser::read_timer_event() {
 		} else  {
 			m_log->log(8, "crc check failed, scheduling 3.5Tc timer");
 			m_is_3_5_c_timeout = true;
+			m_state = NOK;
 			start_read_timer(m_timeout_3_5_c - m_timeout_1_5_c);
 		}
 	}
