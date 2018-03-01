@@ -7,14 +7,23 @@
 
 #uses pafy python libary to simplify youtube requests
 #details : https://github.com/mps-youtube/pafy
+#requires pafy and youtube-dl to be installed
+#easiest way is to do this with pip
+#fill extra:url in config/params.xml to gather data with this script
+
 import pafy
 
 import sys                                  # exit()
 import time                                 # sleep()
-import logging                              # logowanie (istotne!)
+import logging                              # logging (important!)
+sys.path.append("/opt/szarp/lib/python")    #
+from pydaemontimer import ReTimer           
+
 import psutil
+from lxml import etree
 from logging.handlers import SysLogHandler  #
 
+BASE_PREFIX = ""
 
 class YTReader:
 	#parsing configuration xml to get video url
@@ -32,12 +41,12 @@ class YTReader:
 
 	def update_values(self):
 		try:
-			video = pafy.new( URL )
+			video = pafy.new( self.URL )
 			ipc.set_read(0, video.viewcount)
 			ipc.set_read(1, video.likes)
 			ipc.set_read(2, video.dislikes)
 			ipc.set_read(3, int(10 * video.rating) )
-			video2 = pay.new( URL2 )
+			video2 = pafy.new( self.URL2 )
 			ipc.set_read(4, video2.viewcount)
 			ipc.set_read(5, video2.likes)
 			ipc.set_read(6, video2.dislikes)
@@ -70,15 +79,12 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_youtube.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_youtube.py"%BASE_PREFIX)
 
 	ex = YTReader()
 	time.sleep(10)
 
 	ReTimer(3600, ex.update_values).go()
-	#while True:
-	#	ex.update_values()
-	#	time.sleep(3600)
 
 
 # end of main()

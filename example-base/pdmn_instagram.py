@@ -2,6 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 #script to gather and show data from Instagram
+#change photo_URL and account_URL to run this script
 
 import sys                                  # exit()
 import time                                 # sleep()
@@ -11,6 +12,7 @@ from logging.handlers import SysLogHandler
 import requests
 import re
 
+BASE_PREFIX = ""
 photo_URL = "URL_to_instagram_photo"
 account_URL = "URL_to_instagram_account"
 
@@ -60,6 +62,7 @@ class InstaReader:
 			ipc.set_no_data(1)
 			ipc.set_no_data(2)
 			ipc.set_no_data(3)
+			ipc.set_no_data(4)
 
 		ipc.go_parcook()
 
@@ -77,7 +80,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_instagram.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_instagram.py"%BASE_PREFIX)
 
 	ex = InstaReader()
 	time.sleep(10)

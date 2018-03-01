@@ -3,13 +3,15 @@
 #python-psutil
 
 # simple python script to get RAM usage
+# ready to run and gather data
 
 import sys                                  # exit()
 import time                                 # sleep()
-import logging                              # logowanie (istotne!)
+import logging
 import psutil
 from logging.handlers import SysLogHandler  #
 
+BASE_PREFIX = ""
 MiB = 1024 * 1024
 
 class RAMReader:
@@ -41,7 +43,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_ram.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_ram.py"%BASE_PREFIX)
 
 	ex = RAMReader()
 

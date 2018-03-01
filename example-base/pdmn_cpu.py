@@ -3,44 +3,44 @@
 # script to monitor system resources usage
 # shows cores usage, running processes and load
 # cpu_usage len is different on each processor so remember to change accordingly!
+# requires psutil to work
+# insert your threads number as NUMBER_OF_THREADS to check CPU usage
+# remember to change your params.xml accordingly
 
 import sys                                  # exit()
 import time                                 # sleep()
-import logging                              # logowanie (istotne!)
-from logging.handlers import SysLogHandler  #
-sys.path.append("/opt/szarp/lib/python")    #
-from pydaemontimer import ReTimer           # opcjonalnie zamiast sleepa
+import logging
+from logging.handlers import SysLogHandler
+sys.path.append("/opt/szarp/lib/python")
+from pydaemontimer import ReTimer
 
 import psutil
 import os
 import subprocess
 from subprocess import Popen, PIPE
 
+BASE_PREFIX = ""
+NUMBER_OF_THREADS = 4
+
 class CPUReader:
 	def get_running_processes(self):
 		p = subprocess.Popen("ps ux | wc -l", shell=True,stdout=PIPE)
-		if p.wait():
-			raise Exception("failed to get running processes")
 		return int(p.communicate()[0].strip())
 
 	def update_values(self):
 		try:
 			rp = self.get_running_processes()
 			cpu_usage = psutil.cpu_percent(percpu=True)
-			ipc.set_read_sz4_int(0, rp)
-			ipc.set_read_sz4_float(1, cpu_usage[0] )
-			ipc.set_read_sz4_float(2, cpu_usage[1] )
-			ipc.set_read_sz4_float(3, cpu_usage[2] )
-			ipc.set_read_sz4_float(4, cpu_usage[3] )
-			ipc.set_read_sz4_double(5, os.getloadavg()[0] )
+			for i in xrange(0, NUMBER_OF_THREADS):
+				ipc.set_read_sz4_float(i, cpu_usage[i])
+			ipc.set_read_sz4_int(NUMBER_OF_THREADS, rp)
+			ipc.set_read_sz4_double(NUMBER_OF_THREADS+1, os.getloadavg()[0] )
 		except Exception as err:
 			logger.error("failed to fetch data, %s", str(err).splitlines()[0])
-			ipc.set_no_data(0)
-			ipc.set_no_data(1)
-			ipc.set_no_data(2)
-			ipc.set_no_data(3)
-			ipc.set_no_data(4)
-			ipc.set_no_data(5)
+			for i in xrange(0, NUMBER_OF_THREADS):
+				ipc.set_no_data(i)
+			ipc.set_no_data(NUMBER_OF_THREADS)
+			ipc.set_no_data(NUMBER_OF_THREADS+1)
 
 def main(argv=None):
 	psutil.cpu_percent(percpu=True)
@@ -57,7 +57,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_cpu.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_cpu.py"%BASE_PREFIX)
 
 	ex = CPUReader()
 

@@ -5,6 +5,7 @@
 #uses pyowm libary to simplify observation requests
 #to use this script you need your own OWM_TOKEN
 #you can test location availability on the given site
+#fill OWM_TOKEN and LOCATION to run this script
 
 #python-owm
 #https://github.com/csparpa/pyowm
@@ -13,11 +14,12 @@ import pyowm
 
 import sys                                  # exit()
 import time                                 # sleep()
-import logging                              # logowanie (istotne!)
-from logging.handlers import SysLogHandler  #
+import logging
+from logging.handlers import SysLogHandler
 
 OWM_TOKEN = 'you_OWM_token'
 LOCATION = 'Warsaw,PL'
+BASE_PREFIX = ""
 
 class WeatherReader:
 	def __init__(self):
@@ -60,7 +62,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_weather.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_weather.py"%BASE_PREFIX)
 
 	ex = WeatherReader()
 

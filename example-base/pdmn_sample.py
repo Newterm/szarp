@@ -10,6 +10,8 @@ import time                                 # sleep()
 import logging                              # logging ( important ! )
 from logging.handlers import SysLogHandler
 
+BASE_PREFIX = ""
+
 sys.path.append("/opt/szarp/lib/python")    # use with sz4 python functions
 #from pydaemontimer import ReTimer           # optional instead of sleep
 
@@ -80,7 +82,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_sample.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_sample.py"%BASE_PREFIX)
 
 	#create data reader instance
 	ex = RAMReader()

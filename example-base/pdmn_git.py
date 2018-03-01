@@ -5,6 +5,8 @@
 #allows to track commits, lines and files counter
 #checks each minute number of lines and files
 #and every hour number of commits
+#fill REPO_PARH and BRANCH name to run this script
+#change suffixes if you want to include more files to check
 
 import sys                                  # exit()
 import time                                 # sleep()
@@ -12,6 +14,8 @@ import logging
 from logging.handlers import SysLogHandler
 import subprocess
 from subprocess import PIPE, Popen
+
+BASE_PREFIX = ""
 
 suffixes = [ "cpp", "h", "txt", "hpp", "py", "cc" ]
 
@@ -24,8 +28,6 @@ class RepoReader:
 		if path.endswith("/") :
 			path = path[:-1]
 		p = subprocess.Popen("git -C %s ls-files" % path, shell=True,stdout=PIPE)
-		if p.wait():
-			raise Exception("getting repo lines failed")
 		files = p.communicate()[0].strip().split('\n')
 		counter = 0
 		files_counter = 0
@@ -33,16 +35,12 @@ class RepoReader:
 			if not f.split(".")[-1] in suffixes:
 				continue
 			lines = subprocess.Popen("cat %s/%s | wc -l"%(path,f),shell=True, stdout=PIPE)
-			if lines.wait():
-				raise Exception("getting lines from file failed")
 			counter += int(lines.communicate()[0].strip())
 			files_counter += 1
 		return (counter, files_counter)
 
 	def get_repo_commits(self, path, branch):
 		p = subprocess.Popen("git -C %s rev-list --count %s" % (path, branch), shell=True, stdout=PIPE)
-		if p.wait():
-			raise Exception("getting repo commits failed")
 		return int(p.communicate()[0].strip())
 
 	def update_commits(self):
@@ -80,7 +78,7 @@ def main(argv=None):
 		global ipc
 		sys.path.append('/opt/szarp/lib/python')
 		from test_ipc import TestIPC
-		ipc = TestIPC("example-base", "/opt/szarp/example-base/pdmn_git.py")
+		ipc = TestIPC("%s"%BASE_PREFIX, "/opt/szarp/%s/pdmn_git.py"%BASE_PREFIX)
 
 	ex = RepoReader()
 	time.sleep(10)

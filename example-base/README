@@ -7,7 +7,52 @@ This folder contains example szarp_server base, that can be run on any computer 
 Remember that scripts given here should not be used or modified to violate rules or laws of services or libaries they use. Newterm takes no responsibility for how they are used.
 
 Scripts given here are only simple example of how a single user can use our software. Showing all available options would create document far exceeding readable example borders. If you're curious about other uses of our software feel free to check our documentation located at:
-	https://szarp.org//documentation/new/ipk/html/szarp/html
+	https://szarp.org//documentation/new/ipk/html/szarp.html
 
 If you want to contribute to our project checkout our Github website :
 	https://github.com/Newterm/szarp
+
+First time using SZARP :
+
+1. Start with package installation as it will automatically prepare your environment for using SZARP software. Follow instruction on https://szarp.org/en/download/ and install packages : szarp-server and szarp-wx.
+
+ During installation you will be prompted about 3 things:
+	* database type :
+		- sz3 - our old database type, using meaner3 to save data, every sample is 16-bit integer
+		- sz4 - recommended database type, using meaner4 to save data, allows using additional API for saving different data types
+		- sz3+sz4 - both sz3 and sz4 running simultaneously
+	* creating szbase catalog - pick yes, as without szbase catalog located inside : "/opt/szarp/$base_prefix/szbase" meaners won't work. Picking "no" only for advanced users.
+	* default base prefix - prefix of your new database, it is recommended to name it the same as your hostname, as specific SZARP package, as a safety measure may stop SZARP software from running if default database name and hostname don't match
+	CAREFUL! leaving default base prefix blank causes undefined behaviour and may permanently break your SZARP installation.
+	* after successful installation you should be able to find your installation in : /opt/szarp/$prefix/ and all SZARP binaries in /opt/szarp/bin
+2. Prepare your example base configuration:
+	* start with configuring your daemons. Inside this folder you will find numerous examples of python scripts compatible with pythondmn. Each running script needs to be configured and must have corresponding device configured inside config/params.xml file. Check pdmn_sample.py for more comments on creating python scripts and config/params.xml to get a feel on how a proper configuration should look like.
+	* run your szarp-server with :
+		systemctl start szarp-server.target ( or restart if its already running )
+	* to check if szarp is working grep running processes for szarp :
+		ps aux | grep szarp
+	* example running sz3 base :
+$ ps aux | grep szarp
+root      6975  0.0  0.1 179932 11148 ?        Ssl  12:19   0:00 /opt/szarp/bin/cfgdealer
+root      6976  0.0  0.2 173156 16312 ?        Ssl  12:19   0:00 /usr/bin/python2 /opt/szarp/lib/python/parhub.py --no-daemon
+root      6977  0.0  0.2 221600 20268 ?        Ssl  12:19   0:00 /opt/szarp/bin/parcook -n
+root      6979  0.0  0.1 188932 15212 ?        Ss   12:19   0:00 /opt/szarp/bin/meaner3 -n
+root      6981  0.0  0.2 185332 16240 ?        Ss   12:19   0:00 /opt/szarp/bin/sender --no-daemon
+root      6994  0.0  0.0 125088  6680 ?        S    12:19   0:00 /opt/szarp/bin/paramd
+root      6995  1.6  0.3 313504 26288 ?        Sl   12:19   0:00 /opt/szarp/bin/pythondmn 1 /opt/szarp/example/pdmn_git.py
+root      6999  0.0  0.0 125088  6680 ?        S    12:19   0:00 /opt/szarp/bin/paramd
+root      7000  0.0  0.0 125088  6680 ?        S    12:19   0:00 /opt/szarp/bin/paramd
+root      7004  0.0  0.3  83108 27196 ?        S    12:19   0:00 /usr/bin/python /usr/bin/twistd -y /opt/szarp/lib/python/probes_server.tac --logfile - --pidfile /var/run/probes_server.pid
+user   10213  0.0  0.0  12784   984 pts/1    S+   12:20   0:00 grep --color=auto szarp
+
+	* after leaving your daemons for 10 minutes you should be able to see your collected data. Run
+		/opt/szarp/bin/draw3
+	to see your data. For tutorials on how to use draw3 check :
+		https://www.youtube.com/watch?v=kdNZSWAP3zQ&t=119s
+		https://www.youtube.com/watch?v=NKdkN01Ig60&t=8s
+		https://www.youtube.com/watch?v=jktQu56L9Fk&t=161s
+
+To use any of suplemented scripts remember to change their base prefix inside main function and configuration files.
+
+Every vailable pdmn script contains its short description and changes needed to run it. To get better hang of how SZARP works try to write your own scripts and test them. To see more detailed comments about different scripts sections check out pdmn_sample as it holds numerous examples and comments on how to create new scripts. If you feel confident in the usefulness of your creations you can also send us a Pull Request and we might incorporate them into this example. Good luck!
+

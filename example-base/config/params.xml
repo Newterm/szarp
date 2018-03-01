@@ -129,10 +129,6 @@
 	<device daemon="/opt/szarp/bin/pythondmn" path="/opt/szarp/example-base/pdmn_cpu.py" parcook_device="no">
 		<unit id="1" type="1" subtype="1" bufsize="1">
 		   <!-- For sz4 daemons you can specify data_type to simplify values loading. -->
-		  <param name="System:CPU:Running processes" short_name="RP" unit="-" prec="0" base_ind="auto" data_type="integer">
-			<raport title="System report" order="1"/>
-			<draw title="Processor" min="0" max="500" order="1"/>
-		  </param>
 		   <param name="System:CPU:Core 1 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
 			<raport title="System report" order="2"/>
 			<draw title="Processor" min="0" max="100" order="2"/>
@@ -148,6 +144,10 @@
 		   <param name="System:CPU:Core 4 usage" short_name="used" unit="%" prec="1" base_ind="auto" data_type="float">
 			<raport title="System report" order="5"/>
 			<draw title="Processor" min="0" max="100" order="2"/>
+		  </param>
+		  <param name="System:CPU:Running processes" short_name="RP" unit="-" prec="0" base_ind="auto" data_type="integer">
+			<raport title="System report" order="1"/>
+			<draw title="Processor" min="0" max="500" order="1"/>
 		  </param>
 		   <param name="System:Memory:Load" short_name="load" unit="-" prec="2" base_ind="auto" data_type="double">
 			<raport title="System report" order="5"/>
