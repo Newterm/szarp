@@ -153,7 +153,7 @@ int ExecDaemon::ParseConfig(DaemonConfig * cfg, const ArgsManager& args_mgr)
 	}
 
 	std::string options;
-	const std::string& path = *args_mgr.get<std::string>("device-path");
+	const std::string path = *args_mgr.get<std::string>("device-path");
 
 	TDevice* device = cfg->GetDevice();
 	m_freq = device->getAttribute<int>("extra:frequency", 10);

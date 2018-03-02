@@ -71,7 +71,6 @@ public:
 			("sniff", "Do not initiate transmision, sniff traffic")
 			("scan", po::value<std::string>(), "range of ID to use from config (e.g. 1-7)")
 			("speed", po::value<unsigned int>(), "Port communication speed")
-			("noconf", "Do not load configuration")
 			("askdelay", po::value<unsigned int>(), "Sets delay between queries to different units")
 			("dumphex", "Print trasmitted bytes in hex-terminal format")
 			("device-no", po::value<unsigned int>(), "Device number in config file")

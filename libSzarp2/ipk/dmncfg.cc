@@ -58,14 +58,12 @@ DaemonConfig::DaemonConfig(const char *name)
 
 	m_single = 0;
 	m_diagno = 0;
-	m_noconf = 0;
 	m_device = -1;
 	m_scanner = 0;
 	m_id1 = 0;
 	m_id2 = 0;
 	m_speed = 0;
 	m_dumphex = 0;
-	m_noconf = 0;
 	m_sniff = 0;
 }
 
@@ -104,11 +102,6 @@ int DaemonConfig::Load(const ArgsManager& args_mgr, TSzarpConfig* sz_cfg, int fo
 {
 	assert (m_load_called == 0);
 	args_mgr.initLibpar();
-
-	if (args_mgr.get<bool>("noconf").get_value_or(false)) {
-		m_load_called = 1;
-		return 0;
-	}
 
 	szlog::init(args_mgr, m_daemon_name);
 
@@ -167,7 +160,6 @@ void DaemonConfig::ParseCommandLine(const ArgsManager& args_mgr) {
 
 	m_diagno = args_mgr.has("diagno");
 	m_single = args_mgr.has("single");
-	m_noconf = args_mgr.has("noconf");
 	m_dumphex = args_mgr.has("dumphex");
 	m_sniff = args_mgr.has("sniff");
 
@@ -362,12 +354,6 @@ int DaemonConfig::GetSpeed() const
 	if (m_device_obj) 
 		return m_device_obj->getAttribute<int>("speed", -1);
 	return 0;
-}
-
-int DaemonConfig::GetNoConf()
-{
-	assert (m_load_called != 0);
-	return m_noconf;
 }
 
 int DaemonConfig::GetDumpHex()

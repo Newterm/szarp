@@ -29,6 +29,8 @@
 #include <map>
 #include <vector>
 
+#include "draw.h"
+
 class DrawsObservers {
 	std::vector<DrawObserver*> m_observers;
 
@@ -79,6 +81,7 @@ public:
 		SEARCH_RIGHT,
 		/**Database is searched in both directions from proposed time. */
 		SEARCH_BOTH,
+		SEARCH_LATEST,
 		/**Draw waits for data to appear on the "left side" of the cursor. */
 		WAIT_DATA_LEFT,
 		/**Draw waits for data to appear on the "right side" of the cursor. */
@@ -234,6 +237,9 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 	class WaitState : public State {
 	protected:
 		DTime m_time_to_go;
+		virtual void onDataNotOnScreen();
+		virtual bool checkIndex(const Draw::VT& values, int i);
+
 	public:
 		void Reset();
 		void NewDataForSelectedDraw();
@@ -244,11 +250,17 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 	};
 
 	class WaitDataLeft : public WaitState {
+	protected:
+		void onDataNotOnScreen() override;
+
 	public:
 		void CheckForDataPresence(Draw *draw);
 	};
 
 	class WaitDataRight : public WaitState {
+	protected:
+		void onDataNotOnScreen() override;
+
 	public:
 		void CheckForDataPresence(Draw *draw);
 	};
@@ -260,6 +272,7 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 
 	class SearchState : public State {
 	protected:
+		size_t m_search_query_id = 0;
 		DTime m_search_time;
 		/**Sends a search query to the db
 		 * @param start - search start time
@@ -279,6 +292,7 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 	public:
 		virtual void Enter(const DTime& time);
 		virtual void HandleLeftResponse(wxDateTime& time);
+		virtual void HandleRightResponse(wxDateTime& time);
 	};
 
 	class SearchRight : public SearchState {
@@ -303,6 +317,13 @@ class DrawsController : public DBInquirer, public ConfigObserver, public StateCo
 		virtual void HandleLeftResponse(wxDateTime& time);
 		virtual void HandleRightResponse(wxDateTime& time);
 	};
+
+	class SearchLatest : public SearchState {
+	public:
+		void Enter(const DTime&) override;
+		void HandleLeftResponse(wxDateTime& time) override;
+	};
+
 
 	class MoveScreenWindowLeft : public SearchBoth {
 	public:
@@ -520,7 +541,7 @@ public:
 
 	void SetCurrentIndex(int i) override { m_current_index = i; }
 
-	void SetCurrentTime(const DTime& time) override { m_current_time = time; }
+	void SetCurrentTime(const DTime& time) override;
 
 	virtual void SetModified(wxString prefix, wxString name, DrawSet *set);
 

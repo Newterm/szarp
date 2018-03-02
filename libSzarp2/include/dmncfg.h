@@ -183,9 +183,6 @@ public:
 	 */
 	int GetSpeed() const;
 
-	/**Returns 1 if user requested to not to load configuration, 0 otherwise*/
-	int GetNoConf();
-
 	/**Returns 1 if user requested that all communication is between
 	 * daemon and a device should be printed in hex terminal format, 0 otherwise*/
 	int GetDumpHex();
@@ -262,7 +259,6 @@ protected:
 	int m_single;		/**< 1 if signle mode*/
 	int m_diagno;		/**< 1 if diagno mode*/
 	int m_device;		/**< device numer*/
-	int m_noconf;		/**< true if configuration is not loaded*/
 	mutable std::string m_device_path;	/**< path to device given in command line arguments*/
 	int m_scanner;		/**< true if device should act as scanner*/
 	char m_id1,m_id2;	/**< range of ids that driver should scan*/

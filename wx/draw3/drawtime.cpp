@@ -226,11 +226,11 @@ DTime DTime::operator-(const wxDateSpan& span) const {
 }
 
 bool DTime::operator==(const DTime& t) const {
-	return m_time == t.m_time;
+	return m_time == t.m_time && m_period == t.m_period;
 }
 
 bool DTime::operator!=(const DTime& t) const {
-	return m_time != t.m_time;
+	return !(*this == t);
 }
 
 bool DTime::operator<=(const DTime& t) const {
@@ -519,6 +519,8 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 
 void TimeIndex::SetStartTime(const DTime &time) {
 	m_time = time;
+
+	UpdatePeriods();
 }
 
 void TimeIndex::SetStartTime(const DTime &time, size_t number_of_values) {
@@ -542,5 +544,9 @@ const wxTimeSpan& TimeIndex::GetTimePeriod() const {
 
 const wxDateSpan& TimeIndex::GetDatePeriod() const {
 	return m_dateperiod;
+}
+
+DTime TimeIndex::GetNextProbeTime(const DTime& time, int dist) const {
+	return time + dist * m_timeres + dist * m_dateres;
 }
 
