@@ -1309,11 +1309,12 @@ void DrawsController::Set(PeriodType period_type) {
 	}
 
 	DTime time = m_time_reference.Adjust(period_type, state_time);
-	time.AdjustToPeriod();
 
 	for (size_t i = 0; i < m_draws.size(); i++) {
 		m_draws.at(i)->SetStartTime(time);
 	}
+
+	MoveToTime(GetCurrentTimeWindow().AdjustToPeriodSpan(time));
 
 	EnterState(SEARCH_BOTH, time);
 }
@@ -1346,8 +1347,9 @@ void DrawsController::Set(PeriodType pt, const wxDateTime& time, int draw_to_sel
 
 	m_observers.NotifyDrawSelected(m_draws.at(m_selected_draw));
 
-	EnterState(SEARCH_BOTH, period_time);
+	MoveToTime(GetCurrentTimeWindow().AdjustToPeriodSpan(period_time));
 
+	EnterState(SEARCH_BOTH, period_time);
 }
 
 void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, int draw_to_select) {
@@ -1383,6 +1385,8 @@ void DrawsController::Set(DrawSet *set, PeriodType pt, const wxDateTime& time, i
 		m_observers.NotifyDrawInfoChanged(m_draws[i]);
 
 	wxLogInfo(_T("Set '%s' choosen, selected draw index; %d"), set->GetName().c_str(), draw_to_select);
+
+	MoveToTime(GetCurrentTimeWindow().AdjustToPeriodSpan(period_time));
 
 	EnterState(SEARCH_BOTH, period_time);
 }
