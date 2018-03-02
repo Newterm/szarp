@@ -650,7 +650,6 @@ void DrawFrame::OnChangeGraphThickness(wxCommandEvent &event) {
 
 	draw_panel->ChangeGraphThickness(thickness);
 	wxConfig::Get()->Write(_T("GRAPHS_THICKNESS"), thickness);
-	wxConfig::Get()->Flush();
 }
 
 void DrawFrame::OnLatestDataFollow(wxCommandEvent &event) {

@@ -1089,34 +1089,29 @@ void DrawPanel::SetActive(bool _active) {
 
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
 
-		int thickness;
-		if ( thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), thickness)) {
-			switch(thickness) {
-				case 1:
-					menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
-					break;
-				case 2:
-					menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
-					break;
-				case 3:
-					menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
-					break;
-				case 4:
-					menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
-					break;
-				case 5:
-					menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
-					break;
-				default:
-					thickness = 2;
-					menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
-					ASSERT(!"Bad thickness!");
-			}
-		} else {
-			thickness = 2;
-			menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
-			wxConfig::Get()->Write(_T("GRAPHS_THICKNESS"), thickness);
-			wxConfig::Get()->Flush();
+		int thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), 2);
+
+		switch(thickness) {
+			case 1:
+				menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
+				break;
+			case 2:
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				break;
+			case 3:
+				menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
+				break;
+			case 4:
+				menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
+				break;
+			case 5:
+				menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
+				break;
+			default:
+				thickness = 2;
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				ASSERT(!"Bad thickness!");
+				break;
 		}
 
 		dg->SetGraphThickness(thickness);
