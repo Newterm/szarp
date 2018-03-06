@@ -55,6 +55,8 @@ public:
 	virtual void SetFocus() = 0;
 	virtual void SetGraphThickness(int thickness) {}
 	virtual void FullRefresh() {}
+	virtual void SetShowArrowsChecked(bool showArrows) {}
+	virtual void SetMarginsRecalculable() {}
 	virtual ~DrawGraphs() {}
 };
 

@@ -552,10 +552,11 @@ void DrawPanel::OnRefresh(wxCommandEvent & evt) {
 
 void DrawPanel::OnShowArrows(wxCommandEvent& evt) {
 	bool isShowArrowsChecked = menu_bar->FindItem(XRCID("ShowArrows"))->IsChecked();
+	wxConfig::Get()->Write(_T("SHOW_ARROWS"), isShowArrowsChecked);
 
-	(dynamic_cast<GCDCGraphs*>(dg))->SetShowArrowsChecked(isShowArrowsChecked);
-	(dynamic_cast<GCDCGraphs*>(dg))->SetMarginsRecalculable();
-	(dynamic_cast<GCDCGraphs*>(dg))->FullRefresh();
+	dg->SetShowArrowsChecked(isShowArrowsChecked);
+	dg->SetMarginsRecalculable();
+	dg->FullRefresh();
 }
 
 void DrawPanel::OnShowAverage(wxCommandEvent &evt)
@@ -1088,6 +1089,14 @@ void DrawPanel::SetActive(bool _active) {
 		item->Check(smw->IsShown());
 
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
+
+		bool showArrows = wxConfig::Get()->ReadBool(_T("SHOW_ARROWS"), false);
+
+		menu_bar->FindItem(XRCID("ShowArrows"))->Check(showArrows);
+
+		dg->SetShowArrowsChecked(showArrows);
+		dg->SetMarginsRecalculable();
+		dg->FullRefresh();
 
 		int thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), 2);
 
