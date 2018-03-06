@@ -194,6 +194,7 @@ bool DrawApp::OnInit() {
 	m_executor = NULL;
 	m_remarks_handler = NULL;
 
+	bool use_iks_base = false;
 #ifdef __WXGTK__
 	if (m_base == wxEmptyString) {
 		libpar_init();
@@ -207,7 +208,7 @@ bool DrawApp::OnInit() {
 		libpar_init_from_folder(config_path);
 	}
 
-	bool use_iks_base = (m_base_type == IKS_BASE);
+	use_iks_base = (m_base_type == IKS_BASE);
 
 	if (m_base_type == NO_BASE) {
 		const auto cfg_base_type = libpar_getpar("draw3", "base_type", 0);

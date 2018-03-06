@@ -924,6 +924,9 @@ Sz4ApiBase::~Sz4ApiBase() {}
 
 Draw3Base::ptr SzbaseHandler::GetIksHandlerFromBase(const wxString& prefix)
 {
+#ifndef __WXGTK__
+	return Draw3Base::ptr(nullptr);
+#else
 	const wxString DEFAULT_IKS_PORT = "9002";
 	wxString iks_port(DEFAULT_IKS_PORT);
 	wxString iks_server;
@@ -943,6 +946,7 @@ Draw3Base::ptr SzbaseHandler::GetIksHandlerFromBase(const wxString& prefix)
 	}
 
 	return GetIksHandler(iks_server, iks_port);
+#endif
 }
 
 Draw3Base::ptr SzbaseHandler::GetIksHandler(const wxString& iks_server, const wxString& iks_port)
@@ -957,6 +961,9 @@ Draw3Base::ptr SzbaseHandler::GetIksHandler(const wxString& iks_server, const wx
 
 Draw3Base::ptr SzbaseHandler::GetBaseHandler(const std::wstring& prefix)
 {
+#ifndef __WXGTK__
+	return default_base_handler;
+#else
 	std::lock_guard<std::recursive_mutex> guard(libpar_mutex);
 	if(use_iks)
 		return default_base_handler;
@@ -969,10 +976,12 @@ Draw3Base::ptr SzbaseHandler::GetBaseHandler(const std::wstring& prefix)
 		AddBasePrefix(base_prefix);
 
 	return base_handlers[base_prefix];
+#endif
 }
 
 void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 {
+#ifdef __WXGTK__
 	if(use_iks)
 		return;
 
@@ -1011,13 +1020,16 @@ void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 
 		base_handlers[prefix] = GetSz3Handler();
 	}
+#endif
 }
 
 void SzbaseHandler::ConfigLibpar(const wxString& prefix)
 {
+#ifdef __WXGTK__
 	std::string config_path = std::string(wxString(base_path + prefix + '/').mb_str());
 	libpar_done();
 	libpar_init_from_folder(config_path);
+#endif
 }
 
 void SzbaseHandler::SetupHandlers(const wxString& szarp_dir, const wxString& szarp_data_dir, int cache_size)
