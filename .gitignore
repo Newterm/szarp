@@ -32,3 +32,4 @@ stamp-h1
 py-compile
 current_tag
 tags
+test-driver
