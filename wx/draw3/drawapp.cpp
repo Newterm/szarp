@@ -463,7 +463,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddOption(_T("base"), wxEmptyString,
 		_("base name"), wxCMD_LINE_VAL_STRING);
 
-	parser.AddParam(_T("url"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+	parser.AddOption(_T("url"), wxEmptyString, _("url address"), wxCMD_LINE_VAL_STRING);
 
 	parser.AddSwitch(_T("e"), wxEmptyString,
 		_("open url in existing window"));
