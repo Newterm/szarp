@@ -4,7 +4,6 @@
 #include "szarp_config.h"
 #include "szarp_base_common/lua_strings_extract.h"
 
-float ChooseFun(float funid, float *parlst);
 void putParamsFromString(const std::wstring& script_string, boost::regex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
 
 namespace sz4 {
@@ -203,7 +202,6 @@ public:
 		short parcnt;
 		int NullFormula = 0;
 		int p_no = 0;
-		float val_op = 0.0f;
 
 		// maps stack index to precision
 		std::map<int, int> precs_on_stack;
@@ -249,10 +247,9 @@ public:
 						parcnt = (short) rint(stack[sp - 1]);
 						if (sp < parcnt + 1)
 							break;
-						val_op = (float) stack[sp - parcnt - 1];
 						stack[sp - parcnt - 1] =
-							ChooseFun((float) stack[sp],
-								  &val_op);
+							ChooseFun<double>((int) stack[sp],
+								  &stack[sp - parcnt - 1]);
 						sp -= parcnt;
 						break;
 					case L'#':

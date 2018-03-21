@@ -609,17 +609,6 @@ void CleanUp()
 		semctl(SemDes, i, SETVAL, 0);
 }
 
-
-float ChooseFun(float funid, float *parlst)
-{
-	ushort fid;
-
-	fid = (ushort) funid;
-	if (fid >= MAX_FID)
-		return (0.0);
-	return ((*(FunTable[fid])) (parlst));
-}
-
 unsigned char CalculNoData;
 
 short shmGetValue(ushort adr, unsigned char shmdes)
@@ -754,7 +743,7 @@ void Calcul(ushort n)
 					if (sp < parcnt + 1)
 						return;
 					stack[sp - parcnt - 1] =
-						ChooseFun(stack[sp],
+						ChooseFun<float>((int) stack[sp],
 							  &stack[sp - parcnt -
 								 1]);
 					sp -= parcnt;
