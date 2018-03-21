@@ -6,15 +6,7 @@
  * funtable.h
  */
 
-#define MAX_FID 8
+constexpr int MAX_FID = 8;
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
-extern float (*(FunTable[MAX_FID]))(float*);
-
-#ifdef __cplusplus
-	}
-#endif
-
+template <typename T>
+T ChooseFun(int funid, T *parlst);

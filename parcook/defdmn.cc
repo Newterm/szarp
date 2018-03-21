@@ -281,16 +281,6 @@ void registerLuaFunctions() {
 	lua_register(lua, "szbase", sz4base_value);
 }
 
-float ChooseFun(float funid, float *parlst)
-{
-	ushort fid;
-
-	fid = (ushort) funid;
-	if (fid >= MAX_FID)
-		return (0.0);
-	return ((*(FunTable[fid])) (parlst));
-}
-
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
 	if (str == NULL)
