@@ -42,6 +42,7 @@ class SelectDrawWidget;
 class RelWindow;
 class SummaryWindow;
 class DrawObserver;
+class DatabaseTypesWindow;
 class DrawSet;
 class DrawsSet;
 class DrawsSets;

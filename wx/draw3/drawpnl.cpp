@@ -38,6 +38,7 @@
 #include "database.h"
 #include "drawsctrl.h"
 #include "summwin.h"
+#include "dbtypeswin.h"
 #include "cfgmgr.h"
 #include "disptime.h"
 #include "drawswdg.h"
@@ -221,7 +222,7 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 			panel->OnJumpToDate();
 		break;
 	case 'B':
-		if (event.ControlDown())
+		if (event.ControlDown() && !event.ShiftDown())
 			panel->dw->SwitchCurrentDrawBlock();
 		else
 			return false;
@@ -305,7 +306,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
+	prefix(_prefix), smw(NULL), dbtw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
 	//setting current prefix before creating panel, so that database 
 	//queries will go to right base_handler prefix
@@ -321,7 +322,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 
 	CreateChildren(set, pt, time, selected_draw);
 
-	rw_show = pw_show = smw_show = false;
+	rw_show = pw_show = smw_show = dbtw_show = false;
 
 }
 
@@ -365,11 +366,13 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 	smw = new SummaryWindow(this, this);
 	pw = new PieWindow(this, this);
 	rw = new RelWindow(this, this);
+	dbtw = new DatabaseTypesWindow(this, this);
 
 #ifndef MINGW32
 	gtk_window_set_accept_focus(smw->GetHandle(), 0);
 	gtk_window_set_accept_focus(pw->GetHandle(), 0);
 	gtk_window_set_accept_focus(rw->GetHandle(), 0);
+	gtk_window_set_accept_focus(dbtw->GetHandle(), 0);
 #endif
 
 #ifdef MINGW32
@@ -444,6 +447,7 @@ void DrawPanel::CreateChildren(const wxString& set, PeriodType pt, time_t time, 
 		sw->Show(false);
 		iw->Show(false);
 		ssw->Show(false);
+		dbtw->Show(false);
 	}
 
 	/* add keyboard event handlers */
@@ -541,6 +545,7 @@ DrawPanel::~DrawPanel()
 	smw->Destroy();
 	rw->Destroy();
 	pw->Destroy();
+	dbtw->Destroy();
 
 	delete dw;
 
@@ -622,6 +627,22 @@ void DrawPanel::OnShowInterface(wxCommandEvent &evt)
 void DrawPanel::ClearCache() {
 	dw->ClearCache();
 	dw->RefreshData(false);
+}
+
+void DrawPanel::BaseTypesWindowUpdate(bool show, std::map<wxString, wxString> *tabMap) {
+	dbtw->MakeLabelsFromMap(tabMap);
+	ShowBaseTypesWindow(show);
+}
+
+void DrawPanel::ShowBaseTypesWindow(bool show) {
+	dbtw->Show(show);
+	if (show) {
+		dbtw->Raise();
+	} else {
+		wxMenuItem *item = menu_bar->FindItem(XRCID("ShowBaseType"));
+		item->Check(show);
+	}
+
 }
 
 void DrawPanel::OnFind(wxCommandEvent & evt) {

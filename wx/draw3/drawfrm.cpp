@@ -377,9 +377,13 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 
 	wxSizer *sizer = GetSizer();
 
+	wxString base_type_info;
+
 	panel_is_added = true;
 
 	if (draw_panel != NULL && m_notebook == NULL) {
+
+		base_type_info = GetBaseTypeForTab(database_manager);
 
 		m_notebook =
 		    new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition,
@@ -390,6 +394,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 		sizer->Detach(draw_panel);
 
 		draw_panel->Reparent(m_notebook);
+
+		tabMap[draw_panel->GetConfigName() + " [" + draw_panel->GetPrefix() + "]"] = base_type_info;
 
 		m_notebook->AddPage(draw_panel, draw_panel->GetConfigName(), true);
 
@@ -413,6 +419,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 			wxID_ANY,
 			this, selected_draw);
 
+	base_type_info = GetBaseTypeForTab(database_manager);
+
 	if (draw_panel)
 		draw_panel->SetActive(false);
 
@@ -422,6 +430,8 @@ bool DrawFrame::AddDrawPanel(const wxString & prefix, const wxString& set, Perio
 
 	if (m_notebook) {
 		wxString title = GetTitleForPanel(config->GetID(), -1);
+
+		tabMap[title + " [" + config->GetPrefix() + "]"] = base_type_info;
 
 		m_notebook->AddPage(new_panel, title, true);
 
@@ -466,6 +476,23 @@ void DrawFrame::DetachFromNotebook()
 
 void DrawFrame::OnNotebookPageClose(wxAuiNotebookEvent &event)
 {
+	wxWindow *page = m_notebook->GetPage(m_notebook->GetSelection());
+
+	draw_panel = wxDynamicCast(page, DrawPanel);
+
+	wxString prefix = draw_panel->GetPrefix();
+	DrawsSets *config = config_manager->GetConfigByPrefix(prefix);
+	wxString title = GetTitleForPanel(config->GetID(), -1);
+	size_t title_length = title.Length();
+	int tab_num;
+	tab_num = title[title_length - 2];
+	if (tab_num == 50) {
+		title = draw_panel->GetConfigName();
+	} else {
+		tab_num = tab_num - 1;
+		title[title_length - 2] = tab_num;
+	}
+	tabMap.erase(title + " [" + config->GetPrefix() + "]");
 }
 
 void DrawFrame::CloseTab(int sel)
@@ -491,7 +518,6 @@ void DrawFrame::OnCloseTab(wxCommandEvent & evt)
 		Close();
 	else
 		CloseTab(m_notebook->GetSelection());
-
 }
 
 void DrawFrame::OnSummaryWindowCheck(wxCommandEvent & event)
@@ -747,6 +773,24 @@ void DrawFrame::OnCopyParamName(wxCommandEvent &event) {
 
 void DrawFrame::OnClearCache(wxCommandEvent &event) {
 	draw_panel->ClearCache();
+}
+
+void DrawFrame::OnShowBaseType(wxCommandEvent &event) {
+	if (event.IsChecked()) {
+		if (ignore_menu_events == false)
+			draw_panel->BaseTypesWindowUpdate(event.IsChecked(), &tabMap);
+	} else {
+		if (m_notebook == NULL) {
+			draw_panel->ShowBaseTypesWindow(event.IsChecked());
+		} else {
+			for (unsigned int i = 0; i < m_notebook->GetPageCount(); i++) {
+				DrawPanel *panel = dynamic_cast<DrawPanel *>(m_notebook->GetPage(i));
+				if (panel != NULL) {
+					panel->ShowBaseTypesWindow(event.IsChecked());
+				}
+			}
+		}
+	}
 }
 
 void DrawFrame::OnImportDraw2Def(wxCommandEvent &event) {
@@ -1150,6 +1194,25 @@ wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
 	return ret;
 }
 
+wxString DrawFrame::GetBaseTypeForTab(DatabaseManager *database_manager) {
+
+		wxString ret;
+		wxString base_prefix;
+
+		base_prefix = database_manager->GetCurrentPrefix();
+		auto currentBasePtr = database_manager->GetBaseHandler()->GetBaseHandler(base_prefix.ToStdWstring());
+
+		if (dynamic_cast<SzbaseBase*>(currentBasePtr.get())) {
+			ret = "sz3";
+		} else if (dynamic_cast<Sz4Base*>(currentBasePtr.get())) {
+			ret = "sz4";
+		} else {
+			ret = "iks";
+		}
+
+		return ret;
+}
+
 void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 	if (m_notebook == NULL)
 		return;
@@ -1159,7 +1222,6 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 		return;
 
 	m_notebook->SetPageText(i, GetTitleForPanel(panel->GetConfigName(), i));
-
 }
 
 void DrawFrame::OnSortGraph(wxCommandEvent &event) {
@@ -1327,7 +1389,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Axes"), DrawFrame::OnNumberOfAxes)
     EVT_MENU(XRCID("ExportDataToFile"), DrawFrame::OnExportDataToFile)
     EVT_AUINOTEBOOK_PAGE_CHANGED(wxID_ANY, DrawFrame::OnNotebookSelectionChange)
-    EVT_AUINOTEBOOK_PAGE_CLOSED(wxID_ANY, DrawFrame::OnNotebookPageClose)
+    EVT_AUINOTEBOOK_PAGE_CLOSE(wxID_ANY, DrawFrame::OnNotebookPageClose)
     EVT_MENU(XRCID("Print"), DrawFrame::OnPrint)
     EVT_MENU(XRCID("PrintPrev"), DrawFrame::OnPrintPreview)
     EVT_MENU(XRCID("F0"), DrawFrame::OnFilterChange)
@@ -1363,6 +1425,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Copy"), DrawFrame::OnCopy)
     EVT_MENU(XRCID("Paste"), DrawFrame::OnPaste)
     EVT_MENU(XRCID("OnCopyParamName"), DrawFrame::OnCopyParamName)
+    EVT_MENU(XRCID("ShowBaseType"), DrawFrame::OnShowBaseType)
     EVT_MENU(XRCID("ImportDraw2"), DrawFrame::OnImportDraw2Def)
     EVT_MENU(XRCID("ReloadConfiguration"), DrawFrame::OnReloadConfig)
     EVT_MENU(XRCID("ShowErrorWindow"), DrawFrame::OnErrorFrame)
