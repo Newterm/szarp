@@ -1405,6 +1405,11 @@
                 </object>
             </object>
             <object class="separator"/>
+            <object class="wxMenuItem" name="ShowBaseType">
+				<label>Show base types of opened tabs\tCtrl+Shift+B</label>
+				<checkable>1</checkable>
+            </object>
+            <object class="separator"/>
             <object class="wxMenuItem" name="ImportDraw2">
                 <label>Import Draw2 definable windows\tCtrl+Shift+I</label>
             </object>

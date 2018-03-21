@@ -170,6 +170,10 @@ msgstr ""
 msgid "Connection with probes server not configured"
 msgstr "Es könnte keine Verbindung zum Server"
 
+#: dbtypeswin.cpp:69
+msgid "Databases types"
+msgstr ""
+
 # msgstr "Zestawy zdefiniowane przez użytkownika"
 #: defcfg.cpp:70
 msgid "User defined"
@@ -1111,7 +1115,7 @@ msgid "Split cursor"
 msgstr "Doppel Cursor"
 
 #
-#: drawtb.cpp:81 drawtb.cpp:151 GUI/resources.xrc:1039 GUI/resources.xrc:1431
+#: drawtb.cpp:81 drawtb.cpp:151 GUI/resources.xrc:1039 GUI/resources.xrc:1436
 msgid "Filter"
 msgstr "Filter"
 
@@ -1133,7 +1137,7 @@ msgstr ""
 
 # "Uwagi"
 #: drawtb.cpp:89 remarks.cpp:490 GUI/resources.xrc:400 GUI/resources.xrc:614
-#: GUI/resources.xrc:619 GUI/resources.xrc:1396 GUI/resources.xrc:1467
+#: GUI/resources.xrc:619 GUI/resources.xrc:1396 GUI/resources.xrc:1472
 msgid "Remarks"
 msgstr "Kommentare"
 
@@ -1693,27 +1697,27 @@ msgstr "Ich starte draw3..."
 msgid "Statistics window"
 msgstr "Statistik-Fenster"
 
-#: statdiag.cpp:67 timewdg.cpp:86 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:86 xydiag.cpp:70 ids.h:187
 msgid "DECADE"
 msgstr ""
 
-#: statdiag.cpp:67 timewdg.cpp:87 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:87 xydiag.cpp:70 ids.h:187
 msgid "YEAR"
 msgstr "JAHR"
 
-#: statdiag.cpp:67 timewdg.cpp:88 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:88 xydiag.cpp:70 ids.h:187
 msgid "MONTH"
 msgstr "MONAT"
 
-#: statdiag.cpp:67 timewdg.cpp:89 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:89 xydiag.cpp:70 ids.h:187
 msgid "WEEK"
 msgstr "WOCHE"
 
-#: statdiag.cpp:67 timewdg.cpp:90 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:90 xydiag.cpp:70 ids.h:187
 msgid "DAY"
 msgstr "TAG"
 
-#: statdiag.cpp:67 timewdg.cpp:91 xydiag.cpp:70 ids.h:186
+#: statdiag.cpp:67 timewdg.cpp:91 xydiag.cpp:70 ids.h:187
 msgid "30 MINUTES"
 msgstr ""
 
@@ -1856,20 +1860,20 @@ msgstr "%H:%M"
 msgid " %R"
 msgstr "%R"
 
-#: timewdg.cpp:92 ids.h:186
+#: timewdg.cpp:92 ids.h:187
 msgid "5 MINUTES"
 msgstr ""
 
-#: timewdg.cpp:93 ids.h:186
+#: timewdg.cpp:93 ids.h:187
 msgid "MINUTE"
 msgstr ""
 
-#: timewdg.cpp:94 ids.h:186
+#: timewdg.cpp:94 ids.h:187
 msgid "30 SECONDS"
 msgstr ""
 
 # SEZON#
-#: timewdg.cpp:95 ids.h:186
+#: timewdg.cpp:95 ids.h:187
 msgid "SEASON"
 msgstr "SAISON"
 
@@ -2266,7 +2270,7 @@ msgstr "Kommentare"
 msgid "Edit pack"
 msgstr "Bearbeite Paket"
 
-#: GUI/resources.xrc:456 GUI/resources.xrc:1993
+#: GUI/resources.xrc:456 GUI/resources.xrc:1998
 msgid "Time:"
 msgstr "Zeit:"
 
@@ -2356,7 +2360,7 @@ msgid "Close window"
 msgstr "Schließ das Fenster ein"
 
 # "Autor:"
-#: GUI/resources.xrc:681 GUI/resources.xrc:1972
+#: GUI/resources.xrc:681 GUI/resources.xrc:1977
 msgid "Author:"
 msgstr "Autor:"
 
@@ -2806,348 +2810,354 @@ msgstr "Fetch Remarks"
 msgid "Show Remarks\tCtrl+Shift+Alt+S"
 msgstr "Nachrichten-Fenster anzeigen\tCtrl+Shift+E"
 
-# "Importuj okna definiowalne z wcześniejszej wersji programu"
+# "Pokaż okno komunikatów"
 #: GUI/resources.xrc:1409
+#, fuzzy
+msgid "Show base types of opened tabs\tCtrl+Shift+B"
+msgstr "Nachrichten-Fenster anzeigen\tCtrl+Shift+E"
+
+# "Importuj okna definiowalne z wcześniejszej wersji programu"
+#: GUI/resources.xrc:1414
 msgid "Import Draw2 definable windows\tCtrl+Shift+I"
 msgstr ""
 "Importieren Fenster definierbare von einer früheren Version von\tCtrl+Shift+I"
 
 # "Przeładuj konfigurację"
-#: GUI/resources.xrc:1413
+#: GUI/resources.xrc:1418
 msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Reload-Konfiguration\tCtrl+Shift+Alt+R"
 
-#: GUI/resources.xrc:1417
+#: GUI/resources.xrc:1422
 msgid "Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N"
 msgstr ""
 
-#: GUI/resources.xrc:1421
+#: GUI/resources.xrc:1426
 msgid "Export data to file"
 msgstr ""
 
 # "Pokaż okno komunikatów"
-#: GUI/resources.xrc:1425
+#: GUI/resources.xrc:1430
 msgid "Show error window\tCtrl+Shift+E"
 msgstr "Nachrichten-Fenster anzeigen\tCtrl+Shift+E"
 
 # "Ustawienia"
-#: GUI/resources.xrc:1429
+#: GUI/resources.xrc:1434
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: GUI/resources.xrc:1433
+#: GUI/resources.xrc:1438
 msgid "0\tA"
 msgstr ""
 
-#: GUI/resources.xrc:1437
+#: GUI/resources.xrc:1442
 msgid "1\tB"
 msgstr ""
 
-#: GUI/resources.xrc:1441
+#: GUI/resources.xrc:1446
 msgid "2\tC"
 msgstr ""
 
-#: GUI/resources.xrc:1445
+#: GUI/resources.xrc:1450
 msgid "3\tD"
 msgstr ""
 
-#: GUI/resources.xrc:1449
+#: GUI/resources.xrc:1454
 msgid "4\tE"
 msgstr ""
 
-#: GUI/resources.xrc:1453
+#: GUI/resources.xrc:1458
 msgid "5\tF"
 msgstr ""
 
 # "Ilość drukowanych osi\tCtrl+X"
-#: GUI/resources.xrc:1458
+#: GUI/resources.xrc:1463
 msgid "Number of printed axes\tCtrl+X"
 msgstr "Die Höhe der gedruckten Achse\tCtrl+X"
 
-#: GUI/resources.xrc:1461
+#: GUI/resources.xrc:1466
 msgid "Language"
 msgstr "Sprache"
 
-#: GUI/resources.xrc:1464
+#: GUI/resources.xrc:1469
 #, fuzzy
 msgid "Graphs view"
 msgstr "Schaubild"
 
 # "Not translated"
-#: GUI/resources.xrc:1470
+#: GUI/resources.xrc:1475
 #, fuzzy
 msgid "Addresses of probes' servers"
 msgstr "unrecognized response from server"
 
-#: GUI/resources.xrc:1475
+#: GUI/resources.xrc:1480
 #, fuzzy
 msgid "&Window"
 msgstr " - Fenster "
 
 # "Rodzaj średnich"
-#: GUI/resources.xrc:1477
+#: GUI/resources.xrc:1482
 #, fuzzy
 msgid "Show average type"
 msgstr "Typ der Mittel"
 
-#: GUI/resources.xrc:1481
+#: GUI/resources.xrc:1486
 msgid "Show interface"
 msgstr ""
 
-#: GUI/resources.xrc:1485
+#: GUI/resources.xrc:1490
 msgid "Show arrows"
 msgstr ""
 
-#: GUI/resources.xrc:1490
+#: GUI/resources.xrc:1495
 #, fuzzy
 msgid "&Help"
 msgstr "Hilfe"
 
 # "Pomo&c"
-#: GUI/resources.xrc:1492
+#: GUI/resources.xrc:1497
 msgid "Help\tF1"
 msgstr "Hilf&e\tF1"
 
-#: GUI/resources.xrc:1495
+#: GUI/resources.xrc:1500
 msgid "Context help\tShift+F1"
 msgstr ""
 
-#: GUI/resources.xrc:1498
+#: GUI/resources.xrc:1503
 msgid "About\tF2"
 msgstr "Über\tF2"
 
 # "Edytuj parametr"
-#: GUI/resources.xrc:1504
+#: GUI/resources.xrc:1509
 msgid "Edit parameter"
 msgstr "Bearbeiten Parameter"
 
 # "Nazwa parametru:"
-#: GUI/resources.xrc:1526
+#: GUI/resources.xrc:1531
 msgid "Parameter name:"
 msgstr "Der Name des Parameters:"
 
 # "Średnie liczone jako:"
-#: GUI/resources.xrc:1560
+#: GUI/resources.xrc:1565
 msgid "Average value calculation method"
 msgstr "Die Mittel gezählt als:"
 
 # "średnia z zastosowania formuły dla każdej próbki"
-#: GUI/resources.xrc:1569
+#: GUI/resources.xrc:1574
 msgid "mean of values of formula application to each probe"
 msgstr "Mittelwert der Werte der Antragsformulare zu jeder Probe"
 
 # "wynik zastosowania formuły dla średnich"
-#: GUI/resources.xrc:1570
+#: GUI/resources.xrc:1575
 msgid "result of formula's application to average values of components"
 msgstr "das Ergebnis einer Formel für den Mittelstand"
 
 # "Formuła parametru:"
-#: GUI/resources.xrc:1588
+#: GUI/resources.xrc:1593
 msgid "Parameter formula:"
 msgstr "Formel-Parameter:"
 
-#: GUI/resources.xrc:1596
+#: GUI/resources.xrc:1601
 msgid "label&11"
 msgstr ""
 
 # Cofnij
-#: GUI/resources.xrc:1608
+#: GUI/resources.xrc:1613
 msgid "Undo"
 msgstr "Rückgängig"
 
-#: GUI/resources.xrc:1609
+#: GUI/resources.xrc:1614
 msgid "<"
 msgstr "<"
 
 # Ponów
-#: GUI/resources.xrc:1616
+#: GUI/resources.xrc:1621
 msgid "Redo"
 msgstr "Wiederherstell"
 
-#: GUI/resources.xrc:1617
+#: GUI/resources.xrc:1622
 msgid ">"
 msgstr ">"
 
-#: GUI/resources.xrc:1631
+#: GUI/resources.xrc:1636
 msgid "Plus"
 msgstr "Plus"
 
-#: GUI/resources.xrc:1632
+#: GUI/resources.xrc:1637
 msgid "+"
 msgstr "+"
 
-#: GUI/resources.xrc:1639
+#: GUI/resources.xrc:1644
 msgid "Minus"
 msgstr "Minus"
 
-#: GUI/resources.xrc:1640
+#: GUI/resources.xrc:1645
 msgid "-"
 msgstr "-"
 
-#: GUI/resources.xrc:1647
+#: GUI/resources.xrc:1652
 msgid "Times"
 msgstr "Times"
 
-#: GUI/resources.xrc:1648
+#: GUI/resources.xrc:1653
 msgid "*"
 msgstr "*"
 
 # "Podziel"
-#: GUI/resources.xrc:1655
+#: GUI/resources.xrc:1660
 msgid "Divide"
 msgstr "Divide"
 
-#: GUI/resources.xrc:1656
+#: GUI/resources.xrc:1661
 msgid "/"
 msgstr ""
 
 # "Wstaw nowy parametr"
-#: GUI/resources.xrc:1671
+#: GUI/resources.xrc:1676
 msgid "Insert param from graph"
 msgstr "Legen Sie einen neuen Parameter"
 
 # "<W>"
-#: GUI/resources.xrc:1672
+#: GUI/resources.xrc:1677
 msgid "ID"
 msgstr "<W>"
 
 # "Wstaw parametr zdefiniowany użytkownika"
-#: GUI/resources.xrc:1680
+#: GUI/resources.xrc:1685
 msgid "Insert user defined param"
 msgstr "Legen Sie eine benutzerdefinierte Parameter"
 
 # "<P>"
-#: GUI/resources.xrc:1681
+#: GUI/resources.xrc:1686
 msgid "IP"
 msgstr "<P>"
 
 # "Ilość miejsc po przecinku:"
-#: GUI/resources.xrc:1701
+#: GUI/resources.xrc:1706
 msgid "Displayed parameter precision:"
 msgstr "Anzahl der Stellen hinter dem Komma:"
 
 # "Jednostka:"
-#: GUI/resources.xrc:1730
+#: GUI/resources.xrc:1735
 msgid "Unit:"
 msgstr "Einheit:"
 
-#: GUI/resources.xrc:1744
+#: GUI/resources.xrc:1749
 msgid "Insert degree"
 msgstr "Legen Sie Grad-Symbol"
 
-#: GUI/resources.xrc:1745
+#: GUI/resources.xrc:1750
 msgid "D"
 msgstr "D"
 
 # "Początek:"
-#: GUI/resources.xrc:1770
+#: GUI/resources.xrc:1775
 msgid "Start date:"
 msgstr "Start Datum:"
 
 # "Wybierz datę początkową"
-#: GUI/resources.xrc:1776
+#: GUI/resources.xrc:1781
 msgid "Choose start date"
 msgstr "Wählen Sie ein Start Datum"
 
 # "Wybierz godzinę"
-#: GUI/resources.xrc:1784
+#: GUI/resources.xrc:1789
 msgid "Choose start hour"
 msgstr "Wählen Sie eine Start Stunde"
 
 # "Wybierz minutę"
-#: GUI/resources.xrc:1793
+#: GUI/resources.xrc:1798
 msgid "Choose start minute"
 msgstr "Wählen Sie eine Start Minute"
 
 # "Wstaw datę rozpoczęcia"
-#: GUI/resources.xrc:1799
+#: GUI/resources.xrc:1804
 msgid "Enable inserting start date"
 msgstr "Legen Sie ein Start Datum"
 
 # "włącz"
-#: GUI/resources.xrc:1800
+#: GUI/resources.xrc:1805
 msgid "enabled"
 msgstr "aktiviert"
 
 # "Niepoprawna data"
-#: GUI/resources.xrc:1822
+#: GUI/resources.xrc:1827
 #, fuzzy
 msgid "Found date:"
 msgstr "Ungültiges Datum"
 
 # "Konfiguracja odniesienia: "
-#: GUI/resources.xrc:1836
+#: GUI/resources.xrc:1841
 msgid "Base configuration:"
 msgstr "Die Konfiguration des Verweises: "
 
 # "Wybierz konfigurację odniesienia"
-#: GUI/resources.xrc:1844
+#: GUI/resources.xrc:1849
 msgid "Choose reference configuration"
 msgstr "Wählen Sie die Konfiguration eines Verweises"
 
-#: GUI/resources.xrc:1845
+#: GUI/resources.xrc:1850
 msgid "LABEL"
 msgstr "LABEL"
 
 # "Uwagi"
-#: GUI/resources.xrc:1917
+#: GUI/resources.xrc:1922
 #, fuzzy
 msgid "Remark"
 msgstr "Kommentare"
 
-#: GUI/resources.xrc:1929
+#: GUI/resources.xrc:1934
 msgid "Base:"
 msgstr ""
 
-#: GUI/resources.xrc:1937
+#: GUI/resources.xrc:1942
 msgid "label&2"
 msgstr ""
 
 # "Zestawy"
-#: GUI/resources.xrc:1951
+#: GUI/resources.xrc:1956
 #, fuzzy
 msgid "Set:"
 msgstr "Sätze"
 
-#: GUI/resources.xrc:2001
+#: GUI/resources.xrc:2006
 msgid "label&5"
 msgstr ""
 
 # "Uwagi"
-#: GUI/resources.xrc:2014
+#: GUI/resources.xrc:2019
 #, fuzzy
 msgid "Remark referring to:"
 msgstr "Kommentare"
 
-#: GUI/resources.xrc:2027
+#: GUI/resources.xrc:2032
 msgid "Currently selected window"
 msgstr ""
 
-#: GUI/resources.xrc:2034
+#: GUI/resources.xrc:2039
 msgid "Whole base"
 msgstr ""
 
 # "Tytuł"
-#: GUI/resources.xrc:2055
+#: GUI/resources.xrc:2060
 #, fuzzy
 msgid "Title:"
 msgstr "Titel"
 
 # "Kontekst"
-#: GUI/resources.xrc:2071
+#: GUI/resources.xrc:2076
 #, fuzzy
 msgid "Content:"
 msgstr "Kontext"
 
-#: GUI/resources.xrc:2123
+#: GUI/resources.xrc:2128
 msgid "Go to..."
 msgstr ""
 
-#: GUI/resources.xrc:2145
+#: GUI/resources.xrc:2150
 msgid "Probe servers addresses"
 msgstr ""
 
-#: GUI/resources.xrc:2153
+#: GUI/resources.xrc:2158
 msgid "Probe servers addresses:"
 msgstr ""
 

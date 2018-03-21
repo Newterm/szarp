@@ -244,6 +244,8 @@ public:
 
 	virtual void StopSearch() = 0;
 
+	virtual std::wstring GetType() const = 0;
+
 	virtual void RegisterObserver(DatabaseQuery* query);
 
 	virtual ~Draw3Base() {}
@@ -292,6 +294,8 @@ public:
 	
 	void StopSearch();
 
+	std::wstring GetType() const;
+
 };
 
 class Sz4Base : public Draw3Base {
@@ -328,6 +332,8 @@ public:
 	void ClearCache(DatabaseQuery* query);
 	
 	void StopSearch();
+
+	std::wstring GetType() const;
 
 	virtual void RegisterObserver(DatabaseQuery* query);
 };
@@ -404,6 +410,8 @@ public:
 	
 	void StopSearch();
 
+	std::wstring GetType() const;
+
 	void RegisterObserver(DatabaseQuery* query);
 };
 
@@ -413,6 +421,7 @@ public:
 	virtual void SetCurrentPrefix(const wxString& prefix) = 0;
 	virtual wxString GetCurrentPrefix() const = 0;
 	virtual Draw3Base::ptr GetBaseHandler(const std::wstring& prefix) = 0;
+	virtual std::map<std::wstring, std::wstring> GetBaseHandlers() const = 0;
 	virtual void AddBasePrefix(const wxString&) = 0;
 	virtual ~BaseHandler() {}
 };
@@ -440,6 +449,8 @@ public:
 	{ return sz4_base_handler; }
 	Draw3Base::ptr GetSz3Handler()
 	{ return sz3_base_handler; }
+
+	std::map<std::wstring, std::wstring> GetBaseHandlers() const override;
 
 	void AddBasePrefix(const wxString& prefix) override;
 	void AddBaseHandler(const wxString& prefix, Draw3Base::ptr handler)

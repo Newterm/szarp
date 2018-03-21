@@ -396,6 +396,10 @@ void SzbaseBase::StopSearch() {
 	}
 }
 
+std::wstring SzbaseBase::GetType() const {
+	return L"sz3";
+}
+
 namespace {
 
 template<class time_type>
@@ -610,6 +614,10 @@ void Sz4Base::ClearCache(DatabaseQuery* query) {
 
 void Sz4Base::StopSearch() {
 
+}
+
+std::wstring Sz4Base::GetType() const {
+	return L"sz4";
 }
 
 void Sz4Base::RegisterObserver(DatabaseQuery *query) {
@@ -875,6 +883,10 @@ void Sz4ApiBase::StopSearch() {
 
 }
 
+std::wstring Sz4ApiBase::GetType() const {
+	return L"iks";
+}
+
 Sz4ApiBase::ObserverWrapper::ObserverWrapper(TParam* param, sz4::param_observer* obs)
 			: obs(obs), param(param) {
 	prefix = param->GetSzarpConfig()->GetPrefix();
@@ -977,6 +989,17 @@ Draw3Base::ptr SzbaseHandler::GetBaseHandler(const std::wstring& prefix)
 
 	return base_handlers[base_prefix];
 #endif
+}
+
+std::map<std::wstring, std::wstring> SzbaseHandler::GetBaseHandlers() const
+{
+	std::map<std::wstring, std::wstring> base_handlers_map;
+	for (const auto& base_it: base_handlers)
+	{
+		base_handlers_map[base_it.first.ToStdWstring()] = base_it.second->GetType();
+	}
+
+	return base_handlers_map;
 }
 
 void SzbaseHandler::AddBasePrefix(const wxString& prefix)

@@ -38,6 +38,7 @@
 #include "database.h"
 #include "drawsctrl.h"
 #include "summwin.h"
+#include "dbtypeswin.h"
 #include "cfgmgr.h"
 #include "disptime.h"
 #include "drawswdg.h"
@@ -221,7 +222,7 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 			panel->OnJumpToDate();
 		break;
 	case 'B':
-		if (event.ControlDown())
+		if (event.ControlDown() && !event.ShiftDown())
 			panel->dw->SwitchCurrentDrawBlock();
 		else
 			return false;
@@ -305,7 +306,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
+	prefix(_prefix), smw(NULL), dbtw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
 	//setting current prefix before creating panel, so that database 
 	//queries will go to right base_handler prefix
@@ -538,6 +539,8 @@ DrawPanel::~DrawPanel()
 		dtd->Destroy();
 	if (ee != NULL)
 		ee->Destroy();
+	if (dbtw != NULL)
+		dbtw->Destroy();
 	smw->Destroy();
 	rw->Destroy();
 	pw->Destroy();
@@ -622,6 +625,27 @@ void DrawPanel::OnShowInterface(wxCommandEvent &evt)
 void DrawPanel::ClearCache() {
 	dw->ClearCache();
 	dw->RefreshData(false);
+}
+
+void DrawPanel::BaseTypesWindowUpdate(bool show, std::map<std::wstring, std::wstring> const &tabMap) {
+	if (dbtw == NULL) {
+		dbtw = new DatabaseTypesWindow(this,this);
+	}
+
+	dbtw->MakeLabelsFromMap(tabMap);
+	ShowBaseTypesWindow(show);
+}
+
+void DrawPanel::ShowBaseTypesWindow(bool show) {
+	if (dbtw != NULL) {
+		dbtw->Show(show);
+		if (show) {
+			dbtw->Raise();
+		} else {
+			wxMenuItem *item = menu_bar->FindItem(XRCID("ShowBaseType"));
+			item->Check(show);
+		}
+	}
 }
 
 void DrawPanel::OnFind(wxCommandEvent & evt) {

@@ -67,6 +67,7 @@ draw3_SOURCES = \
 		incsearch.cpp incsearch.h \
 		drawobs.h drawobs.cpp \
 		summwin.h summwin.cpp \
+		dbtypeswin.h dbtypeswin.cpp \
 		drawfrm.h drawfrm.cpp \
 		frmmgr.h frmmgr.cpp \
 		timeformat.h timeformat.cpp \
