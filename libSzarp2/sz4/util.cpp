@@ -18,6 +18,10 @@
 */
 
 #include "sz4/util.h"
+#include "custom_assert.h"
+#include "protobuf/paramsvalues.pb.h"
+
+#include <math.h>
 
 namespace sz4 {
 
@@ -34,5 +38,72 @@ SZARP_PROBE_TYPE get_probe_type_step(SZARP_PROBE_TYPE pt) {
 	}
 }
 
+template <typename RV, typename IV>
+RV cast_with_precision(IV val, int32_t prec_adj) = delete;
+
+template <>
+int32_t cast_with_precision(double val, int32_t prec_adj) { return rint(val * prec_adj); }
+
+template <>
+double cast_with_precision(double val, int32_t prec_adj) { return val; }
+
+template <>
+int32_t cast_with_precision(int32_t val, int32_t prec_adj) { return val; }
+
+template <>
+double cast_with_precision(int32_t val, int32_t prec_adj) { return ((double) val) / prec_adj; }
+
+
+template <typename VT>
+value_time_pair<VT, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj) {
+	value_time_pair<VT, nanosecond_time_t> ret;
+
+	if (!pv.IsInitialized()) {
+		ret.value = sz4::no_data<VT>();
+		ret.time = sz4::time_trait<nanosecond_time_t>::invalid_value;
+		return ret;
+	}
+
+	ret.time.second = pv.time();
+	if (pv.has_nanotime()) {
+		ret.time.nanosecond = pv.nanotime();
+	} else {
+		ret.time.nanosecond = 0;
+	}
+
+	if (pv.has_int_value()) {
+		ret.value = cast_with_precision<VT>((int32_t) pv.int_value(), prec_adj);
+	} else if (pv.has_float_value()) {
+		ret.value = cast_with_precision<VT>((double) pv.float_value(), prec_adj);
+	} else if (pv.has_double_value()) {
+		ret.value = cast_with_precision<VT>((double) pv.double_value(), prec_adj);
+	} else {
+		ASSERT(!"Unknown or no type in ParamValue");
+		ret.value = sz4::no_data<VT>();
+	}
+
+	return ret;
 }
 
+template <>
+value_time_pair<int16_t, nanosecond_time_t> cast_param_value<int16_t>(const szarp::ParamValue& pv, int32_t prec_adj) {
+	value_time_pair<int16_t, nanosecond_time_t> ret;
+	auto i32_p = cast_param_value<int32_t>(pv, prec_adj);
+	ret.value = i32_p.value;
+	ret.time = i32_p.time;
+	return ret;
+}
+
+template <>
+value_time_pair<float, nanosecond_time_t> cast_param_value<float>(const szarp::ParamValue& pv, int32_t prec_adj) {
+	value_time_pair<float, nanosecond_time_t> ret;
+	auto d64_p = cast_param_value<double>(pv, prec_adj);
+	ret.value = d64_p.value;
+	ret.time = d64_p.time;
+	return ret;
+}
+
+template value_time_pair<int32_t, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
+template value_time_pair<double, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
+
+} // namespace util

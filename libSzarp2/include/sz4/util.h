@@ -21,6 +21,10 @@
 
 class TParam;
 
+namespace szarp {
+	class ParamValue;
+}
+
 #include "szarp_config.h"
 #include "sz4/defs.h"
 
@@ -93,6 +97,9 @@ template<class T> T descale_value(const T& v, TParam* p) {
 			assert(false);
 	}
 }
+
+template <typename VT>
+value_time_pair<VT, nanosecond_time_t> cast_param_value(const szarp::ParamValue&, int32_t prec_adj);
 
 SZARP_PROBE_TYPE get_probe_type_step(SZARP_PROBE_TYPE pt);
 
