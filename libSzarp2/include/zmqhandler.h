@@ -35,7 +35,7 @@ class zmqhandler {
 	szarp::ParamsValues m_pubs;
 
 	std::vector<szarp::ParamValue> m_send;
-	std::unordered_map<size_t, size_t> m_send_map;
+	std::unordered_map<size_t, std::set<size_t>> m_send_map;
 
 	void process_msg(szarp::ParamsValues& values);
 
