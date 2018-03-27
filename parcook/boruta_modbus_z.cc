@@ -365,6 +365,10 @@ std::string sdu2string(const struct SDU& sdu) {
 	return ss.str();
 }
 
+class modbus_register;
+using RMAP = std::map<unsigned short, modbus_register*>;
+using RSET = std::set<std::pair<REGISTER_TYPE, unsigned short>>;
+
 class logging_obj {
 protected:
 	driver_logger* m_log;
@@ -373,154 +377,196 @@ public:
 	logging_obj(driver_logger* log): m_log(log) {}
 };
 
-class modbus_register;
-typedef std::map<unsigned short, modbus_register*> RMAP;
-typedef std::set<std::pair<REGISTER_TYPE, unsigned short> > RSET;
-
-class modbus_unit;
-class modbus_register: public logging_obj {
-	modbus_unit *m_modbus_unit;
-	uint16_t m_val;
-	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+class register_iface {
 public:
-	modbus_register(modbus_unit *daemon, driver_logger* log);
-	void set_val(uint16_t val, const sz4::nanosecond_time_t time);
-	uint16_t get_val();
+	virtual bool is_valid() const = 0;
 
-	sz4::nanosecond_time_t get_mod_time() const { return m_mod_time; }
-	bool is_valid();
+	virtual int16_t get_val() const = 0;
+	virtual void set_val(int16_t val) = 0;
+
+	virtual sz4::nanosecond_time_t get_mod_time() const = 0;
+	virtual void set_mod_time(const sz4::nanosecond_time_t&) = 0;
 };
 
-//maps regisers values to parcook short values
-class parcook_modbus_val_op {
+class null_register: public register_iface {
+public:
+	bool is_valid() const override { return false; }
+	int16_t get_val() const override { return sz4::no_data<int16_t>(); }
+	void set_val(int16_t val) override {}
+	sz4::nanosecond_time_t get_mod_time() const override { return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value; }
+	void set_mod_time(const sz4::nanosecond_time_t&) override {}
+} null_reg;
+
+class parcook_val_op {
 public:
 	virtual void set_val(zmqhandler* handler, size_t index) = 0;
 };
 
-//maps values from sender to parcook registers
-class sender_modbus_val_op {
+class sender_val_op {
 public:
 	virtual void update_val(zmqhandler* handler, size_t index) = 0;
 };
 
-template <class T, int S>
-class modbus_register_holder: public logging_obj {
-protected:
-	std::array<modbus_register*, S> m_regs;
+class register_holder {
+public:
+	virtual boost::optional<sz4::nanosecond_time_t> get_mod_time() const = 0;
+	virtual void set_mod_time(const sz4::nanosecond_time_t&) const = 0;
+	virtual register_iface* operator[](size_t) const = 0;
+};
+
+template <int N_REGS>
+class modbus_registers_holder: public register_holder {
+	std::array<register_iface*, N_REGS> m_regs;
 
 public:
-	static constexpr uint16_t N_REGS = S;
-	modbus_register_holder(std::array<modbus_register*, N_REGS> regs, driver_logger* log): logging_obj(log), m_regs(regs) {}
+	modbus_registers_holder(std::array<register_iface*, N_REGS> regs): m_regs(regs) {}
+
+	boost::optional<sz4::nanosecond_time_t> get_mod_time() const override {
+		sz4::nanosecond_time_t mod_time;
+		for (uint32_t i = 0; i < N_REGS; ++i) {
+			if (!m_regs[i]->is_valid())
+				return boost::none;
+
+			mod_time = std::min(mod_time, this->m_regs[i]->get_mod_time());
+		}
+
+		return mod_time;
+	}
+
+	void set_mod_time(const sz4::nanosecond_time_t& time) const override {
+		for (auto reg: m_regs) {
+			reg->set_mod_time(time);
+		}
+	}
+
+	register_iface* operator[](size_t i) const override {
+		if (i >= N_REGS) return &null_reg;
+		return m_regs[i];
+	}
 };
 
 
-template <class T, int S = sizeof(T)/2>
-class read_val_op: public modbus_register_holder<T, S>, public parcook_modbus_val_op {
+template <class val_impl>
+class read_val_op: public parcook_val_op, public logging_obj {
+	register_holder* m_regs;
+
 public:
-	using modbus_register_holder<T, S>::modbus_register_holder;
-	using modbus_register_holder<T, S>::N_REGS;
+	static constexpr uint32_t N_REGS = val_impl::N_REGS;
+	using value_type = typename val_impl::value_type;
+
+	read_val_op(register_holder* regs, value_type, int, driver_logger* log): logging_obj(log), m_regs(regs) {}
 
 	void set_val(zmqhandler* handler, size_t index) override {
-		sz4::nanosecond_time_t mod_times[N_REGS];
-		for (int i = 0; i < N_REGS; ++i) {
-			if (!this->m_regs[i]->is_valid())
-				return; // what do? send nodata?
-
-			mod_times[i] = this->m_regs[i]->get_mod_time();
+		if (auto mod_time = m_regs->get_mod_time()) {
+			auto val = val_impl::get_value_from_regs(*m_regs);
+			handler->set_value(index, *mod_time, val);
 		}
-
-		T value = this->read_regs();
-		handler->set_value(index, *std::min_element(mod_times, mod_times + N_REGS), value);
 	}
+};
 
-	virtual T read_regs() = 0;
+template <typename val_impl>
+class sent_val_op: public sender_val_op, public logging_obj {
+public:
+	static constexpr uint32_t N_REGS = val_impl::N_REGS;
+	using value_type = typename val_impl::value_type;
+
+private:
+	register_holder* m_regs;
+	int m_prec;
+	value_type m_nodata_value;
+
+public:
+	sent_val_op(register_holder* regs, value_type nodata_value, int prec, driver_logger* log): logging_obj(log), m_regs(regs), m_prec(prec), m_nodata_value(nodata_value)  {}
+
+	void update_val(zmqhandler* handler, size_t index) override {
+		szarp::ParamValue& value = handler->get_value(index);
+		auto vt_pair = sz4::cast_param_value<value_type>(value, this->m_prec);
+		if (!sz4::is_valid(vt_pair))
+			return; // do not overwrite, wait for data timeout instead
+
+		m_regs->set_mod_time(vt_pair.time);
+		val_impl::set_value_to_regs(*m_regs, vt_pair.value);
+	}
 };
 
 template <typename VT>
-class casting_read_op: public read_val_op<VT> {
+class modbus_casting_op {
 public:
-	using read_val_op<VT>::N_REGS;
-	using read_val_op<VT, N_REGS>::read_val_op;
-	VT read_regs() override {
+	static constexpr uint32_t N_REGS = sizeof(VT)/2;
+	using value_type = VT;
+
+	static VT get_value_from_regs(register_holder& regs) {
 		uint16_t v[N_REGS];
-		for (uint16_t i = 0; i < N_REGS; i++) {
-			v[i] = this->m_regs[i]->get_val();
+		for (uint32_t i = 0; i < N_REGS; i++) {
+			v[i] = regs[i]->get_val();
 		}
 
 		return *(VT*)v;
 	}
+
+	static void set_value_to_regs(register_holder& regs, VT val) {
+		uint16_t iv[N_REGS];
+		memcpy(iv, &val, sizeof(VT));
+		for (uint32_t i = 0; i < N_REGS; i++) {
+			regs[i]->set_val(iv[i]);
+		}
+	}
 };
 
-using short_parcook_modbus_val_op = casting_read_op<int16_t>;
-using long_parcook_modbus_val_op = casting_read_op<int32_t>;
-using float_parcook_modbus_val_op = casting_read_op<float>;
-using double_parcook_modbus_val_op = casting_read_op<double>;
+using short_modbus_op = modbus_casting_op<int16_t>;
+using long_modbus_op = modbus_casting_op<int32_t>;
+using float_modbus_op = modbus_casting_op<float>;
+using double_modbus_op = modbus_casting_op<double>;
 
-class bcd_parcook_modbus_val_op: public read_val_op<int16_t> {
+class bcd_modbus_op {
 public:
-	using read_val_op<int16_t>::read_val_op;
+	static constexpr uint32_t N_REGS = 1;
+	using value_type = int16_t;
 
-	int16_t read_regs() override {
-		uint16_t val = this->m_regs[0]->get_val();
+	static int16_t get_value_from_regs(register_holder& regs) {
+		uint16_t val = regs[0]->get_val();
 		return int16_t((val & 0xf)
                 + ((val >> 4) & 0xf) * 10
                 + ((val >> 8) & 0xf) * 100
                 + (val >> 12) * 1000);
 	}
-};
 
-class decimal3_parcook_modbus_val_op: public read_val_op<double, 3> {
-public:
-	using read_val_op<double, 3>::read_val_op;
-
-	double read_regs() override {
-		double v = (10000 * this->m_regs[0]->get_val()) + this->m_regs[1]->get_val() + (this->m_regs[2]->get_val() / 1000.0);
-		return v;
+	static void set_value_to_regs(register_holder& regs, int16_t _val) {
+		uint16_t val = _val;
+		regs[0]->set_val(val % 10 + (((val / 10) % 10) << 4) + (((val / 100) % 10) << 8) + (((val / 1000) % 10) << 12));
 	}
 };
 
-
-// sent_val_op shouldnt depend on type of registers
-template <class val_impl, typename _value_type, int16_t _N_REGS>
-class sent_val_op: public modbus_register_holder<_value_type, _N_REGS>, public sender_modbus_val_op {
-protected:
-	int m_prec;
-	_value_type m_nodata_value;
-
+class decimal3_modbus_op {
 public:
-	sent_val_op(std::array<modbus_register*, _N_REGS> regs, _value_type nodata_value, int prec, driver_logger* log): modbus_register_holder<_value_type, _N_REGS>(regs, log), m_prec(prec), m_nodata_value(nodata_value)  {}
+	static constexpr uint32_t N_REGS = 3;
+	using value_type = double;
 
-	void update_val(zmqhandler* handler, size_t index) override {
-		szarp::ParamValue& value = handler->get_value(index);
-		auto vt_pair = sz4::cast_param_value<_value_type>(value, this->m_prec);
-		if (!sz4::is_valid(vt_pair))
-			return; // what do? send nodata?
+	static value_type get_value_from_regs(register_holder& regs) {
+		return (10000 * regs[0]->get_val()) + regs[1]->get_val() + (regs[2]->get_val() / 1000.0);
+	}
 
-		val_impl::set_regs(this->m_regs, vt_pair);
+	static void set_value_to_regs(register_holder& regs, value_type val) {
+		regs[2]->set_val(uint64_t(val * 1000) % 1000);
+		regs[1]->set_val(uint64_t(val) % 10000);
+		regs[0]->set_val(int16_t(val / 10000.0));
 	}
 };
 
-template <typename VT>
-class casting_sent_op: public sent_val_op<casting_sent_op<VT>, VT, sizeof(VT)/2> {
-	static constexpr int16_t N_REGS = sizeof(VT)/2;
+class RegsFactory: public logging_obj {
+	enum FLOAT_ORDER { LSWMSW, MSWLSW } default_float_order = MSWLSW;
+	enum DOUBLE_ORDER { LSDMSD, MSDLSD } default_double_order = MSDLSD;
+
+	FLOAT_ORDER get_float_order(TAttribHolder* param, FLOAT_ORDER default_value) const;
+	DOUBLE_ORDER get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value) const;
 
 public:
-	using sent_val_op<casting_sent_op<VT>, VT, sizeof(VT)/2>::sent_val_op; // constructor
+	using logging_obj::logging_obj;
+	void configure(TUnit* unit);
 
-	static void set_regs(std::array<modbus_register*, N_REGS>& regs, const sz4::value_time_pair<VT, sz4::nanosecond_time_t>& vp) {
-		uint16_t iv[N_REGS];
-		memcpy(iv, &vp.value, sizeof(VT));
-		for (uint16_t i = 0; i < N_REGS; i++) {
-			regs[i]->set_val(iv[i], vp.time);
-		}
-	}
+	template <uint32_t N_REGS>
+	std::array<uint32_t, N_REGS> get_regs_order(TAttribHolder* param, uint32_t addr) const;
 };
-
-using short_sender_modbus_val_op = casting_sent_op<int16_t>;
-using long_sender_modbus_val_op = casting_sent_op<int32_t>;
-using float_sender_modbus_val_op = casting_sent_op<float>;
-using double_sender_modbus_val_op = casting_sent_op<double>;
-
 
 class modbus_unit {
 protected:
@@ -533,35 +579,30 @@ protected:
 	RSET m_sent;
 
 	size_t m_read;
-	size_t m_read_count;
 	size_t m_send;
-	size_t m_send_count;
 
-	std::vector<parcook_modbus_val_op*> m_parcook_ops;
-	std::vector<sender_modbus_val_op*> m_sender_ops;
+	std::vector<parcook_val_op*> m_parcook_ops;
+	std::vector<sender_val_op*> m_sender_ops;
+	std::unique_ptr<RegsFactory> m_regs_factory;
 
 	driver_logger m_log;
-
-	enum FLOAT_ORDER { LSWMSW, MSWLSW } m_float_order;
-	enum DOUBLE_ORDER { LSDMSD, MSDLSD } m_double_order;
 
 	sz4::nanosecond_time_t m_current_time;
 	long long m_expiration_time;
 	float m_nodata_value;
 
-	int get_float_order(TAttribHolder* param, FLOAT_ORDER default_value, bool& default_used, FLOAT_ORDER& float_order);
-	int get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order);
-	int get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw);
+	template <typename val_op>
+	int configure_register(TAttribHolder* param, int prec, unsigned short addr, REGISTER_TYPE rt);
 
-	virtual void pushValOp(parcook_modbus_val_op* op, TAttribHolder* param);
+	register_iface* register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*);
+	register_iface* register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*);
+	register_iface* get_register(uint32_t addr);
 
-	int configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_long_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
-	int configure_param(TAttribHolder*, IPCParamInfo* param, bool send);
+	void pushValOp(parcook_val_op* op, TAttribHolder* param);
+	void pushValOp(sender_val_op* op, TAttribHolder* param);
+
+	template <template <typename> class op_type>
+	int configure_param(TAttribHolder* param, int prec_e);
 	int configure_unit(TUnit* u);
 
 	const char* error_string(const unsigned char& error);
@@ -844,23 +885,33 @@ public:
 	virtual void finished_cycle();
 };
 
+class modbus_register: public register_iface, public logging_obj {
+	friend class modbus_unit;
+	modbus_unit *m_modbus_unit;
+
+	// allow accessing data members
+	int16_t m_val = sz4::no_data<int16_t>();
+	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+
+public:
+	modbus_register(modbus_unit *daemon, driver_logger* log);
+	bool is_valid() const override;
+
+	void set_val(int16_t val) override { m_val = val; }
+	int16_t get_val() const override { return m_val; }
+
+	sz4::nanosecond_time_t get_mod_time() const override { return m_mod_time; }
+	void set_mod_time(const sz4::nanosecond_time_t& time) override { m_mod_time = time; }
+};
+
 modbus_register::modbus_register(modbus_unit* unit, driver_logger* log) : logging_obj(log), m_modbus_unit(unit), m_val(sz4::no_data<short>()), m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value) {}
 
-uint16_t modbus_register::get_val() {
-	return m_val;
-}
-
-void modbus_register::set_val(uint16_t val, const sz4::nanosecond_time_t time) {
-	m_val = val;
-	m_mod_time = time;
-}
-
-bool modbus_register::is_valid() {
+bool modbus_register::is_valid() const {
 	return sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time) && !m_modbus_unit->register_val_expired(m_mod_time);
 }
 
 bool modbus_unit::process_request(unsigned char unit, PDU &pdu) {
-	if (m_id != unit) {
+	if (m_id != unit && unit != 0) {
 		m_log.log(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) unit);
 		return false;
 	}
@@ -931,10 +982,9 @@ void modbus_unit::consume_read_regs_response(unsigned short start_addr, unsigned
 		RMAP::iterator j = m_registers.find(addr);
 		uint16_t v = ((uint16_t)(pdu.data.at(data_index)) << 8) | pdu.data.at(data_index + 1);
 		m_log.log(9, "Setting register unit_id: %d, address: %hu, value: %hu", (int) m_id, (int) addr, v);
-		j->second->set_val(v, m_current_time);
+		j->second->m_val = v;
+		j->second->m_mod_time = m_current_time;
 	}
-
-
 }
 
 void modbus_unit::consume_write_regs_response(unsigned short start_addr, unsigned short regs_count, PDU &pdu) { 
@@ -976,7 +1026,8 @@ bool modbus_unit::perform_write_registers(PDU &pdu) {
 		uint16_t v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
 		m_log.log(9, "Setting register: %hu value: %hu", (int) addr, v);
-		j->second->set_val(v, m_current_time);	
+		j->second->m_val = v;	
+		j->second->m_mod_time = m_current_time;
 	}
 
 	if (pdu.func_code == MB_F_WMR)
@@ -1024,17 +1075,17 @@ bool modbus_unit::create_error_response(unsigned char error, PDU &pdu) {
 }
 
 void modbus_unit::to_parcook() {
-	std::vector<parcook_modbus_val_op*>::iterator k = m_parcook_ops.begin();
 	auto zmq = zmq_handler();
-	for (size_t m = 0; m < m_read_count; m++, k++)
-		(*k)->set_val(zmq, m + m_read);
+	size_t m = 0;
+	for (auto reg: m_parcook_ops)
+		reg->set_val(zmq, m_read + m++);
 }
 
 void modbus_unit::from_sender() {
-	std::vector<sender_modbus_val_op*>::iterator k = m_sender_ops.begin();
 	auto zmq = zmq_handler();
-	for (size_t m = 0; m < m_send_count; m++, k++)
-		(*k)->update_val(zmq, m + m_send);
+	size_t m = 0;
+	for (auto sent: m_sender_ops)
+		sent->update_val(zmq, m_send + m++);
 }
 
 bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
@@ -1048,333 +1099,184 @@ bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
 	}
 }
 
-modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {}
+modbus_unit::modbus_unit(boruta_driver* driver) : m_log(driver) {
+	// in c++14 change this to make_uniqe
+	m_regs_factory = std::unique_ptr<RegsFactory>(new RegsFactory(&m_log));
+}
 
-void modbus_unit::pushValOp(parcook_modbus_val_op* op, TAttribHolder* param) {
+std::string get_param_name(TAttribHolder* param) {
+	using str = std::string;
+	if (auto name = param->getOptAttribute<std::string>("name")) {
+		return *name;
+	} else if (auto name = param->getOptAttribute<std::string>("param")) {
+		return *name + str(" (sent)");
+	} else if (auto value = param->getOptAttribute<std::string>("value")) {
+		return str("sent value ")+*value;
+	} else {
+		ASSERT(!"Couldn't get param name!");
+		return str("");
+	}
+}
+
+void RegsFactory::configure(TUnit* unit) {
+	default_float_order = get_float_order(unit, MSWLSW);
+	if (default_float_order == MSWLSW)
+		m_log->log(5, "Setting mswlsw float order");
+	else if (default_float_order == LSWMSW)
+		m_log->log(5, "Setting lswmsw float order");
+	
+	default_double_order = get_double_order(unit, MSDLSD);
+	if (default_double_order == MSDLSD)
+		m_log->log(5, "Setting msdlsd double order");
+	else if (default_double_order == LSDMSD)
+		m_log->log(5, "Setting lsdmsd double order");
+}
+
+RegsFactory::FLOAT_ORDER RegsFactory::get_float_order(TAttribHolder* param, FLOAT_ORDER default_value) const {
+	std::string float_order = param->getAttribute<std::string>("extra:FloatOrder", "");
+	if (float_order.empty()) {
+		return default_value;
+	} else if (float_order == "msblsb") {
+		return MSWLSW;
+	} else if (float_order == "lsbmsb") {
+		return LSWMSW;
+	} else {
+		throw std::runtime_error(std::string("Invalid float order specification: ") + float_order);
+	}
+}
+
+RegsFactory::DOUBLE_ORDER RegsFactory::get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value) const {
+	std::string double_order = param->getAttribute<std::string>("extra:DoubleOrder", "");;
+	if (double_order.empty()) {
+		return default_value;
+	} else if (double_order == "msdlsd") {
+		return MSDLSD;
+	} else if (double_order == "lsdmsd") {
+		return LSDMSD;
+	} else {
+		throw std::runtime_error(std::string("Invalid double order specification: ") + double_order);
+	}
+}
+
+template <uint32_t N_REGS>
+std::array<uint32_t, N_REGS> RegsFactory::get_regs_order(TAttribHolder* param, uint32_t addr) const {
+	std::array<uint32_t, N_REGS> regs;
+	for (uint16_t i = 0; i < N_REGS; ++i) {
+		regs[i] = addr + i;
+	}
+	return regs;
+}
+
+template <>
+std::array<uint32_t, 2> RegsFactory::get_regs_order<2>(TAttribHolder* param, uint32_t addr) const {
+	FLOAT_ORDER float_order = get_float_order(param, default_float_order);
+
+	if (float_order == MSWLSW) {
+		return {addr + 1u, addr};
+	} else {
+		return {addr, addr + 1u};
+	}
+}
+
+template <>
+std::array<uint32_t, 4> RegsFactory::get_regs_order<4>(TAttribHolder* param, uint32_t addr) const {
+	DOUBLE_ORDER double_order = get_double_order(param, default_double_order);
+	auto lsa = get_regs_order<2>(param, addr);
+	auto msa = get_regs_order<2>(param, addr+2);
+
+	if (double_order == MSDLSD) {
+		return {msa[0], msa[1], lsa[0], lsa[1]};
+	} else {
+		return {lsa[0], lsa[1], msa[0], msa[1]};
+	}
+}
+
+register_iface* modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*) {
+	m_received.insert(std::make_pair(rt, addr));
+	return get_register(addr);
+}
+
+register_iface* modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*) {
+	m_sent.insert(std::make_pair(rt, addr));
+	return get_register(addr);
+}
+
+register_iface* modbus_unit::get_register(uint32_t addr) {
+	if (m_registers.find(addr) == m_registers.end()) {
+		m_registers[addr] = new modbus_register(this, &m_log);
+	}
+	return m_registers[addr];
+}
+
+void modbus_unit::pushValOp(parcook_val_op* op, TAttribHolder* param) {
 	m_parcook_ops.push_back(op);
 }
 
-int modbus_unit::configure_int_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	m_registers[addr] = new modbus_register(this, &m_log);
-	if (send)
-		m_sender_ops.push_back(new short_sender_modbus_val_op({m_registers[addr]}, m_nodata_value, prec, &m_log));
-	else {
-		pushValOp(new short_parcook_modbus_val_op({m_registers[addr]}, &m_log), param);
+void modbus_unit::pushValOp(sender_val_op* op, TAttribHolder* param) {
+	m_sender_ops.push_back(op);
+}
+
+template <typename val_op>
+int modbus_unit::configure_register(TAttribHolder* param, int prec, unsigned short addr, REGISTER_TYPE rt) {
+	std::array<uint32_t, val_op::N_REGS> r_addrs = m_regs_factory->get_regs_order<val_op::N_REGS>(param, addr);
+	std::array<register_iface*, val_op::N_REGS> registers;
+
+	int32_t i = 0;
+	for (auto r_addr: r_addrs) {
+		registers[i++] = register_for_addr(r_addr, rt, (val_op*) nullptr); // tag dispatch
 	}
-
-	if (!send)
-		m_received.insert(std::make_pair(rt, addr));
-	else
-		m_sent.insert(std::make_pair(rt, addr));
-
-	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: integer", param ? SC::S2L(param->GetName()).c_str() : "send param", m_id, addr);
+	
+	pushValOp(new val_op(new modbus_registers_holder<val_op::N_REGS>(registers), m_nodata_value, prec, &m_log), param);
+	m_log.log(8, "Param %s mapped to unit: %u, register %hu", get_param_name(param).c_str(), m_id, addr);
 	return 0;
 }
 
-int modbus_unit::configure_bcd_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	m_registers[addr] = new modbus_register(this, &m_log);
-	if (send) {
-		m_log.log(1, "Unsupported bcd value type for send param %s", SC::S2L(param->GetName()).c_str());
-		return 1;
-	}
-	pushValOp(new bcd_parcook_modbus_val_op({m_registers[addr]}, &m_log), param);
-
-	m_log.log(8, "Param %s mapped to unit: %u, register %hu, value type: bcd", SC::S2L(param->GetName()).c_str(), m_id, addr);
-
-	if (!send)
-		m_received.insert(std::make_pair(rt, addr));
-	else
-		m_sent.insert(std::make_pair(rt, addr));
-
-	return 0;
-}
-
-int modbus_unit::get_float_order(TAttribHolder* param, FLOAT_ORDER default_value, bool &default_used, FLOAT_ORDER& float_order) {
-	std::string _float_order = param->getAttribute<std::string>("extra:FloatOrder", "");
-	if (!_float_order.empty()) {
-		default_used = false;
-		if (_float_order == "msblsb") {
-			float_order = MSWLSW;
-		} else if (_float_order == "lsbmsb") {
-			float_order = LSWMSW;
-		} else {
-			m_log.log(1, "Invalid float order specification: %s", _float_order.c_str());
+template <template <typename> class op_type>
+int modbus_unit::configure_param(TAttribHolder* param, int prec_e) { 
+	unsigned short addr;
+	if (auto l = param->getOptAttribute<long>("extra:address")) {
+		if (*l < 0 || *l > 65535) {
+			m_log.log(1, "Invalid address attribute value: %ld, should be between 0 and 65535", *l);
 			return 1;
 		}
+		addr = *l;
 	} else {
-		float_order = default_value;
-		default_used = true;
-	}
-	return 0;
-}
-
-int modbus_unit::get_double_order(TAttribHolder* param, DOUBLE_ORDER default_value, bool &default_used, DOUBLE_ORDER& double_order) {
-	std::string double_order_string = param->getAttribute<std::string>("extra:DoubleOrder", "");;
-	default_used = false;
-	if (double_order_string.empty()) {
-		default_used = true;
-		double_order = default_value;
-	} else if (double_order_string == "msdlsd") {
-		double_order = MSDLSD;
-	} else if (double_order_string == "lsdmsd") {
-		m_double_order = LSDMSD;
-	} else {
-		m_log.log(1, "Invalid double order specification: %s", double_order_string.c_str());
+		m_log.log(1, "No address attribute value!");
 		return 1;
 	}
-	return 0;
-}
-
-int modbus_unit::get_lsw_msw_reg(TAttribHolder* param, unsigned short addr, unsigned short& lsw, unsigned short& msw) {
-	FLOAT_ORDER float_order;
-	bool default_used;
-	if (get_float_order(param, m_float_order, default_used, float_order))
-		return 1;
-
-	if (!default_used)
-		switch (float_order) {
-			case MSWLSW:
-				m_log.log(5, "Setting mswlsw for next param");
-				break;
-			case LSWMSW:
-				m_log.log(5, "Setting lswmsw for next param");
-				break;
-		}
-
-	std::string val_op = param->getAttribute<std::string>("extra:val_op", "");;
-	m_log.log(10, "get_double_order: val_op: %s", val_op.c_str());
-	if (val_op.empty() || val_op == "LSW")  {
-		if (float_order == MSWLSW) {
-			msw = addr;
-			lsw = addr + 1;
-		} else {
-			msw = addr + 1;
-			lsw = addr;
-		}
-	} else if (val_op == "MSW") {
-		if (float_order == MSWLSW) {
-			msw = addr;
-			lsw = addr + 1;
-		} else {
-			msw = addr + 1;
-			lsw = addr;
-		}
-	} else {
-		m_log.log(1, "Unsupported val_op attribute value - %s", val_op.c_str());
-		return 1;
-	}
-
-	return 0;
-}
-
-int modbus_unit::configure_double_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	unsigned short addrs[4];
-
-	FLOAT_ORDER float_order;
-	bool default_used;
-	if (get_float_order(param, m_float_order, default_used, float_order))
-		return 1;
-
-	DOUBLE_ORDER double_order;
-	if (get_double_order(param, m_double_order, default_used, double_order))
-		return 1;
-
-	switch (double_order) {
-		case MSDLSD:
-			switch (float_order) {
-				case MSWLSW:
-					addrs[0] = addr;
-					addrs[1] = addr + 1;
-					addrs[2] = addr + 2;
-					addrs[3] = addr + 3;
-					break;
-				case LSWMSW:
-					addrs[0] = addr + 1;
-					addrs[1] = addr;
-					addrs[2] = addr + 3;
-					addrs[3] = addr + 2;
-					break;
-			}
-			break;
-		case LSDMSD:
-			switch (float_order) {
-				case MSWLSW:
-					addrs[0] = addr + 2;
-					addrs[1] = addr + 3;
-					addrs[2] = addr;
-					addrs[3] = addr + 1;
-					break;
-				case LSWMSW:
-					addrs[0] = addr + 3;
-					addrs[1] = addr + 2;
-					addrs[2] = addr + 1;
-					addrs[3] = addr;
-					break;
-			}
-			break;
-	}
-
-	RSET& regs = send ? m_sent : m_received;
-
-	std::array<modbus_register*, 4> modbus_regs;
-	for (int i = 0; i < 4; i++) {
-		RMAP::iterator j = m_registers.find(addrs[i]);
-		if (j == m_registers.end()) {
-			m_registers[addrs[i]] = modbus_regs[i] = new modbus_register(this, &m_log);
-			regs.insert( std::make_pair(rt, addrs[i]));
-		} else
-			modbus_regs[i] = j->second;
-	}
-
-	if (!send) {
-		double_parcook_modbus_val_op* op = new double_parcook_modbus_val_op(modbus_regs, &m_log);
-		m_parcook_ops.push_back(op);
-	} else {
-		double_sender_modbus_val_op * op = new double_sender_modbus_val_op(modbus_regs, m_nodata_value, prec, &m_log);
-		m_sender_ops.push_back(op);
-	}
-
-
-	return 0;
-}
-
-int modbus_unit::configure_long_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	unsigned short msw, lsw;
-	if (get_lsw_msw_reg(param, addr, lsw, msw))
-		return 1;
-	
-	if (m_registers.find(lsw) == m_registers.end()) 
-		m_registers[lsw] = new modbus_register(this, &m_log);
-	if (m_registers.find(msw) == m_registers.end())
-		m_registers[msw] = new modbus_register(this, &m_log);
-
-	if (!send) {
-		m_parcook_ops.push_back(new long_parcook_modbus_val_op({m_registers[lsw], m_registers[msw]}, &m_log));
-		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: long, lsw: %hu, msw: %hu",
-			SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, lsw, msw);
-	} else {
-		m_sender_ops.push_back(new long_sender_modbus_val_op({m_registers[lsw], m_registers[msw]}, m_nodata_value, prec, &m_log));
-		m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float",
-			param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr);
-	}
-
-	if (!send) {
-		m_received.insert(std::make_pair(rt, lsw));
-		m_received.insert(std::make_pair(rt, msw));
-	} else {
-		m_sent.insert(std::make_pair(rt, lsw));
-		m_sent.insert(std::make_pair(rt, msw));
-	}
-
-	return 0;
-}
-
-int modbus_unit::configure_float_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	unsigned short msw, lsw;
-	if (get_lsw_msw_reg(param, addr, lsw, msw))
-		return 1;
-	
-	if (m_registers.find(lsw) == m_registers.end()) 
-		m_registers[lsw] = new modbus_register(this, &m_log);
-	if (m_registers.find(msw) == m_registers.end())
-		m_registers[msw] = new modbus_register(this, &m_log);
-
-	if (!send) {
-		m_parcook_ops.push_back(new float_parcook_modbus_val_op({m_registers[lsw], m_registers[msw]}, &m_log));
-		m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: float, lsw: %hu, msw: %hu", SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr, lsw, msw);
-	} else {
-		m_sender_ops.push_back(new float_sender_modbus_val_op({m_registers[lsw], m_registers[msw]}, m_nodata_value, prec, &m_log));
-		m_log.log(8, "Sender param %s no(%zu), mapped to unit: %u, register %hu, value type: float",
-			param ? SC::S2L(param->GetName()).c_str() : "(not a param, just value)", m_sender_ops.size(), m_id, addr);
-	}
-
-	if (!send) {
-		m_received.insert(std::make_pair(rt, lsw));
-		m_received.insert(std::make_pair(rt, msw));
-	} else {
-		m_sent.insert(std::make_pair(rt, lsw));
-		m_sent.insert(std::make_pair(rt, msw));
-	}
-
-	return 0;
-}
-
-int modbus_unit::configure_decimal3_register(IPCParamInfo* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt) {
-	if (send) {
-		m_log.log(1, "Unsupported decimal3 value type for send param %ls, exiting!", param->GetName().c_str());
-		return 1;
-	}
-
-	std::array<modbus_register*, 3> regs;
-	unsigned short addrs[3];
-
-	for (unsigned short i = 0; i < 3; i++) {
-		unsigned short cur_addr = addr + i;
-		addrs[i] = cur_addr;
-		RMAP::iterator j = m_registers.find(cur_addr);
-		if (j == m_registers.end()) {
-			m_registers[cur_addr] = regs[i] = new modbus_register(this, &m_log);
-			m_received.insert( std::make_pair(rt, cur_addr));
-		} else
-			regs[i] = j->second;
-	}
-
-	decimal3_parcook_modbus_val_op* op = new decimal3_parcook_modbus_val_op(regs, &m_log);
-	m_parcook_ops.push_back(op);
-	m_log.log(8, "Parcook param %s no(%zu), mapped to unit: %u, register %hu, value type: decimal3, reg1: %hu, reg2: %hu, reg3: %hu",
-		SC::S2L(param->GetName()).c_str(), m_parcook_ops.size(), m_id, addr,
-		addrs[0], addrs[1], addrs[2]);
-
-	return 0;
-}
-
-int modbus_unit::configure_param(TAttribHolder* el, IPCParamInfo* param, bool send) { 
-	unsigned short addr;
-	long l = el->getAttribute<long>("extra:address", -1);
-	if (l < 0 || l > 65535) {
-		m_log.log(1, "Invalid address attribute value: %ld, should be between 0 and 65535", l);
-		return 1;
-	} 
-
-	addr = l;
 
 	REGISTER_TYPE rt;
-	auto reg_type_attr = el->getAttribute<std::string>("extra:register_type", "holding_register");
-	if (reg_type_attr == "holding_register")
+	auto reg_type_attr = param->getAttribute<std::string>("extra:register_type", "holding_register");
+	if (reg_type_attr == "holding_register") {
 		rt = HOLDING_REGISTER;
-	else if (reg_type_attr == "input_register")
+	} else if (reg_type_attr == "input_register") {
 		rt = INPUT_REGISTER;
-	else {
+	} else {
 		m_log.log(1, "Unsupported register type, should be either input_register or holding_register");
 		return 1;
 	}
 
-	std::string val_type = el->getAttribute<std::string>("extra:val_type", "");
-	if (val_type.empty())
+	std::string val_type = param->getAttribute<std::string>("extra:val_type", "");
+	if (val_type.empty()) {
+		m_log.log(1, "No val_type provided!");
 		return 1;
-
-	int prec_e;
-	if (send) {
-		prec_e = el->getAttribute("extra:prec", param? param->GetPrec() : 0);
-	} else {
-		prec_e = param->GetPrec();
 	}
 
 	int prec = exp10(prec_e);
 
 	int ret;
 	if (val_type == "integer") {
-		ret = configure_int_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<short_modbus_op>>(param, prec, addr, rt);
 	} else if (val_type == "bcd") {
-		ret = configure_bcd_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<bcd_modbus_op>>(param, prec, addr, rt);
 	} else if (val_type == "long") {
-		ret = configure_long_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<long_modbus_op>>(param, prec, addr, rt);
 	} else if (val_type == "float") {
-		ret = configure_float_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<float_modbus_op>>(param, prec, addr, rt);
 	} else if (val_type == "double") {
-		ret = configure_double_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<double_modbus_op>>(param, prec, addr, rt);
 	} else if (val_type == "decimal3") {
-		ret = configure_decimal3_register(param, prec, addr, send, rt);
+		ret = configure_register<op_type<decimal3_modbus_op>>(param, prec, addr, rt);
 	} else {
 		m_log.log(1, "Unsupported value type: %s", val_type.c_str());
 		ret = 1;
@@ -1405,14 +1307,14 @@ int modbus_unit::configure_unit(TUnit* u) {
 	}
 
 	for (auto p: u->GetParams()) {
-		if (configure_param(p, p, false)) {
+		if (configure_param<read_val_op>(p, p->GetPrec())) {
 			m_log.log(0, "Error in param %ls", p->GetName().c_str());
 			return 1;
 		}
 	}
 
 	for (auto p: u->GetSendParams()) {
-		if (configure_param(p, p->GetParamToSend(), true)) {
+		if (configure_param<sent_val_op>(p, p->GetPrec())) {
 			m_log.log(0, "Error in send %ls", p->GetParamName().c_str());
 			return 1;
 		}
@@ -1422,39 +1324,19 @@ int modbus_unit::configure_unit(TUnit* u) {
 }
 
 int modbus_unit::configure(TUnit *unit, size_t read, size_t send) {
-	bool default_used;
-	if (get_float_order(unit, MSWLSW, default_used, m_float_order))
-		return 1;
-	if (default_used)
-		m_log.log(5, "Float order not specified, assuming msblsb");
-	else if (m_float_order == MSWLSW)
-		m_log.log(5, "Setting mswlsw float order");
-	else if (m_float_order == LSWMSW)
-		m_log.log(5, "Setting lswmsw float order");
-
-	
-	if (get_double_order(unit, MSDLSD, default_used, m_double_order))
-		return 1;
-	if (default_used)
-		m_log.log(5, "Double order not specified, assuming msdlsd");
-	else if (m_double_order == MSDLSD)
-		m_log.log(5, "Setting msdlsd double order");
-	else if (m_double_order == LSDMSD)
-		m_log.log(5, "Setting lsdmsd double order");
+	m_regs_factory->configure(unit);
 
 	m_expiration_time = unit->getAttribute("extra:nodata-timeout", 60);
 	m_expiration_time *= 1000000000;
 
-	m_nodata_value = unit->getAttribute("extra:nodata-value", -32768.0);
+	m_nodata_value = unit->getAttribute("extra:nodata-value", sz4::no_data<float>());
 	m_log.log(9, "No data value set to: %f", m_nodata_value);
 
 	if (configure_unit(unit))
 		return 1;
 
 	m_read = read;
-	m_read_count = unit->GetParamsCount();
 	m_send = send;
-	m_send_count = unit->GetSendParamsCount();
 
 	return 0;
 }
@@ -1857,7 +1739,7 @@ int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
 }
 
 void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
-	if (u != m_id) {
+	if (u != m_id && u != 0) {
 		m_log.log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_id);
 		return;
 	}
