@@ -373,6 +373,8 @@ public:
 
 	/* constant value to be sent instead of real param value */
 	virtual int GetValue() const { return getAttribute<int>("value", SZARP_NO_DATA); }
+	virtual int GetPrec() const { return getAttribute<int>("extra:prec", GetParamToSend()? GetParamToSend()->GetPrec() : 0); }
+
 	virtual const std::wstring& GetParamName() const = 0;
 };
 
