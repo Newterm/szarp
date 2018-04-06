@@ -3,6 +3,7 @@
   <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk" schemaLocation="ipk-params.xsd"/>
   <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-checker" schemaLocation="i.xsd"/>
   <xs:import namespace="http://www.praterm.com.pl/SZARP/ipk-icinga" schemaLocation="ipk-icinga.xsd"/>
+  <xs:attribute name="interface"/>
   <xs:attribute name="packet"/>
   <xs:attribute name="bittime" type="xs:integer"/>
   <xs:attribute name="dev_name"/>

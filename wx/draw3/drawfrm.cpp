@@ -22,6 +22,7 @@
 #include <wx/tokenzr.h>
 #include <map>
 #include "cconv.h"
+#include "custom_assert.h"
 
 #include "version.h"
 #include "szhlpctrl.h"
@@ -81,6 +82,8 @@ DrawFrame::DrawFrame(FrameManager * fm, DatabaseManager* dm, ConfigManager* cm, 
 	ignore_menu_events = false;
 
 	panel_is_added = false;
+
+	database_manager->SetFrameController(this);
 }
 
 void DrawFrame::OnAbout(wxCommandEvent & event)
@@ -261,7 +264,9 @@ void DrawFrame::OnEdit(wxCommandEvent & event)
 {
 	if (draw_panel->IsUserDefined())  {
 		DrawPicker *dp = new DrawPicker(this, config_manager, database_manager, remarks_handler);
-		dp->EditSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), draw_panel->GetPrefix());
+		if (dp->EditSet(dynamic_cast<DefinedDrawSet*>(draw_panel->GetSelectedSet()), draw_panel->GetPrefix()) == wxID_OK) {
+			config_manager->SaveDefinedDrawsSets();
+		}
 		dp->Destroy();
 	} else
 		wxMessageBox(_("You may edit only user defined sets."),
@@ -277,6 +282,7 @@ void DrawFrame::OnEditSetAsNew(wxCommandEvent &e) {
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
+		config_manager->SaveDefinedDrawsSets();
 	}
 	dp->Destroy();
 }
@@ -328,6 +334,7 @@ void DrawFrame::OnAdd(wxCommandEvent& event)
 		DrawsSets* dss = config_manager->GetConfigByPrefix(draw_panel->GetPrefix());
 		DrawSet* ds = dss->GetDrawsSets()[dp->GetNewSetName()];
 		draw_panel->SelectSet(ds);
+		config_manager->SaveDefinedDrawsSets();
 	}
 	dp->Destroy();
 }
@@ -622,6 +629,29 @@ void DrawFrame::OnSplitCursor(wxCommandEvent &event) {
 		draw_panel->ToggleSplitCursor(event);
 }
 
+void DrawFrame::OnChangeGraphThickness(wxCommandEvent &event) {
+	if (ignore_menu_events)
+		return;
+
+	int thickness = 2;
+	int id = event.GetId();
+	if (id == XRCID("Thickness1"))
+		thickness = 1;
+	else if (id == XRCID("Thickness2"))
+		thickness = 2;
+	else if (id == XRCID("Thickness3"))
+		thickness = 3;
+	else if (id == XRCID("Thickness4"))
+		thickness = 4;
+	else if (id == XRCID("Thickness5"))
+		thickness = 5;
+	else
+		ASSERT(!"Bad thickness!");
+
+	draw_panel->ChangeGraphThickness(thickness);
+	wxConfig::Get()->Write(_T("GRAPHS_THICKNESS"), thickness);
+}
+
 void DrawFrame::OnLatestDataFollow(wxCommandEvent &event) {
 	if (ignore_menu_events == false)
 		draw_panel->SetLatestDataFollow(event.IsChecked());
@@ -771,6 +801,7 @@ void DrawFrame::OnAverageChange(wxCommandEvent& event) {
 DrawFrame::~DrawFrame() {
 	if (params_dialog)
 		params_dialog->Destroy();
+	database_manager->SetFrameController(nullptr);
 }
 
 void
@@ -1242,11 +1273,33 @@ void DrawFrame::OnSearchDate(wxCommandEvent &event) {
 	draw_panel->SearchDate();
 }
 
+void DrawFrame::OnIksConnectionFailed(wxCommandEvent &event)
+{
+	auto prefix = event.GetString();
+
+	wxMessageBox(_("Failed to connect to specified iks-server on host ") + prefix, _("Operation failed."), wxOK | wxICON_ERROR);
+
+	if(!m_notebook)
+		return;
+
+	for( int sel = 0; sel < m_notebook->GetPageCount(); ++sel )
+	{
+		wxWindow *page = m_notebook->GetPage(sel);
+		DrawPanel *panel = wxDynamicCast(page, DrawPanel);
+		if( panel ) {
+			if( prefix == panel->GetPrefix())
+				CloseTab(sel);
+		}
+	}
+
+}
+
 /**
  * IMPORTANT: Declare Events which are share by DrawMenuBar and DrawToolBar
  * especialy when we started use more than one bases
  */
 BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
+	EVT_COMMAND(wxID_ANY, IKS_CONNECTION_FAILED, DrawFrame::OnIksConnectionFailed)
     EVT_MENU(XRCID("ShowAverage"), DrawFrame::OnShowAverage)
     EVT_MENU(XRCID("ShowInterface"), DrawFrame::OnShowInterface)
     EVT_MENU(XRCID("ShowArrows"), DrawFrame::OnShowArrows)
@@ -1291,6 +1344,11 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("StatsWin"), DrawFrame::OnStatDialog)
     EVT_MENU(XRCID("FullScreen"), DrawFrame::OnFullScreen)
     EVT_MENU(XRCID("SplitCursor"), DrawFrame::OnSplitCursor)
+    EVT_MENU(XRCID("Thickness1"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness2"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness3"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness4"), DrawFrame::OnChangeGraphThickness)
+    EVT_MENU(XRCID("Thickness5"), DrawFrame::OnChangeGraphThickness)
     EVT_MENU(XRCID("LATEST_DATA_FOLLOW"), DrawFrame::OnLatestDataFollow)
     EVT_MENU(XRCID("DECADE_RADIO"), DrawFrame::OnAverageChange)
     EVT_MENU(XRCID("YEAR_RADIO"), DrawFrame::OnAverageChange)
@@ -1334,7 +1392,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("GoToLatestDate"), DrawFrame::OnGoToLatestDate)
     EVT_MENU(XRCID("MoveCursorEnd"), DrawFrame::OnMoveCursorEnd)
 	EVT_MENU(XRCID("SearchDate"), DrawFrame::OnSearchDate)
-    EVT_CLOSE(DrawFrame::OnClose)
-    EVT_IDLE(DrawFrame::OnIdle)
-    EVT_ACTIVATE(DrawFrame::OnActivate)
+	EVT_CLOSE(DrawFrame::OnClose)
+	EVT_IDLE(DrawFrame::OnIdle)
+	EVT_ACTIVATE(DrawFrame::OnActivate)
 END_EVENT_TABLE()

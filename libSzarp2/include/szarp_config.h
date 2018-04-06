@@ -83,6 +83,11 @@ class TDefined;
 class XMLWrapper;
 class XMLWrapperException;
 
+struct ParseErrors {
+	bool continueOnParseError;
+};
+
+extern ParseErrors errorStruct;
 
 class TCheckException : public std::exception {
 	virtual const char* what() const throw()

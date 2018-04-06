@@ -39,7 +39,7 @@ TMP_GETTEXT=XRC_gettext_file
 
 # Program to create
 
-bin_PROGRAMS = draw3 draw3test
+bin_PROGRAMS = draw3
 
 WIN_APP_NAME = Draw3
 
@@ -48,6 +48,7 @@ draw3_SOURCES = \
 		draw3.cpp \
 		dbmgr.cpp dbmgr.h \
 		database.h database.cpp \
+		base_handler.h base_handler.cpp \
 		disptime.cpp disptime.h \
 		drawpnl.cpp drawpnl.h \
                 drawswdg.cpp drawswdg.h \
@@ -106,39 +107,9 @@ draw3_SOURCES = \
 		ikssetup.h ikssetup.cpp \
 		GUI/resource.cpp
 
-draw3test_SOURCES = \
-		classes.h \
-		dbmgr.cpp dbmgr.h \
-		database.h database.cpp \
-		drawsctrl.h drawsctrl.cpp \
-		coobs.h coobs.cpp \
-		cfgmgr.cpp cfgmgr.h \
-		ids.h \
-		drawobs.h drawobs.cpp \
-		drawpsc.h drawpsc.cpp \
-		timeformat.h timeformat.cpp \
-		defcfg.h defcfg.cpp \
-		dbinquirer.cpp dbinquirer.h \
-		drawdnd.h drawdnd.cpp \
-		progfrm.h progfrm.cpp \
-		remarks.h remarks.cpp \
-		drawurl.cpp drawurl.h \
-		errfrm.h errfrm.cpp \
-		drawtime.h drawtime.cpp \
-		delqitem.h delqitem.cpp \
-		splashscreen.cpp splashscreen.h \
-                draw.cpp draw.h \
-		GUI/resource.cpp \
-		testapp.cpp testapp.h \
-		testrunner.cpp testrunner.h \
-		ikssetup.h ikssetup.cpp \
-		test.cpp 
-
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON)
 draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON) @XSLT_LIBS@ @ZIP_LIBS@ @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@ @ZMQ_LIBS@ @PROTOBUF_LIBS@
 
-draw3test_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON)
-draw3test_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON) @XSLT_LIBS@ @ZIP_LIBS@ @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@ @ZMQ_LIBS@ @PROTOBUF_LIBS@
 draw3_LOCALES_TMP = @srcdir@/draw3.tpo
 
 CLEANFILES = fr/draw3.mo pl/draw3.mo de/draw3.mo $(draw3_LOCALES_TMP)

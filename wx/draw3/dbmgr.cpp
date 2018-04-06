@@ -37,6 +37,15 @@
 
 using namespace SC;
 
+DatabaseManager* ConfigurationFileChangeHandler::database_manager(nullptr);
+
+void
+ConfigurationFileChangeHandler::handle(std::wstring file, std::wstring prefix) {
+	ConfigurationChangedEvent e(prefix);
+	wxPostEvent(database_manager, e);
+};
+
+
 bool
 SyncedPrefixSet::Contains(wxString prefix) {
 	wxMutexLocker lock(mutex);
@@ -64,11 +73,13 @@ SyncedPrefixSet::Remove(wxString prefix){
 DEFINE_EVENT_TYPE(DATABASE_RESP)
 DEFINE_EVENT_TYPE(CONFIGURATION_CHANGE)
 DEFINE_EVENT_TYPE(PARAM_DATA_CHANGED)
+wxDEFINE_EVENT(IKS_CONNECTION_FAILED, wxCommandEvent);
 
 BEGIN_EVENT_TABLE(DatabaseManager, wxEvtHandler) 
 	EVT_DATABASE_RESP(wxID_ANY, DatabaseManager::OnDatabaseResponse)
 	EVT_CONFIGUARION_CHANGE(wxID_ANY, DatabaseManager::OnConfigurationChange)
 	EVT_PARAM_DATA_CHANGED(wxID_ANY, DatabaseManager::OnParamDataChanged)
+	EVT_COMMAND(wxID_ANY, IKS_CONNECTION_FAILED, DatabaseManager::OnIksConnectionFailed)
 END_EVENT_TABLE()
 
 DatabaseResponse::DatabaseResponse(DatabaseQuery *_data) : wxCommandEvent(DATABASE_RESP, wxID_ANY), data(_data)
@@ -82,7 +93,7 @@ DatabaseQuery* DatabaseResponse::GetQuery() {
 	return data;
 }
 
-DatabaseResponse::~DatabaseResponse() 
+DatabaseResponse::~DatabaseResponse()
 {}
 
 ConfigurationChangedEvent::ConfigurationChangedEvent(std::wstring prefix) : wxCommandEvent(CONFIGURATION_CHANGE, wxID_ANY), m_prefix(prefix) {}
@@ -111,7 +122,9 @@ ParamDataChangedEvent::~ParamDataChangedEvent() {}
 
 DatabaseManager::DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager) :
 	query_queue(_query_queue), config_manager(_config_manager), current_inquirer(-1), free_inquirer_id(1)
-{}
+{
+	ConfigurationFileChangeHandler::database_manager = this;
+}
 
 void DatabaseManager::OnDatabaseResponse(DatabaseResponse &response) {
 
@@ -277,6 +290,8 @@ void DatabaseManager::QueryDatabase(DatabaseQuery *query) {
 		}
 	}
 
+	if(query->prefix.empty())
+		query->prefix = GetCurrentPrefix().ToStdWstring();
 	query_queue->Add(query);
 }
 
@@ -293,6 +308,8 @@ void DatabaseManager::QueryDatabase(std::list<DatabaseQuery*> & qlist) {
 			}
 		}
 		tmp_queries.push_back(*i);
+		if((*i)->prefix.empty())
+			(*i)->prefix = GetCurrentPrefix().ToStdWstring();
 	}
 
 	query_queue->Add(tmp_queries);
@@ -393,3 +410,29 @@ void DatabaseManager::param_data_changed(TParam* param) {
 	wxPostEvent(this, event);
 }
 
+void DatabaseManager::OnIksConnectionFailed(wxCommandEvent &event)
+{
+	if(frame_controller) {
+		wxCommandEvent evt(event);
+		wxPostEvent(frame_controller, evt);
+	}
+}
+
+void DatabaseManager::SetCurrentPrefix(const wxString& prefix)
+{
+	base_handler->SetCurrentPrefix(prefix);
+}
+
+wxString DatabaseManager::GetCurrentPrefix() const
+{
+	return base_handler->GetCurrentPrefix();
+}
+
+void DatabaseManager::AddBaseHandler(const wxString& prefix)
+{
+	DatabaseQuery* query = new DatabaseQuery;
+	query->type = DatabaseQuery::ADD_BASE_PREFIX;
+	query->prefix = prefix.ToStdWstring();
+
+	query_queue->Add(query);
+}

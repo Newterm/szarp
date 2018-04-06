@@ -397,6 +397,7 @@ void DrawsController::SearchState::SendSearchQuery(const wxDateTime& start, cons
 
 	DatabaseQuery *q = new DatabaseQuery();
 	q->type = DatabaseQuery::SEARCH_DATA;
+	q->prefix = m_c->GetCurrentPrefix().ToStdWstring();
 	q->draw_info = m_c->GetSelectedDraw()->GetDrawInfo();
 	if (q->draw_info->IsValid())
 		q->param = q->draw_info->GetParam()->GetIPKParam();
@@ -1097,6 +1098,7 @@ void DrawsController::FetchData() {
 		DatabaseQuery *q = m_draws[i]->GetDataToFetch(false);
 		if (q) {
 			std::sort(q->value_data.vv->begin(), q->value_data.vv->end(), CompareQueryTimes(m_state->GetStateTime().GetTime()));
+			q->prefix = m_current_prefix.ToStdWstring();
 			QueryDatabase(q);
 		}
 	}

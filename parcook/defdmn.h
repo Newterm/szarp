@@ -91,6 +91,7 @@ private:
 	struct event m_timer;
 	struct timeval m_cycle;
 	bool connectToParcook = false;
+	bool single = false;
 
 public:
 	double getParamData(TParam* p, sz4::nanosecond_time_t t, SZARP_PROBE_TYPE pt = SZARP_PROBE_TYPE::PT_SEC10);

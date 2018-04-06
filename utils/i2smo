@@ -150,8 +150,12 @@ def parse_config_file():
 
 def check_for_daemons():
 	"""
-	Testing - looking for custom daemons, looking for extra:param base in dbmdmn daemon
+	Testing for:
+		custom daemons
+		extra:param base in dbmdmn daemon
+		scripts or programs used in pythondmn/execdmn/testdmn
 	"""
+
 	md5file_path = "/var/lib/dpkg/info/szarp-daemons.md5sums"
 	if not os.path.isfile(md5file_path):
 		add_note("File does not exist: %s, will not check daemon sums" % md5file_path)
@@ -164,7 +168,7 @@ def check_for_daemons():
 				# md5_map["/opt/szarp/bin/iecdmn"] = md5
 				md5_map["/" + daemon] = md5
 
-	ignore_daemon = ['/bin/true', '/dev/null']
+	ignore_daemon = ['/bin/true', '/dev/null', '/bin/false']
 	daemons_list = []
 	for device in params_root.iter(add_ns(ns['ipk'], "device")):
 		daemon = device.get("daemon")
@@ -182,29 +186,69 @@ def check_for_daemons():
 			except IOError:
 				printerr(daemon + " does not exist!")
 
+		# search for extra:param base at params under dbdmn
 		if os.path.basename(daemon).startswith("dbdmn"):
 			for unit in device:
 				for param in unit:
-					param_path = param.get(add_ns(ns['extra'], "param"))
-					if param_path is not None:
-						base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
-						base_path = "/opt/szarp/" + base
-						if not os.path.exists(base_path):
-							printerr("extra:param base '%s' doesn't exist (line %d)" % (base, param.sourceline))
+					check_base(param)
 
-def check_if_file_exist():
-	file_to_check = re.compile(r"\/opt\/szarp\/.")
-	not_found_files = []
-	for device in elements:
-		for attr, value in device.items():
-			find_file = file_to_check.search(value)
-			if find_file is not None:
-				if os.path.exists(value) is False:
-					if not value in not_found_files:
-						if device.get("daemon").endswith("testdmn") and attr == "path":
-							# the source data file may not exist at this moment
-							add_note("source data file for testdmn: '%s' does not exist" % value)
-						not_found_files.append(value)
+		# check exec paths and scripts for pythdondmn, execdmn, testdmn
+		check_daemon_script = ("pythondmn", "execdmn", "testdmn")
+		if os.path.basename(daemon).startswith(check_daemon_script):
+			script_path = device.get("path")
+			if script_path.startswith("/opt/szarp"):
+				if os.path.exists(script_path) is False:
+					printerr("script %s called under device does not exist (line %d)"\
+							% (script_path, device.sourceline))
+					return
+				if "testdmn" not in daemon:
+					check_script(script_path)
+
+def check_base(param):
+	param_path = param.get(add_ns(ns['extra'], "param"))
+	if param_path is not None:
+		base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
+		base_path = "/opt/szarp/" + base
+		if not os.path.exists(base_path):
+			printerr("extra:param base %s doesn't exist (line %d)"\
+					% (base, param.sourceline))
+
+def check_script(script_path):
+	with open(script_path, "r") as script:
+		shebang = script.readline()
+		if not shebang.startswith("#!"):
+			printerr("script %s does not contain shebang in first line"\
+				% (script_path))
+			return
+		shebang_list = shebang.lstrip('#!').split()
+		for exec_name in shebang_list:
+			if exec_name.startswith('-'):
+				continue
+			if stat_shebang(exec_name) is False:
+				printerr("script %s shebang is nonexecutable"\
+								% (script_path))
+			if "python" in exec_name and args.additional_test:
+				check_python_script(script_path)
+
+def stat_shebang(exec_name):
+	return any(
+			os.access(os.path.join(path, exec_name), os.X_OK)
+			for path in os.environ["PATH"].split(os.pathsep)
+	)
+
+def check_python_script(script_path):
+	dir_path = os.path.dirname(script_path)
+	sys.path.append(dir_path)
+	# we need only script name, without extension for __import__
+	script_name = os.path.splitext(os.path.basename(script_path))[0]
+	try:
+		test_module = __import__(script_name)
+	except Exception as ex:
+		# if pysz{base,4} in message just ignore, it's included in pythondmn
+		# other exception generates error
+		if not "pysz" in ex.message:
+			printerr("testing script %s ended up with error: %s"\
+					% (script_path, ex.message))
 
 def check_if_parameter_exist():
 	"""
@@ -274,7 +318,7 @@ def check_no_base_ind():
 	for param in param_device + param_defined:
 		if param.get("base_ind") is None:
 			name = unicode_to_ascii(param.get("name"))
-			add_note("parameter '%s' no base_ind, won't be written to szbase (line %d)" % (name, param.sourceline))
+			add_note("parameter %s no base_ind, won't be written to szbase (line %d)" % (name, param.sourceline))
 
 def check_params_xmlschema():
 	"""
@@ -415,7 +459,6 @@ def prepare_param_name(param_name):
 def do_tests():
 	get_param_list()
 	check_params_xmlschema()
-	check_if_file_exist()
 	check_for_daemons()
 	check_under_defined_elements()
 	check_under_device_elements()
@@ -426,8 +469,6 @@ def test_isl_file():
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
 	help='XML config file (default is params.xml)')
-parser.add_argument('-d', '--debug', type=int,
-	help='debug level from 0 (errors only) to 9')
 parser.add_argument('-a', '--additional-test', action='store_true',
 	help='do additional test, including testing isls stored in ' + os.path.realpath("/etc/szarp/default"))
 parser.add_argument('-q', '--quiet', action='store_true',

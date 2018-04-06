@@ -29,6 +29,7 @@
 
 #include "ids.h"
 #include "classes.h"
+#include "custom_assert.h"
 
 #include "drawtime.h"
 #include "coobs.h"
@@ -306,6 +307,11 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
 	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
+	//setting current prefix before creating panel, so that database 
+	//queries will go to right base_handler prefix
+	db_mgr->SetCurrentPrefix(GetPrefix());
+	db_mgr->AddBaseHandler(GetPrefix());
+
 #ifdef WXAUI_IN_PANEL
 	am.SetManagedWindow(this);
 #endif
@@ -546,10 +552,11 @@ void DrawPanel::OnRefresh(wxCommandEvent & evt) {
 
 void DrawPanel::OnShowArrows(wxCommandEvent& evt) {
 	bool isShowArrowsChecked = menu_bar->FindItem(XRCID("ShowArrows"))->IsChecked();
+	wxConfig::Get()->Write(_T("SHOW_ARROWS"), isShowArrowsChecked);
 
-	(dynamic_cast<GCDCGraphs*>(dg))->SetShowArrowsChecked(isShowArrowsChecked);
-	(dynamic_cast<GCDCGraphs*>(dg))->SetMarginsRecalculable();
-	(dynamic_cast<GCDCGraphs*>(dg))->FullRefresh();
+	dg->SetShowArrowsChecked(isShowArrowsChecked);
+	dg->SetMarginsRecalculable();
+	dg->FullRefresh();
 }
 
 void DrawPanel::OnShowAverage(wxCommandEvent &evt)
@@ -795,6 +802,11 @@ void DrawPanel::ToggleSplitCursorIcon(bool is_double)
 		tb->DoubleCursorToolUncheck();
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(false);
 	}
+}
+
+void DrawPanel::ChangeGraphThickness(int thickness) {
+	dg->SetGraphThickness(thickness);
+	dg->FullRefresh();
 }
 
 void DrawPanel::SelectSet(DrawSet *set) {
@@ -1055,6 +1067,9 @@ void DrawPanel::SetActive(bool _active) {
 	if (pw_show)
 		ShowPieWindow(active);
 
+	if (active)
+		db_mgr->SetCurrentPrefix(GetPrefix());
+
 	if (active) {
 		DrawsController *dc = dw->GetSelectedDraw()->GetDrawsController();
 
@@ -1074,6 +1089,41 @@ void DrawPanel::SetActive(bool _active) {
 		item->Check(smw->IsShown());
 
 		menu_bar->FindItem(XRCID("SplitCursor"))->Check(dc->GetDoubleCursor());
+
+		bool showArrows = wxConfig::Get()->ReadBool(_T("SHOW_ARROWS"), false);
+
+		menu_bar->FindItem(XRCID("ShowArrows"))->Check(showArrows);
+
+		dg->SetShowArrowsChecked(showArrows);
+		dg->SetMarginsRecalculable();
+		dg->FullRefresh();
+
+		int thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), 2);
+
+		switch(thickness) {
+			case 1:
+				menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
+				break;
+			case 2:
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				break;
+			case 3:
+				menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
+				break;
+			case 4:
+				menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
+				break;
+			case 5:
+				menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
+				break;
+			default:
+				thickness = 2;
+				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				ASSERT(!"Bad thickness!");
+				break;
+		}
+
+		dg->SetGraphThickness(thickness);
 
 		wxMenuItem *pmi = NULL;
 		switch (dc->GetPeriod()) {

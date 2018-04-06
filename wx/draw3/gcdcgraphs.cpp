@@ -444,7 +444,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	wxGraphicsPath *path = &path1;
 
 	const wxColour &wc = di->GetDrawColor();
-	dc.SetPen(wxPen(wc, double_cursor ? 4 : 2, wxSOLID));
+	dc.SetPen(wxPen(wc, (double_cursor ? 2 : 1) * graphSizeMultiplier, wxSOLID));
 
 	int pc = d->GetValuesTable().size();
 
@@ -541,7 +541,7 @@ void GCDCGraphs::DrawGraph(wxGraphicsContext &dc, Draw* d) {
 	dc.StrokePath(path1);
 
 	if (double_cursor) {
-		dc.SetPen(wxPen(*wxWHITE, 4, wxSOLID));
+		dc.SetPen(wxPen(*wxWHITE, 2 * graphSizeMultiplier, wxSOLID));
 		for (std::vector<std::pair<double, double> >::iterator i = p2circles.begin();
 				i != p2circles.end();
 				i++)
@@ -1119,6 +1119,13 @@ void GCDCGraphs::SetShowArrowsChecked(bool setArrow) {
 	isShowArrowsChecked = setArrow;
 }
 
+int GCDCGraphs::GetGraphThickness() {
+	return graphSizeMultiplier;
+}
+
+void GCDCGraphs::SetGraphThickness(int thickness){
+	graphSizeMultiplier = thickness;
+}
 GCDCGraphs::~GCDCGraphs() {
 
 }
