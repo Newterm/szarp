@@ -34,3 +34,7 @@ current_tag
 tags
 test-driver
 cfgdealer/cfgdealer_test
+*.cmake
+!cmake/Modules/*.cmake
+CMakeCache.txt
+CMakeFiles

@@ -4,12 +4,13 @@
 #
 # $Id: Makefile.am 6583 2009-04-03 15:13:43Z pawel $
 
-SUBDIRS = @SUBDIRS@
+SUBDIRS = libSzarp libSzarp2 python sender parcook cfgdealer isl meaner3 iks extern wx utils unit_tests www resources script qt4
+# SUBDIRS = @SUBDIRS@
 
-ACLOCAL_AMFLAGS = -I m4
-MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in \
-                       depcomp install-sh missing mkinstalldirs ylwrap \
-                       config.guess config.sub stamp-h.in py-compile 
+# ACLOCAL_AMFLAGS = -I m4
+# MAINTAINERCLEANFILES = Makefile.in configure aclocal.m4 config.h.in \
+#                        depcomp install-sh missing mkinstalldirs ylwrap \
+#                        config.guess config.sub stamp-h.in py-compile 
 
 # Traditional SZARP target
 cleanconfig: maintainer-clean
@@ -32,11 +33,7 @@ install_scripts:
 logdir:
 	$(INSTALL) -d $(DESTDIR)@prefix@/logs
 
-if !DEB_BUILD
 install-data-hook: version logdir
-else DEB_BUILD
-install-data-hook: version logdir
-endif
 
 doxy:
 	cd @srcdir@ && doxygen
