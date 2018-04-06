@@ -169,7 +169,15 @@ public:
 		}
 	}
 
-	void store_value(const value_type& value, const time_type& time, bool fixed) {
+	template <typename VT>
+	void store_value(const VT& _value, const time_type& time, bool fixed) {
+		value_type value;
+		if (_value == no_data<VT>()) {
+			value = no_data<value_type>();
+		} else {
+			value = _value;
+		}
+
 		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
 		
 		if (!m_blocks.size()) {

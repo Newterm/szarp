@@ -226,11 +226,11 @@ DTime DTime::operator-(const wxDateSpan& span) const {
 }
 
 bool DTime::operator==(const DTime& t) const {
-	return m_time == t.m_time;
+	return m_time == t.m_time && m_period == t.m_period;
 }
 
 bool DTime::operator!=(const DTime& t) const {
-	return m_time != t.m_time;
+	return !(*this == t);
 }
 
 bool DTime::operator<=(const DTime& t) const {
@@ -346,7 +346,7 @@ wxString DTime::Format(const char* format) const {
 	return m_time.Format(format);
 }
 
-DTime::operator const wxDateTime&() {
+DTime::operator const wxDateTime&() const {
 	return m_time;
 }
 
@@ -480,6 +480,7 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 	if (m_number_of_values == default_units_count[time.GetPeriod()] * PeriodMult[time.GetPeriod()]) {
 		switch (time.GetPeriod()) {
 			case PERIOD_T_DECADE :
+				dt.SetYear(dt.GetYear() - (dt.GetYear() % m_number_of_values));
 			case PERIOD_T_YEAR :
 				dt.SetMonth(wxDateTime::Jan);
 			case PERIOD_T_MONTH :
@@ -518,6 +519,8 @@ DTime TimeIndex::AdjustToPeriodSpan(const DTime &time) const {
 
 void TimeIndex::SetStartTime(const DTime &time) {
 	m_time = time;
+
+	UpdatePeriods();
 }
 
 void TimeIndex::SetStartTime(const DTime &time, size_t number_of_values) {
@@ -541,5 +544,9 @@ const wxTimeSpan& TimeIndex::GetTimePeriod() const {
 
 const wxDateSpan& TimeIndex::GetDatePeriod() const {
 	return m_dateperiod;
+}
+
+DTime TimeIndex::GetNextProbeTime(const DTime& time, int dist) const {
+	return time + dist * m_timeres + dist * m_dateres;
 }
 

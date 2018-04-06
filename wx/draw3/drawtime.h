@@ -82,7 +82,7 @@ class DTime {
 	 * @return string represeting formatted date*/
 	wxString Format(const char* format = wxDefaultDateTimeFormat) const;
 
-	operator const wxDateTime&();
+	operator const wxDateTime&() const;
 	wxDateTime TimeJustBefore() const { return m_time - wxTimeSpan::Milliseconds(1); }
 };
 
@@ -139,6 +139,8 @@ public:
 	const wxTimeSpan& GetTimePeriod() const;
 	/**@return date span for given period*/
 	const wxDateSpan& GetDatePeriod() const;
+
+	DTime GetNextProbeTime(const DTime& time, int dist = 1) const;
 
 	static const size_t default_units_count[PERIOD_T_LAST];
 

@@ -69,6 +69,21 @@ public:
 		to = std::min(end, to);
 	}
 
+	value_type get_value(calculation_method<types>& ee, const time_type& time, SZARP_PROBE_TYPE pt) {
+		bool fixed = true;
+		value_type cached_value;
+		auto cached_data = m_cache[pt].get_value(time, cached_value, fixed);
+		if (!cached_data) {
+			double value;
+			bool fixed;
+			std::tr1::tie(value, fixed) = ee.calculate_value(time, pt);
+			m_cache[pt].store_value(value, time, fixed);
+			cached_value = value_is_no_data(value)? no_data<value_type>() : static_cast<value_type>(value);
+		}
+
+		return cached_value;
+	}
+
 	void get_weighted_sum_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
 		invalidate_non_fixed_if_needed();
 
@@ -96,28 +111,22 @@ public:
 		}
 
 		
-		boost::scoped_ptr<calculation_method<types> > ee;
+		calculation_method<types> ee(m_base, m_param);
 		bool first = true;
 		time_type& current(from);
 		while (current < to) {
-			value_type value;
 			bool fixed = true;
 			time_type next = szb_move_time(current, 1, step);
 
-			if (!m_cache[step].get_value(current,
-						value,
-						fixed)) {
-				if (!ee)
-					ee.reset(new calculation_method<types>(m_base, m_param));
-				std::tr1::tie(value, fixed) = ee->calculate_value(current, step);
-				m_cache[step].store_value(value, current, fixed);
-			}
+			value_type cached_value = get_value(ee, current, step);
 
 			if (current < end) {
-				if (!value_is_no_data(value))
-					sum.add(value, next - current);
-				else
+				if (!value_is_no_data(cached_value)) {
+					sum.add(cached_value, next - current);
+				} else {
 					sum.add_no_data_weight(next - current);
+				}
+
 				sum.set_fixed(fixed);
 			}
 
@@ -139,23 +148,21 @@ public:
 
 		adjust_time_range(start, end);
 		
-		time_type& current(start);
+		time_type current = start;
 
 		while (current < end) {
-			std::pair<bool, time_type> r = m_cache[probe_type].search_data_right(current, end, condition);
-			if (r.first)
-				return r.second;
-			
-			current = r.second;
+			// force cache
+			(void) get_value(ee, current, probe_type);
 
-			std::tr1::tuple<double,
-				bool>
-				vf(ee.calculate_value(current, probe_type));
-			m_cache[probe_type].store_value(
-					std::tr1::get<0>(vf),
-					current,
-					std::tr1::get<1>(vf));
-
+			bool data_found;
+			std::tie(data_found, current) = m_cache[probe_type].search_data_right(current, end, condition);
+			if (data_found) {
+				if ((current <= end || time_trait<time_type>::is_valid(end)) && current >= start) {
+					return current;
+				} else {
+					return time_trait<time_type>::invalid_value;
+				}
+			}
 		}
 
 		return time_trait<time_type>::invalid_value;
@@ -168,19 +175,22 @@ public:
 		
 		adjust_time_range(end, start);
 
-		time_type current(start);
+		time_type current = start;
 
 		while (current > end) {
-			std::pair<bool, time_type> r = m_cache[probe_type].search_data_left(current, end, condition);
-			if (r.first)
-				return r.second;
-			current = r.second;
+			// force cache
+			(void) get_value(ee, current, probe_type);
 
-			std::tr1::tuple<double, bool>
-				 vf(ee.calculate_value(current, probe_type));
-			m_cache[probe_type].store_value(std::tr1::get<0>(vf),
-					current,
-					std::tr1::get<1>(vf));
+			bool data_found;
+			std::tie(data_found, current) = m_cache[probe_type].search_data_left(current, end, condition);
+
+			if (data_found) {
+				if ((current >= end || time_trait<time_type>::is_valid(end)) && current <= start) {
+					return current;
+				} else {
+					return time_trait<time_type>::invalid_value;
+				}
+			}
 		}
 
 		return time_trait<time_type>::invalid_value;
