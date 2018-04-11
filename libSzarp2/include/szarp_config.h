@@ -384,7 +384,7 @@ public:
 	virtual ~UnitInfo() {}
 	virtual size_t GetSenderMsgType() const = 0;
 	virtual size_t GetParamsCount() const = 0;
-	virtual size_t GetSendParamsCount() const = 0;
+	virtual size_t GetSendParamsCount(bool ignore_non_ipc = false) const = 0;
 
 	virtual std::vector<IPCParamInfo*> GetParams() const = 0;
 	virtual std::vector<SendParamInfo*> GetSendParams() const = 0;
@@ -410,7 +410,7 @@ public:
 	/** @return number of params in unit */
 	size_t GetParamsCount() const override;
 	/** @return number of send params in unit */
-	size_t GetSendParamsCount() const override;
+	size_t GetSendParamsCount(bool ignore_non_ipc = false) const override;
 	size_t GetSenderMsgType() const override {
 		return send_msg_type;
 	}
