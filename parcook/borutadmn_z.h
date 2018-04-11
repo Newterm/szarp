@@ -54,23 +54,50 @@
 #include "zmqhandler.h"
 #include "dmncfg.h"
 #include "custom_assert.h"
+#include "baseconn.h"
+#include "tcpconn.h"
 
-/**self-descriptive struct holding all aspects of serial port conifguration in one place*/
-struct serial_port_configuration {
-	std::string path;
-	enum PARITY {
-		NONE,
-		ODD,
-		EVEN
-	} parity;
-	int stop_bits;
-	int speed;
-	enum CHAR_SIZE {
-		CS_6 = 6,
-		CS_7 = 7,
-		CS_8 = 8
-	} char_size;
+class driver_iface {
+public:
+	virtual ~driver_iface() {}
+	virtual int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) = 0;
+	virtual void finished_cycle() = 0;
+	virtual void starting_new_cycle() = 0;
 };
+
+class bc_driver: public ConnectionListener, public driver_iface {
+protected:
+	BaseConnection* m_connection = nullptr;
+
+public:
+	bc_driver(BaseConnection* conn): m_connection(conn) {
+		conn->AddListener(this);
+	}
+};
+
+class bc_manager {
+public:
+	std::set<driver_iface*> conns;
+
+	boruta_daemon* m_boruta;
+	bc_manager(boruta_daemon* boruta): m_boruta(boruta) {}
+
+	int configure(TUnit *unit, size_t read, size_t send);
+
+	void finished_cycle() { for (auto cp: conns) { cp->finished_cycle(); } }
+	void starting_new_cycle() { for (auto cp: conns) { cp->starting_new_cycle(); } }
+};
+
+struct boruta_logger {
+	std::string header;
+	boruta_logger(const std::string& _header): header(_header) {}
+
+	void log(int level, const char * fmt, ...) __attribute__ ((format (printf, 3, 4)));
+	void vlog(int level, const char * fmt, va_list fmt_args);
+};
+
+
+class client_manager;
 
 /**common class for types of drivers*/
 class boruta_driver {
@@ -89,21 +116,8 @@ public:
 	virtual ~boruta_driver() {}
 };
 
-/**base class for server drivers, server drivers have a single numeric identifier,
-and respond to connection_error 'event'*/
-class server_driver : public boruta_driver {
-	size_t m_id;
-public:
-	void vdriver_log(int level, const char * fmt, va_list ap);
-
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	size_t& id();
-};
-
-class client_manager;
-
 /** base class for client driver */
-class client_driver : public boruta_driver {
+class client_driver : public boruta_driver, public driver_iface {
 protected:
 	/** client driver identificator consiting of two numbers - id of connection
 	 * this driver is assigned to and id of driver itself */
@@ -138,127 +152,15 @@ public:
 	/** the new cycle has just been started - data from sender has
 	 * been updated*/
 	virtual void starting_new_cycle();
-};
-
-/**client driver operating over tcp connection*/
-class tcp_client_driver : public client_driver {
-public:
 	virtual int configure(TUnit* unit, size_t read, size_t send) = 0;
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override { return configure(unit, read, send); }
 };
 
 /**client driver operating over serial line*/
 class serial_client_driver : public client_driver {
-public:
-	virtual int configure(TUnit* unit, size_t read, size_t send, serial_port_configuration& spc) = 0;
 };
 
-/**client driver operating over tcp connection that pretends */
-class tcp_proxy_2_serial_client : public tcp_client_driver {
-	serial_client_driver* m_serial_client;
-public:
-	tcp_proxy_2_serial_client(serial_client_driver* _client_driver);
-
-	const std::pair<size_t, size_t> & id();
-
-	void set_id(std::pair<size_t, size_t> id);
-
-	void set_manager(client_manager* manager);
-
-	void set_event_base(struct event_base* ev_base);
-
-	void set_zmq_handler(zmqhandler* zmq);
-
-	void set_address_string(const std::string& str);
-
-	const std::string& address_string() const;
-
-	const char* driver_name();
-
-	virtual void connection_error(struct bufferevent *bufev);
-
-	virtual void scheduled(struct bufferevent* bufev, int fd);
-
-	virtual void data_ready(struct bufferevent* bufev, int fd);
-
-	virtual void finished_cycle();
-
-	virtual void starting_new_cycle();
-
-	virtual int configure(TUnit* unit, size_t read, size_t send);
-
-	~tcp_proxy_2_serial_client();
-};
-
-class serial_server_manager;
-/**server driver operating over serial line*/
-class serial_server_driver : public server_driver {
-protected:
-	serial_server_manager* m_manager;
-public:
-	void set_manager(serial_server_manager* manager);
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	virtual void data_ready(struct bufferevent* bufev) = 0;
-	virtual void starting_new_cycle() = 0;
-	virtual void finished_cycle() = 0;
-	virtual int configure(TUnit* unit, size_t read, size_t send, serial_port_configuration&) = 0;
-};
-
-class tcp_server_manager;
-/**server driver operating over tcp connection*/
-class tcp_server_driver : public server_driver {
-protected:
-	tcp_server_manager* m_manager;
-public:
-	void set_manager(tcp_server_manager* manager);
-	/** signfies connection error
-	 * @param bufev a connection which caused error*/
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	/** notifies driver that data arrived through connection
-	 * @parma bufev connection that received data*/
-	virtual void data_ready(struct bufferevent* bufev) = 0;
-	/** notifies driver that new connection was accepted
-	 * @param bufev bufferevent associated with connection
-	 * @param socket connection socket
-	 * @param addr address of a peer establishing connection
-	 * @return 0 if connection should be accepted, non zero status if daemon should terminate 
-	 * (refuse) connection*/
-	virtual int connection_accepted(struct bufferevent* bufev, int socket, struct sockaddr_in* addr) = 0;
-	/** notifies driver that new cycle was started*/
-	virtual void starting_new_cycle() = 0;
-	/** notifies driver that we are finishing cycle*/
-	virtual void finished_cycle() = 0;
-
-	virtual int configure(TUnit* unit, size_t read, size_t send) = 0;
-};
-
-/**container for protocols factories*/
-class protocols {
-	typedef std::map<std::string, tcp_client_driver* (*)()> tcp_client_factories_table;
-	/**factory of tcp client drivers*/
-	tcp_client_factories_table m_tcp_client_factories;
-
-	typedef std::map<std::string, serial_client_driver* (*)()> serial_client_factories_table;
-	/**factory of serial client drivers*/
-	serial_client_factories_table m_serial_client_factories;
-
-	/**factory of tcp server drivers*/
-	typedef std::map<std::string, tcp_server_driver* (*)()> tcp_server_factories_table;
-	tcp_server_factories_table m_tcp_server_factories;
-
-	/**factory of serial server drivers*/
-	typedef std::map<std::string, serial_server_driver* (*)()> serial_server_factories_table;
-	serial_server_factories_table m_serial_server_factories;
-
-	/**retrives protocol name from unit node*/
-	std::string get_proto_name(TUnit* unit);
-public:
-	protocols();
-	/**following four methods create appropriate driver as specified in the node*/
-	tcp_client_driver* create_tcp_client_driver(TUnit* unit);
-	serial_client_driver* create_serial_client_driver(TUnit* unit);
-	tcp_server_driver* create_tcp_server_driver(TUnit* unit);
-	serial_server_driver* create_serial_server_driver(TUnit* unit);
-};
+using slog = std::shared_ptr<boruta_logger>;
 
 class serial_connection;
 
@@ -333,149 +235,133 @@ public:
 	void terminate_connection(client_driver *driver);
 };
 
-/**implementation of class deadling with tcp client drivers*/
-class tcp_client_manager : public client_manager {
-	boruta_daemon *m_boruta;
-	struct tcp_connection {
-		tcp_connection(tcp_client_manager *manager, size_t conn_no, const std::pair<std::string, short> & address);
-		void schedule_timer(int secs, int nsecs);
-		void close();
-		CONNECTION_STATE state;	
-		int fd;
-		struct bufferevent *bufev;
-		size_t conn_no;
-		unsigned retry_gap;
-		unsigned establishment_timeout;
-		tcp_client_manager *manager;
-		std::pair<std::string, short> address;
-		struct event timer;
-		struct evdns_getaddrinfo_request *dns_request;
-	};
-	/**adresses for connections*/
-	std::vector<std::pair<std::string, short> > m_addresses;
-	/**tcp connections array*/
-	std::vector<tcp_connection> m_tcp_connections;
-	/**retrieves tcp connection setting from xln node*/
-	int get_address(TUnit* unit, std::pair<std::string, short>& addr);
-	/**closes given connection*/
-	void close_connection(tcp_connection &c);
-	/**establishes connection, to a given address, returns 0 in case
-           of succes, 1 otherwise*/
-	void open_connection(tcp_connection &c, struct sockaddr_in& addr);
-	/**performs first stage of connection establishment - name resolution
-	   of the destination address*/
-	void resolve_address(tcp_connection &c);
-protected:
-	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
-	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
-	virtual void do_terminate_connection(size_t conn_no);
-	virtual void do_schedule(size_t conn_no, size_t client_no);
-	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
+class BaseServerConnectionHandler: public BaseConnection {
 public:
-	tcp_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
-	int configure(TUnit *unit, size_t read, size_t send, protocols &_protocols);
-	int initialize();
-	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection);
-	static void connection_timer_cb(int fd, short event, void* _tcp_connection);
-	static void address_resolved_cb(int result, struct evutil_addrinfo *res, void *_tcp_connection);
+	using BaseConnection::BaseConnection;
+	virtual void CloseConnection(const BaseConnection*) = 0;
+
+	void WriteData(const void* data, size_t size) override {
+		ASSERT(!"This should not have been called!");
+		throw TcpConnectionException("Cannot write on server socket");
+	}
+
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override {}
 };
 
-/**implementation of class deadling with serial client drivers*/
-class serial_client_manager : public serial_connection_manager, public client_manager {
-	boruta_daemon *m_boruta;
-	/**confiugrations of serial port for each driver*/
-	std::vector<std::vector<serial_port_configuration> > m_configurations;
-	/**maps serial port paths to a connection number*/
-	std::map<std::string, size_t> m_ports_client_no_map;
-	/**list of @see serial_connection managed by this class*/
-	std::vector<serial_connection> m_serial_connections;
-protected:
-	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no);
-	virtual struct bufferevent* do_get_connection_buf(size_t conn_no);
-	virtual void do_terminate_connection(size_t conn_no);
-	virtual void do_schedule(size_t conn_no, size_t client_no);
-	virtual CONNECTION_STATE do_establish_connection(size_t conn_no);
+
+// implements handling established connections
+// TODO: implement
+// retry_gap = unit->getAttribute("extra:connection-retry-gap", 4);
+// establishment_timeout = unit->getAttribute("extra:connection-establishment-timeout", 10);
+class TcpServerConnection: public BaseConnection {
+	BaseServerConnectionHandler* handler;
+	struct bufferevent *m_bufferevent;
+	int m_fd;
+
 public:
-	serial_client_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
-	int configure(TUnit *unit, size_t read, size_t send, protocols &_protocols);
-	int initialize();
-	void connection_read_cb(serial_connection *c);
-	void connection_error_cb(serial_connection *c);
+	TcpServerConnection(BaseServerConnectionHandler* _handler, struct event_base *ev_base): BaseConnection(ev_base), handler(_handler) {}
+
+	~TcpServerConnection();
+
+	void InitConnection(int fd);
+
+	void Open() override;
+	void Close() override;
+
+	/** Returns true if connection is ready for communication */
+	bool Ready() const override;
+	void ReadData(struct bufferevent *bufev);
+	void WriteData(const void* data, size_t size) override;
+	/** Set line configuration for an already open port */
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
+
+	static void ErrorCallback(struct bufferevent *bufev, short event, void* conn)
+	{
+		if (event & BEV_EVENT_CONNECTED)
+			return;
+
+		reinterpret_cast<TcpServerConnection*>(conn)->Error(event);
+	}
+
+	static void ReadDataCallback(struct bufferevent *bufev, void* conn) {
+		reinterpret_cast<TcpServerConnection*>(conn)->ReadData(bufev);
+	}
 };
 
-class serial_server_manager : public serial_connection_manager {
-	boruta_daemon *m_boruta;
-	/**drivers for particular paths*/
-	std::vector<serial_server_driver*> m_drivers;
-	/**connections for each path*/
-	std::vector<serial_connection> m_connections;
-	/**connections settings associated with each path*/
-	std::vector<serial_port_configuration> m_configurations;
+// implements handling incoming connections
+class TcpServerConnectionHandler: public BaseServerConnectionHandler, public ConnectionListener {
+	int m_fd = -1;
+
+	struct event _event;
+	struct sockaddr_in m_addr;
+
+	std::set<unsigned long> m_allowed_ips;
+
+	std::list<std::unique_ptr<BaseConnection>> m_connections;
+
 public:
-	serial_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
-	/**configures unit*/
-	int configure(TUnit *unit, size_t read, size_t send, protocols &_protocols);
-	/**does nothing at this moment*/
-	int initialize();
+	using BaseServerConnectionHandler::BaseServerConnectionHandler;
 
-	void finished_cycle();
+	void Init(TUnit* unit);
 
-	void starting_new_cycle();
-	/**reopen connections at driver requests*/
-	void restart_connection_of_driver(serial_server_driver* driver);
-	void connection_read_cb(serial_connection *c);
-	void connection_error_cb(serial_connection *c);
+private:
+	void ConfigureAllowedIps(TUnit* unit);
+
+private:
+	// socket handling
+	int start_listening();
+
+	bool ip_is_allowed(struct sockaddr_in in_s_addr);
+	boost::optional<int> accept_socket(int in_fd);
+
+	void AcceptConnection(int _fd);
+
+	static void connection_accepted_cb(int _fd, short event, void* _handler) {
+		reinterpret_cast<TcpServerConnectionHandler*>(_handler)->AcceptConnection(_fd);
+	}
+
+public:
+	// Connection Listener implementation
+	void OpenFinished(const BaseConnection *conn) override {}
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+	void SetConfigurationFinished(const BaseConnection *conn) override {}
+	void CloseConnection(const BaseConnection* conn) override;
+
+	// BaseConnection implementation
+	void Open() override;
+	void Close() override;
+	bool Ready() const override;
 };
 
-class tcp_server_manager {
-	boruta_daemon *m_boruta;
-	/**description of port at which boruta listens for connections*/
-	struct listen_port {
-		listen_port(tcp_server_manager *manager, int port, int serv_no);
-		tcp_server_manager *manager;
-		/**port number*/
-		int port;
-		/**socket descriptor*/
-		int fd;
-		/**id of server associated with this port*/
-		int serv_no;
-		/**event used by libevent for notifiactions of new connections coming
-		 * to this port*/
-		struct event _event;
-	};
-	struct connection {
-		/**id of server associated with this connection*/
-		size_t serv_no;
-		/**socket descriptor*/
-		int fd;
-		/**connection buffer for this connection*/
-		struct bufferevent *bufev;
-	};
-	/**array of drivers*/
-	std::vector<tcp_server_driver*> m_drivers;
-	/**ports we listen to*/
-	std::vector<listen_port> m_listen_ports;
-	/**maps connection buffers to connections associated with them*/
-	std::map<struct bufferevent*, connection> m_connections;
-	int start_listening_on_port(int port);
-	void close_connection(struct bufferevent* bufev);
-public:
-	tcp_server_manager(boruta_daemon *boruta) : m_boruta(boruta) {}
-	int configure(TUnit *unit, size_t read, size_t send, protocols &_protocols);
-	int initialize();
-	void finished_cycle();
-	void starting_new_cycle();
-	static void connection_read_cb(struct bufferevent *ev, void* _tcp_connection);
-	static void connection_error_cb(struct bufferevent *ev, short event, void* _tcp_connection);
-	static void connection_accepted_cb(int fd, short event, void* listen_port);
+struct conn_factory {
+	enum class mode {client, server};
+	static mode get_mode(TUnit* unit) {
+		std::string mode_opt = unit->getAttribute<std::string>("extra:mode", "client");
+		if (mode_opt == "client") {
+			return mode::client;
+		} else if (mode_opt == "server") {
+			return mode::server;
+		} else {
+			throw std::runtime_error("Invalid mode option (can be client or server)");
+		}
+	}
+
+	enum class medium {tcp, serial};
+	static medium get_medium(TUnit* unit) {
+		std::string medium_opt = unit->getAttribute<std::string>("extra:medium", "tcp");
+		if (medium_opt == "tcp") {
+			return medium::tcp;
+		} else if (medium_opt == "serial") {
+			return medium::serial;
+		} else {
+			throw std::runtime_error("Invalid medium option (can be tcp or serial)");
+		}
+	}
 };
 
 class boruta_daemon {
-	tcp_client_manager m_tcp_client_mgr;
-	tcp_server_manager m_tcp_server_mgr;
-	serial_client_manager m_serial_client_mgr;
-	serial_server_manager m_serial_server_mgr;
+	bc_manager m_drivers_manager;
 
 	zmq::context_t m_zmq_ctx;
 
@@ -503,21 +389,14 @@ public:
 	static void subscribe_callback(int fd, short event, void* daemon);
 };
 
-serial_client_driver* create_modbus_serial_client();
-tcp_client_driver* create_modbus_tcp_client();
-
-serial_server_driver* create_modbus_serial_server();
-tcp_server_driver* create_modbus_tcp_server();
-
-serial_client_driver *create_fc_serial_client();
+driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boruta_daemon*, slog);
+driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon*, slog);
+driver_iface* create_bc_modbus_serial_client(BaseConnection* conn, boruta_daemon*, slog);
+driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon*, slog);
+driver_iface* create_fc_serial_client();
 
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
-
-int get_serial_port_config(TAttribHolder* unit, serial_port_configuration &spc);
-
-int set_serial_port_settings(int fd, serial_port_configuration &sc);
-
 
 namespace ascii {
 	int char2value(unsigned char c, unsigned char &o) ;

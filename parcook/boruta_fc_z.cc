@@ -308,7 +308,7 @@ public:
 	void data_ready(struct bufferevent *bufev, int fd) override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc);
+	int configure(TUnit *unit, size_t read, size_t send) override;
 	void configure_ushort_register (unsigned int pnu);
 	void configure_uinteger_register (unsigned int pnu);
 	void configure_integer_register (unsigned int pnu);
@@ -505,7 +505,7 @@ struct event_base *fc_proto::get_event_base()
 	return m_event_base;
 }
 
-int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc)
+int fc_proto::configure(TUnit *unit, size_t read, size_t send)
 {
 	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
@@ -678,7 +678,7 @@ void fc_proto::read_timer_callback(int fd, short event, void *client)
 	fc->read_timer_event();
 }
 
-serial_client_driver *create_fc_serial_client()
+driver_iface* create_fc_serial_client()
 {
 	return new fc_proto();
 }
