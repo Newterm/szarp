@@ -98,133 +98,9 @@ struct boruta_logger {
 	void vlog(int level, const char * fmt, va_list fmt_args);
 };
 
-
-class client_manager;
-
-/**common class for types of drivers*/
-class boruta_driver {
-protected:
-	struct event_base* m_event_base;
-	zmqhandler* m_zmq;
-	std::string m_address_string;
-public:
-	virtual void vdriver_log(int level, const char * fmt, va_list fmt_args) = 0;
-
-	virtual void set_event_base(struct event_base* ev_base);
-	virtual void set_zmq_handler(zmqhandler* zmq);
-	virtual void set_address_string(const std::string& str);
-	virtual const std::string& address_string() const;
-	virtual const char* driver_name() = 0;
-	virtual ~boruta_driver() {}
-};
-
-/** base class for client driver */
-class client_driver : public boruta_driver, public driver_iface {
-protected:
-	/** client driver identificator consiting of two numbers - id of connection
-	 * this driver is assigned to and id of driver itself */
-	std::pair<size_t, size_t> m_id;
-	client_manager* m_manager;
-public:
-	void vdriver_log(int level, const char * fmt, va_list ap);
-
-	/** through this method manager informs a driver that there was a
-	 * problem with connection, if a connection could not be established,
-	 * bufev will be set to NULL, otherwise it will point to a buffer
-	 * of a connection that caused problem*/
-	virtual void connection_error(struct bufferevent *bufev) = 0;
-	/** this method is called when it is this drivers turn to use
-	 * a connection, after completing his job driver should release
-	 * connection by calling @see driver_finished_job on its manager
-	 * @param bufev connection's buffer event
-	 * @param fd connection's descriptior */
-	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
-	/** called for driver when cycle is finished, just after this
-	 * method is called data will be passed to parcook, so driver
-	 * should put any data it has received into it's portion of read buffer*/
-	virtual void finished_cycle();
-	/** the new cycle has just been started - data from sender has
-	 * been updated*/
-	virtual void starting_new_cycle();
-	virtual int configure(TUnit* unit, size_t read, size_t send) = 0;
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override { return configure(unit, read, send); }
-};
-
-/**client driver operating over serial line*/
-class serial_client_driver : public client_driver {
-};
-
 using slog = std::shared_ptr<boruta_logger>;
 
-class serial_connection;
-
-/**boruta interface for clasess dealing with @see serial_connection*/
-class serial_connection_manager { 
-public:
-	/** connection read ready callback*/
-	virtual void connection_read_cb(serial_connection* connection) = 0;
-	/** connection error callback*/
-	virtual void connection_error_cb(serial_connection* connection) = 0;
-};
-
-struct serial_connection {
-	serial_connection(size_t conn_no, serial_connection_manager* _manager);
-	size_t conn_no;
-	serial_connection_manager *manager;
-	int fd;
-	struct bufferevent *bufev;
-public:
-	int open_connection(const std::string& path, struct event_base* ev_base);
-	void close_connection();
-	static void connection_read_cb(struct bufferevent *ev, void* _connection);
-	static void connection_error_cb(struct bufferevent *ev, short event, void* _connection);
-};
-
 class boruta_daemon;
-
-enum CONNECTION_STATE { CONNECTED, NOT_CONNECTED, IDLING, CONNECTING, RESOLVING_ADDR };
-
-/** a client manager class performing client drivers scheduling, it's
- * an abstract class requiring from its subclasses to implement 
- * methods resposinble for connections handling*/
-class client_manager { 
-protected:
-	/**maps client drivers to connections*/
-	std::vector<std::vector<client_driver*> > m_connection_client_map;
-	/**holds ids of current clients for each connection*/
-	std::vector<size_t> m_current_client;
-	/**to be implemented by subclass - returns connecton state*/
-	virtual CONNECTION_STATE do_get_connection_state(size_t conn_no) = 0;
-	/**to be implemented by subclass - return buffer of connection*/
-	virtual struct bufferevent* do_get_connection_buf(size_t conn_no) = 0;
-	/**to be implemented by subclass - shall terminate connection*/
-	virtual void do_terminate_connection(size_t conn_no) = 0;
-	/**to be implemented by subclass - shall schedule client on a connection*/
-	virtual void do_schedule(size_t conn_no, size_t client_no) = 0;
-	/**to be implemented by subclass - shall establish connection and return connection
-	 * state */
-	virtual CONNECTION_STATE do_establish_connection(size_t conn_no) = 0;
-
-	/** method handling arrival data on a connection, it simply routes this information
-	 * to current driver for this connection*/
-	void connection_read_cb(size_t connection, struct bufferevent *bufev, int fd);
-	/** method handling connection error*/
-	void connection_error_cb(size_t connection);
-	/** method handling connection establishment event*/
-	void connection_established_cb(size_t connection);
-public:
-	/**propagates this event to client drivers*/
-	void finished_cycle();
-	/**propagates this event to client drivers also schedules drivers for those
-	 * connection which are currently 'idle'*/
-	void starting_new_cycle();
-	/** when driver encounters an error in communication with its peer - like
-	 * timeout in the middle of communication or something that could possibly
-	 * interfere with a next scheduled driver, it should call this method. It
-	 * will cause a connection to be reponed before next driver is scheduled
-	 * (and has the same effect as calling @driver_finished_job*/
-	void terminate_connection(client_driver *driver);
-};
 
 class BaseServerConnectionHandler: public BaseConnection {
 public:
@@ -384,7 +260,7 @@ driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boru
 driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon*, slog);
 driver_iface* create_bc_modbus_serial_client(BaseConnection* conn, boruta_daemon*, slog);
 driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon*, slog);
-driver_iface* create_fc_serial_client(BaseConnection* conn, slog);
+driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon*, slog);
 
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
@@ -393,15 +269,5 @@ namespace ascii {
 	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
 	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
-
-class driver_logger {
-	boruta_driver* m_driver;
-public:
-	driver_logger(boruta_driver* driver);
-	void log(int level, const char * fmt, ...)
-		__attribute__ ((format (printf, 3, 4)));
-	void vlog(int level, const char * fmt, va_list fmt_args);
-};
-
 
 #endif
