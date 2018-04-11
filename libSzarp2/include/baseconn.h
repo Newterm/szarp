@@ -80,13 +80,12 @@ protected:
 
 protected:
 	struct event_base* const m_event_base;
-
-private:
-	/** Avoid copying */
-	BaseConnection(const BaseConnection&);
-	BaseConnection& operator=(const BaseConnection&);
-
 	std::vector<ConnectionListener*> m_listeners;
+
+public:
+	/** Avoid copying */
+	BaseConnection(const BaseConnection&) = delete;
+	BaseConnection& operator=(const BaseConnection&) = delete;
 };
 
 #endif // __BASECONN_H__

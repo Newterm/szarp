@@ -146,7 +146,11 @@ size_t TUnit::GetSendParamsCount() const
 {
 	int i;
 	TSendParam* s;
-	for (i = 0, s = sendParams; s; i++, s = s->GetNext());
+	for (i = 0, s = sendParams; s; s = s->GetNext()) {
+		if (!s->hasAttribute("value"))
+			++i;
+	}
+
 	return i;
 }
 
