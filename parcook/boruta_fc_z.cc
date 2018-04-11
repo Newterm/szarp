@@ -242,21 +242,21 @@ void integer_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
 	handler->set_value(index, t, v);
 }
 
-class fc_proto : public serial_client_driver
+class fc_proto : public bc_driver
 {
-	unsigned char m_id;
+	struct event_base* m_event_base;
+
+	zmqhandler* m_zmq;
+
 	size_t m_read;
 	size_t m_send;
 	size_t m_read_count;
 	size_t m_send_count;
-	struct bufferevent *m_bufev;
 	struct event m_read_timer;
-	bool m_read_timer_started;
 
 	/* Address of Danfoss Inverter */
 	unsigned char m_extra_id;
 
-	int m_timeout;
 	slog m_log;
 
 	/* Time variables */
@@ -264,7 +264,7 @@ class fc_proto : public serial_client_driver
 	long long m_expiration_time;
 
 	/* Serial connection state */
-	enum { IDLE, REQUEST, RESPONSE  } m_state;
+	enum { IDLE, REQUEST, RESPONSE } m_state;
 
 	/* Vector containing telegram */
 	std::vector<unsigned char> m_request_buffer;
@@ -287,7 +287,6 @@ class fc_proto : public serial_client_driver
 	void make_read_request();
 	int parse_frame();
 	void to_parcook();
-	bool read_line(struct bufferevent *bufev);
 
 	/* Parser of PWEhigh and PWElow octal chars, returns full 4 byte value */
 	int parse_pwe(const std::vector<unsigned char>& val);
@@ -300,19 +299,21 @@ protected:
 
 public:
 	fc_proto(BaseConnection* conn, slog log);
-	const char *driver_name() override { return "fc_serial_client"; }
-	zmqhandler* zmq_handler() { return m_zmq; }
 	void starting_new_cycle() override;
-	void data_ready(struct bufferevent *bufev, int fd) override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
-	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, size_t read, size_t send) override;
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
 	void configure_ushort_register (unsigned int pnu);
 	void configure_uinteger_register (unsigned int pnu);
 	void configure_integer_register (unsigned int pnu);
-	void scheduled(struct bufferevent *bufev, int fd);
+	void scheduled();
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto);
+
+	// ConnectionListener impl
+	void OpenFinished(const BaseConnection *conn) override {}
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
 };
 
@@ -328,7 +329,7 @@ int fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
 }
 
 
-fc_proto::fc_proto(BaseConnection* conn, slog log) : m_log(log), m_state(IDLE) {}
+fc_proto::fc_proto(BaseConnection* conn, slog log) : bc_driver(conn), m_log(log), m_state(IDLE) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -365,7 +366,7 @@ void fc_proto::send_request()
 	m_buffer.clear();
 	make_read_request();
 	if(m_request_buffer.size() == RESPONSE_SIZE) {
-		bufferevent_write(m_bufev, &m_request_buffer[0], m_request_buffer.size());
+		m_connection->WriteData(&m_request_buffer[0], m_request_buffer.size());
 		m_state = REQUEST;
 		start_read_timer();
 	}
@@ -470,7 +471,7 @@ void fc_proto::to_parcook()
 	m_log->log(10, "to_parcook, m_read_count: %zu", m_read_count);
 	std::vector<read_fc_val_op *>::iterator it = m_read_operators.begin();
 	for (size_t i = 0; i < m_read_count; ++i, ++it) {
-		(*it)->set_val(zmq_handler(), i + m_read);
+		(*it)->set_val(m_zmq, i + m_read);
 	}
 }
 
@@ -490,12 +491,11 @@ void fc_proto::stop_read_timer()
 
 void fc_proto::terminate_connection()
 {
-	// m_manager->terminate_connection(this);
+	m_connection->Close();
 }
 
-int fc_proto::configure(TUnit *unit, size_t read, size_t send)
+int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortConfiguration&)
 {
-	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
 	m_send_count = unit->GetSendParamsCount();
 	m_read = read;
@@ -559,9 +559,8 @@ void fc_proto::configure_integer_register(unsigned int pnu) {
 	m_read_operators.push_back(new integer_read_fc_val_op(m_registers[pnu], m_log));
 }
 
-void fc_proto::scheduled(struct bufferevent *bufev, int fd)
+void fc_proto::scheduled()
 {
-	m_bufev = bufev;
 	m_log->log(10, "scheduled");
 	switch (m_state) {
 	case IDLE:
@@ -575,11 +574,9 @@ void fc_proto::scheduled(struct bufferevent *bufev, int fd)
 	}
 }
 
-void fc_proto::connection_error(struct bufferevent *bufev)
-{
-	m_log->log(10, "connection_error");
+void fc_proto::ReadError(const BaseConnection *conn, short int event) {
+	m_log->log(10, "connection error");
 	m_state = IDLE;
-	m_bufev = nullptr;
 	m_buffer.clear();
 	stop_read_timer();
 }
@@ -593,37 +590,43 @@ void fc_proto::starting_new_cycle()
 	m_current_time.nanosecond = time.tv_nsec;
 	stop_read_timer();
 
-	// scheduled();
+	try {
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+	} catch (...) {
+	}
+
+	scheduled();
 }
 
-void fc_proto::data_ready(struct bufferevent *bufev, int fd)
-{
-	unsigned char c;
-	switch (m_state) {
+void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	for (auto c: data) switch (m_state) {
 		case IDLE:
 			m_log->log(5, "Got unrequested message, ignoring");
 			/* Drain data from bufferevent */
 		   /* m_buffer would be cleared before draining response telegram */
-			while (bufferevent_read(bufev, &c, 1) != 0) {
-				m_log->log(10, "ignored %c", c);
-			}
+			m_log->log(10, "ignored %c", c);
 			break;
 		case REQUEST:
-			while (bufferevent_read(bufev, &c, 1) != 0) {
-				/* STE is a starting frame, prepare buffer */
-				if (c == STE) {
-					m_buffer.clear();
-					break;
-				}
+			/* STE is a starting frame, prepare buffer */
+			if (c == STE) {
+				m_buffer.clear();
+				break;
 			}
+
 			m_buffer.push_back(c);
 			stop_read_timer();
 			m_state = RESPONSE;
 		case RESPONSE:
-			if(!read_line(bufev) && m_buffer.size() < RESPONSE_SIZE)
-				break;
-			parse_frame();
-			next_request();
+			m_buffer.push_back(c);
+			if (m_buffer.size() == RESPONSE_SIZE) {
+				m_last_bcc = checksum(m_buffer);
+				parse_frame();
+				next_request();
+			}
+
 			break;
 	}
 }
@@ -635,24 +638,6 @@ bool fc_proto::register_val_expired(const sz4::nanosecond_time_t& time) {
 	else {
 		return time >= m_current_time + m_expiration_time;
 	}
-}
-
-bool fc_proto::read_line(struct bufferevent *bufev)
-{
-	unsigned char c[RESPONSE_SIZE] = "";
-	size_t ret = 0;
-
-	while ((ret = bufferevent_read(bufev, c, sizeof(c))) > 0) {
-		for (size_t i = 0; i < ret; ++i) {
-			m_buffer.push_back(c[i]);
-			if (m_buffer.size() == RESPONSE_SIZE) {
-				m_last_bcc = checksum(m_buffer);
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 void fc_proto::read_timer_event()
@@ -668,7 +653,7 @@ void fc_proto::read_timer_callback(int fd, short event, void *client)
 	fc->read_timer_event();
 }
 
-driver_iface* create_fc_serial_client(BaseConnection* conn, slog log)
+driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log)
 {
 	return new fc_proto(conn, log);
 }
