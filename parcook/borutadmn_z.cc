@@ -215,14 +215,6 @@ const std::string& boruta_driver::address_string() const {
 	return m_address_string;
 }
 
-const std::pair<size_t, size_t> & client_driver::id() {
-	return m_id;
-}
-
-void client_driver::set_id(std::pair<size_t, size_t> id) {
-	m_id = id;
-}
-
 void client_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
 {
 	char *l;
@@ -233,10 +225,6 @@ void client_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
 		::dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
 					driver_name(), m_address_string.c_str(), strerror(errno));
 	}
-}
-
-void client_driver::set_manager(client_manager* manager) {
-	m_manager = manager;
 }
 
 void client_driver::finished_cycle() {
@@ -306,21 +294,8 @@ void client_manager::starting_new_cycle() {
 	}
 }
 
-void client_manager::driver_finished_job(client_driver *driver) {
-	size_t connection = driver->id().first;
-	size_t& client = m_current_client.at(connection);
-	if (driver->id().second != client) {
-		dolog(1, "Boruta was notfied by client number %zu (connection %s) that it has finished it's job!",
-			 client, m_connection_client_map.at(connection).at(client)->address_string().c_str());
-		dolog(1, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
-		return;
-	}
-	if (++client < m_connection_client_map.at(connection).size())
-		do_schedule(connection, client);
-}
-
 void client_manager::terminate_connection(client_driver *driver) {
-	size_t connection = driver->id().first;
+	/* size_t connection = driver->id().first;
 	size_t& client = m_current_client.at(connection);
 	dolog(2, "client_manager::terminate_connection: connection: %s, client: %zu",
 		m_connection_client_map.at(connection).at(client)->address_string().c_str(),
@@ -339,7 +314,7 @@ void client_manager::terminate_connection(client_driver *driver) {
 		if (do_establish_connection(connection) != CONNECTED)
 			return;
 		do_schedule(connection, client);
-	}
+	} */
 }
 
 void client_manager::connection_read_cb(size_t connection, struct bufferevent *bufev, int fd) { 
@@ -669,6 +644,12 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 
 	std::string log_header_str = "";
 
+	auto proto = unit->getAttribute<std::string>("extra:proto", "modbus");
+	if (proto == "modbus")
+		log_header_str += "modbus ";
+	else if (proto == "fc")
+		log_header_str += "fc ";
+
 	// configure logger
 	if (mode == conn_factory::mode::server)
 		log_header_str += "server ";
@@ -686,7 +667,6 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 	}
 
 	slog logger = std::make_shared<boruta_logger>(log_header_str);
-	auto proto = unit->getAttribute<std::string>("extra:proto", "modbus");
 	if (proto == "modbus") {
 		if (medium == conn_factory::medium::tcp) {
 			if (mode == conn_factory::mode::server) {
@@ -716,13 +696,13 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 			conn->SetConfiguration(conf);
 		}
 	} else if (proto == "fc") {
-		/* auto conn = new SerialPort(evbase);
+		auto conn = new SerialPort(evbase);
 		conn->Init(conf.path);
 		conn->Open();
-		conn->SetConfiguration(conf); */
+		conn->SetConfiguration(conf);
 
 		assert(!"FC protocol not implemented!");
-		driver = create_fc_serial_client();
+		driver = create_fc_serial_client(conn, logger);
 	}
 
 	if (driver->configure(unit, read, send, conf)) {
@@ -920,6 +900,13 @@ int char2value(unsigned char c, unsigned char &o) {
 	return 0;
 }
 
+unsigned char value2char(unsigned char c) {
+	if (c <= 9)
+		return '0' + c;
+	else
+		return 'A' + c - 10;
+}
+
 int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) {
 	c = 0;
 	if (char2value(c1, c))
@@ -928,13 +915,6 @@ int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) {
 	if (char2value(c2, c))
 		return 1;
 	return 0;
-}
-
-unsigned char value2char(unsigned char c) {
-	if (c <= 9)
-		return '0' + c;
-	else
-		return 'A' + c - 10;
 }
 
 void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) {

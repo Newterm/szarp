@@ -75,6 +75,8 @@ public:
 	}
 };
 
+class boruta_daemon;
+
 class bc_manager {
 public:
 	std::set<driver_iface*> conns;
@@ -124,13 +126,8 @@ protected:
 	std::pair<size_t, size_t> m_id;
 	client_manager* m_manager;
 public:
-	virtual const std::pair<size_t, size_t> & id();
-
-	virtual void set_id(std::pair<size_t, size_t> id);
-
 	void vdriver_log(int level, const char * fmt, va_list ap);
 
-	virtual void set_manager(client_manager* manager);
 	/** through this method manager informs a driver that there was a
 	 * problem with connection, if a connection could not be established,
 	 * bufev will be set to NULL, otherwise it will point to a buffer
@@ -141,9 +138,6 @@ public:
 	 * connection by calling @see driver_finished_job on its manager
 	 * @param bufev connection's buffer event
 	 * @param fd connection's descriptior */
-	virtual void scheduled(struct bufferevent* bufev, int fd) = 0;
-	/** called by manager for currently scheduled clients when there
-	 * is incoming data for their connections*/
 	virtual void data_ready(struct bufferevent* bufev, int fd) = 0;
 	/** called for driver when cycle is finished, just after this
 	 * method is called data will be passed to parcook, so driver
@@ -224,9 +218,6 @@ public:
 	/**propagates this event to client drivers also schedules drivers for those
 	 * connection which are currently 'idle'*/
 	void starting_new_cycle();
-	/** should be called by a driver when it's done with querying his
-	 * peer, will cause scheduling of next driver utlizing the same connection*/
-	void driver_finished_job(client_driver *driver);
 	/** when driver encounters an error in communication with its peer - like
 	 * timeout in the middle of communication or something that could possibly
 	 * interfere with a next scheduled driver, it should call this method. It
@@ -393,18 +384,13 @@ driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boru
 driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon*, slog);
 driver_iface* create_bc_modbus_serial_client(BaseConnection* conn, boruta_daemon*, slog);
 driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon*, slog);
-driver_iface* create_fc_serial_client();
+driver_iface* create_fc_serial_client(BaseConnection* conn, slog);
 
 void dolog(int level, const char * fmt, ...)
 	__attribute__ ((format (printf, 2, 3)));
 
 namespace ascii {
-	int char2value(unsigned char c, unsigned char &o) ;
-
 	int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) ;
-
-	unsigned char value2char(unsigned char c) ;
-
 	void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) ;
 }
 
