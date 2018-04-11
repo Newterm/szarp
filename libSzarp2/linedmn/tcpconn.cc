@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "szarp_config.h"
+
 TcpConnection::TcpConnection(struct event_base* base)
 	:BaseConnection(base),
 	m_connect_fd(-1), m_bufferevent(NULL), m_connection_open(false)
@@ -30,6 +32,18 @@ void TcpConnection::InitTcp(const std::string& address, int port)
 	m_server_addr.sin_port = htons(port);
 }
 
+void TcpConnection::Init(const TUnit* unit) {
+	auto addr = unit->getOptAttribute<std::string>("extra:tcp-address");
+	auto port = unit->getOptAttribute<int>("extra:tcp-port");
+
+	if (!addr)
+		throw TcpConnectionException("No tcp-address given! Cannot configure connection!");
+	if (!port)
+		throw TcpConnectionException("No tcp-port given! Cannot configure connection!");
+
+	InitTcp(*addr, *port);
+}
+
 void TcpConnection::Open()
 {
 	if (m_connect_fd != -1) {
@@ -51,6 +65,8 @@ void TcpConnection::Open()
 		throw TcpConnectionException(errno, m_id + " connect() failed");
 	}
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
+
+	OpenFinished();
 }
 
 void TcpConnection::ReadDataCallback(struct bufferevent *bufev, void* ds)

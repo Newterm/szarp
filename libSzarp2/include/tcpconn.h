@@ -2,6 +2,7 @@
 #define __TCPCONN_H_
 
 #include "baseconn.h"
+class TUnit;
 
 /** Exception specific to TcpConnection class. */
 class TcpConnectionException : public ConnectionException {
@@ -21,6 +22,8 @@ public:
 	 * @param port port number to connect to
 	 */
 	void InitTcp(const std::string& address, int port);
+
+	void Init(const TUnit* unit);
 
 	/* BaseConnection interface */
 	void Open() override;
