@@ -838,40 +838,6 @@ public:
 	}
 };
 
-class serial_parser {
-protected:
-	slog m_log;
-
-	serial_connection_handler *m_serial_handler;
-	struct event m_read_timer;
-	SDU m_sdu;
-	bool m_read_timer_started;
-
-	int m_delay_between_chars;
-	std::deque<unsigned char> m_output_buffer;
-	struct event m_write_timer;
-	bool m_write_timer_started;
-
-	void start_read_timer(long useconds);
-	void stop_read_timer();
-
-	void start_write_timer();
-	void stop_write_timer();
-
-	virtual void read_timer_event() = 0;
-	virtual void write_timer_event();
-public:
-	serial_parser(serial_connection_handler *serial_handler, slog log);
-	virtual int configure(TUnit* unit, serial_port_configuration &spc) = 0;
-	virtual void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) = 0;
-	virtual void read_data(struct bufferevent *bufev) = 0;
-	virtual void write_finished(struct bufferevent *bufev);
-	virtual void reset() = 0;
-
-	static void read_timer_callback(int fd, short event, void* serial_parser);
-	static void write_timer_callback(int fd, short event, void* serial_parser);
-};
-
 class bc_serial_rtu_parser : public bc_serial_parser {
 	enum { ADDR, FUNC_CODE, DATA } m_state;
 	size_t m_data_read;
@@ -907,35 +873,6 @@ public:
 	static const int max_frame_size = 256;
 };
 
-class serial_rtu_parser : public serial_parser {
-	enum { ADDR, FUNC_CODE, DATA } m_state;
-	size_t m_data_read;
-
-	int m_timeout_1_5_c;
-	int m_timeout_3_5_c;
-	bool m_is_3_5_c_timeout;
-
-	struct bufferevent *m_bufev;
-
-	bool check_crc();
-
-	static void calculate_crc_table();
-	static unsigned short crc16[256];
-	static bool crc_table_calculated;
-
-	unsigned short update_crc(unsigned short crc, unsigned char c);
-
-	virtual void read_timer_event();
-public:
-	serial_rtu_parser(serial_connection_handler *serial_handler, slog log);
-	void read_data(struct bufferevent *bufev);
-	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	void reset();
-	virtual int configure(TUnit* unit, serial_port_configuration &spc);
-
-	static const int max_frame_size = 256;
-};
-
 class bc_serial_ascii_parser : public bc_serial_parser {
 	unsigned char m_previous_char;
 	enum { COLON, ADDR_1, ADDR_2, FUNC_CODE_1, FUNC_CODE_2, DATA_1, DATA_2, LF } m_state;
@@ -955,28 +892,6 @@ public:
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
 	void send_sdu(unsigned char unit_id, PDU &pdu) override;
 	int configure(TUnit* unit, const SerialPortConfiguration&) override;
-};
-
-class serial_ascii_parser : public serial_parser {
-	unsigned char m_previous_char;
-	enum { COLON, ADDR_1, ADDR_2, FUNC_CODE_1, FUNC_CODE_2, DATA_1, DATA_2, LF } m_state;
-
-	int m_timeout;
-
-	void reset();
-
-	bool check_crc();
-
-	unsigned char update_crc(unsigned char c, unsigned char crc) const;
-	unsigned char finish_crc(unsigned char c) const;
-
-
-	virtual void read_timer_event();
-public:
-	serial_ascii_parser(serial_connection_handler *serial_handler, slog log);
-	void read_data(struct bufferevent *bufev);
-	void send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev);
-	virtual int configure(TUnit* unit, serial_port_configuration&);
 };
 
 class bc_modbus_serial_client: public modbus_client, public bc_driver, public bc_serial_connection_handler {
@@ -1067,9 +982,6 @@ public:
 
 unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
-
-unsigned short serial_rtu_parser::crc16[256] = {};
-bool serial_rtu_parser::crc_table_calculated = false;
 
 class bc_modbus_serial_server: public bc_driver, public bc_serial_connection_handler {
 	modbus_unit* m_unit;
@@ -2124,55 +2036,6 @@ bool bc_serial_rtu_parser::check_crc() {
 }
 
 
-void serial_rtu_parser::calculate_crc_table() {
-	unsigned short crc, c;
-
-	for (size_t i = 0; i < 256; i++) {
-		crc = 0;
-		c = (unsigned short) i;
-		for (size_t j = 0; j < 8; j++) {
-			if ((crc ^ c) & 0x0001)
-				crc = (crc >> 1) ^ 0xa001;
-			else
-				crc = crc >> 1;
-			c = c >> 1;
-		}
-		crc16[i] = crc;
-	}
-
-	crc_table_calculated = true;
-}
-
-unsigned short serial_rtu_parser::update_crc(unsigned short crc, unsigned char c) {
-	if (crc_table_calculated == false)
-		calculate_crc_table();
-	unsigned short tmp;
-	tmp = crc ^ c;
-	crc = (crc >> 8) ^ crc16[tmp & 0xff];
-	return crc;
-}
-
-bool serial_rtu_parser::check_crc() {
-	if (m_data_read <= 2)
-		return false;
-	std::vector<unsigned char>& d = m_sdu.pdu.data;
-	unsigned short crc = 0xffff;
-	crc = update_crc(crc, m_sdu.unit_id);
-	crc = update_crc(crc, m_sdu.pdu.func_code);
-
-	for (size_t i = 0; i < m_data_read - 2; i++) 
-		crc = update_crc(crc, m_sdu.pdu.data[i]);
-
-	unsigned short frame_crc = d[m_data_read - 2] | (d[m_data_read - 1] << 8);
-
-	m_log->log(8,"Unit ID = %hx",m_sdu.unit_id);
-	m_log->log(8,"Func code = %hx",m_sdu.pdu.func_code);
-	for (size_t i = 0; i < m_data_read ; i++) m_log->log(9, "Data[%zu] = %hx", i, d[i]);
-	m_log->log(8, "Checking crc, result: %s, unit_id: %d, calculated crc: %hx, frame crc: %hx",
-	       	(crc == frame_crc ? "OK" : "ERROR"), m_sdu.unit_id, crc, frame_crc);
-	return crc == frame_crc;
-}
-
 bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), m_read_timer_started(false), m_write_timer_started(false) {
 	evtimer_set(&m_read_timer, read_timer_callback, this);
 	event_base_set(boruta->get_event_base(), &m_read_timer);
@@ -2230,73 +2093,6 @@ void bc_serial_parser::start_read_timer(long useconds) {
 	evtimer_add(&m_read_timer, &tv); 
 	m_read_timer_started = true;
 }
-
-serial_parser::serial_parser(serial_connection_handler *serial_handler, slog log): m_log(log), m_serial_handler(serial_handler), m_read_timer_started(false), m_write_timer_started(false) {
-	evtimer_set(&m_read_timer, read_timer_callback, this);
-	event_base_set(m_serial_handler->get_event_base(), &m_read_timer);
-}
-
-void serial_parser::write_timer_event() {
-	if (m_delay_between_chars && m_output_buffer.size()) {
-		unsigned char c = m_output_buffer.front();
-		m_output_buffer.pop_front();
-		bufferevent_write(m_serial_handler->get_buffer_event(), &c, 1);
-		if (m_output_buffer.size())
-			start_write_timer();
-		else
-			stop_write_timer();
-	}
-	
-}
-
-void serial_parser::write_finished(struct bufferevent *bufev) {
-	if (m_delay_between_chars && m_output_buffer.size())
-		start_write_timer();
-}
-
-void serial_parser::stop_write_timer() {
-	if (m_write_timer_started) {
-		event_del(&m_write_timer);
-		m_write_timer_started = false;
-	}
-}
-
-void serial_parser::start_write_timer() {
-	stop_write_timer();
-
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = m_delay_between_chars;
-	evtimer_add(&m_write_timer, &tv);
-
-	m_write_timer_started = true;
-}
-
-void serial_parser::stop_read_timer() {
-	if (m_read_timer_started) {
-		event_del(&m_read_timer);
-		m_read_timer_started = false;
-	}
-}
-
-void serial_parser::start_read_timer(long useconds) {
-	stop_read_timer();
-
-	struct timeval tv;
-	tv.tv_sec = useconds / 1000000;
-	tv.tv_usec = useconds % 1000000;
-	evtimer_add(&m_read_timer, &tv); 
-	m_read_timer_started = true;
-}
-
-void serial_parser::read_timer_callback(int fd, short event, void* parser) {
-	((serial_parser*) parser)->read_timer_event();
-}
-
-void serial_parser::write_timer_callback(int fd, short event, void* parser) {
-	((serial_parser*) parser)->write_timer_event();
-}
-
 
 int bc_serial_rtu_parser::configure(TUnit* unit, const SerialPortConfiguration &conf) {
 	m_delay_between_chars = unit->getAttribute("extra:out-intra-character-delay", 0);
@@ -2423,147 +2219,6 @@ void bc_serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
 	}
 }
 
-
-serial_rtu_parser::serial_rtu_parser(serial_connection_handler *serial_handler, slog log) : serial_parser(serial_handler, log), m_state(FUNC_CODE) {
-	reset();
-}
-
-int serial_rtu_parser::configure(TUnit* unit, serial_port_configuration &spc) {
-	m_delay_between_chars = unit->getAttribute("extra:out-intra-character-delay", 0);
-	if (m_delay_between_chars == 0)
-		m_log->log(10, "Serial port configuration, delay between chars not given (or 0) assuming no delay");
-	else
-		m_log->log(10, "Serial port configuration, delay between chars set to %d miliseconds", m_delay_between_chars);
-
-	int bits_per_char = spc.stop_bits
-				+ spc.parity == serial_port_configuration::NONE ? 0 : 1
-				+ int(spc.char_size);
-
-	int chars_per_sec = spc.speed / bits_per_char;
-	/*according to protocol specification, intra-character
-	 * delay cannot exceed 1.5 * (time of transmittion of one character) */
-	if (chars_per_sec)
-		m_timeout_1_5_c = 1000000 / chars_per_sec * (15 / 10);
-	else
-		m_timeout_1_5_c = 100000;
-
-	m_log->log(8, "Setting 1.5Tc timer to %d us",  m_timeout_1_5_c);
-
-	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", 0);
-	if (m_timeout_3_5_c == 0) {
-		m_log->log(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
-		if (chars_per_sec)
-			m_timeout_3_5_c = 1000000 / chars_per_sec * (35 / 10);
-		else
-			m_timeout_3_5_c = 100000;
-	} else {
-		m_log->log(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout_3_5_c);
-		m_timeout_3_5_c *= 1000;
-	}
-
-	m_log->log(8, "Setting 3.5Tc timer to %d us",  m_timeout_3_5_c);
-
-	if (m_delay_between_chars)
-		evtimer_set(&m_write_timer, write_timer_callback, this);
-	return 0;
-}
-
-
-void serial_rtu_parser::reset() {
-	m_state = ADDR;	
-	m_bufev = NULL;
-	m_is_3_5_c_timeout = false;
-	stop_write_timer();
-	stop_read_timer();
-	m_output_buffer.resize(0);
-}
-
-void serial_rtu_parser::read_data(struct bufferevent *bufev) {
-	size_t r;
-
-	m_log->log(8, "serial_rtu_parser::read_data: got data, resetting timers");
-	stop_read_timer();
-	m_is_3_5_c_timeout = false;
-
-	m_bufev = bufev;
-
-	switch (m_state) {
-		case ADDR:
-			if (bufferevent_read(bufev, &m_sdu.unit_id, sizeof(m_sdu.unit_id)) == 0) 
-				break;
-			m_log->log(8, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
-			m_state = FUNC_CODE;
-
-			m_data_read = 0;
-			m_sdu.pdu.data.resize(max_frame_size - 2);
-		case FUNC_CODE:
-			if (bufferevent_read(bufev, &m_sdu.pdu.func_code, sizeof(m_sdu.pdu.func_code)) == 0) {
-				start_read_timer(m_timeout_1_5_c);
-				break;
-			}
-			m_log->log(8, "\tfunc code: %d", (int) m_sdu.pdu.func_code);
-			m_state = DATA;
-		case DATA:
-			r = bufferevent_read(bufev, &m_sdu.pdu.data[m_data_read], m_sdu.pdu.data.size() - m_data_read);
-			m_data_read += r;
-			start_read_timer(m_timeout_1_5_c);
-			break;
-	}
-}
-
-void serial_rtu_parser::read_timer_event() {
-	if (m_bufev == NULL)
-		return;
-
-	m_log->log(8, "serial_rtu_parser - read timer expired, didn't get any data for %fTc , checking crc",
-		m_is_3_5_c_timeout ? 3.5 : 1.5);
-
-	if (check_crc()) {
-		m_is_3_5_c_timeout = false;
-
-		m_state = ADDR;
-		m_sdu.pdu.data.resize(m_data_read - 2);
-		m_serial_handler->frame_parsed(m_sdu, m_bufev);
-	} else {
-		if (m_is_3_5_c_timeout) {
-			m_log->log(8, "crc check failed, erroring out");
-			m_serial_handler->error(serial_connection_handler::TIMEOUT);
-			reset();
-		} else  {
-			m_log->log(8, "crc check failed, scheduling 3.5Tc timer");
-			m_is_3_5_c_timeout = true;
-			start_read_timer(m_timeout_3_5_c - m_timeout_1_5_c);
-		}
-	}
-}
-
-void serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
-	unsigned short crc = 0xffff;
-	crc = update_crc(crc, unit_id);
-	crc = update_crc(crc, pdu.func_code);
-	for (size_t i = 0; i < pdu.data.size(); i++)
-		crc = update_crc(crc, pdu.data[i]);
-
-	unsigned char cl, cm;
-	cl = crc & 0xff;
-	cm = crc >> 8;
-
-	if (m_delay_between_chars) {
-		m_output_buffer.resize(0);
-		m_output_buffer.push_back(pdu.func_code);
-		m_output_buffer.insert(m_output_buffer.end(), pdu.data.begin(), pdu.data.end());
-		m_output_buffer.push_back(cl);
-		m_output_buffer.push_back(cm);
-
-		bufferevent_write(bufev, &unit_id, sizeof(unit_id));
-	} else {
-		bufferevent_write(bufev, &unit_id, sizeof(unit_id));
-		bufferevent_write(bufev, &pdu.func_code, sizeof(pdu.func_code));
-		bufferevent_write(bufev, &pdu.data[0], pdu.data.size());
-		bufferevent_write(bufev, &cl, 1);
-		bufferevent_write(bufev, &cm, 1);
-	}
-}
 
 unsigned char bc_serial_ascii_parser::update_crc(unsigned char c, unsigned char crc) const {
 	return crc + c;
@@ -2722,157 +2377,6 @@ void bc_serial_ascii_parser::reset() {
 	m_state = COLON;
 }
 
-
-unsigned char serial_ascii_parser::update_crc(unsigned char c, unsigned char crc) const {
-	return crc + c;
-}
-
-unsigned char serial_ascii_parser::finish_crc(unsigned char crc) const {
-	return 0x100 - crc; 
-}
-
-serial_ascii_parser::serial_ascii_parser(serial_connection_handler* serial_handler, slog log) : serial_parser(serial_handler, log), m_state(COLON) { }
-
-bool serial_ascii_parser::check_crc() {
-	unsigned char crc = 0;
-	std::vector<unsigned char>& d = m_sdu.pdu.data;
-	crc = update_crc(crc, m_sdu.unit_id);
-	crc = update_crc(crc, m_sdu.pdu.func_code);
-	if (d.size() == 0)
-		return false;
-	for (size_t i = 0; i < d.size() - 1; i++)
-		crc = update_crc(crc, d[i]);
-	crc = finish_crc(crc);
-	unsigned char frame_crc = d[d.size() - 1];
-	d.resize(d.size() - 1);
-	return crc == frame_crc;
-}
-
-void serial_ascii_parser::read_data(struct bufferevent* bufev) {
-	unsigned char c;
-	stop_read_timer();
-	while (bufferevent_read(bufev, &c, 1)) switch (m_state) {
-		case COLON:
-			if (c != ':') {
-				m_log->log(1, "Modbus ascii frame did not start with the colon");
-				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
-				return;
-			}
-			m_state = ADDR_1; 
-			break;
-		case ADDR_1:
-			m_previous_char = c;
-			m_state = ADDR_2;
-			break;
-		case ADDR_2:
-			if (ascii::from_ascii(m_previous_char, c, m_sdu.unit_id)) {
-				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
-				m_state = COLON;
-				return;
-			}
-			m_log->log(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
-			m_state = FUNC_CODE_1;
-			break;
-		case FUNC_CODE_1:
-			m_previous_char = c;
-			m_state = FUNC_CODE_2; 
-			break;
-		case FUNC_CODE_2:
-			if (ascii::from_ascii(m_previous_char, c, m_sdu.pdu.func_code)) {
-				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
-				m_state = COLON;
-				return;
-			}
-			m_sdu.pdu.data.resize(0);
-			m_state = DATA_1;
-			break;
-		case DATA_1:
-			if (c == '\r') {
-				m_state = LF;	
-			} else {
-				m_previous_char = c;
-				m_state = DATA_2;
-			}
-			break;
-		case DATA_2:
-			if (ascii::from_ascii(m_previous_char, c, c)) {
-				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
-				m_state = COLON;
-				return;
-			}
-			m_sdu.pdu.data.push_back(c);
-			m_state = DATA_1;
-			break;
-		case LF:
-			if (c != '\n') {
-				m_log->log(1, "Modbus ascii frame did not end with crlf");
-				m_state = COLON;
-				m_serial_handler->error(serial_connection_handler::FRAME_ERROR);
-				return;
-			}
-			if (check_crc()) 
-				m_serial_handler->frame_parsed(m_sdu, bufev);
-			else 
-				m_serial_handler->error(serial_connection_handler::CRC_ERROR);
-			m_state = COLON;
-			return;
-	}
-	start_read_timer(m_timeout);
-}
-
-void serial_ascii_parser::read_timer_event() {
-	m_serial_handler->error(serial_connection_handler::TIMEOUT);
-	reset();
-}
-
-void serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu, struct bufferevent *bufev) {
-	unsigned char crc = 0;
-	unsigned char c1, c2;
-
-	bufferevent_write(bufev, const_cast<char*>(":"), 1);
-
-#define SEND_VAL(v) { \
-	ascii::to_ascii(v, c1, c2); \
-	bufferevent_write(bufev, &c1, sizeof(c1)); \
-	bufferevent_write(bufev, &c2, sizeof(c2)); }
-
-	crc = update_crc(crc, unit_id);
-	SEND_VAL(unit_id);
-
-	crc = update_crc(crc, pdu.func_code);
-	SEND_VAL(pdu.func_code);
-
-	for (size_t i = 0; i < pdu.data.size(); i++) {
-		crc = update_crc(crc, pdu.data[i]);
-		SEND_VAL(pdu.data[i]);
-	}
-
-	crc = finish_crc(crc);
-	SEND_VAL(crc);
-
-	bufferevent_write(bufev, const_cast<char*>("\r"), 1);
-	bufferevent_write(bufev, const_cast<char*>("\n"), 1);
-}
-
-int serial_ascii_parser::configure(TUnit* unit, serial_port_configuration &) {
-	m_delay_between_chars = 0;
-	m_timeout = unit->getAttribute("extra:read-timeout", 0);
-	if (m_timeout == 0) {
-		m_timeout = 1000000;
-	} else {
-		m_timeout *= 1000;
-		m_log->log(10, "Serial port configuration, read timeout set to %d microseconds", m_timeout);
-	}
-	m_log->log(9, "serial_parser m_timeout: %d", m_timeout);
-	return 0;
-}
-
-void serial_ascii_parser::reset() {
-	m_state = COLON;
-}
 
 driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log) {
 	return new bc_modbus_serial_server(conn, boruta, log);
