@@ -52,7 +52,18 @@ class ConfigDealerHandler: public DaemonConfigInfo {
 
 		size_t GetSenderMsgType() const { return unit_no + 256L; }
 		size_t GetParamsCount() const { return params.size(); }
-		size_t GetSendParamsCount() const { return sends.size(); }
+		size_t GetSendParamsCount(bool ignore_non_ipc = false) const {
+			if (!ignore_non_ipc)
+				return sends.size();
+
+			int i = 0;
+			for (auto send: sends) {
+				if (send->GetParamToSend() != nullptr)
+					++i;
+			}
+
+			return i;
+		}
 
 		SzarpConfigInfo* GetSzarpConfig() const { return nullptr; }
 
