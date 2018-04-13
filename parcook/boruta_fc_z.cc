@@ -298,7 +298,7 @@ protected:
 	void terminate_connection();
 
 public:
-	fc_proto(BaseConnection* conn, slog log);
+	fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log);
 	void starting_new_cycle() override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
@@ -329,7 +329,7 @@ int fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
 }
 
 
-fc_proto::fc_proto(BaseConnection* conn, slog log) : bc_driver(conn), m_log(log), m_state(IDLE) {}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log) : bc_driver(conn), m_log(log), m_zmq(boruta->get_zmq()), m_state(IDLE), m_event_base(boruta->get_event_base()) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -369,8 +369,7 @@ void fc_proto::send_request()
 		m_connection->WriteData(&m_request_buffer[0], m_request_buffer.size());
 		m_state = REQUEST;
 		start_read_timer();
-	}
-	else {
+	} else {
 		m_log->log(2, "send_request error - wrong request buffer size, terminating cycle");
 		m_registers_iterator = --m_registers.end();
 	}
@@ -611,12 +610,10 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 			break;
 		case REQUEST:
 			/* STE is a starting frame, prepare buffer */
-			if (c == STE) {
-				m_buffer.clear();
+			if (c != STE)
 				break;
-			}
 
-			m_buffer.push_back(c);
+			m_buffer.clear();
 			stop_read_timer();
 			m_state = RESPONSE;
 		case RESPONSE:
@@ -655,6 +652,6 @@ void fc_proto::read_timer_callback(int fd, short event, void *client)
 
 driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log)
 {
-	return new fc_proto(conn, log);
+	return new fc_proto(conn, boruta, log);
 }
 

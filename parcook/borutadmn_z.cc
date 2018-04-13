@@ -455,7 +455,6 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 		conn->Open();
 		conn->SetConfiguration(conf);
 
-		assert(!"FC protocol not implemented!");
 		driver = create_fc_serial_client(conn, m_boruta, logger);
 	}
 
