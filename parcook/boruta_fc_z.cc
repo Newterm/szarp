@@ -148,6 +148,8 @@
 #include "borutadmn_z.h"
 #include "sz4/defs.h"
 
+using szarp::ms;
+
 const unsigned char STE = 0x02;	// always 02 HEX
 const unsigned char LGE = 0x0E;	// 14 bytes of telegram
 const unsigned char AK = 0x1;	// AK=1 means read value data
@@ -160,7 +162,7 @@ using FCRMAP = std::map<unsigned int, fc_register *>;
 
 class fc_proto : public bc_driver
 {
-	Scheduler read_timeout;
+	Scheduler read_timer;
 
 	zmqhandler* m_zmq;
 
@@ -205,9 +207,6 @@ class fc_proto : public bc_driver
 	/* Parser of PWEhigh and PWElow octal chars, returns full 4 byte value */
 	int parse_pwe(const std::vector<unsigned char>& val);
 
-	void start_read_timer();
-	void stop_read_timer();
-
 protected:
 	void terminate_connection();
 
@@ -218,8 +217,6 @@ public:
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
 	void configure_register(TAttribHolder* param);
 	void scheduled();
-	void read_timer_event();
-	static void read_timer_callback(int fd, short event, void *fc_proto);
 
 	// ConnectionListener impl
 	void OpenFinished(const BaseConnection *conn) override {}
@@ -270,9 +267,9 @@ public:
 };
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timeout(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
-	auto callback = [this](){ read_timer_event(); };
-	read_timeout.set_callback(new LambdaScheduler<decltype(callback)>(std::move(callback)));
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
+	auto callback = [this](){ next_request(); };
+	read_timer.set_callback(new LambdaScheduler<decltype(callback)>(std::move(callback)));
 }
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
@@ -312,7 +309,7 @@ void fc_proto::send_request()
 	if(m_request_buffer.size() == RESPONSE_SIZE) {
 		m_connection->WriteData(&m_request_buffer[0], m_request_buffer.size());
 		m_state = REQUEST;
-		start_read_timer();
+		read_timer.schedule();
 	} else {
 		m_log->log(2, "send_request error - wrong request buffer size, terminating cycle");
 		m_registers_iterator = --m_registers.end();
@@ -421,17 +418,6 @@ void fc_proto::to_parcook()
 	}
 }
 
-void fc_proto::start_read_timer()
-{
-	read_timeout.schedule();
-}
-
-void fc_proto::stop_read_timer()
-{
-	read_timeout.cancel();
-}
-
-
 void fc_proto::terminate_connection()
 {
 	m_connection->Close();
@@ -465,7 +451,7 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 		}
 	}
 
-	read_timeout.set_timeout(util::ms(1500));
+	read_timer.set_timeout(ms(1500));
 	return 0;
 }
 
@@ -511,7 +497,7 @@ void fc_proto::ReadError(const BaseConnection *conn, short int event) {
 	m_log->log(10, "connection error");
 	m_state = IDLE;
 	m_buffer.clear();
-	stop_read_timer();
+	read_timer.cancel();
 }
 
 void fc_proto::starting_new_cycle()
@@ -521,7 +507,7 @@ void fc_proto::starting_new_cycle()
 	clock_gettime(CLOCK_REALTIME, &time);
 	m_current_time.second = time.tv_sec;
 	m_current_time.nanosecond = time.tv_nsec;
-	stop_read_timer();
+	read_timer.cancel();
 
 	try {
 		if (!m_connection->Ready()) {
@@ -538,8 +524,7 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 	for (auto c: data) switch (m_state) {
 		case IDLE:
 			m_log->log(5, "Got unrequested message, ignoring");
-			/* Drain data from bufferevent */
-		   /* m_buffer would be cleared before draining response telegram */
+			/* Drain data */
 			m_log->log(10, "ignored %c", c);
 			break;
 		case REQUEST:
@@ -548,7 +533,7 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 				break;
 
 			m_buffer.clear();
-			stop_read_timer();
+			read_timer.cancel();
 			m_state = RESPONSE;
 		case RESPONSE:
 			m_buffer.push_back(c);
@@ -571,19 +556,6 @@ bool fc_proto::register_val_expired(const sz4::nanosecond_time_t& time) {
 		t += m_expiration_time;
 		return t <= m_current_time;
 	}
-}
-
-void fc_proto::read_timer_event()
-{
-	m_log->log(7, "read_timer_event, state: %d, reg: %d", m_state, m_registers_iterator->first);
-	next_request();
-}
-
-void fc_proto::read_timer_callback(int fd, short event, void *client)
-{
-	fc_proto *fc = (fc_proto *) client;
-	fc->m_log->log(10, "read_timer_callback");
-	fc->read_timer_event();
 }
 
 driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log)

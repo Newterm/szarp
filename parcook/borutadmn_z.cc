@@ -120,6 +120,20 @@ static const time_t RECONNECT_ATTEMPT_DELAY = 10;
 
 /*implementation*/
 
+namespace szarp {
+ms operator+(const ms& ms1, const ms& ms2) {
+	ms m = ms1;
+	m += ms2;
+	return m;
+}
+
+ms operator-(const ms& ms1, const ms& ms2) {
+	ms m = ms1;
+	m -= ms2;
+	return m;
+}
+} // ns szarp
+
 template <typename T>
 using bopt = boost::optional<T>;
 

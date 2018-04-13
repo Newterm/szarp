@@ -60,7 +60,7 @@
 #include "sz4/defs.h"
 #include "sz4/util.h"
 
-namespace util {
+namespace szarp {
 struct ms {
 	int64_t m_t;
 	ms(int64_t t): m_t(t) {}
@@ -71,8 +71,24 @@ struct ms {
 		tv.tv_usec = (m_t % 1000) * 1000;
 		return tv;
 	}
+
+	operator int64_t() { return m_t; }
+
+	ms& operator+=(const ms& other) {
+		m_t -= other.m_t;
+		return *this;
+	}
+
+	ms& operator-=(const ms& other) {
+		m_t -= other.m_t;
+		return *this;
+	}
 };
-}
+
+ms operator+(const ms& ms1, const ms& ms2);
+ms operator-(const ms& ms1, const ms& ms2);
+
+} // ns szarp
 
 class Callback {
 public:
@@ -96,17 +112,22 @@ public:
 		callback = _callback;
 	}
 
-	void set_timeout(util::ms time) {
+	void set_timeout(szarp::ms time) {
 		tv = (struct timeval) time;
 	}
 
-	void schedule(util::ms time) {
+	void schedule(szarp::ms time) {
 		set_timeout(time);
 		schedule();
 	}
 
 	void schedule() {
 		evtimer_add(&m_timer, &tv);
+	}
+
+	void reschedule() {
+		cancel();
+		schedule();
 	}
 
 	void cancel() {
@@ -126,6 +147,17 @@ public:
 
 	void operator()() override {
 		F::operator()();
+	}
+};
+
+class FnPtrScheduler: public Callback {
+	std::function<void()> f;
+
+public:
+	FnPtrScheduler(std::function<void()> _f): f(_f) {}
+
+	void operator()() override {
+		f();
 	}
 };
 
