@@ -60,6 +60,75 @@
 #include "sz4/defs.h"
 #include "sz4/util.h"
 
+namespace util {
+struct ms {
+	int64_t m_t;
+	ms(int64_t t): m_t(t) {}
+
+	explicit operator struct timeval() {
+		struct timeval tv;
+		tv.tv_sec = m_t / 1000;
+		tv.tv_usec = (m_t % 1000) * 1000;
+		return tv;
+	}
+};
+}
+
+class Callback {
+public:
+	virtual void operator()() = 0;
+};
+
+class Scheduler {
+	struct event_base* m_event_base;
+	struct event m_timer;
+	struct timeval tv;
+
+	Callback* callback;
+
+public:
+	Scheduler(struct event_base* evbase): m_event_base(evbase) {
+		evtimer_set(&m_timer, timer_callback, this);
+		event_base_set(m_event_base, &m_timer);
+	}
+
+	void set_callback(Callback* _callback) {
+		callback = _callback;
+	}
+
+	void set_timeout(util::ms time) {
+		tv = (struct timeval) time;
+	}
+
+	void schedule(util::ms time) {
+		set_timeout(time);
+		schedule();
+	}
+
+	void schedule() {
+		evtimer_add(&m_timer, &tv);
+	}
+
+	void cancel() {
+		event_del(&m_timer);
+	}
+
+	static void timer_callback(int fd, short event, void *obj) {
+		auto *sched = (Scheduler*) obj;
+		(*sched->callback)();
+	}
+};
+
+template <typename F>
+class LambdaScheduler: public Callback, public F {
+public:
+	LambdaScheduler(F&& _f): F(std::forward<F>(_f)) {}
+
+	void operator()() override {
+		F::operator()();
+	}
+};
+
 template <typename reg_value_type>
 class register_iface_t {
 public:

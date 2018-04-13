@@ -160,7 +160,7 @@ using FCRMAP = std::map<unsigned int, fc_register *>;
 
 class fc_proto : public bc_driver
 {
-	struct event_base* m_event_base;
+	Scheduler read_timeout;
 
 	zmqhandler* m_zmq;
 
@@ -168,7 +168,6 @@ class fc_proto : public bc_driver
 	size_t m_send;
 	size_t m_read_count;
 	size_t m_send_count;
-	struct event m_read_timer;
 
 	/* Address of Danfoss Inverter */
 	unsigned char m_extra_id;
@@ -271,7 +270,10 @@ public:
 };
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_event_base(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timeout(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
+	auto callback = [this](){ read_timer_event(); };
+	read_timeout.set_callback(new LambdaScheduler<decltype(callback)>(std::move(callback)));
+}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -421,15 +423,12 @@ void fc_proto::to_parcook()
 
 void fc_proto::start_read_timer()
 {
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 500000;
-	evtimer_add(&m_read_timer, &tv);
+	read_timeout.schedule();
 }
 
 void fc_proto::stop_read_timer()
 {
-	event_del(&m_read_timer);
+	read_timeout.cancel();
 }
 
 
@@ -466,8 +465,7 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 		}
 	}
 
-	evtimer_set(&m_read_timer, read_timer_callback, this);
-	event_base_set(m_event_base, &m_read_timer);
+	read_timeout.set_timeout(util::ms(1500));
 	return 0;
 }
 
