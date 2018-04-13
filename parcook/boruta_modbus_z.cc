@@ -1200,7 +1200,6 @@ void modbus_unit::to_parcook() {
 }
 
 void modbus_unit::from_sender() {
-	zmq->receive();
 	struct timespec time;
 	clock_gettime(CLOCK_REALTIME, &time);
 	m_current_time.second = time.tv_sec;
@@ -1938,7 +1937,7 @@ bool bc_serial_rtu_parser::check_crc() {
 }
 
 
-bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(boruta->get_event_base()) {
+bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(boruta->get_event_base()), write_timer(boruta->get_event_base()) {
 	read_timer.set_callback(new FnPtrScheduler([this](){ read_timer_event(); }));
 	write_timer.set_callback(new FnPtrScheduler([this](){ write_timer_event(); }));
 }

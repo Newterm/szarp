@@ -363,9 +363,7 @@ class boruta_daemon {
 	struct timeval m_cycle;
 
 	struct event_base* m_event_base;
-	struct evdns_base* m_evdns_base;
-	struct event m_timer;
-	struct event m_subsock_event;
+	Scheduler* m_timer;
 
 	int configure_ipc();
 	int configure_events();
@@ -374,12 +372,10 @@ class boruta_daemon {
 public:
 	boruta_daemon();
 	struct event_base* get_event_base();	
-	struct evdns_base* get_evdns_base();	
 	zmqhandler* get_zmq();
 	int configure(int *argc, char *argv[]);
 	void go();
-	static void cycle_timer_callback(int fd, short event, void* daemon);
-	static void subscribe_callback(int fd, short event, void* daemon);
+	void cycle_timer_callback();
 };
 
 driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boruta_daemon*, slog);
