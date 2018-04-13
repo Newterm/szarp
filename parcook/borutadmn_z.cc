@@ -496,16 +496,6 @@ int boruta_daemon::configure_ipc() {
 	free(sub_conn_address);
 	free(pub_conn_address);
 
-	int sock = m_zmq->subsocket();
-	if (sock >= 0) {
-		event_base_set(m_event_base, &m_subsock_event);
-
-		event_set(&m_subsock_event, sock, EV_READ | EV_PERSIST, subscribe_callback, this);
-		event_add(&m_subsock_event, NULL);
-
-		subscribe_callback(sock, EV_READ, this);
-	}
-
 	return 0;
 }
 
@@ -513,12 +503,9 @@ int boruta_daemon::configure_events() {
 	m_event_base = (struct event_base*) event_init();
 	if (!m_event_base)
 		return 1;
-	m_evdns_base = evdns_base_new(m_event_base, 0);
-	if (!m_evdns_base)
-		return 2;
-	evdns_base_resolv_conf_parse(m_evdns_base, DNS_OPTIONS_ALL, "/etc/resolv.conf");
-	evtimer_set(&m_timer, cycle_timer_callback, this);
-	event_base_set(m_event_base, &m_timer);
+	
+	m_timer = new Scheduler(m_event_base);
+	m_timer->set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
 	return 0;
 }
 
@@ -538,8 +525,7 @@ int boruta_daemon::configure_units() {
 
 int boruta_daemon::configure_cycle_freq() {
 	int duration = m_cfg->GetDevice()->getAttribute<int>("extra:cycle_duration", 10000);
-	m_cycle.tv_sec = duration / 1000;
-	m_cycle.tv_usec = (duration % 1000) * 1000;
+	m_timer->set_timeout(szarp::ms(duration));
 
 	return 0;
 }
@@ -548,10 +534,6 @@ boruta_daemon::boruta_daemon() : m_drivers_manager(this), m_zmq_ctx(1) {}
 
 struct event_base* boruta_daemon::get_event_base() {
 	return m_event_base;
-}
-
-struct evdns_base* boruta_daemon::get_evdns_base() {
-	return m_evdns_base;
 }
 
 zmqhandler* boruta_daemon::get_zmq() {
@@ -577,25 +559,16 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 }
 
 void boruta_daemon::go() {
-	cycle_timer_callback(-1, 0, this);
+	cycle_timer_callback();
 	event_base_dispatch(m_event_base);
 }
 
-void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
-	boruta_daemon* b = (boruta_daemon*) daemon;
-
-	b->m_drivers_manager.finished_cycle();
-
-	b->m_zmq->publish();
-
-	b->m_drivers_manager.starting_new_cycle();
-
-	evtimer_add(&b->m_timer, &b->m_cycle); 
-}
-
-void boruta_daemon::subscribe_callback(int fd, short event, void* daemon) {
-	boruta_daemon* b = (boruta_daemon*)daemon; 
-	b->m_zmq->receive();
+void boruta_daemon::cycle_timer_callback() {
+	m_zmq->receive();
+	m_drivers_manager.finished_cycle();
+	m_zmq->publish();
+	m_drivers_manager.starting_new_cycle();
+	m_timer->schedule();
 }
 
 int main(int argc, char *argv[]) {
