@@ -56,7 +56,8 @@ ALL_LINGUAS="pl"
 : ${CXXFLAGS=""}
 
 # use AM_FLAGS for default CXXFLAGS
-: ${AM_CXXFLAGS="-O2 -g -Wall"}
+#TODO: switch to C14 macro, when all distributions support it
+: ${AM_CXXFLAGS="-O2 -g -Wall -std=c++14"}
 AC_SUBST([AM_CXXFLAGS])
 
 
@@ -230,9 +231,11 @@ fi
 
 AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
 
-if test "$with_mingw32" != "yes" ; then
-	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
-fi
+#TODO: unlock if all distributions support this macro
+# ( jessie support is dropped )
+#if test "$with_mingw32" != "yes" ; then
+#	AX_CXX_COMPILE_STDCXX_14([],[mandatory])
+#fi
 
 # posix thread switches
 if test "$with_mingw32" != "yes" ; then
