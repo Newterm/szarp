@@ -57,6 +57,31 @@
 #include "baseconn.h"
 #include "tcpconn.h"
 
+#include "sz4/defs.h"
+#include "sz4/util.h"
+
+template <typename reg_value_type>
+class register_iface_t {
+public:
+	virtual bool is_valid() const = 0;
+
+	virtual reg_value_type get_val() const = 0;
+	virtual void set_val(reg_value_type val) = 0;
+
+	virtual sz4::nanosecond_time_t get_mod_time() const = 0;
+	virtual void set_mod_time(const sz4::nanosecond_time_t&) = 0;
+};
+
+class parcook_val_op {
+public:
+	virtual void publish_val(zmqhandler* handler, size_t index) = 0;
+};
+
+class sender_val_op {
+public:
+	virtual void update_val(zmqhandler* handler, size_t index) = 0;
+};
+
 class driver_iface {
 public:
 	virtual ~driver_iface() {}
