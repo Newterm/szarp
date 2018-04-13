@@ -280,7 +280,6 @@
 #include <set>
 #include <deque>
 #include <sys/types.h>
-#include <event.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -299,6 +298,7 @@
 #include "sz4/defs.h"
 #include "sz4/util.h"
 
+using szarp::ms;
 
 const unsigned char MB_ERROR_CODE = 0x80;
 
@@ -696,15 +696,14 @@ protected:
 	} m_state;
 
 	sz4::nanosecond_time_t m_latest_request_sent;
-	int m_request_timeout;
-	struct event m_next_query_timer;
+	Scheduler next_query_timer;
+	Scheduler query_deadline_timer;
 	struct event m_query_deadine_timer;
 	bool m_single_register_pdu;
-	unsigned int m_query_interval_ms;
 
 	void starting_new_cycle();
 protected:
-	modbus_client(zmqhandler* _zmq, slog log);
+	modbus_client(boruta_daemon* boruta, slog log);
 	void reset_cycle();
 	void start_cycle();
 	void send_next_query(bool previous_ok);
@@ -714,12 +713,6 @@ protected:
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
 	void timeout();
-	bool waiting_for_data();
-	void drain_buffer(struct bufferevent* event);
-
-	void schedule_send_query();
-	static void next_query_cb(int fd, short event, void* thisptr);
-	static void query_deadline_cb(int fd, short event, void* thisptr);
 
 	void connection_error();
 
@@ -745,7 +738,7 @@ protected:
 	virtual void terminate_connection();
 
 public:
-	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta->get_zmq(), log), bc_driver(conn), m_event_base(boruta->get_event_base()), m_log(log) {}
+	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), m_event_base(boruta->get_event_base()), m_log(log) {}
 
 	// ConnectionListener
 	void OpenFinished(const BaseConnection *conn) override {}
@@ -756,15 +749,6 @@ public:
 	void finished_cycle() override;
 	void starting_new_cycle() override;
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
-};
-
-class serial_connection_handler {
-public:
-	enum ERROR_CONDITION { TIMEOUT, FRAME_ERROR, CRC_ERROR };
-	virtual void frame_parsed(SDU &adu, struct bufferevent* bufev) = 0;
-	virtual void error(ERROR_CONDITION) = 0;
-	virtual struct event_base* get_event_base() = 0;
-	virtual struct bufferevent* get_buffer_event() = 0;
 };
 
 class bc_serial_connection_handler {
@@ -788,15 +772,8 @@ protected:
 
 	int m_delay_between_chars;
 
-	struct event m_read_timer;
-	void start_read_timer(long useconds);
-	void stop_read_timer();
-	bool m_read_timer_started;
-
-	struct event m_write_timer;
-	void start_write_timer();
-	void stop_write_timer();
-	bool m_write_timer_started;
+	Scheduler read_timer;
+	Scheduler write_timer;
 
 	virtual void read_timer_event() = 0;
 	virtual void write_timer_event();
@@ -809,24 +786,15 @@ public:
 	virtual void write_finished();
 	virtual void reset() = 0;
 
-	static void read_timer_callback(int fd, short event, void* serial_parser) {
-		((bc_serial_parser*) serial_parser)->read_timer_event();
-	}
-
-	static void write_timer_callback(int fd, short event, void* serial_parser) {
-		((bc_serial_parser*) serial_parser)->write_timer_event();
-	}
 };
 
 class bc_serial_rtu_parser : public bc_serial_parser {
 	enum { ADDR, FUNC_CODE, DATA } m_state;
 	size_t m_data_read;
 
-	int m_timeout_1_5_c;
-	int m_timeout_3_5_c;
+	ms m_timeout_1_5_c = -1;
+	ms m_timeout_3_5_c = -1;
 	bool m_is_3_5_c_timeout;
-
-	struct bufferevent *m_bufev;
 
 	std::vector<unsigned char> m_data;
 
@@ -857,8 +825,6 @@ class bc_serial_ascii_parser : public bc_serial_parser {
 	unsigned char m_previous_char;
 	enum { COLON, ADDR_1, ADDR_2, FUNC_CODE_1, FUNC_CODE_2, DATA_1, DATA_2, LF } m_state;
 
-	int m_timeout;
-
 	void reset();
 
 	bool check_crc();
@@ -880,7 +846,7 @@ class bc_modbus_serial_client: public modbus_client, public bc_driver, public bc
 	slog m_log;
 
 public:
-	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta->get_zmq(), log), bc_driver(conn), dmn(boruta), m_log(log) {}
+	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), dmn(boruta), m_log(log) {}
 
 	// modbus unit and client impl
 	void send_pdu(unsigned char unit, PDU &pdu) override {
@@ -1626,8 +1592,9 @@ void modbus_unit::starting_new_cycle() {
 	from_sender();
 }
 
-modbus_client::modbus_client(zmqhandler* _zmq, slog log) : modbus_unit(_zmq, log), m_state(IDLE), m_request_timeout(0)
-{
+modbus_client::modbus_client(boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), m_state(IDLE), next_query_timer(boruta->get_event_base()), query_deadline_timer(boruta->get_event_base()) {
+	next_query_timer.set_callback(new FnPtrScheduler([this](){ send_query();}));
+	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ send_next_query(false);}));
 }
 
 void modbus_client::starting_new_cycle() {
@@ -1662,7 +1629,7 @@ void modbus_client::send_next_query(bool previous_ok) {
 		case READING_FROM_PEER:
 		case WRITING_TO_PEER:
 			next_query(previous_ok);
-			schedule_send_query();
+			next_query_timer.schedule();
 			break;
 		default:
 			ASSERT(false);
@@ -1670,40 +1637,8 @@ void modbus_client::send_next_query(bool previous_ok) {
 	}
 }
 
-void modbus_client::schedule_send_query() {
-	unsigned int wait_ms = m_query_interval_ms;
-	const struct timeval tv = ms2timeval(wait_ms);
-	switch (m_state) {
-		case READING_FROM_PEER:
-		case WRITING_TO_PEER:
-			evtimer_add(&m_next_query_timer, &tv);
-			m_log->log(10, "schedule next query in %dms", wait_ms);
-			break;
-		default:
-			break;
-	}
-}
-
-void modbus_client::next_query_cb(int fd, short event, void* thisptr) {
-	reinterpret_cast<modbus_client*>(thisptr)->send_query();
-}
-
-void modbus_client::query_deadline_cb(int fd, short event, void* thisptr) {
-	modbus_client* _this = reinterpret_cast<modbus_client*>(thisptr);
-
-	switch (_this->m_state) {
-		case READING_FROM_PEER:
-		case WRITING_TO_PEER:
-			_this->m_log->log(8, "Query timed out, progressing with queries");
-			_this->send_next_query(false);
-			break;
-		default:
-			return;
-	}
-}
-
 void modbus_client::connection_error() {
-	event_del(&m_query_deadine_timer);
+	query_deadline_timer.cancel();
 }
 
 void modbus_client::send_write_query() {
@@ -1785,12 +1720,11 @@ void modbus_client::send_query() {
 			break;
 	}
 
-	const struct timeval tv = ms2timeval(m_request_timeout * 1000);
-	event_add(&m_query_deadine_timer, &tv);
+	query_deadline_timer.reschedule();
 }
 
 void modbus_client::timeout() {
-	event_del(&m_query_deadine_timer);
+	query_deadline_timer.cancel();
 
 	switch (m_state) {
 		case READING_FROM_PEER:
@@ -1809,16 +1743,6 @@ void modbus_client::timeout() {
 			break;
 	}
 }
-
-bool modbus_client::waiting_for_data() {
-	return !evtimer_pending(&m_next_query_timer, NULL);
-}
-
-void modbus_client::drain_buffer(struct bufferevent* bufev) {
-	char c;
-	while (bufferevent_read(bufev, &c, 1));
-}
-
 
 void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	unsigned short current;
@@ -1844,11 +1768,12 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 
 int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
 	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
-	m_query_interval_ms = unit->getAttribute("extra:query-interval", 0);
-	m_request_timeout = unit->getAttribute("extra:request-timeout", 10);
 
-	evtimer_set(&m_next_query_timer, next_query_cb, this);
-	evtimer_set(&m_query_deadine_timer, query_deadline_cb, this);
+	auto request_timeout = unit->getAttribute("extra:request-timeout", 10);
+	next_query_timer.set_timeout(ms(request_timeout));
+
+	auto query_interval_ms = unit->getAttribute("extra:query-interval", 0);
+	query_deadline_timer.set_timeout(ms(query_interval_ms));
 
 	if (modbus_unit::configure(unit, read, send)) {
 		return 1;
@@ -1890,7 +1815,7 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 
 	switch (m_state) {
 		case IDLE:
-			event_del(&m_query_deadine_timer);
+			query_deadline_timer.cancel();
 			break;
 		default:
 			break;
@@ -1960,9 +1885,6 @@ int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const
 	if (modbus_client::configure(unit, read, send))
 		return 1;
 
-	event_base_set(m_event_base, &m_next_query_timer);
-	event_base_set(m_event_base, &m_query_deadine_timer);
-
 	m_trans_id = 0;
 	modbus_client::reset_cycle();
 	return 0;
@@ -2016,9 +1938,9 @@ bool bc_serial_rtu_parser::check_crc() {
 }
 
 
-bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), m_read_timer_started(false), m_write_timer_started(false) {
-	evtimer_set(&m_read_timer, read_timer_callback, this);
-	event_base_set(boruta->get_event_base(), &m_read_timer);
+bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(boruta->get_event_base()) {
+	read_timer.set_callback(new FnPtrScheduler([this](){ read_timer_event(); }));
+	write_timer.set_callback(new FnPtrScheduler([this](){ write_timer_event(); }));
 }
 
 void bc_serial_parser::write_timer_event() {
@@ -2027,51 +1949,14 @@ void bc_serial_parser::write_timer_event() {
 		m_output_buffer.pop_front();
 		m_connection->WriteData(&c, 1);
 		if (m_output_buffer.size())
-			start_write_timer();
-		else
-			stop_write_timer();
+			write_timer.schedule();
 	}
 	
 }
 
 void bc_serial_parser::write_finished() {
 	if (m_delay_between_chars && m_output_buffer.size())
-		start_write_timer();
-}
-
-void bc_serial_parser::stop_write_timer() {
-	if (m_write_timer_started) {
-		event_del(&m_write_timer);
-		m_write_timer_started = false;
-	}
-}
-
-void bc_serial_parser::start_write_timer() {
-	stop_write_timer();
-
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = m_delay_between_chars;
-	evtimer_add(&m_write_timer, &tv);
-
-	m_write_timer_started = true;
-}
-
-void bc_serial_parser::stop_read_timer() {
-	if (m_read_timer_started) {
-		event_del(&m_read_timer);
-		m_read_timer_started = false;
-	}
-}
-
-void bc_serial_parser::start_read_timer(long useconds) {
-	stop_read_timer();
-
-	struct timeval tv;
-	tv.tv_sec = useconds / 1000000;
-	tv.tv_usec = useconds % 1000000;
-	evtimer_add(&m_read_timer, &tv); 
-	m_read_timer_started = true;
+		write_timer.schedule();
 }
 
 int bc_serial_rtu_parser::configure(TUnit* unit, const SerialPortConfiguration &conf) {
@@ -2089,28 +1974,23 @@ int bc_serial_rtu_parser::configure(TUnit* unit, const SerialPortConfiguration &
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character) */
 	if (chars_per_sec)
-		m_timeout_1_5_c = 1000000 / chars_per_sec * (15 / 10);
+		m_timeout_1_5_c = ms(1000 / chars_per_sec * (1.5));
 	else
-		m_timeout_1_5_c = 100000;
+		m_timeout_1_5_c = ms(100);
 
-	m_log->log(8, "Setting 1.5Tc timer to %d us",  m_timeout_1_5_c);
+	m_log->log(8, "Setting 1.5Tc timer to %ld ms", (int64_t) m_timeout_1_5_c);
 
-	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", 0);
-	if (m_timeout_3_5_c == 0) {
-		m_log->log(10, "Serial port configuration, read timeout not given (or 0), will use one based on speed");
-		if (chars_per_sec)
-			m_timeout_3_5_c = 1000000 / chars_per_sec * (35 / 10);
-		else
-			m_timeout_3_5_c = 100000;
-	} else {
-		m_log->log(10, "Serial port configuration, read timeout set to %d miliseconds", m_timeout_3_5_c);
-		m_timeout_3_5_c *= 1000;
+	auto default_3_5_timeout = 100;
+	if (chars_per_sec)
+		default_3_5_timeout = 1000 / chars_per_sec * (35 / 10);
+
+	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", default_3_5_timeout);
+	m_log->log(8, "Setting 3.5Tc timer to %ld us",  (int64_t) m_timeout_3_5_c);
+
+	if (m_delay_between_chars) {
+		write_timer.set_timeout(ms(m_delay_between_chars));
 	}
 
-	m_log->log(8, "Setting 3.5Tc timer to %d us",  m_timeout_3_5_c);
-
-	if (m_delay_between_chars)
-		evtimer_set(&m_write_timer, write_timer_callback, this);
 	return 0;
 }
 
@@ -2118,8 +1998,8 @@ void bc_serial_rtu_parser::reset() {
 	m_state = ADDR;	
 	m_input_buffer.resize(0);
 	m_is_3_5_c_timeout = false;
-	stop_write_timer();
-	stop_read_timer();
+	write_timer.cancel();
+	read_timer.cancel();
 	m_output_buffer.resize(0);
 }
 
@@ -2130,9 +2010,9 @@ void bc_serial_rtu_parser::read_data(const BaseConnection* conn, const std::vect
 
 	m_log->log(8, "serial_rtu_parser::read_data: got data, resetting timers");
 
-	stop_read_timer();
 	m_is_3_5_c_timeout = false;
-	start_read_timer(m_timeout_1_5_c);
+	read_timer.set_timeout(m_timeout_1_5_c);
+	read_timer.reschedule();
 }
 
 void bc_serial_rtu_parser::read_timer_event() {
@@ -2169,7 +2049,8 @@ void bc_serial_rtu_parser::read_timer_event() {
 		} else {
 			m_log->log(8, "crc check failed, scheduling 3.5Tc timer");
 			m_is_3_5_c_timeout = true;
-			start_read_timer(m_timeout_3_5_c - m_timeout_1_5_c);
+			read_timer.set_timeout(m_timeout_3_5_c - m_timeout_1_5_c);
+			read_timer.schedule();
 		}
 	}
 }
@@ -2226,7 +2107,7 @@ bool bc_serial_ascii_parser::check_crc() {
 }
 
 void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) {
-	stop_read_timer();
+	read_timer.cancel();
 	for (auto c: data) switch (m_state) {
 		case COLON:
 			if (c != ':') {
@@ -2296,7 +2177,8 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 			m_state = COLON;
 			return;
 	}
-	start_read_timer(m_timeout);
+
+	read_timer.schedule();
 }
 
 void bc_serial_ascii_parser::read_timer_event() {
@@ -2342,14 +2224,9 @@ void bc_serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
 
 int bc_serial_ascii_parser::configure(TUnit* unit, const SerialPortConfiguration &) {
 	m_delay_between_chars = 0;
-	m_timeout = unit->getAttribute("extra:read-timeout", 0);
-	if (m_timeout == 0) {
-		m_timeout = 1000000;
-	} else {
-		m_timeout *= 1000;
-		m_log->log(10, "Serial port configuration, read timeout set to %d microseconds", m_timeout);
-	}
-	m_log->log(9, "serial_parser m_timeout: %d", m_timeout);
+	ms read_timeout = unit->getAttribute("extra:read-timeout", 1000);
+	read_timer.set_timeout(read_timeout);
+	m_log->log(9, "serial_parser read timeout: %ld", (int64_t) read_timeout);
 	return 0;
 }
 
