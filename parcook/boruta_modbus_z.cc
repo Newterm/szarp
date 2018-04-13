@@ -404,7 +404,7 @@ std::string pdu2string(const struct PDU& pdu) {
 	std::stringstream ss;
 	ss << "fun:" << (int) pdu.func_code;
 	for (auto d: pdu.data) {
-		ss << " " << d;
+		ss << " " << std::to_string(d);
 	}
 
 	return ss.str();
@@ -727,7 +727,6 @@ public:
 };
 
 class bc_modbus_tcp_client: public modbus_client, public bc_driver {
-	struct event_base* m_event_base;
 	slog m_log;
 
 	unsigned char m_trans_id;
@@ -738,7 +737,7 @@ protected:
 	virtual void terminate_connection();
 
 public:
-	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), m_event_base(boruta->get_event_base()), m_log(log) {}
+	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), m_log(log) {}
 
 	// ConnectionListener
 	void OpenFinished(const BaseConnection *conn) override {}
@@ -1591,7 +1590,7 @@ void modbus_unit::starting_new_cycle() {
 	from_sender();
 }
 
-modbus_client::modbus_client(boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), m_state(IDLE), next_query_timer(boruta->get_event_base()), query_deadline_timer(boruta->get_event_base()) {
+modbus_client::modbus_client(boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), m_state(IDLE), next_query_timer(), query_deadline_timer() {
 	next_query_timer.set_callback(new FnPtrScheduler([this](){ send_query();}));
 	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ send_next_query(false);}));
 }
@@ -1768,11 +1767,11 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
 	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
 
-	auto request_timeout = unit->getAttribute("extra:request-timeout", 10);
-	next_query_timer.set_timeout(ms(request_timeout));
+	auto query_interval = unit->getAttribute("extra:query-interval", 0);
+	next_query_timer.set_timeout(ms(query_interval));
 
-	auto query_interval_ms = unit->getAttribute("extra:query-interval", 0);
-	query_deadline_timer.set_timeout(ms(query_interval_ms));
+	auto request_timeout = unit->getAttribute("extra:request-timeout", 10);
+	query_deadline_timer.set_timeout(ms(request_timeout));
 
 	if (modbus_unit::configure(unit, read, send)) {
 		return 1;
@@ -1872,7 +1871,6 @@ void bc_modbus_tcp_client::ReadError(const BaseConnection*, short int) {
 
 	try {
 		m_connection->Close();
-		m_connection->Open();
 	} catch (...) {
 		// log error
 	}
@@ -1885,7 +1883,6 @@ int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const
 		return 1;
 
 	m_trans_id = 0;
-	modbus_client::reset_cycle();
 	return 0;
 }
 
@@ -1937,7 +1934,7 @@ bool bc_serial_rtu_parser::check_crc() {
 }
 
 
-bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(boruta->get_event_base()), write_timer(boruta->get_event_base()) {
+bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(), write_timer() {
 	read_timer.set_callback(new FnPtrScheduler([this](){ read_timer_event(); }));
 	write_timer.set_callback(new FnPtrScheduler([this](){ write_timer_event(); }));
 }

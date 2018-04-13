@@ -267,7 +267,7 @@ public:
 };
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
 	auto callback = [this](){ next_request(); };
 	read_timer.set_callback(new LambdaScheduler<decltype(callback)>(std::move(callback)));
 }
