@@ -155,92 +155,8 @@ const unsigned char RESPONSE_SIZE = 16; // 16 bytes of response telegram
 const unsigned char MIN_EXTRA_ID = 1; // min address of inverter
 const unsigned char MAX_EXTRA_ID = 32; // max address of inverter
 
-class fc_proto;
-class fc_register
-{
-private:
-	fc_proto *m_fc_proto;
-	int m_val;
-	sz4::nanosecond_time_t m_mod_time;
-	slog m_log;
-public:
-	fc_register(fc_proto* daemon, slog log) :
-		m_fc_proto(daemon),
-		m_val(SZARP_NO_DATA),
-		m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value),
-		m_log(log) {};
-	void set_val(int value, sz4::nanosecond_time_t& time);
-	int get_val(bool& valid, sz4::nanosecond_time_t& time);
-	int get_val() const;
-};
-
+class fc_register;
 using FCRMAP = std::map<unsigned int, fc_register *>;
-
-int fc_register::get_val() const {
-	return m_val;
-}
-
-void fc_register::set_val(int val, sz4::nanosecond_time_t& time) {
-	m_val = val;
-	m_mod_time = time;
-}
-
-class read_fc_val_op
-{
-	protected:
-		slog m_log;
-	public:
-		read_fc_val_op(slog log) : m_log(log) {};
-		virtual void set_val(zmqhandler *handler, int64_t index) = 0;
-};
-
-class ushort_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		ushort_read_fc_val_op(fc_register *reg, slog log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		void set_val(zmqhandler *handler, int64_t index);
-};
-
-void ushort_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	unsigned short v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
-
-class uinteger_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		uinteger_read_fc_val_op(fc_register *reg, slog log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		void set_val(zmqhandler *handler, int64_t index);
-};
-
-void uinteger_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	unsigned int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
-
-class integer_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		integer_read_fc_val_op(fc_register *reg, slog log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		virtual void set_val(zmqhandler *handler, int64_t index);
-};
-
-void integer_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
 
 class fc_proto : public bc_driver
 {
@@ -276,7 +192,6 @@ class fc_proto : public bc_driver
 	/* Register of parameters under unit */
 	FCRMAP m_registers;
 	FCRMAP::iterator m_registers_iterator;
-	std::vector<read_fc_val_op *> m_read_operators;
 
 	/* Function to create checksum byte (xor of all previous bytes) */
 	const char checksum (const std::vector<unsigned char>& buffer);
@@ -302,9 +217,7 @@ public:
 	void starting_new_cycle() override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
-	void configure_ushort_register (unsigned int pnu);
-	void configure_uinteger_register (unsigned int pnu);
-	void configure_integer_register (unsigned int pnu);
+	void configure_register(TAttribHolder* param);
 	void scheduled();
 	void read_timer_event();
 	static void read_timer_callback(int fd, short event, void *fc_proto);
@@ -317,19 +230,48 @@ public:
 
 };
 
-int fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
-	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
-		valid = m_fc_proto->register_val_expired(m_mod_time);
-		mod_time = m_mod_time;
+using register_iface = register_iface_t<int32_t>;
+class fc_register: public register_iface, public parcook_val_op {
+	fc_proto *m_fc_proto;
+	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+
+public:
+	fc_register(fc_proto* daemon): m_fc_proto(daemon) {};
+
+	bool is_valid() const override {
+		return sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time) && !(m_fc_proto->register_val_expired(m_mod_time));
 	}
-	else {
-		valid = false;
+
+	sz4::nanosecond_time_t get_mod_time() const override {
+		return m_mod_time;
 	}
-	return m_val;
-}
+
+	void set_mod_time(const sz4::nanosecond_time_t& time) override {
+		m_mod_time = time;
+	}
+};
+
+template <typename value_type>
+class fc_register_impl: public fc_register {
+	value_type m_val = sz4::no_data<value_type>();
+
+public:
+	using fc_register::fc_register;
+
+	int32_t get_val() const override { return (int32_t) m_val; } // unused in fc (no sends)
+
+	void set_val(int val) override {
+		m_val = (value_type) val;
+	}
+
+	void publish_val(zmqhandler *handler, size_t index) override {
+		if (is_valid())
+			handler->set_value(index, get_mod_time(), m_val);
+	}
+};
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log) : bc_driver(conn), m_log(log), m_zmq(boruta->get_zmq()), m_state(IDLE), m_event_base(boruta->get_event_base()) {}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_event_base(boruta->get_event_base()), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -440,7 +382,9 @@ int fc_proto::parse_frame()
 	/* Convert octal char to int and set 4 bytes from PWE to register */
 	int value = parse_pwe(pwe_chars);
 	m_log->log(10, "Setting value: %d", value);
-	m_registers_iterator->second->set_val(value, m_current_time);
+	m_registers_iterator->second->set_val(value);
+	m_registers_iterator->second->set_mod_time(m_current_time);
+
 
 	/* Next 2 bytes are PCD1 status word */
 	const size_t status_word = 2;
@@ -467,10 +411,11 @@ int fc_proto::parse_pwe(const std::vector<unsigned char>& pwe)
 
 void fc_proto::to_parcook()
 {
+	size_t i = 0;
 	m_log->log(10, "to_parcook, m_read_count: %zu", m_read_count);
-	std::vector<read_fc_val_op *>::iterator it = m_read_operators.begin();
-	for (size_t i = 0; i < m_read_count; ++i, ++it) {
-		(*it)->set_val(m_zmq, i + m_read);
+	for (auto reg: m_registers) {
+		reg.second->publish_val(m_zmq, i + m_read);
+		++i;
 	}
 }
 
@@ -514,24 +459,7 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 
 	for(auto param: unit->GetParams()) {
 		try {
-			const unsigned int pnu = param->getAttribute<unsigned>("extra:parameter-number");
-			m_log->log(10, "configure extra:parameter-number: %d", pnu);
-
-			std::string val_type = param->getAttribute<std::string>("extra:val_type");
-			if (val_type == "ushort") {
-				configure_ushort_register(pnu);
-			}
-			else if (val_type == "uinteger") {
-				configure_uinteger_register(pnu);
-			}
-			else if (val_type == "integer") {
-				configure_integer_register(pnu);
-			}
-			else {
-				m_log->log(1, "Unsupported value type: %s, for param %ls", val_type.c_str(), param->GetName().c_str());
-				return 1;
-			}
-
+			configure_register(param);
 		} catch(const std::exception& e) {
 			m_log->log(1, "Error while configuring param %ls", param->GetName().c_str());
 			throw;
@@ -543,19 +471,27 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 	return 0;
 }
 
-void fc_proto::configure_ushort_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, m_log);
-	m_read_operators.push_back(new ushort_read_fc_val_op(m_registers[pnu], m_log));
-}
+void fc_proto::configure_register(TAttribHolder* param) {
+	auto pnu = param->getOptAttribute<unsigned>("extra:parameter-number");
+	if (!pnu)
+		throw std::runtime_error("No option extra:parameter-number passed!");
 
-void fc_proto::configure_uinteger_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, m_log);
-	m_read_operators.push_back(new uinteger_read_fc_val_op(m_registers[pnu], m_log));
-}
+	m_log->log(10, "configure extra:parameter-number: %d", *pnu);
 
-void fc_proto::configure_integer_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, m_log);
-	m_read_operators.push_back(new integer_read_fc_val_op(m_registers[pnu], m_log));
+	std::string val_type = param->getAttribute<std::string>("extra:val_type");
+	if (val_type == "ushort") {
+		m_registers[*pnu] = new fc_register_impl<uint16_t>(this);
+	}
+	else if (val_type == "uinteger") {
+		m_registers[*pnu] = new fc_register_impl<uint32_t>(this);
+	}
+	else if (val_type == "integer") {
+		m_registers[*pnu] = new fc_register_impl<int32_t>(this);
+	}
+	else {
+		m_log->log(1, "Unsupported value type: %s", val_type.c_str());
+		throw std::runtime_error("Invalid value type");
+	}
 }
 
 void fc_proto::scheduled()
@@ -630,10 +566,12 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 
 bool fc_proto::register_val_expired(const sz4::nanosecond_time_t& time) {
 	if (m_expiration_time == 0) {
-		return true;
+		return false;
 	}
 	else {
-		return time >= m_current_time + m_expiration_time;
+		auto t = time;
+		t += m_expiration_time;
+		return t <= m_current_time;
 	}
 }
 

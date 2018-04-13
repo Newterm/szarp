@@ -427,20 +427,10 @@ std::string sdu2string(const struct SDU& sdu) {
 	return ss.str();
 }
 
-class register_iface;
+using register_iface = register_iface_t<int16_t>;
+
 using RMAP = std::map<unsigned short, register_iface*>;
 using RSET = std::set<std::pair<REGISTER_TYPE, unsigned short>>;
-
-class register_iface {
-public:
-	virtual bool is_valid() const = 0;
-
-	virtual int16_t get_val() const = 0;
-	virtual void set_val(int16_t val) = 0;
-
-	virtual sz4::nanosecond_time_t get_mod_time() const = 0;
-	virtual void set_mod_time(const sz4::nanosecond_time_t&) = 0;
-};
 
 class null_register: public register_iface {
 public:
@@ -450,16 +440,6 @@ public:
 	sz4::nanosecond_time_t get_mod_time() const override { return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value; }
 	void set_mod_time(const sz4::nanosecond_time_t&) override {}
 } null_reg;
-
-class parcook_val_op {
-public:
-	virtual void set_val(zmqhandler* handler, size_t index) = 0;
-};
-
-class sender_val_op {
-public:
-	virtual void update_val(zmqhandler* handler, size_t index) = 0;
-};
 
 class register_holder {
 public:
@@ -493,7 +473,7 @@ public:
 
 	read_val_op(register_holder* regs, value_type, int, slog log): m_log(log), m_regs(regs) {}
 
-	void set_val(zmqhandler* handler, size_t index) override {
+	void publish_val(zmqhandler* handler, size_t index) override {
 		if (auto mod_time = m_regs->get_mod_time()) {
 			auto val = val_impl::get_value_from_regs(*m_regs);
 			szlog::log() << szlog::debug << m_log->header << ": setting read value " << val << szlog::endl;
@@ -1250,7 +1230,7 @@ bool modbus_unit::create_error_response(unsigned char error, PDU &pdu) {
 void modbus_unit::to_parcook() {
 	size_t m = 0;
 	for (auto reg: m_parcook_ops)
-		reg->set_val(zmq, m_read + m++);
+		reg->publish_val(zmq, m_read + m++);
 }
 
 void modbus_unit::from_sender() {
