@@ -114,6 +114,7 @@
 #include "serialport.h"
 #include "serialportconf.h"
 
+struct event_base* EventBase::evbase;
 bool g_debug = false;
 
 static const time_t RECONNECT_ATTEMPT_DELAY = 10;
@@ -397,8 +398,6 @@ void TcpServerConnectionHandler::AcceptConnection(int _fd) {
 }
 
 int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
-	auto evbase = m_boruta->get_event_base();
-
 	auto mode = conn_factory::get_mode(unit);
 	auto medium = conn_factory::get_medium(unit);
 	SerialPortConfiguration conf;
@@ -438,11 +437,11 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 	if (proto == "modbus") {
 		if (medium == conn_factory::medium::tcp) {
 			if (mode == conn_factory::mode::server) {
-				auto conn = new TcpServerConnectionHandler(evbase);
+				auto conn = new TcpServerConnectionHandler(EventBase::evbase);
 				conn->Init(unit);
 				driver = create_bc_modbus_tcp_server(conn, m_boruta, logger);
 			} else if (mode == conn_factory::mode::client) {
-				auto conn = new TcpConnection(evbase);
+				auto conn = new TcpConnection(EventBase::evbase);
 				conn->Init(unit);
 
 				if (unit->getAttribute<bool>("extra:use_tcp_2_serial_proxy", false))
@@ -451,7 +450,7 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 					driver = create_bc_modbus_tcp_client(conn, m_boruta, logger);
 			}
 		} else if (medium == conn_factory::medium::serial) {
-			auto conn = new SerialPort(evbase);
+			auto conn = new SerialPort(EventBase::evbase);
 			conn->Init(conf.path);
 
 			if (mode == conn_factory::mode::client) {
@@ -464,7 +463,7 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 			conn->SetConfiguration(conf);
 		}
 	} else if (proto == "fc") {
-		auto conn = new SerialPort(evbase);
+		auto conn = new SerialPort(EventBase::evbase);
 		conn->Init(conf.path);
 		conn->Open();
 		conn->SetConfiguration(conf);
@@ -499,16 +498,6 @@ int boruta_daemon::configure_ipc() {
 	return 0;
 }
 
-int boruta_daemon::configure_events() {
-	m_event_base = (struct event_base*) event_init();
-	if (!m_event_base)
-		return 1;
-	
-	m_timer = new Scheduler(m_event_base);
-	m_timer->set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
-	return 0;
-}
-
 int boruta_daemon::configure_units() {
 	int i;
 	TUnit* u;
@@ -523,27 +512,21 @@ int boruta_daemon::configure_units() {
 	return 0;
 }
 
-int boruta_daemon::configure_cycle_freq() {
+int boruta_daemon::configure_timer() {
+	m_timer.set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
 	int duration = m_cfg->GetDevice()->getAttribute<int>("extra:cycle_duration", 10000);
-	m_timer->set_timeout(szarp::ms(duration));
+	m_timer.set_timeout(szarp::ms(duration));
 
 	return 0;
 }
 
 boruta_daemon::boruta_daemon() : m_drivers_manager(this), m_zmq_ctx(1) {}
 
-struct event_base* boruta_daemon::get_event_base() {
-	return m_event_base;
-}
-
 zmqhandler* boruta_daemon::get_zmq() {
 	return m_zmq;
 }
 
 int boruta_daemon::configure(int *argc, char *argv[]) {
-	if (int ret = configure_events())
-		return ret;
-
 	m_cfg = new DaemonConfig("borutadmn");
 	if (m_cfg->Load(argc, argv))
 		return 101;
@@ -553,14 +536,14 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 		return 102;
 	if (configure_units())
 		return 103;
-	if (configure_cycle_freq())
+	if (configure_timer())
 		return 104;
 	return 0;
 }
 
 void boruta_daemon::go() {
 	cycle_timer_callback();
-	event_base_dispatch(m_event_base);
+	event_base_dispatch(EventBase::evbase);
 }
 
 void boruta_daemon::cycle_timer_callback() {
@@ -568,10 +551,12 @@ void boruta_daemon::cycle_timer_callback() {
 	m_drivers_manager.finished_cycle();
 	m_zmq->publish();
 	m_drivers_manager.starting_new_cycle();
-	m_timer->schedule();
+	m_timer.schedule();
 }
 
 int main(int argc, char *argv[]) {
+	EventBase::Initialize();
+
 	xmlInitParser();
 	LIBXML_TEST_VERSION
 	xmlLineNumbersDefault(1);

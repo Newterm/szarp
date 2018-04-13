@@ -90,22 +90,31 @@ ms operator-(const ms& ms1, const ms& ms2);
 
 } // ns szarp
 
+struct EventBase {
+	static struct event_base* evbase;
+	static void Initialize() {
+		EventBase::evbase = (struct event_base*) event_init();
+		if (!EventBase::evbase) {
+			throw std::runtime_error("Could not initialize event base");
+		}
+	}
+};
+
 class Callback {
 public:
 	virtual void operator()() = 0;
 };
 
 class Scheduler {
-	struct event_base* m_event_base;
 	struct event m_timer;
 	struct timeval tv;
 
 	Callback* callback;
 
 public:
-	Scheduler(struct event_base* evbase): m_event_base(evbase) {
+	Scheduler() {
 		evtimer_set(&m_timer, timer_callback, this);
-		event_base_set(m_event_base, &m_timer);
+		event_base_set(EventBase::evbase, &m_timer);
 	}
 
 	void set_callback(Callback* _callback) {
@@ -362,16 +371,13 @@ class boruta_daemon {
 	zmqhandler * m_zmq;
 	struct timeval m_cycle;
 
-	struct event_base* m_event_base;
-	Scheduler* m_timer;
+	Scheduler m_timer;
 
 	int configure_ipc();
-	int configure_events();
 	int configure_units();
-	int configure_cycle_freq();
+	int configure_timer();
 public:
 	boruta_daemon();
-	struct event_base* get_event_base();	
 	zmqhandler* get_zmq();
 	int configure(int *argc, char *argv[]);
 	void go();
