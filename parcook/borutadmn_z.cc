@@ -133,6 +133,20 @@ ms operator-(const ms& ms1, const ms& ms2) {
 	m -= ms2;
 	return m;
 }
+
+sz4::second_time_t time_now() {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	return sz4::second_time_t(time.tv_sec);
+}
+
+template <>
+sz4::nanosecond_time_t time_now() {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	return sz4::nanosecond_time_t(time.tv_sec, time.tv_nsec);
+}
+
 } // ns szarp
 
 template <typename T>
@@ -513,7 +527,11 @@ int boruta_daemon::configure_units() {
 }
 
 int boruta_daemon::configure_timer() {
-	m_timer.set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
+	m_timer.set_callback(new FnPtrScheduler([this](){
+		m_zmq->receive();
+		m_zmq->publish();
+		m_timer.schedule();
+	}));
 	int duration = m_cfg->GetDevice()->getAttribute<int>("extra:cycle_duration", 10000);
 	m_timer.set_timeout(szarp::ms(duration));
 
@@ -548,9 +566,7 @@ void boruta_daemon::go() {
 
 void boruta_daemon::cycle_timer_callback() {
 	m_zmq->receive();
-	m_drivers_manager.finished_cycle();
 	m_zmq->publish();
-	m_drivers_manager.starting_new_cycle();
 	m_timer.schedule();
 }
 
