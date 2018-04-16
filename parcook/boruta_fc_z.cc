@@ -163,6 +163,7 @@ using FCRMAP = std::map<unsigned int, fc_register *>;
 class fc_proto : public bc_driver
 {
 	Scheduler read_timer;
+	Scheduler cycle_timer;
 
 	zmqhandler* m_zmq;
 
@@ -197,7 +198,6 @@ class fc_proto : public bc_driver
 	/* Function to create checksum byte (xor of all previous bytes) */
 	const char checksum (const std::vector<unsigned char>& buffer);
 
-	void finished_cycle();
 	void next_request();
 	void send_request();
 	void make_read_request();
@@ -212,9 +212,9 @@ protected:
 
 public:
 	fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log);
-	void starting_new_cycle() override;
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
+	void configure_timers(TUnit* unit);
 	void configure_register(TAttribHolder* param);
 	void scheduled();
 
@@ -267,10 +267,7 @@ public:
 };
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {
-	auto callback = [this](){ next_request(); };
-	read_timer.set_callback(new LambdaScheduler<decltype(callback)>(std::move(callback)));
-}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), cycle_timer(), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -280,11 +277,6 @@ const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 	for (size_t i = 0; (i < buffer.size()) && (i < RESPONSE_SIZE - 1); ++i)
 		exor ^= buffer.at(i);
 	return exor;
-}
-
-void fc_proto::finished_cycle()
-{
-	to_parcook();
 }
 
 void fc_proto::next_request()
@@ -451,8 +443,42 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 		}
 	}
 
-	read_timer.set_timeout(ms(1500));
+	configure_timers(unit);
+
 	return 0;
+}
+
+void fc_proto::configure_timers(TUnit* unit) {
+	auto read_callback = [this](){ next_request(); };
+	read_timer.set_callback(new LambdaScheduler<decltype(read_callback)>(std::move(read_callback)));
+	read_timer.set_timeout(ms(1500));
+
+	auto cycle_callback = [this](){
+		m_log->log(10, "cycle timer callback");
+
+		to_parcook();
+
+		m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
+		read_timer.cancel();
+
+		try {
+			if (!m_connection->Ready()) {
+				m_connection->Close();
+				m_connection->Open();
+			}
+		} catch (...) {
+			m_log->log(1, "Couldn't establish connection!");
+		}
+
+		scheduled();
+		cycle_timer.schedule();
+	};
+
+	cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+
+	int64_t cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	cycle_timer.set_timeout(ms(cycle_timeout));
+	cycle_timer.schedule();
 }
 
 void fc_proto::configure_register(TAttribHolder* param) {
@@ -498,26 +524,6 @@ void fc_proto::ReadError(const BaseConnection *conn, short int event) {
 	m_state = IDLE;
 	m_buffer.clear();
 	read_timer.cancel();
-}
-
-void fc_proto::starting_new_cycle()
-{
-	m_log->log(10, "starting_new_cycle");
-	struct timespec time;
-	clock_gettime(CLOCK_REALTIME, &time);
-	m_current_time.second = time.tv_sec;
-	m_current_time.nanosecond = time.tv_nsec;
-	read_timer.cancel();
-
-	try {
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
-	} catch (...) {
-	}
-
-	scheduled();
 }
 
 void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {

@@ -88,6 +88,15 @@ struct ms {
 ms operator+(const ms& ms1, const ms& ms2);
 ms operator-(const ms& ms1, const ms& ms2);
 
+template <typename time_type>
+time_type time_now() = delete;
+
+template <>
+sz4::second_time_t time_now();
+
+template <>
+sz4::nanosecond_time_t time_now();
+
 } // ns szarp
 
 struct EventBase {
@@ -196,8 +205,6 @@ class driver_iface {
 public:
 	virtual ~driver_iface() {}
 	virtual int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) = 0;
-	virtual void finished_cycle() = 0;
-	virtual void starting_new_cycle() = 0;
 };
 
 class bc_driver: public ConnectionListener, public driver_iface {
@@ -220,9 +227,6 @@ public:
 	bc_manager(boruta_daemon* boruta): m_boruta(boruta) {}
 
 	int configure(TUnit *unit, size_t read, size_t send);
-
-	void finished_cycle() { for (auto cp: conns) { cp->finished_cycle(); } }
-	void starting_new_cycle() { for (auto cp: conns) { cp->starting_new_cycle(); } }
 };
 
 struct boruta_logger {

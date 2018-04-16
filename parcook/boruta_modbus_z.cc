@@ -609,18 +609,17 @@ protected:
 
 	bool create_error_response(unsigned char error, PDU &pdu);
 
-	void to_parcook();
-	void from_sender();
-
 public:
 	modbus_unit(zmqhandler* _zmq, slog logger);
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	int configure(TUnit *unit, size_t read, size_t send);
-	void finished_cycle();
-	void starting_new_cycle();
+
+	void to_parcook();
+	void from_sender();
 };
 
 class bc_modbus_tcp_server: public bc_driver {
+	Scheduler cycle_timer;
 	modbus_unit* m_unit;
 	slog m_log;
 
@@ -660,21 +659,28 @@ public:
 	}
 
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override {
+		auto cycle_callback = [this]() {
+			m_unit->from_sender();
+			m_unit->to_parcook();
+				
+			if (!m_connection->Ready()) {
+				m_connection->Close();
+				m_connection->Open();
+			}
+
+			cycle_timer.schedule();
+		};
+
+		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+
+		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+		cycle_timer.set_timeout(ms(cycle_timeout));
+
 		if (m_unit->configure(unit, read, send))
 			return 1;
+
+		cycle_timer.schedule();
 		return 0;
-	}
-
-	void finished_cycle() override {
-		m_unit->finished_cycle();
-	}
-
-	void starting_new_cycle() override {
-		m_unit->starting_new_cycle();
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
 	}
 };
 
@@ -701,7 +707,6 @@ protected:
 	struct event m_query_deadine_timer;
 	bool m_single_register_pdu;
 
-	void starting_new_cycle();
 protected:
 	modbus_client(boruta_daemon* boruta, slog log);
 	void reset_cycle();
@@ -718,7 +723,6 @@ protected:
 
 	// TODO: handler interface
 	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
-	virtual void cycle_finished() = 0;
 	virtual void terminate_connection() = 0;
 
 public:
@@ -727,13 +731,13 @@ public:
 };
 
 class bc_modbus_tcp_client: public modbus_client, public bc_driver {
+	Scheduler cycle_timer;
 	slog m_log;
 
 	unsigned char m_trans_id;
 
 protected:
 	void send_pdu(unsigned char unit, PDU &pdu) override;
-	virtual void cycle_finished();
 	virtual void terminate_connection();
 
 public:
@@ -745,8 +749,6 @@ public:
 	void ReadError(const BaseConnection *conn, short int event) override;
 	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
-	void finished_cycle() override;
-	void starting_new_cycle() override;
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
 };
 
@@ -840,6 +842,7 @@ public:
 };
 
 class bc_modbus_serial_client: public modbus_client, public bc_driver, public bc_serial_connection_handler {
+	Scheduler cycle_timer;
 	bc_serial_parser* m_parser;
 	boruta_daemon* dmn;
 	slog m_log;
@@ -859,10 +862,6 @@ public:
 		} catch (...) {
 			modbus_client::connection_error();
 		}
-	}
-
-	void cycle_finished() override {
-		modbus_client::finished_cycle();
 	}
 
 	void terminate_connection() override { m_connection->Close(); }
@@ -895,6 +894,22 @@ public:
 
 	// bc_serial_driver impl
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override {
+		auto cycle_callback = [this]() {
+			from_sender();
+			to_parcook();
+			if (!m_connection->Ready()) {
+				m_connection->Close();
+				m_connection->Open();
+			}
+			start_cycle();
+			cycle_timer.schedule();
+		};
+
+		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+
+		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+		cycle_timer.set_timeout(ms(cycle_timeout));
+
 		if (modbus_client::configure(unit, read, send))
 			return 1;
 
@@ -910,18 +925,8 @@ public:
 		if (m_parser->configure(unit, conf))
 			return 1;
 
+		cycle_timer.schedule();
 		return 0;
-	}
-
-	void finished_cycle() override { modbus_client::finished_cycle(); }
-	void starting_new_cycle() override {
-		modbus_client::starting_new_cycle();
-		if (!m_connection->Ready()) {
-			m_connection->Close(); // force closing
-			m_connection->Open();
-		}
-
-		start_cycle();
 	}
 };
 
@@ -929,6 +934,7 @@ unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
 
 class bc_modbus_serial_server: public bc_driver, public bc_serial_connection_handler {
+	Scheduler cycle_timer;
 	modbus_unit* m_unit;
 	bc_serial_parser* m_parser;
 	boruta_daemon* dmn;
@@ -962,6 +968,21 @@ public:
 
 	// bc_serial_driver impl
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override {
+		auto cycle_callback = [this]() {
+			m_unit->from_sender();
+			m_unit->to_parcook();
+			if (!m_connection->Ready()) {
+				m_connection->Close();
+				m_connection->Open();
+			}
+			cycle_timer.schedule();
+		};
+
+		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+
+		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+		cycle_timer.set_timeout(ms(cycle_timeout));
+
 		if (m_unit->configure(unit, read, send))
 			return 1;
 
@@ -976,16 +997,9 @@ public:
 		}
 		if (m_parser->configure(unit, conf))
 			return 1;
-		return 0;
-	}
 
-	void finished_cycle() override { m_unit->finished_cycle(); }
-	void starting_new_cycle() override {
-		m_unit->starting_new_cycle();
-		if (!m_connection->Ready()) {
-			m_connection->Close(); // force closing
-			m_connection->Open();
-		}
+		cycle_timer.schedule();
+		return 0;
 	}
 };
 
@@ -1199,10 +1213,7 @@ void modbus_unit::to_parcook() {
 }
 
 void modbus_unit::from_sender() {
-	struct timespec time;
-	clock_gettime(CLOCK_REALTIME, &time);
-	m_current_time.second = time.tv_sec;
-	m_current_time.nanosecond = time.tv_nsec;
+	m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
 
 	for (auto sent: m_sender_ops)
 		sent.first->update_val(zmq, sent.second);
@@ -1581,34 +1592,10 @@ int modbus_unit::configure(TUnit *unit, size_t read, size_t send) {
 	return 1;
 }
 
-void modbus_unit::finished_cycle() {
-	to_parcook();
-}
-
-void modbus_unit::starting_new_cycle() {
-	m_log->log(5, "Timer click, doing ipc data exchange");
-	from_sender();
-}
-
 modbus_client::modbus_client(boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), m_state(IDLE), next_query_timer(), query_deadline_timer() {
 	next_query_timer.set_callback(new FnPtrScheduler([this](){ send_query();}));
 	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ send_next_query(false);}));
 }
-
-void modbus_client::starting_new_cycle() {
-	modbus_unit::starting_new_cycle();
-	switch (m_state)  {
-		case IDLE:
-			return;
-		case READING_FROM_PEER:
-			m_log->log(2, "New cycle started, we are in read cycle");
-			break;
-		case WRITING_TO_PEER:
-			m_log->log(2, "New cycle started, we are in write cycle");
-			break;
-	}
-}
-
 
 void modbus_client::reset_cycle() {
 	m_received_iterator = m_received.begin();
@@ -1695,9 +1682,7 @@ void modbus_client::next_query(bool previous_ok) {
 			}
 			m_state = IDLE;
 			reset_cycle();
-			if (previous_ok)
-				cycle_finished();
-			else {
+			if (!previous_ok) {
 				m_log->log(1, "Previous query failed and we have just finished our cycle - teminating connection");
 				terminate_connection();
 			}
@@ -1833,24 +1818,8 @@ void bc_modbus_tcp_client::send_pdu(unsigned char unit, PDU &pdu) {
 	}
 }
 
-void bc_modbus_tcp_client::cycle_finished() {
-}
-
 void bc_modbus_tcp_client::terminate_connection() {
 	m_connection->Close();
-}
-
-void bc_modbus_tcp_client::finished_cycle() {
-	to_parcook();
-}
-
-void bc_modbus_tcp_client::starting_new_cycle() {
-	from_sender();
-	if (!m_connection->Ready()) {
-		m_connection->Close();
-		m_connection->Open();
-	}
-	start_cycle();
 }
 
 void bc_modbus_tcp_client::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
@@ -1879,10 +1848,28 @@ void bc_modbus_tcp_client::ReadError(const BaseConnection*, short int) {
 }
 
 int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) {
+	auto cycle_callback = [this]() {
+		from_sender();
+		to_parcook();
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+
+		start_cycle();
+		cycle_timer.schedule();
+	};
+
+	cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+
+	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	cycle_timer.set_timeout(ms(cycle_timeout));
+
 	if (modbus_client::configure(unit, read, send))
 		return 1;
 
 	m_trans_id = 0;
+	cycle_timer.schedule();
 	return 0;
 }
 
