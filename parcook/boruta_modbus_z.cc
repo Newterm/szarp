@@ -531,6 +531,30 @@ public:
 	}
 };
 
+template <>
+class read_val_op<void>: public parcook_val_op {
+public:
+	using base_type = parcook_val_op;
+};
+
+template <>
+class sent_val_op<void>: public sender_val_op {
+public:
+	using base_type = sender_val_op;
+};
+
+template <>
+class sent_const_val_op<void>: public sent_val_op<void> {
+public:
+	using sent_val_op::base_type;
+};
+
+template <template <typename> typename val_op>
+struct base_type {
+	using type = typename val_op<void>::base_type;
+};
+
+
 class RegsFactory {
 	slog m_log;
 
@@ -577,8 +601,8 @@ protected:
 	register_iface* register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*);
 	register_iface* get_register(uint32_t addr);
 
-	template <template <typename> class val_op, typename val_op_type>
-	val_op_type* configure_register(TAttribHolder* param, int prec_e);
+	template <template <typename> class val_op>
+	typename base_type<val_op>::type* configure_register(TAttribHolder* param, int prec_e);
 
 	template <typename val_op>
 	val_op* create_register(TAttribHolder* param, int prec, unsigned short addr, REGISTER_TYPE rt) {
@@ -616,72 +640,6 @@ public:
 
 	void to_parcook();
 	void from_sender();
-};
-
-class bc_modbus_tcp_server: public bc_driver {
-	Scheduler cycle_timer;
-	modbus_unit* m_unit;
-	slog m_log;
-
-public:
-	bc_modbus_tcp_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), m_log(log) {}
-
-	/** ConnectionListener interface */
-	void ReadError(const BaseConnection *conn, short event) override {
-		m_log->log(6, "Read error, restarting connection");
-		m_connection->Close();
-
-		try {
-			m_connection->Open();
-		} catch (...) {
-			m_log->log(6, "Couldn't establish connection, will try again later");
-			m_connection->Close();
-		}
-	}
-
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
-
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override {
-		if (auto adu = TCPADU::from_data(data)) {
-			auto adu_str = tcpadu2string(*adu);
-			m_log->log(10, "Received ADU: %s", adu_str.c_str());
-			if (m_unit->process_request(adu->unit_id, adu->pdu)) {
-				try {
-					TCPADU::write_to_conn(const_cast<BaseConnection*>(conn), *adu);
-				} catch (...) {
-					// log error
-				}
-			}
-		} else {
-			// invalid ADU
-		}
-	}
-
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override {
-		auto cycle_callback = [this]() {
-			m_unit->from_sender();
-			m_unit->to_parcook();
-				
-			if (!m_connection->Ready()) {
-				m_connection->Close();
-				m_connection->Open();
-			}
-
-			cycle_timer.schedule();
-		};
-
-		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
-
-		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-		cycle_timer.set_timeout(ms(cycle_timeout));
-
-		if (m_unit->configure(unit, read, send))
-			return 1;
-
-		cycle_timer.schedule();
-		return 0;
-	}
 };
 
 class modbus_client: public modbus_unit {
@@ -730,6 +688,28 @@ public:
 	void pdu_received(unsigned char u, PDU &pdu);
 };
 
+class bc_modbus_driver: public bc_driver {
+public:
+};
+
+class bc_modbus_tcp_server: public bc_driver {
+	Scheduler cycle_timer;
+	modbus_unit* m_unit;
+	slog m_log;
+
+public:
+	bc_modbus_tcp_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), m_log(log) {}
+
+	/** ConnectionListener interface */
+	void ReadError(const BaseConnection *conn, short event) override;
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+
+	void OpenFinished(const BaseConnection *conn) override {}
+	void SetConfigurationFinished(const BaseConnection *conn) override {}
+
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
+};
+
 class bc_modbus_tcp_client: public modbus_client, public bc_driver {
 	Scheduler cycle_timer;
 	slog m_log;
@@ -744,9 +724,10 @@ public:
 	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), m_log(log) {}
 
 	// ConnectionListener
-	void OpenFinished(const BaseConnection *conn) override {}
 	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
 	void ReadError(const BaseConnection *conn, short int event) override;
+
+	void OpenFinished(const BaseConnection *conn) override {}
 	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
@@ -851,83 +832,22 @@ public:
 	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), dmn(boruta), m_log(log) {}
 
 	// modbus unit and client impl
-	void send_pdu(unsigned char unit, PDU &pdu) override {
-		if (!m_connection->Ready()) {
-			m_connection->Close(); // force closing
-			m_connection->Open();
-		}
-
-		try {
-			m_parser->send_sdu(unit, pdu);
-		} catch (...) {
-			modbus_client::connection_error();
-		}
-	}
-
-	void terminate_connection() override { m_connection->Close(); }
+	void send_pdu(unsigned char unit, PDU &pdu) override;
+	void terminate_connection() override;
 
 	// ConnectionListener impl
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+
 	void OpenFinished(const BaseConnection *conn) override {}
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override {
-		m_parser->read_data(conn, data);
-	}
-
-	void ReadError(const BaseConnection *conn, short int event) override {
-		m_state = IDLE;
-		m_parser->reset();
-		m_connection->Close();
-		modbus_client::connection_error();
-	}
-
 	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
-	// serial connection impl
-	void frame_parsed(SDU &sdu, BaseConnection*) override {
-		pdu_received(sdu.unit_id, sdu.pdu);
-	}
-
-	void error(ERROR_CONDITION) override {
-		m_state = IDLE;
-		m_parser->reset();
-		modbus_client::timeout();
-	}
+	// serial_connection_handler impl
+	void frame_parsed(SDU &sdu, BaseConnection*) override;
+	void error(ERROR_CONDITION) override;
 
 	// bc_serial_driver impl
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override {
-		auto cycle_callback = [this]() {
-			from_sender();
-			to_parcook();
-			if (!m_connection->Ready()) {
-				m_connection->Close();
-				m_connection->Open();
-			}
-			start_cycle();
-			cycle_timer.schedule();
-		};
-
-		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
-
-		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-		cycle_timer.set_timeout(ms(cycle_timeout));
-
-		if (modbus_client::configure(unit, read, send))
-			return 1;
-
-		std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-		if (protocol == "rtu")
-			m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
-		else if (protocol == "ascii")
-			m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
-		else {
-			m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
-			return 1;
-		}
-		if (m_parser->configure(unit, conf))
-			return 1;
-
-		cycle_timer.schedule();
-		return 0;
-	}
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override;
 };
 
 unsigned short bc_serial_rtu_parser::crc16[256] = {};
@@ -944,63 +864,18 @@ public:
 	bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), dmn(boruta), m_log(log) {}
 
 	// ConnectionListener impl
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+
 	void OpenFinished(const BaseConnection *conn) override {}
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override {
-		m_parser->read_data(conn, data);
-	}
-
-	void ReadError(const BaseConnection *conn, short int event) override {
-		m_parser->reset();
-	}
-
 	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
-
 	// serial connection impl
-	void frame_parsed(SDU &adu, BaseConnection*) override {
-		if (m_unit->process_request(adu.unit_id, adu.pdu) == true)
-			m_parser->send_sdu(adu.unit_id, adu.pdu);
-	}
-
-	void error(ERROR_CONDITION) override {
-		m_parser->reset();
-	}
+	void frame_parsed(SDU &adu, BaseConnection*) override;
+	void error(ERROR_CONDITION) override;
 
 	// bc_serial_driver impl
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override {
-		auto cycle_callback = [this]() {
-			m_unit->from_sender();
-			m_unit->to_parcook();
-			if (!m_connection->Ready()) {
-				m_connection->Close();
-				m_connection->Open();
-			}
-			cycle_timer.schedule();
-		};
-
-		cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
-
-		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-		cycle_timer.set_timeout(ms(cycle_timeout));
-
-		if (m_unit->configure(unit, read, send))
-			return 1;
-
-		std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-		if (protocol == "rtu")
-			m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
-		else if (protocol == "ascii")
-			m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
-		else {
-			m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
-			return 1;
-		}
-		if (m_parser->configure(unit, conf))
-			return 1;
-
-		cycle_timer.schedule();
-		return 0;
-	}
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override;
 };
 
 class modbus_register: public register_iface {
@@ -1064,7 +939,6 @@ bool modbus_unit::process_request(unsigned char unit, PDU &pdu) {
 		m_log->log(1, "Error while processing request - there is either a bug or sth was very wrong with request format");
 		return false;
 	}
-
 }
 
 const char* modbus_unit::error_string(const unsigned char& error) {
@@ -1223,10 +1097,10 @@ bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
 	if (m_expiration_time == 0)
 		return false;
 	else {
-		auto dt = m_current_time;
+		auto dt = time;
 		dt += m_expiration_time;
 	
-		return time >= dt;
+		return m_current_time >= dt;
 	}
 }
 
@@ -1452,7 +1326,7 @@ REGISTER_TYPE get_rt(TAttribHolder* param) {
 }
 
 void modbus_unit::configure_param(IPCParamInfo* param) { 
-	if (auto nreg = configure_register<read_val_op, parcook_val_op>(param, param->GetPrec())) {
+	if (auto nreg = configure_register<read_val_op>(param, param->GetPrec())) {
 		m_parcook_ops.push_back(nreg);
 	} else {
 		throw std::runtime_error("Couldn't configure param!");
@@ -1461,16 +1335,16 @@ void modbus_unit::configure_param(IPCParamInfo* param) {
 
 void modbus_unit::configure_send(SendParamInfo* param) {
 	if (auto val = param->getOptAttribute<std::string>("value")) {
-		configure_register<sent_const_val_op, sender_val_op>(param, param->GetPrec());
-	} else if (auto nreg = configure_register<sent_val_op, sender_val_op>(param, param->GetPrec())) {
+		configure_register<sent_const_val_op>(param, param->GetPrec());
+	} else if (auto nreg = configure_register<sent_val_op>(param, param->GetPrec())) {
 		m_sender_ops.push_back({nreg, m_send++});
 	} else {
 		throw std::runtime_error("Couldn't configure send param!");
 	}
 }
 
-template <template <typename> class val_op, typename val_op_type>
-val_op_type* modbus_unit::configure_register(TAttribHolder* param, int prec_e) {
+template <template <typename> class val_op>
+typename base_type<val_op>::type* modbus_unit::configure_register(TAttribHolder* param, int prec_e) {
 	uint16_t addr = get_address(param);
 	REGISTER_TYPE rt = get_rt(param);
 
@@ -1480,22 +1354,20 @@ val_op_type* modbus_unit::configure_register(TAttribHolder* param, int prec_e) {
 	}
 	
 	int prec = exp10(prec_e);
+	std::map<std::string, std::function<typename val_op<void>::base_type*()>> type_fun_map = {
+		{ "integer", [=]() { return create_register<val_op<short_modbus_op>>(param, prec, addr, rt); }},
+		{ "bcd", [=]() { return create_register<val_op<bcd_modbus_op>>(param, prec, addr, rt); }},
+		{ "long", [=]() { return create_register<val_op<long_modbus_op>>(param, prec, addr, rt); }},
+		{ "float", [=]() { return create_register<val_op<float_modbus_op>>(param, prec, addr, rt); }},
+		{ "double", [=]() { return create_register<val_op<double_modbus_op>>(param, prec, addr, rt); }},
+		{ "decimal3", [=]() { return create_register<val_op<decimal3_modbus_op>>(param, prec, addr, rt); }},
+	};
 
-	if (*val_type == "integer") {
-		return create_register<val_op<short_modbus_op>>(param, prec, addr, rt);
-	} else if (*val_type == "bcd") {
-		return create_register<val_op<bcd_modbus_op>>(param, prec, addr, rt);
-	} else if (*val_type == "long") {
-		return create_register<val_op<long_modbus_op>>(param, prec, addr, rt);
-	} else if (*val_type == "float") {
-		return create_register<val_op<float_modbus_op>>(param, prec, addr, rt);
-	} else if (*val_type == "double") {
-		return create_register<val_op<double_modbus_op>>(param, prec, addr, rt);
-	} else if (*val_type == "decimal3") {
-		return create_register<val_op<decimal3_modbus_op>>(param, prec, addr, rt);
-	}
-
-	return nullptr;
+	auto fun_it = type_fun_map.find(*val_type);
+	if (fun_it == type_fun_map.end())
+		throw std::runtime_error(std::string("Invalid type ") + *val_type + std::string(" specified in param ") + get_param_name(param));
+	
+	return fun_it->second();
 }
 
 template <typename val_op>
@@ -1805,6 +1677,59 @@ void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
 	}
 }
 
+void bc_modbus_tcp_server::ReadError(const BaseConnection *conn, short event) {
+	m_log->log(6, "Read error, restarting connection");
+	m_connection->Close();
+
+	try {
+		m_connection->Open();
+	} catch (...) {
+		m_log->log(6, "Couldn't establish connection, will try again later");
+		m_connection->Close();
+	}
+}
+
+void bc_modbus_tcp_server::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	if (auto adu = TCPADU::from_data(data)) {
+		auto adu_str = tcpadu2string(*adu);
+		m_log->log(10, "Received ADU: %s", adu_str.c_str());
+		if (m_unit->process_request(adu->unit_id, adu->pdu)) {
+			try {
+				TCPADU::write_to_conn(const_cast<BaseConnection*>(conn), *adu);
+			} catch (...) {
+				// log error
+			}
+		}
+	} else {
+		// invalid ADU
+	}
+}
+
+int bc_modbus_tcp_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) {
+	auto cycle_callback = [this]() {
+		m_unit->from_sender();
+		m_unit->to_parcook();
+			
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+
+		cycle_timer.schedule();
+	};
+
+	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
+
+	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	cycle_timer.set_timeout(ms(cycle_timeout));
+
+	if (m_unit->configure(unit, read, send))
+		return 1;
+
+	cycle_timer.schedule();
+	return 0;
+}
+
 void bc_modbus_tcp_client::send_pdu(unsigned char unit, PDU &pdu) {
 	try {
 		TCPADU adu(++m_trans_id, unit, pdu);
@@ -1856,11 +1781,11 @@ int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const
 			m_connection->Open();
 		}
 
-		start_cycle();
+		modbus_client::start_cycle();
 		cycle_timer.schedule();
 	};
 
-	cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
+	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
 
 	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
 	cycle_timer.set_timeout(ms(cycle_timeout));
@@ -1869,6 +1794,132 @@ int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const
 		return 1;
 
 	m_trans_id = 0;
+	cycle_timer.schedule();
+	return 0;
+}
+
+void bc_modbus_serial_client::send_pdu(unsigned char unit, PDU &pdu) {
+	if (!m_connection->Ready()) {
+		m_connection->Close(); // force closing
+		m_connection->Open();
+	}
+
+	try {
+		m_parser->send_sdu(unit, pdu);
+	} catch (...) {
+		modbus_client::connection_error();
+	}
+}
+
+void bc_modbus_serial_client::terminate_connection() {
+	m_connection->Close();
+}
+
+void bc_modbus_serial_client::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	m_parser->read_data(conn, data);
+}
+
+void bc_modbus_serial_client::ReadError(const BaseConnection *conn, short int event) {
+	m_state = IDLE;
+	m_parser->reset();
+	m_connection->Close();
+	modbus_client::connection_error();
+}
+
+void bc_modbus_serial_client::frame_parsed(SDU &sdu, BaseConnection*) {
+	pdu_received(sdu.unit_id, sdu.pdu);
+}
+
+void bc_modbus_serial_client::error(ERROR_CONDITION) {
+	m_state = IDLE;
+	m_parser->reset();
+	modbus_client::timeout();
+}
+
+int bc_modbus_serial_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
+	auto cycle_callback = [this]() {
+		from_sender();
+		to_parcook();
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+		start_cycle();
+		cycle_timer.schedule();
+	};
+
+	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
+
+	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	cycle_timer.set_timeout(ms(cycle_timeout));
+
+	if (modbus_client::configure(unit, read, send))
+		return 1;
+
+	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
+	if (protocol == "rtu")
+		m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
+	else if (protocol == "ascii")
+		m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
+	else {
+		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		return 1;
+	}
+	if (m_parser->configure(unit, conf))
+		return 1;
+
+	cycle_timer.schedule();
+	return 0;
+}
+
+void bc_modbus_serial_server::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	m_parser->read_data(conn, data);
+}
+
+void bc_modbus_serial_server::ReadError(const BaseConnection *conn, short int event) {
+	m_parser->reset();
+}
+
+void bc_modbus_serial_server::frame_parsed(SDU &adu, BaseConnection*) {
+	if (m_unit->process_request(adu.unit_id, adu.pdu) == true)
+		m_parser->send_sdu(adu.unit_id, adu.pdu);
+}
+
+void bc_modbus_serial_server::error(ERROR_CONDITION) {
+	m_parser->reset();
+}
+
+int bc_modbus_serial_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
+	auto cycle_callback = [this]() {
+		m_unit->from_sender();
+		m_unit->to_parcook();
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+		cycle_timer.schedule();
+	};
+
+	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
+
+	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	cycle_timer.set_timeout(ms(cycle_timeout));
+
+	if (m_unit->configure(unit, read, send))
+		return 1;
+
+	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
+	if (protocol == "rtu")
+		m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
+	else if (protocol == "ascii")
+		m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
+	else {
+		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+		return 1;
+	}
+	if (m_parser->configure(unit, conf))
+		return 1;
+
 	cycle_timer.schedule();
 	return 0;
 }
