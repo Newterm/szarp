@@ -239,8 +239,6 @@ struct boruta_logger {
 
 using slog = std::shared_ptr<boruta_logger>;
 
-class boruta_daemon;
-
 class BaseServerConnectionHandler: public BaseConnection {
 public:
 	using BaseConnection::BaseConnection;
@@ -254,11 +252,6 @@ public:
 	void SetConfiguration(const SerialPortConfiguration& serial_conf) override {}
 };
 
-
-// implements handling established connections
-// TODO: implement
-// retry_gap = unit->getAttribute("extra:connection-retry-gap", 4);
-// establishment_timeout = unit->getAttribute("extra:connection-establishment-timeout", 10);
 class TcpServerConnection: public BaseConnection {
 	BaseServerConnectionHandler* handler;
 	struct bufferevent *m_bufferevent;
