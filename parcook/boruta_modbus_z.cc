@@ -573,7 +573,42 @@ public:
 
 };
 
-class modbus_unit {
+class cycle_callback_handler {
+public:
+	virtual void start_cycle() = 0;
+};
+
+class CycleScheduler: public Callback {
+	std::mutex cycle_mutex;
+
+	Scheduler scheduler;
+	std::vector<cycle_callback_handler*> cycle_handlers;
+
+public:
+	CycleScheduler(): scheduler() {
+		scheduler.set_callback(this);
+	}
+
+	void configure(TUnit* unit) {
+		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+		scheduler.set_timeout(ms(cycle_timeout));
+		scheduler.schedule();
+	}
+
+	void operator()() override {
+		std::lock_guard<std::mutex> cycle_guard(cycle_mutex);
+		scheduler.schedule();
+		for (auto handler: cycle_handlers) {
+			handler->start_cycle();
+		}
+	}
+
+	void add_handler(cycle_callback_handler* handler) {
+		cycle_handlers.push_back(handler);
+	}
+};
+
+class modbus_unit: public cycle_callback_handler {
 protected:
 	zmqhandler* zmq;
 
@@ -638,11 +673,24 @@ public:
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 	int configure(TUnit *unit, size_t read, size_t send);
 
+	void start_cycle() override {
+		to_parcook();
+		from_sender();
+	}
+
 	void to_parcook();
 	void from_sender();
 };
 
+class bc_client_handler {
+public:
+	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
+	virtual void terminate_connection() = 0;
+
+};
+
 class modbus_client: public modbus_unit {
+	bc_client_handler* handler;
 protected:
 	RSET::iterator m_received_iterator;
 	RSET::iterator m_sent_iterator;
@@ -665,10 +713,11 @@ protected:
 	struct event m_query_deadine_timer;
 	bool m_single_register_pdu;
 
-protected:
-	modbus_client(boruta_daemon* boruta, slog log);
+public:
+	modbus_client(bc_client_handler* handler, boruta_daemon* boruta, slog log);
+	int configure(TUnit *unit, size_t read, size_t send);
+
 	void reset_cycle();
-	void start_cycle();
 	void send_next_query(bool previous_ok);
 	void send_write_query();
 	void send_read_query();
@@ -678,27 +727,38 @@ protected:
 	void timeout();
 
 	void connection_error();
-
-	// TODO: handler interface
-	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
-	virtual void terminate_connection() = 0;
-
-public:
-	int configure(TUnit *unit, size_t read, size_t send);
 	void pdu_received(unsigned char u, PDU &pdu);
+
+	// cycle_callback_handler impl
+	void start_cycle() override;
 };
 
-class bc_modbus_driver: public bc_driver {
+class bc_modbus_driver: public bc_driver, public cycle_callback_handler {
+protected:
+	CycleScheduler cycle_scheduler;
+
 public:
+	bc_modbus_driver(BaseConnection* conn): bc_driver(conn), cycle_scheduler() {}
+
+	void start_cycle() override {
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+	}
+
+	void configure(TUnit* unit) {
+		cycle_scheduler.configure(unit);
+		cycle_scheduler.add_handler(this);
+	}
 };
 
-class bc_modbus_tcp_server: public bc_driver {
-	Scheduler cycle_timer;
+class bc_modbus_tcp_server: public bc_modbus_driver {
 	modbus_unit* m_unit;
 	slog m_log;
 
 public:
-	bc_modbus_tcp_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), m_log(log) {}
+	bc_modbus_tcp_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), m_log(log) {}
 
 	/** ConnectionListener interface */
 	void ReadError(const BaseConnection *conn, short event) override;
@@ -710,8 +770,8 @@ public:
 	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
 };
 
-class bc_modbus_tcp_client: public modbus_client, public bc_driver {
-	Scheduler cycle_timer;
+class bc_modbus_tcp_client: public bc_modbus_driver, public bc_client_handler {
+	modbus_client m_client;
 	slog m_log;
 
 	unsigned char m_trans_id;
@@ -721,7 +781,7 @@ protected:
 	virtual void terminate_connection();
 
 public:
-	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), m_log(log) {}
+	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_client(this, boruta, log), m_log(log) {}
 
 	// ConnectionListener
 	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
@@ -822,14 +882,15 @@ public:
 	int configure(TUnit* unit, const SerialPortConfiguration&) override;
 };
 
-class bc_modbus_serial_client: public modbus_client, public bc_driver, public bc_serial_connection_handler {
-	Scheduler cycle_timer;
+class bc_modbus_serial_client: public bc_modbus_driver, public bc_serial_connection_handler, public bc_client_handler {
+	modbus_client m_client;
+
 	bc_serial_parser* m_parser;
 	boruta_daemon* dmn;
 	slog m_log;
 
 public:
-	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): modbus_client(boruta, log), bc_driver(conn), dmn(boruta), m_log(log) {}
+	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_client(this, boruta, log), dmn(boruta), m_log(log) {}
 
 	// modbus unit and client impl
 	void send_pdu(unsigned char unit, PDU &pdu) override;
@@ -853,15 +914,14 @@ public:
 unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
 
-class bc_modbus_serial_server: public bc_driver, public bc_serial_connection_handler {
-	Scheduler cycle_timer;
+class bc_modbus_serial_server: public bc_modbus_driver, public bc_serial_connection_handler {
 	modbus_unit* m_unit;
 	bc_serial_parser* m_parser;
 	boruta_daemon* dmn;
 	slog m_log;
 
 public:
-	bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), dmn(boruta), m_log(log) {}
+	bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), dmn(boruta), m_log(log) {}
 
 	// ConnectionListener impl
 	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
@@ -1464,7 +1524,7 @@ int modbus_unit::configure(TUnit *unit, size_t read, size_t send) {
 	return 1;
 }
 
-modbus_client::modbus_client(boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), m_state(IDLE), next_query_timer(), query_deadline_timer() {
+modbus_client::modbus_client(bc_client_handler* _handler, boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), handler(_handler), m_state(IDLE), next_query_timer(), query_deadline_timer() {
 	next_query_timer.set_callback(new FnPtrScheduler([this](){ send_query();}));
 	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ send_next_query(false);}));
 }
@@ -1476,6 +1536,7 @@ void modbus_client::reset_cycle() {
 
 void modbus_client::start_cycle() {
 	m_log->log(7, "Starting cycle");
+	modbus_unit::start_cycle();
 	send_next_query(true);
 }
 
@@ -1496,6 +1557,9 @@ void modbus_client::send_next_query(bool previous_ok) {
 
 void modbus_client::connection_error() {
 	query_deadline_timer.cancel();
+	m_state = IDLE;
+
+	// reschedule?
 }
 
 void modbus_client::send_write_query() {
@@ -1515,7 +1579,7 @@ void modbus_client::send_write_query() {
 		m_log->log(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
-	send_pdu(m_id, m_pdu);
+	handler->send_pdu(m_id, m_pdu);
 }
 
 void modbus_client::send_read_query() {
@@ -1534,7 +1598,7 @@ void modbus_client::send_read_query() {
 	m_pdu.data.push_back(m_regs_count >> 8);
 	m_pdu.data.push_back(m_regs_count & 0xff);
 
-	send_pdu(m_id, m_pdu);
+	handler->send_pdu(m_id, m_pdu);
 }
 
 void modbus_client::next_query(bool previous_ok) {
@@ -1556,7 +1620,7 @@ void modbus_client::next_query(bool previous_ok) {
 			reset_cycle();
 			if (!previous_ok) {
 				m_log->log(1, "Previous query failed and we have just finished our cycle - teminating connection");
-				terminate_connection();
+				handler->terminate_connection();
 			}
 			break;
 	}
@@ -1706,27 +1770,11 @@ void bc_modbus_tcp_server::ReadData(const BaseConnection *conn, const std::vecto
 }
 
 int bc_modbus_tcp_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) {
-	auto cycle_callback = [this]() {
-		m_unit->from_sender();
-		m_unit->to_parcook();
-			
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
-
-		cycle_timer.schedule();
-	};
-
-	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
-
-	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-	cycle_timer.set_timeout(ms(cycle_timeout));
-
 	if (m_unit->configure(unit, read, send))
 		return 1;
 
-	cycle_timer.schedule();
+	cycle_scheduler.add_handler(m_unit);
+	bc_modbus_driver::configure(unit);
 	return 0;
 }
 
@@ -1756,45 +1804,28 @@ void bc_modbus_tcp_client::ReadData(const BaseConnection *conn, const std::vecto
 			return;
 		}
 
-		modbus_client::pdu_received(adu->unit_id, adu->pdu);
+		m_client.pdu_received(adu->unit_id, adu->pdu);
 	}
 }
 
 void bc_modbus_tcp_client::ReadError(const BaseConnection*, short int) {
-	modbus_client::connection_error();
+	m_client.connection_error();
 
 	try {
 		m_connection->Close();
 	} catch (...) {
 		// log error
 	}
-
-	m_state = IDLE;
 }
 
 int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) {
-	auto cycle_callback = [this]() {
-		from_sender();
-		to_parcook();
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
-
-		modbus_client::start_cycle();
-		cycle_timer.schedule();
-	};
-
-	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
-
-	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-	cycle_timer.set_timeout(ms(cycle_timeout));
-
-	if (modbus_client::configure(unit, read, send))
+	if (m_client.configure(unit, read, send))
 		return 1;
 
 	m_trans_id = 0;
-	cycle_timer.schedule();
+
+	cycle_scheduler.add_handler(&m_client);
+	bc_modbus_driver::configure(unit);
 	return 0;
 }
 
@@ -1807,7 +1838,7 @@ void bc_modbus_serial_client::send_pdu(unsigned char unit, PDU &pdu) {
 	try {
 		m_parser->send_sdu(unit, pdu);
 	} catch (...) {
-		modbus_client::connection_error();
+		m_client.connection_error();
 	}
 }
 
@@ -1820,55 +1851,42 @@ void bc_modbus_serial_client::ReadData(const BaseConnection *conn, const std::ve
 }
 
 void bc_modbus_serial_client::ReadError(const BaseConnection *conn, short int event) {
-	m_state = IDLE;
-	m_parser->reset();
 	m_connection->Close();
-	modbus_client::connection_error();
+	m_parser->reset();
+	m_client.connection_error();
 }
 
 void bc_modbus_serial_client::frame_parsed(SDU &sdu, BaseConnection*) {
-	pdu_received(sdu.unit_id, sdu.pdu);
+	m_client.pdu_received(sdu.unit_id, sdu.pdu);
 }
 
 void bc_modbus_serial_client::error(ERROR_CONDITION) {
-	m_state = IDLE;
 	m_parser->reset();
-	modbus_client::timeout();
+	m_client.timeout();
 }
 
 int bc_modbus_serial_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
-	auto cycle_callback = [this]() {
-		from_sender();
-		to_parcook();
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
-		start_cycle();
-		cycle_timer.schedule();
-	};
-
-	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
-
-	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-	cycle_timer.set_timeout(ms(cycle_timeout));
-
-	if (modbus_client::configure(unit, read, send))
+	if (m_client.configure(unit, read, send))
 		return 1;
 
+	std::map<std::string, std::function<bc_serial_parser*()>> serial_proto_map = {
+		{"rtu", [=](){ return new bc_serial_rtu_parser(m_connection, dmn, this, m_log); }},
+		{"ascii", [=](){ return new bc_serial_ascii_parser(m_connection, dmn, this, m_log); }},
+	};
+
 	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-	if (protocol == "rtu")
-		m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
-	else if (protocol == "ascii")
-		m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
-	else {
+	auto fun_it = serial_proto_map.find(protocol);
+	if (fun_it == serial_proto_map.end()) {
 		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
 		return 1;
 	}
+
+	m_parser = (fun_it->second)();
 	if (m_parser->configure(unit, conf))
 		return 1;
 
-	cycle_timer.schedule();
+	cycle_scheduler.add_handler(&m_client);
+	bc_modbus_driver::configure(unit);
 	return 0;
 }
 
@@ -1890,37 +1908,27 @@ void bc_modbus_serial_server::error(ERROR_CONDITION) {
 }
 
 int bc_modbus_serial_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
-	auto cycle_callback = [this]() {
-		m_unit->from_sender();
-		m_unit->to_parcook();
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
-		cycle_timer.schedule();
-	};
-
-	cycle_timer.set_callback(new FnPtrScheduler(std::move(cycle_callback)));
-
-	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-	cycle_timer.set_timeout(ms(cycle_timeout));
-
 	if (m_unit->configure(unit, read, send))
 		return 1;
 
+	std::map<std::string, std::function<bc_serial_parser*()>> serial_proto_map = {
+		{"rtu", [=](){ return new bc_serial_rtu_parser(m_connection, dmn, this, m_log); }},
+		{"ascii", [=](){ return new bc_serial_ascii_parser(m_connection, dmn, this, m_log); }},
+	};
+
 	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-	if (protocol == "rtu")
-		m_parser = new bc_serial_rtu_parser(m_connection, dmn, this, m_log);
-	else if (protocol == "ascii")
-		m_parser = new bc_serial_ascii_parser(m_connection, dmn, this, m_log);
-	else {
+	auto fun_it = serial_proto_map.find(protocol);
+	if (fun_it == serial_proto_map.end()) {
 		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
 		return 1;
 	}
+
+	m_parser = (fun_it->second)();
 	if (m_parser->configure(unit, conf))
 		return 1;
 
-	cycle_timer.schedule();
+	cycle_scheduler.add_handler(m_unit);
+	bc_modbus_driver::configure(unit);
 	return 0;
 }
 
