@@ -122,17 +122,26 @@ static const time_t RECONNECT_ATTEMPT_DELAY = 10;
 /*implementation*/
 
 namespace szarp {
-ms operator+(const ms& ms1, const ms& ms2) {
-	ms m = ms1;
+
+template class time_spec<util::_ms>;
+template class time_spec<util::_us>;
+
+template <typename ts>
+time_spec<ts> operator+(const time_spec<ts>& ms1, const time_spec<ts>& ms2) {
+	time_spec<ts> m = ms1;
 	m += ms2;
 	return m;
 }
 
-ms operator-(const ms& ms1, const ms& ms2) {
-	ms m = ms1;
+template <typename ts>
+time_spec<ts> operator-(const time_spec<ts>& ms1, const time_spec<ts>& ms2) {
+	time_spec<ts> m = ms1;
 	m -= ms2;
 	return m;
 }
+
+template time_spec<util::_ms> operator-(const time_spec<util::_ms>&, const time_spec<util::_ms>&);
+template time_spec<util::_us> operator-(const time_spec<util::_us>&, const time_spec<util::_us>&);
 
 sz4::second_time_t time_now() {
 	struct timespec time;
@@ -453,13 +462,13 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 			if (mode == conn_factory::mode::server) {
 				auto conn = new TcpServerConnectionHandler(EventBase::evbase);
 				conn->Init(unit);
-				driver = create_bc_modbus_tcp_server(conn, m_boruta, logger);
+				driver = create_bc_modbus_driver(conn, m_boruta, logger);
 			} else if (mode == conn_factory::mode::client) {
 				auto conn = new TcpConnection(EventBase::evbase);
 				conn->Init(unit);
 
 				if (unit->getAttribute<bool>("extra:use_tcp_2_serial_proxy", false))
-					driver = create_bc_modbus_serial_client(conn, m_boruta, logger);
+					driver = create_bc_modbus_driver(conn, m_boruta, logger);
 				else
 					driver = create_bc_modbus_tcp_client(conn, m_boruta, logger);
 			}
@@ -467,11 +476,7 @@ int bc_manager::configure(TUnit *unit, size_t read, size_t send) {
 			auto conn = new SerialPort(EventBase::evbase);
 			conn->Init(conf.path);
 
-			if (mode == conn_factory::mode::client) {
-				driver = create_bc_modbus_serial_client(conn, m_boruta, logger);
-			} else if (mode == conn_factory::mode::server) {
-				driver = create_bc_modbus_serial_server(conn, m_boruta, logger);
-			}
+			driver = create_bc_modbus_driver(conn, m_boruta, logger);
 
 			conn->Open();
 			conn->SetConfiguration(conf);
