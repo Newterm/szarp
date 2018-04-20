@@ -61,32 +61,56 @@
 #include "sz4/util.h"
 
 namespace szarp {
-struct ms {
-	int64_t m_t;
-	ms(int64_t t): m_t(t) {}
 
-	explicit operator struct timeval() {
+namespace util {
+
+struct _us {
+	static struct timeval get_timeval(int64_t m_t) {
 		struct timeval tv;
 		tv.tv_sec = m_t / 1000;
 		tv.tv_usec = (m_t % 1000) * 1000;
 		return tv;
 	}
+};
+
+struct _ms {
+	static struct timeval get_timeval(int64_t m_t) {
+		struct timeval tv;
+		tv.tv_sec = m_t / 1000;
+		tv.tv_usec = (m_t % 1000) * 1000;
+		return tv;
+	}
+};
+
+} // ns util
+
+template <typename ts>
+struct time_spec {
+	int64_t m_t;
+	time_spec(int64_t t): m_t(t) {}
+
+	explicit operator struct timeval() {
+		return ts::get_timeval(m_t);
+	}
 
 	operator int64_t() { return m_t; }
 
-	ms& operator+=(const ms& other) {
+	time_spec<ts>& operator+=(const time_spec<ts>& other) {
 		m_t -= other.m_t;
 		return *this;
 	}
 
-	ms& operator-=(const ms& other) {
+	time_spec<ts>& operator-=(const time_spec<ts>& other) {
 		m_t -= other.m_t;
 		return *this;
 	}
 };
 
-ms operator+(const ms& ms1, const ms& ms2);
-ms operator-(const ms& ms1, const ms& ms2);
+template <typename ts> time_spec<ts> operator+(const time_spec<ts>& time_spec1, const time_spec<ts>& time_spec2);
+template <typename ts> time_spec<ts> operator-(const time_spec<ts>& time_spec1, const time_spec<ts>& time_spec2);
+
+using ms = time_spec<util::_ms>;
+using us = time_spec<util::_us>;
 
 template <typename time_type>
 time_type time_now() = delete;
@@ -130,11 +154,13 @@ public:
 		callback = _callback;
 	}
 
-	void set_timeout(szarp::ms time) {
+	template <typename ts>
+	void set_timeout(ts time) {
 		tv = (struct timeval) time;
 	}
 
-	void schedule(szarp::ms time) {
+	template <typename ts>
+	void schedule(ts time) {
 		set_timeout(time);
 		schedule();
 	}
@@ -381,10 +407,8 @@ public:
 	void cycle_timer_callback();
 };
 
-driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boruta_daemon*, slog);
-driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon*, slog);
-driver_iface* create_bc_modbus_serial_client(BaseConnection* conn, boruta_daemon*, slog);
 driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon*, slog);
+driver_iface* create_bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log);
 driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon*, slog);
 
 void dolog(int level, const char * fmt, ...)

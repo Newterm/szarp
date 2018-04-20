@@ -299,6 +299,10 @@
 #include "sz4/util.h"
 
 using szarp::ms;
+using szarp::us;
+
+template <typename T>
+using bopt = boost::optional<T>;
 
 const unsigned char MB_ERROR_CODE = 0x80;
 
@@ -324,114 +328,28 @@ enum REGISTER_TYPE {
 	INPUT_REGISTER
 };
 
-struct PDU {
+struct ADU {
+	bopt<unsigned> trans_id;
+	unsigned char unit_id;
 	unsigned char func_code;
 	std::vector<unsigned char> data;
 };
 
-
-template <typename T>
-using bopt = boost::optional<T>;
-
-struct TCPADU {
-	unsigned short trans_id;
-	unsigned short proto_id;
-	unsigned short length;
-	unsigned char unit_id;
-	PDU pdu;
-
-	TCPADU() = default;
-
-	TCPADU(uint16_t t_id, uint16_t u_id, PDU& _pdu): trans_id(t_id), proto_id(0), length(_pdu.data.size() + 2), unit_id(u_id), pdu(_pdu) {}
-
-	static bopt<TCPADU> from_data(const std::vector<unsigned char>& data) {
-		const int HEADER_SIZE = 6;
-		auto it = data.begin();
-		if (std::distance(it, data.end()) < HEADER_SIZE)
-			return boost::none;
-
-		TCPADU adu;
-		adu.trans_id = ntohs(*it | (*++it << 8));
-		adu.proto_id = ntohs(*++it | (*++it << 8));
-		adu.length = ntohs(*++it | (*++it << 8));
-
-		if (std::distance(it, data.end()) < adu.length)
-			return boost::none;
-
-		adu.unit_id = *++it;
-		adu.pdu.func_code = *++it;
-
-		auto data_len = adu.length - 2;
-		adu.pdu.data.resize(data_len);
-		for (int i = 0; i < data_len; ++i) {
-			adu.pdu.data[i] = *++it;
-		}
-
-		return adu;
-	}
-
-	static std::vector<unsigned char> header_to_data(const TCPADU& adu) {
-		std::vector<unsigned char> data;
-
-		auto trans_id = htons(adu.trans_id);
-		auto len = htons(2 + adu.pdu.data.size());
-
-		data.push_back(trans_id & 0xff);
-		data.push_back(trans_id >> 8);
-		data.push_back(0);
-		data.push_back(0);
-		data.push_back(len & 0xff);
-		data.push_back(len >> 8);
-		data.push_back(adu.unit_id);
-		data.push_back(adu.pdu.func_code);
-		return data;
-	}
-
-	static void write_to_conn(BaseConnection* conn, const TCPADU& adu) {
-		std::vector<unsigned char> head_data = TCPADU::header_to_data(adu);
-
-		conn->WriteData(&head_data[0], head_data.size());
-		conn->WriteData(&adu.pdu.data[0], adu.pdu.data.size());
-	}
-};
-
-struct SDU {
-	unsigned char unit_id;
-	PDU pdu;
-};
-
-std::string pdu2string(const struct PDU& pdu) {
+std::string adu2string(const struct ADU& adu) {
 	std::stringstream ss;
-	ss << "fun:" << (int) pdu.func_code;
-	for (auto d: pdu.data) {
+	ss << "unit: " << (int)adu.unit_id;
+	if (adu.trans_id)
+		ss << " trans id: " << (int) (*adu.trans_id);
+
+	ss << " fun:" << (int) adu.func_code;
+	for (auto d: adu.data) {
 		ss << " " << std::to_string(d);
 	}
 
 	return ss.str();
 }
 
-std::string tcpadu2string(const struct TCPADU& adu) {
-	std::stringstream ss;
-	ss << "trans_id: " << (int)adu.trans_id;
-	ss << " proto_id: " << (int)adu.proto_id;
-	ss << " len: " << (int)adu.length;
-	ss << " unit: " << (int)adu.unit_id;
-	ss << " " << pdu2string(adu.pdu);
-	return ss.str();
-}
-
-std::string sdu2string(const struct SDU& sdu) {
-	std::stringstream ss;
-	ss << "unit: " << (int)sdu.unit_id;
-	ss << " " << pdu2string(sdu.pdu);
-	return ss.str();
-}
-
 using register_iface = register_iface_t<int16_t>;
-
-using RMAP = std::map<unsigned short, register_iface*>;
-using RSET = std::set<std::pair<REGISTER_TYPE, unsigned short>>;
-
 class null_register: public register_iface {
 public:
 	bool is_valid() const override { return false; }
@@ -582,11 +500,12 @@ class CycleScheduler: public Callback {
 	std::mutex cycle_mutex;
 
 	Scheduler scheduler;
-	std::vector<cycle_callback_handler*> cycle_handlers;
+	cycle_callback_handler* cycle_handler;
 
 public:
-	CycleScheduler(): scheduler() {
+	CycleScheduler(cycle_callback_handler* handler): scheduler() {
 		scheduler.set_callback(this);
+		cycle_handler = handler;
 	}
 
 	void configure(TUnit* unit) {
@@ -598,13 +517,7 @@ public:
 	void operator()() override {
 		std::lock_guard<std::mutex> cycle_guard(cycle_mutex);
 		scheduler.schedule();
-		for (auto handler: cycle_handlers) {
-			handler->start_cycle();
-		}
-	}
-
-	void add_handler(cycle_callback_handler* handler) {
-		cycle_handlers.push_back(handler);
+		cycle_handler->start_cycle();
 	}
 };
 
@@ -614,8 +527,10 @@ protected:
 
 	unsigned char m_id;
 
+	using RMAP = std::map<unsigned short, register_iface*>;
 	RMAP m_registers;
 
+	using RSET = std::set<std::pair<REGISTER_TYPE, unsigned short>>;
 	RSET m_received;
 	RSET m_sent;
 
@@ -657,21 +572,22 @@ protected:
 	const char* error_string(const unsigned char& error);
 
 public:
-	bool process_request(unsigned char unit, PDU &pdu);
+	bool process_request(ADU &adu);
 
 protected:
-	void consume_read_regs_response(unsigned short start_addr, unsigned short regs_count, PDU &pdu);
-	void consume_write_regs_response(unsigned short start_addr, unsigned short regs_count, PDU &pdu);
+	void consume_read_regs_response(unsigned short start_addr, unsigned short regs_count, ADU &adu);
+	void consume_write_regs_response(unsigned short start_addr, unsigned short regs_count, ADU &adu);
 
-	bool perform_write_registers(PDU &pdu);
-	bool perform_read_holding_regs(PDU &pdu);
+	bool perform_write_registers(ADU &adu);
+	bool perform_read_holding_regs(ADU &adu);
 
-	bool create_error_response(unsigned char error, PDU &pdu);
+	bool create_error_response(unsigned char error, ADU &adu);
 
 public:
 	modbus_unit(zmqhandler* _zmq, slog logger);
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
-	int configure(TUnit *unit, size_t read, size_t send);
+
+	virtual int configure(TUnit *unit, size_t read, size_t send);
 
 	void start_cycle() override {
 		to_parcook();
@@ -680,22 +596,51 @@ public:
 
 	void to_parcook();
 	void from_sender();
+
+	virtual void adu_received(BaseConnection* conn, ADU &adu) = 0;
+	virtual void reset_cycle() = 0;
+	virtual void timeout() = 0;
 };
 
-class bc_client_handler {
-public:
-	virtual void send_pdu(unsigned char unit, PDU &pdu) = 0;
-	virtual void terminate_connection() = 0;
+enum ERROR_CONDITION { TIMEOUT, FRAME_ERROR, CRC_ERROR };
+std::string error_condition_str(const ERROR_CONDITION e) {
+	std::map<ERROR_CONDITION, std::string> error_str_map = { {TIMEOUT, "timeout"}, {FRAME_ERROR, "frame error"}, {CRC_ERROR,"crc error"} };
+	return error_str_map[e];
+}
 
+class bc_handler {
+public:
+	virtual void frame_parsed(ADU& adu, BaseConnection*) = 0;
+	virtual void send_frame(BaseConnection* conn, ADU& adu) = 0;
+
+	virtual void error(ERROR_CONDITION) = 0;
+};
+
+class modbus_server: public modbus_unit {
+	bc_handler* handler;
+
+public:
+	modbus_server(bc_handler* _handler, boruta_daemon* boruta, slog log): modbus_unit(boruta->get_zmq(), log), handler(_handler) {}
+
+	void adu_received(BaseConnection* conn, ADU &adu) override {
+		if (modbus_unit::process_request(adu)) {
+			handler->send_frame(conn, adu);
+		}
+	}
+
+	void reset_cycle() override {};
+	void timeout() override {}
 };
 
 class modbus_client: public modbus_unit {
-	bc_client_handler* handler;
+	bc_handler* handler;
+	BaseConnection* m_connection;
+	
 protected:
 	RSET::iterator m_received_iterator;
 	RSET::iterator m_sent_iterator;
 
-	PDU m_pdu;
+	ADU m_du;
 
 	unsigned short m_start_addr;
 	unsigned short m_regs_count;
@@ -714,100 +659,121 @@ protected:
 	bool m_single_register_pdu;
 
 public:
-	modbus_client(bc_client_handler* handler, boruta_daemon* boruta, slog log);
-	int configure(TUnit *unit, size_t read, size_t send);
+	modbus_client(BaseConnection* conn, bc_handler* handler, boruta_daemon* boruta, slog log);
+	int configure(TUnit *unit, size_t read, size_t send) override;
 
-	void reset_cycle();
-	void send_next_query(bool previous_ok);
+	void reset_cycle() override;
+	void send_next_query();
 	void send_write_query();
 	void send_read_query();
-	void next_query(bool previous_ok);
+	void next_query();
 	void send_query();
 	void find_continuous_reg_block(RSET::iterator &i, RSET &regs);
-	void timeout();
 
-	void connection_error();
-	void pdu_received(unsigned char u, PDU &pdu);
+	void timeout() override;
+
+	void adu_received(BaseConnection* conn, ADU &adu);
 
 	// cycle_callback_handler impl
 	void start_cycle() override;
 };
 
-class bc_modbus_driver: public bc_driver, public cycle_callback_handler {
+class bc_parser {
+public:
+	virtual int configure(TUnit* unit, const SerialPortConfiguration &) = 0;
+	virtual void send_adu(BaseConnection* conn, ADU& adu) = 0;
+	virtual void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) = 0;
+	virtual void write_finished() = 0;
+	virtual void reset() = 0;
+};
+
+class bc_modbus_driver: public bc_driver, public bc_handler, public cycle_callback_handler {
 protected:
 	CycleScheduler cycle_scheduler;
+	modbus_unit* m_unit;
+	bc_parser* m_parser;
+	slog m_log;
+
+private:
+	std::map<std::string, std::function<modbus_unit*()>> mode_map;
+	std::map<std::string, std::function<bc_parser*()>> proto_map;
 
 public:
-	bc_modbus_driver(BaseConnection* conn): bc_driver(conn), cycle_scheduler() {}
+	bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log);
 
 	void start_cycle() override {
+		m_log->log(7, "Starting cycle");
 		if (!m_connection->Ready()) {
 			m_connection->Close();
 			m_connection->Open();
 		}
+
+		m_unit->start_cycle();
 	}
 
-	void configure(TUnit* unit) {
+	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &conf) override {
+		configure_unit(unit, read, send);
+		configure_parser(unit, conf);
+
 		cycle_scheduler.configure(unit);
-		cycle_scheduler.add_handler(this);
+		return 0;
+	}
+
+	int configure_unit(TUnit* unit, size_t read, size_t send);
+	int configure_parser(TUnit* unit, const SerialPortConfiguration &conf);
+
+	// ConnectionListener impl
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override {
+		m_parser->read_data(conn, data);
+	}
+
+	void ReadError(const BaseConnection *conn, short int event) override {
+		m_log->log(3, "Connection error, resetting");
+		m_connection->Close();
+		m_parser->reset();
+		m_unit->reset_cycle();
+		// reschedule connection?
+	}
+
+	void OpenFinished(const BaseConnection *conn) override {}
+	void SetConfigurationFinished(const BaseConnection *conn) override {}
+
+	void frame_parsed(ADU &adu, BaseConnection* conn) override {
+		auto adu_str = adu2string(adu);
+		m_log->log(10, "Got frame %s", adu_str.c_str());
+
+		m_unit->adu_received(conn, adu);
+	}
+
+	void send_frame(BaseConnection* conn, ADU &adu) override {
+		try {
+			auto adu_str = adu2string(adu);
+			m_log->log(10, "Sending %s", adu_str.c_str());
+
+			m_parser->send_adu(conn, adu);
+		} catch (...) {
+			m_log->log(3, "Couldn't send frame!");
+
+		}
+	}
+
+	void error(const ERROR_CONDITION e) override {
+		auto error_str = error_condition_str(e);
+		m_log->log(5, "Error during frame parsing: %s, resetting", error_str.c_str());
+
+		m_parser->reset();
+		m_unit->timeout();
 	}
 };
 
-class bc_modbus_tcp_server: public bc_modbus_driver {
-	modbus_unit* m_unit;
-	slog m_log;
-
-public:
-	bc_modbus_tcp_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), m_log(log) {}
-
-	/** ConnectionListener interface */
-	void ReadError(const BaseConnection *conn, short event) override;
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
-
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
-
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
-};
-
-class bc_modbus_tcp_client: public bc_modbus_driver, public bc_client_handler {
-	modbus_client m_client;
-	slog m_log;
-
-	unsigned char m_trans_id;
-
-protected:
-	void send_pdu(unsigned char unit, PDU &pdu) override;
-	virtual void terminate_connection();
-
-public:
-	bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_client(this, boruta, log), m_log(log) {}
-
-	// ConnectionListener
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
-	void ReadError(const BaseConnection *conn, short int event) override;
-
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
-
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) override;
-};
-
-class bc_serial_connection_handler {
-public:
-	enum ERROR_CONDITION { TIMEOUT, FRAME_ERROR, CRC_ERROR };
-	virtual void frame_parsed(SDU &adu, BaseConnection*) = 0;
-	virtual void error(ERROR_CONDITION) = 0;
-};
-
-class bc_serial_parser {
+class bc_serial_parser: public bc_parser {
 protected:
 	slog m_log;
-
 	BaseConnection* m_connection;
-	bc_serial_connection_handler *m_serial_handler;
 
-	SDU m_sdu;
+	bc_handler *m_serial_handler;
+
+	ADU m_adu;
 
 	std::deque<unsigned char> m_input_buffer;
 	std::deque<unsigned char> m_output_buffer;
@@ -821,21 +787,32 @@ protected:
 	virtual void write_timer_event();
 
 public:
-	bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log);
-	virtual int configure(TUnit* unit, const SerialPortConfiguration &) = 0;
-	virtual void send_sdu(unsigned char unit_id, PDU &pdu) = 0;
-	virtual void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) = 0;
-	virtual void write_finished();
-	virtual void reset() = 0;
+	bc_serial_parser(BaseConnection* conn, bc_handler *serial_handler, slog log);
+	void write_finished() override;
 
+};
+
+class bc_tcp_parser: public bc_parser {
+	bc_handler* handler;
+	slog m_log;
+
+public:
+	bc_tcp_parser(bc_handler* _handler, slog log): handler(_handler), m_log(log) {}
+	int configure(TUnit* unit, const SerialPortConfiguration &) override;
+
+	void send_adu(BaseConnection* conn, ADU &adu) override;
+	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
+
+	void write_finished() override {}
+	void reset() override {}
 };
 
 class bc_serial_rtu_parser : public bc_serial_parser {
 	enum { ADDR, FUNC_CODE, DATA } m_state;
 	size_t m_data_read;
 
-	ms m_timeout_1_5_c = -1;
-	ms m_timeout_3_5_c = -1;
+	us m_timeout_1_5_c = 100000;
+	us m_timeout_3_5_c = 100000;
 	bool m_is_3_5_c_timeout;
 
 	std::vector<unsigned char> m_data;
@@ -851,12 +828,12 @@ class bc_serial_rtu_parser : public bc_serial_parser {
 	void read_timer_event() override;
 
 public:
-	bc_serial_rtu_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): bc_serial_parser(conn, boruta, serial_handler, log), m_state(FUNC_CODE) {
+	bc_serial_rtu_parser(BaseConnection* conn, bc_handler *serial_handler, slog log): bc_serial_parser(conn, serial_handler, log), m_state(FUNC_CODE) {
 		reset();
 	}
 
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
-	void send_sdu(unsigned char unit_id, PDU &pdu) override;
+	void send_adu(BaseConnection* conn, ADU &sdu) override;
 	void reset() override;
 	int configure(TUnit* unit, const SerialPortConfiguration &) override;
 
@@ -876,66 +853,50 @@ class bc_serial_ascii_parser : public bc_serial_parser {
 
 	void read_timer_event() override;
 public:
-	bc_serial_ascii_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log);
+	bc_serial_ascii_parser(BaseConnection* conn, bc_handler *serial_handler, slog log);
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
-	void send_sdu(unsigned char unit_id, PDU &pdu) override;
+	void send_adu(BaseConnection* conn, ADU &adu) override;
 	int configure(TUnit* unit, const SerialPortConfiguration&) override;
-};
-
-class bc_modbus_serial_client: public bc_modbus_driver, public bc_serial_connection_handler, public bc_client_handler {
-	modbus_client m_client;
-
-	bc_serial_parser* m_parser;
-	boruta_daemon* dmn;
-	slog m_log;
-
-public:
-	bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_client(this, boruta, log), dmn(boruta), m_log(log) {}
-
-	// modbus unit and client impl
-	void send_pdu(unsigned char unit, PDU &pdu) override;
-	void terminate_connection() override;
-
-	// ConnectionListener impl
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
-	void ReadError(const BaseConnection *conn, short int event) override;
-
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
-
-	// serial_connection_handler impl
-	void frame_parsed(SDU &sdu, BaseConnection*) override;
-	void error(ERROR_CONDITION) override;
-
-	// bc_serial_driver impl
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override;
 };
 
 unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
 
-class bc_modbus_serial_server: public bc_modbus_driver, public bc_serial_connection_handler {
-	modbus_unit* m_unit;
-	bc_serial_parser* m_parser;
-	boruta_daemon* dmn;
-	slog m_log;
+class bc_modbus_tcp_client: public bc_modbus_driver {
+	unsigned char m_trans_id;
+	std::set<unsigned char> valid_ids;
 
 public:
-	bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_modbus_driver(conn), m_unit(new modbus_unit(boruta->get_zmq(), log)), dmn(boruta), m_log(log) {}
+	using bc_modbus_driver::bc_modbus_driver;
 
-	// ConnectionListener impl
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
-	void ReadError(const BaseConnection *conn, short int event) override;
+	// bc_handler impl
+	void send_frame(BaseConnection* conn, ADU &adu) override {
+		adu.trans_id = ++m_trans_id;
+		valid_ids.insert(m_trans_id);
+		bc_modbus_driver::send_frame(conn, adu);
+	}
+	// bc_onnection_handler impl
+	void frame_parsed(ADU &adu, BaseConnection* conn) override {
+		if (!adu.trans_id) {
+			ASSERT(false);
+			error(FRAME_ERROR);
+			return;
+		}
 
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
+		if (valid_ids.count(*adu.trans_id) == 0) {
+			m_log->log(4, "Received unexpected tranasction id, expected: %u, ignoring the response", unsigned(m_trans_id));
+			error(FRAME_ERROR);
+			return;
+		}
 
-	// serial connection impl
-	void frame_parsed(SDU &adu, BaseConnection*) override;
-	void error(ERROR_CONDITION) override;
+		valid_ids.erase(*adu.trans_id);
+		bc_modbus_driver::frame_parsed(adu, conn);
+	}
 
-	// bc_serial_driver impl
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) override;
+	void start_cycle() override {
+		valid_ids.clear();
+		bc_modbus_driver::start_cycle();
+	}
 };
 
 class modbus_register: public register_iface {
@@ -977,22 +938,22 @@ public:
 	void set_mod_time(const sz4::nanosecond_time_t& time) override {}
 };
 
-bool modbus_unit::process_request(unsigned char unit, PDU &pdu) {
-	if (m_id != unit && unit != 0) {
-		m_log->log(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) unit);
+bool modbus_unit::process_request(ADU &adu) {
+	if (m_id != adu.unit_id && adu.unit_id != 0) {
+		m_log->log(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) adu.unit_id);
 		return false;
 	}
 
 	try {
 
-		switch (pdu.func_code) {
+		switch (adu.func_code) {
 			case MB_F_RHR:
-				return perform_read_holding_regs(pdu);
+				return perform_read_holding_regs(adu);
 			case MB_F_WSR:
 			case MB_F_WMR:
-				return perform_write_registers(pdu);
+				return perform_write_registers(adu);
 			default:
-				return create_error_response(MB_ILLEGAL_FUNCTION, pdu);
+				return create_error_response(MB_ILLEGAL_FUNCTION, adu);
 		}
 
 	} catch (std::out_of_range) {	//message was distorted
@@ -1027,45 +988,45 @@ const char* modbus_unit::error_string(const unsigned char& error) {
 	}
 }
 
-void modbus_unit::consume_read_regs_response(unsigned short start_addr, unsigned short regs_count, PDU &pdu) {
+void modbus_unit::consume_read_regs_response(unsigned short start_addr, unsigned short regs_count, ADU &adu) {
 	m_log->log(5, "Consuming read holding register response unit_id: %d, address: %hu, registers count: %hu", (int) m_id, start_addr, regs_count);
-	if (pdu.func_code & MB_ERROR_CODE) {
+	if (adu.func_code & MB_ERROR_CODE) {
 		m_log->log(1, "Exception received in response to read holding registers command, unit_id: %d, address: %hu, count: %hu",
 		       	(int)m_id, start_addr, regs_count);
-		m_log->log(1, "Error is: %s(%d)", error_string(pdu.data.at(0)), (int)pdu.data.at(0));
+		m_log->log(1, "Error is: %s(%d)", error_string(adu.data.at(0)), (int)adu.data.at(0));
 		return;
 	} 
 
-	if (pdu.data.size() - 1 != regs_count * 2) {
+	if (adu.data.size() - 1 != regs_count * 2) {
 		m_log->log(1, "Unexpected data size in response to read holding registers command, requested %hu regs but got %zu data in response",
-		       	regs_count, pdu.data.size() - 1);
+		       	regs_count, adu.data.size() - 1);
 		throw std::out_of_range("Invalid response size");
 	}
 
 	size_t data_index = 1;
 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
-		RMAP::iterator j = m_registers.find(addr);
-		uint16_t v = ((uint16_t)(pdu.data.at(data_index)) << 8) | pdu.data.at(data_index + 1);
+		auto j = m_registers.find(addr);
+		uint16_t v = ((uint16_t)(adu.data.at(data_index)) << 8) | adu.data.at(data_index + 1);
 		m_log->log(9, "Setting register unit_id: %d, address: %hu, value: %hu", (int) m_id, (int) addr, v);
 		j->second->set_val(v);
 		j->second->set_mod_time(m_current_time);
 	}
 }
 
-void modbus_unit::consume_write_regs_response(unsigned short start_addr, unsigned short regs_count, PDU &pdu) { 
+void modbus_unit::consume_write_regs_response(unsigned short start_addr, unsigned short regs_count, ADU &adu) { 
 	m_log->log(5, "Consuming write holding register response unit_id: %u, address: %hu, registers count: %hu", m_id, start_addr, regs_count);
-	if (pdu.func_code & MB_ERROR_CODE) {
+	if (adu.func_code & MB_ERROR_CODE) {
 		m_log->log(1, "Exception received in response to write holding registers command, unit_id: %u, address: %hu, count: %hu",
 			m_id, start_addr, regs_count);
-		m_log->log(1, "Error is: %s(%d)", error_string(pdu.data.at(0)), (int)pdu.data.at(0));
+		m_log->log(1, "Error is: %s(%d)", error_string(adu.data.at(0)), (int)adu.data.at(0));
 	} else {
 		m_log->log(5, "Write holding register command poisitively acknowledged");
 	}
 }
 
-bool modbus_unit::perform_write_registers(PDU &pdu) {
-	std::vector<unsigned char>& d = pdu.data;
+bool modbus_unit::perform_write_registers(ADU &adu) {
+	std::vector<unsigned char>& d = adu.data;
 
 	unsigned short start_addr;
 	unsigned short regs_count;
@@ -1074,7 +1035,7 @@ bool modbus_unit::perform_write_registers(PDU &pdu) {
 
 	start_addr = (d.at(0) << 8) | d.at(1);
 
-	if (pdu.func_code == MB_F_WMR) {
+	if (adu.func_code == MB_F_WMR) {
 		regs_count = (d.at(2) << 8) | d.at(3);
 		data_index = 5;
 	} else {
@@ -1085,9 +1046,9 @@ bool modbus_unit::perform_write_registers(PDU &pdu) {
 	m_log->log(7, "Processing write holding request registers start_addr: %hu, regs_count:%hu", start_addr, regs_count);
 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++, data_index += 2) {
-		RMAP::iterator j = m_registers.find(addr);
+		auto j = m_registers.find(addr);
 		if (j == m_registers.end())
-			return create_error_response(MB_ILLEGAL_DATA_ADDRESS, pdu);
+			return create_error_response(MB_ILLEGAL_DATA_ADDRESS, adu);
 
 		uint16_t v = (d.at(data_index) << 8) | d.at(data_index + 1);
 
@@ -1096,7 +1057,7 @@ bool modbus_unit::perform_write_registers(PDU &pdu) {
 		j->second->set_mod_time(m_current_time);
 	}
 
-	if (pdu.func_code == MB_F_WMR)
+	if (adu.func_code == MB_F_WMR)
 		d.resize(4);
 
 	m_log->log(7, "Request processed successfully");
@@ -1104,8 +1065,8 @@ bool modbus_unit::perform_write_registers(PDU &pdu) {
 	return true;
 }
 
-bool modbus_unit::perform_read_holding_regs(PDU &pdu) {
-	std::vector<unsigned char>& d = pdu.data;
+bool modbus_unit::perform_read_holding_regs(ADU &adu) {
+	std::vector<unsigned char>& d = adu.data;
 	uint16_t start_addr = (d.at(0) << 8) | d.at(1);
 	uint16_t regs_count = (d.at(2) << 8) | d.at(3);
 
@@ -1115,9 +1076,9 @@ bool modbus_unit::perform_read_holding_regs(PDU &pdu) {
 	d.at(0) = 2 * regs_count;
 
 	for (size_t addr = start_addr; addr < start_addr + regs_count; addr++) {
-		RMAP::iterator j = m_registers.find(addr);
+		auto j = m_registers.find(addr);
 		if (j == m_registers.end())
-			return create_error_response(MB_ILLEGAL_DATA_ADDRESS, pdu);
+			return create_error_response(MB_ILLEGAL_DATA_ADDRESS, adu);
 
 		uint16_t v = j->second->get_val();
 		d.push_back(v >> 8);
@@ -1130,10 +1091,10 @@ bool modbus_unit::perform_read_holding_regs(PDU &pdu) {
 	return true;
 }
 
-bool modbus_unit::create_error_response(unsigned char error, PDU &pdu) {
-	pdu.func_code |= MB_ERROR_CODE;
-	pdu.data.resize(1);
-	pdu.data[0] = error;
+bool modbus_unit::create_error_response(unsigned char error, ADU &adu) {
+	adu.func_code |= MB_ERROR_CODE;
+	adu.data.resize(1);
+	adu.data[0] = error;
 
 	m_log->log(7, "Sending error response: %s", error_string(error));
 
@@ -1524,30 +1485,41 @@ int modbus_unit::configure(TUnit *unit, size_t read, size_t send) {
 	return 1;
 }
 
-modbus_client::modbus_client(bc_client_handler* _handler, boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), handler(_handler), m_state(IDLE), next_query_timer(), query_deadline_timer() {
+modbus_client::modbus_client(BaseConnection* conn, bc_handler* _handler, boruta_daemon* boruta, slog log) : modbus_unit(boruta->get_zmq(), log), handler(_handler), m_connection(conn), m_state(IDLE), next_query_timer(), query_deadline_timer() {
 	next_query_timer.set_callback(new FnPtrScheduler([this](){ send_query();}));
-	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ send_next_query(false);}));
+	query_deadline_timer.set_callback(new FnPtrScheduler([this](){ timeout() ;}));
 }
 
 void modbus_client::reset_cycle() {
+	m_state = IDLE;
+
+	query_deadline_timer.cancel();
+	next_query_timer.cancel();
+
 	m_received_iterator = m_received.begin();
 	m_sent_iterator = m_sent.begin();
 }
 
 void modbus_client::start_cycle() {
-	m_log->log(7, "Starting cycle");
 	modbus_unit::start_cycle();
-	send_next_query(true);
+
+	if (m_state == IDLE) {
+		m_log->log(1, "Did not finish polling on time, dropping next cycle!");
+		return;
+	}
+
+	m_state = READING_FROM_PEER;
+	send_next_query();
 }
 
-void modbus_client::send_next_query(bool previous_ok) {
+void modbus_client::send_next_query() {
 
 	switch (m_state) {
 		case IDLE:
+			break;
 		case READING_FROM_PEER:
 		case WRITING_TO_PEER:
-			next_query(previous_ok);
-			next_query_timer.schedule();
+			next_query();
 			break;
 		default:
 			ASSERT(false);
@@ -1555,73 +1527,66 @@ void modbus_client::send_next_query(bool previous_ok) {
 	}
 }
 
-void modbus_client::connection_error() {
-	query_deadline_timer.cancel();
-	m_state = IDLE;
-
-	// reschedule?
-}
-
 void modbus_client::send_write_query() {
-	m_pdu.func_code = MB_F_WMR;	
-	m_pdu.data.resize(0);
-	m_pdu.data.push_back(m_start_addr >> 8);
-	m_pdu.data.push_back(m_start_addr & 0xff);
-	m_pdu.data.push_back(m_regs_count >> 8);
-	m_pdu.data.push_back(m_regs_count & 0xff);
-	m_pdu.data.push_back(m_regs_count * 2);
+	m_du.func_code = MB_F_WMR;	
+	m_du.data.resize(0);
+	m_du.data.push_back(m_start_addr >> 8);
+	m_du.data.push_back(m_start_addr & 0xff);
+	m_du.data.push_back(m_regs_count >> 8);
+	m_du.data.push_back(m_regs_count & 0xff);
+	m_du.data.push_back(m_regs_count * 2);
 
 	m_log->log(7, "Sending write multiple registers command, start register: %hu, registers count: %hu", m_start_addr, m_regs_count);
 	for (size_t i = 0; i < m_regs_count; i++) {
 		uint16_t v = m_registers[m_start_addr + i]->get_val();
-		m_pdu.data.push_back(v >> 8);
-		m_pdu.data.push_back(v & 0xff);
+		m_du.data.push_back(v >> 8);
+		m_du.data.push_back(v & 0xff);
 		m_log->log(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
-	handler->send_pdu(m_id, m_pdu);
+	m_du.unit_id = m_id;
+	handler->send_frame(m_connection, m_du);
 }
 
 void modbus_client::send_read_query() {
 	m_log->log(7, "Sending read holding registers command, unit_id: %u,  address: %hu, count: %hu", m_id, m_start_addr, m_regs_count);
 	switch (m_register_type) {
 		case INPUT_REGISTER:
-			m_pdu.func_code = MB_F_RIR;
+			m_du.func_code = MB_F_RIR;
 			break;
 		case HOLDING_REGISTER:
-			m_pdu.func_code = MB_F_RHR;
+			m_du.func_code = MB_F_RHR;
 			break;
 	}
-	m_pdu.data.resize(0);
-	m_pdu.data.push_back(m_start_addr >> 8);
-	m_pdu.data.push_back(m_start_addr & 0xff);
-	m_pdu.data.push_back(m_regs_count >> 8);
-	m_pdu.data.push_back(m_regs_count & 0xff);
+	m_du.data.resize(0);
+	m_du.data.push_back(m_start_addr >> 8);
+	m_du.data.push_back(m_start_addr & 0xff);
+	m_du.data.push_back(m_regs_count >> 8);
+	m_du.data.push_back(m_regs_count & 0xff);
 
-	handler->send_pdu(m_id, m_pdu);
+	m_du.unit_id = m_id;
+	handler->send_frame(m_connection, m_du);
 }
 
-void modbus_client::next_query(bool previous_ok) {
+void modbus_client::next_query() {
 	switch (m_state) {
 		case IDLE:
 			m_state = READING_FROM_PEER;
 		case READING_FROM_PEER:
 			if (m_received_iterator != m_received.end()) {
 				find_continuous_reg_block(m_received_iterator, m_received);
+				next_query_timer.schedule();
 				break;
 			} 
 			m_state = WRITING_TO_PEER;
 		case WRITING_TO_PEER:
 			if (m_sent_iterator != m_sent.end()) {
 				find_continuous_reg_block(m_sent_iterator, m_sent);
+				next_query_timer.schedule();
 				break;
 			}
 			m_state = IDLE;
 			reset_cycle();
-			if (!previous_ok) {
-				m_log->log(1, "Previous query failed and we have just finished our cycle - teminating connection");
-				handler->terminate_connection();
-			}
 			break;
 	}
 }
@@ -1650,12 +1615,12 @@ void modbus_client::timeout() {
 			m_log->log(1, "Timeout while reading data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_id, m_start_addr, m_regs_count);
 
-			send_next_query(false);
+			send_next_query();
 			break;
 		case WRITING_TO_PEER:
 			m_log->log(1, "Timeout while writing data, unit_id: %d, address: %hu, registers count: %hu, progressing with queries",
 					(int)m_id, m_start_addr, m_regs_count);
-			send_next_query(false);
+			send_next_query();
 			break;
 		default:
 			m_log->log(1, "Received unexpected timeout from connection, ignoring.");
@@ -1688,248 +1653,165 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
 	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
 
-	auto query_interval = unit->getAttribute("extra:query-interval", 0);
+	auto query_interval = unit->getAttribute("extra:query-interval", 1);
 	next_query_timer.set_timeout(ms(query_interval));
 
 	auto request_timeout = unit->getAttribute("extra:request-timeout", 10);
 	query_deadline_timer.set_timeout(ms(request_timeout));
 
-	if (modbus_unit::configure(unit, read, send)) {
-		return 1;
-	}
-
 	reset_cycle();
-	return 0;
+	return modbus_unit::configure(unit, read, send);
 }
 
-void modbus_client::pdu_received(unsigned char u, PDU &pdu) {
-	if (u != m_id && u != 0) {
-		m_log->log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int)u, (int)m_id);
+void modbus_client::adu_received(BaseConnection* conn, ADU &adu) {
+	if (adu.unit_id != m_id && adu.unit_id != 0) {
+		m_log->log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int) adu.unit_id, (int)m_id);
 		return;
 	}
 
 	switch (m_state) {
 		case READING_FROM_PEER:
 			try {
-				consume_read_regs_response(m_start_addr, m_regs_count, pdu);
-
-				send_next_query(true);
+				consume_read_regs_response(m_start_addr, m_regs_count, adu);
 			} catch (std::out_of_range&) {	//message was distorted
-				send_next_query(false);
 			}
+
+			send_next_query();
 			break;
 		case WRITING_TO_PEER:
 			try {
-				consume_write_regs_response(m_start_addr, m_regs_count, pdu);
-
-				send_next_query(true);
+				consume_write_regs_response(m_start_addr, m_regs_count, adu);
 			} catch (std::out_of_range&) {	//message was distorted
-				send_next_query(false);
 			}
+
+			send_next_query();
 			break;
 		default:
 			m_log->log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
 
-	switch (m_state) {
-		case IDLE:
-			query_deadline_timer.cancel();
-			break;
-		default:
-			break;
+	if (m_state == IDLE) {
+		query_deadline_timer.cancel();
 	}
 }
 
-void bc_modbus_tcp_server::ReadError(const BaseConnection *conn, short event) {
-	m_log->log(6, "Read error, restarting connection");
-	m_connection->Close();
+bc_modbus_driver::bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), cycle_scheduler(this), m_log(log) {
+	mode_map["client"] = std::function<modbus_unit*()>([=](){ return new modbus_client(conn, this, boruta, m_log); });
+	mode_map["server"] = std::function<modbus_unit*()>([=](){ return new modbus_server(this, boruta, m_log); });
 
-	try {
-		m_connection->Open();
-	} catch (...) {
-		m_log->log(6, "Couldn't establish connection, will try again later");
-		m_connection->Close();
-	}
+	proto_map["tcp"] = std::function<bc_parser*()>([=](){ return new bc_tcp_parser(this, m_log); });
+	proto_map["rtu"] = std::function<bc_parser*()>([=](){ return new bc_serial_rtu_parser(conn, this, m_log); });
+	proto_map["ascii"] = std::function<bc_parser*()>([=](){ return new bc_serial_ascii_parser(conn, this, m_log); });
 }
 
-void bc_modbus_tcp_server::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
-	if (auto adu = TCPADU::from_data(data)) {
-		auto adu_str = tcpadu2string(*adu);
-		m_log->log(10, "Received ADU: %s", adu_str.c_str());
-		if (m_unit->process_request(adu->unit_id, adu->pdu)) {
-			try {
-				TCPADU::write_to_conn(const_cast<BaseConnection*>(conn), *adu);
-			} catch (...) {
-				// log error
-			}
+int bc_modbus_driver::configure_unit(TUnit* unit, size_t read, size_t send) {
+	auto mode = unit->getAttribute<std::string>("extra:mode", "client");
+	auto fun_it = mode_map.find(mode);
+	if (fun_it == mode_map.end()) {
+		m_log->log(1, "Unsupported mode: %s, unit not configured", mode.c_str());
+		return 1;
+	}
+
+	m_unit = (fun_it->second)();
+
+	if (m_unit->configure(unit, read, send)) {
+		m_log->log(1, "Couldn't configure parser!");
+		return 1;
+	}
+
+	return 0;
+}
+
+int bc_modbus_driver::configure_parser(TUnit* unit, const SerialPortConfiguration &conf) {
+	std::string proto = "";
+	auto medium = unit->getAttribute<std::string>("extra:medium", "tcp");
+	if (medium == "tcp") {
+		if (unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no") == "no") {
+			proto = "tcp";
+		} else {
+			proto = "rtu";
 		}
+	} else if (medium == "serial") {
+		proto = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
 	} else {
-		// invalid ADU
-	}
-}
-
-int bc_modbus_tcp_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &) {
-	if (m_unit->configure(unit, read, send))
-		return 1;
-
-	cycle_scheduler.add_handler(m_unit);
-	bc_modbus_driver::configure(unit);
-	return 0;
-}
-
-void bc_modbus_tcp_client::send_pdu(unsigned char unit, PDU &pdu) {
-	try {
-		TCPADU adu(++m_trans_id, unit, pdu);
-
-		auto adu_str = tcpadu2string(adu);
-		m_log->log(10, "Sending %s", adu_str.c_str());
-
-		TCPADU::write_to_conn(m_connection, adu);
-	} catch (...) {
-		// log error
-	}
-}
-
-void bc_modbus_tcp_client::terminate_connection() {
-	m_connection->Close();
-}
-
-void bc_modbus_tcp_client::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
-	if (auto adu = TCPADU::from_data(data)) {
-		auto adu_str = tcpadu2string(*adu);
-		m_log->log(10, "Received %s", adu_str.c_str());
-		if (m_trans_id != adu->trans_id) {
-			m_log->log(4, "Received unexpected tranasction id in response: %u, expected: %u, ignoring the response", unsigned(adu->trans_id), unsigned(m_trans_id));
-			return;
-		}
-
-		m_client.pdu_received(adu->unit_id, adu->pdu);
-	}
-}
-
-void bc_modbus_tcp_client::ReadError(const BaseConnection*, short int) {
-	m_client.connection_error();
-
-	try {
-		m_connection->Close();
-	} catch (...) {
-		// log error
-	}
-}
-
-int bc_modbus_tcp_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) {
-	if (m_client.configure(unit, read, send))
-		return 1;
-
-	m_trans_id = 0;
-
-	cycle_scheduler.add_handler(&m_client);
-	bc_modbus_driver::configure(unit);
-	return 0;
-}
-
-void bc_modbus_serial_client::send_pdu(unsigned char unit, PDU &pdu) {
-	if (!m_connection->Ready()) {
-		m_connection->Close(); // force closing
-		m_connection->Open();
+		m_log->log(1, "Unsupported medium: %s, unit not configured", medium.c_str());
 	}
 
-	try {
-		m_parser->send_sdu(unit, pdu);
-	} catch (...) {
-		m_client.connection_error();
-	}
-}
-
-void bc_modbus_serial_client::terminate_connection() {
-	m_connection->Close();
-}
-
-void bc_modbus_serial_client::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
-	m_parser->read_data(conn, data);
-}
-
-void bc_modbus_serial_client::ReadError(const BaseConnection *conn, short int event) {
-	m_connection->Close();
-	m_parser->reset();
-	m_client.connection_error();
-}
-
-void bc_modbus_serial_client::frame_parsed(SDU &sdu, BaseConnection*) {
-	m_client.pdu_received(sdu.unit_id, sdu.pdu);
-}
-
-void bc_modbus_serial_client::error(ERROR_CONDITION) {
-	m_parser->reset();
-	m_client.timeout();
-}
-
-int bc_modbus_serial_client::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
-	if (m_client.configure(unit, read, send))
-		return 1;
-
-	std::map<std::string, std::function<bc_serial_parser*()>> serial_proto_map = {
-		{"rtu", [=](){ return new bc_serial_rtu_parser(m_connection, dmn, this, m_log); }},
-		{"ascii", [=](){ return new bc_serial_ascii_parser(m_connection, dmn, this, m_log); }},
-	};
-
-	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-	auto fun_it = serial_proto_map.find(protocol);
-	if (fun_it == serial_proto_map.end()) {
-		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+	auto fun_it = proto_map.find(proto);
+	if (fun_it == proto_map.end()) {
+		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", proto.c_str());
 		return 1;
 	}
 
 	m_parser = (fun_it->second)();
-	if (m_parser->configure(unit, conf))
-		return 1;
 
-	cycle_scheduler.add_handler(&m_client);
-	bc_modbus_driver::configure(unit);
-	return 0;
-}
-
-void bc_modbus_serial_server::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
-	m_parser->read_data(conn, data);
-}
-
-void bc_modbus_serial_server::ReadError(const BaseConnection *conn, short int event) {
-	m_parser->reset();
-}
-
-void bc_modbus_serial_server::frame_parsed(SDU &adu, BaseConnection*) {
-	if (m_unit->process_request(adu.unit_id, adu.pdu) == true)
-		m_parser->send_sdu(adu.unit_id, adu.pdu);
-}
-
-void bc_modbus_serial_server::error(ERROR_CONDITION) {
-	m_parser->reset();
-}
-
-int bc_modbus_serial_server::configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration& conf) {
-	if (m_unit->configure(unit, read, send))
-		return 1;
-
-	std::map<std::string, std::function<bc_serial_parser*()>> serial_proto_map = {
-		{"rtu", [=](){ return new bc_serial_rtu_parser(m_connection, dmn, this, m_log); }},
-		{"ascii", [=](){ return new bc_serial_ascii_parser(m_connection, dmn, this, m_log); }},
-	};
-
-	std::string protocol = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
-	auto fun_it = serial_proto_map.find(protocol);
-	if (fun_it == serial_proto_map.end()) {
-		m_log->log(1, "Unsupported protocol variant: %s, unit not configured", protocol.c_str());
+	if (m_parser->configure(unit, conf)) {
+		m_log->log(1, "Couldn't configure parser!");
 		return 1;
 	}
 
-	m_parser = (fun_it->second)();
-	if (m_parser->configure(unit, conf))
-		return 1;
-
-	cycle_scheduler.add_handler(m_unit);
-	bc_modbus_driver::configure(unit);
 	return 0;
+}
+
+int bc_tcp_parser::configure(TUnit* unit, const SerialPortConfiguration &) {
+	return 0;
+}
+
+void bc_tcp_parser::send_adu(BaseConnection* conn, ADU &adu) {
+	std::vector<unsigned char> head_data;
+
+	auto trans_id = htons(*adu.trans_id);
+	auto len = htons(2 + adu.data.size());
+
+	head_data.push_back(trans_id & 0xff);
+	head_data.push_back(trans_id >> 8);
+	head_data.push_back(0);
+	head_data.push_back(0);
+	head_data.push_back(len & 0xff);
+	head_data.push_back(len >> 8);
+	head_data.push_back(adu.unit_id);
+	head_data.push_back(adu.func_code);
+
+	conn->WriteData(&head_data[0], head_data.size());
+	conn->WriteData(&adu.data[0], adu.data.size());
+}
+
+void bc_tcp_parser::read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) {
+	ADU adu;
+	const int HEADER_SIZE = 6;
+	auto it = data.begin();
+	if (std::distance(it, data.end()) < HEADER_SIZE) {
+		m_log->log(4, "Received too few bytes: %u, ignoring the response", unsigned(std::distance(it, data.end())));
+		handler->error(FRAME_ERROR);
+		return;
+	}
+
+	adu.trans_id = ntohs(*it | (*++it << 8));
+
+	// ommited proto_id (2 bytes)
+	it += 2;
+
+	auto length = ntohs(*++it | (*++it << 8));
+	auto received_length = std::distance(it, data.end());
+
+	if (received_length < length) {
+		m_log->log(4, "Received invalid length in response %u: %li, expected at least %u, ignoring the response", unsigned(*adu.trans_id), received_length, unsigned(length));
+		handler->error(FRAME_ERROR);
+		return;
+	}
+
+	// local unit_id?
+	adu.unit_id = *++it;
+	adu.func_code = *++it;
+
+	const auto data_len = length - 2;
+	adu.data.resize(data_len);
+	for (int i = 0; i < data_len; ++i) {
+		adu.data[i] = *++it;
+	}
+
+	handler->frame_parsed(adu, const_cast<BaseConnection*>(conn));
 }
 
 void bc_serial_rtu_parser::calculate_crc_table() {
@@ -1980,7 +1862,7 @@ bool bc_serial_rtu_parser::check_crc() {
 }
 
 
-bc_serial_parser::bc_serial_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(), write_timer() {
+bc_serial_parser::bc_serial_parser(BaseConnection* conn, bc_handler *serial_handler, slog log): m_log(log), m_connection(conn), m_serial_handler(serial_handler), read_timer(), write_timer() {
 	read_timer.set_callback(new FnPtrScheduler([this](){ read_timer_event(); }));
 	write_timer.set_callback(new FnPtrScheduler([this](){ write_timer_event(); }));
 }
@@ -2012,21 +1894,19 @@ int bc_serial_rtu_parser::configure(TUnit* unit, const SerialPortConfiguration &
 				+ conf.parity == SerialPortConfiguration::NONE ? 0 : 1
 				+ conf.GetCharSizeInt();
 
-	int chars_per_sec = conf.speed / bits_per_char;
+	float chars_per_sec = conf.speed / bits_per_char;
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character) */
-	if (chars_per_sec)
-		m_timeout_1_5_c = ms(1000 / chars_per_sec * (1.5));
-	else
-		m_timeout_1_5_c = ms(100);
+	if (chars_per_sec) {
+		m_timeout_1_5_c = us((1000000 / chars_per_sec) * (1.5));
+		m_timeout_3_5_c = us((1000000 / chars_per_sec) * (3.5));
+	}
 
-	m_log->log(8, "Setting 1.5Tc timer to %ld ms", (int64_t) m_timeout_1_5_c);
+	if (auto read_timeout = unit->getOptAttribute<int64_t>("extra:read-timeout")) {
+		m_timeout_3_5_c = us(1000 * *read_timeout);
+	}
 
-	auto default_3_5_timeout = 100;
-	if (chars_per_sec)
-		default_3_5_timeout = 1000 / chars_per_sec * (35 / 10);
-
-	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", default_3_5_timeout);
+	m_log->log(8, "Setting 1.5Tc timer to %ld us", (int64_t) m_timeout_1_5_c);
 	m_log->log(8, "Setting 3.5Tc timer to %ld us",  (int64_t) m_timeout_3_5_c);
 
 	if (m_delay_between_chars) {
@@ -2069,56 +1949,55 @@ void bc_serial_rtu_parser::read_timer_event() {
 	if (check_crc()) {
 		m_is_3_5_c_timeout = false;
 
-		m_sdu.unit_id = m_input_buffer.front();
+		m_adu.unit_id = m_input_buffer.front();
 		m_input_buffer.pop_front();
-		m_sdu.pdu.func_code = m_input_buffer.front();
+		m_adu.func_code = m_input_buffer.front();
 		m_input_buffer.pop_front();
 
 		// remove crc
 		m_input_buffer.pop_back();
 		m_input_buffer.pop_back();
 
-		m_sdu.pdu.data.resize(0);
-		m_sdu.pdu.data.insert(m_sdu.pdu.data.end(), m_input_buffer.begin(), m_input_buffer.end());//std::move(m_input_buffer);
+		m_adu.data.resize(0);
+		m_adu.data.insert(m_adu.data.end(), m_input_buffer.begin(), m_input_buffer.end());//std::move(m_input_buffer);
 
-		m_serial_handler->frame_parsed(m_sdu, nullptr);
+		m_serial_handler->frame_parsed(m_adu, m_connection);
 		m_input_buffer.resize(0);
 	} else {
 		if (m_is_3_5_c_timeout) {
 			m_log->log(8, "crc check failed, erroring out");
-			m_serial_handler->error(bc_serial_connection_handler::TIMEOUT);
+			m_serial_handler->error(TIMEOUT);
 			reset();
 		} else {
 			m_log->log(8, "crc check failed, scheduling 3.5Tc timer");
 			m_is_3_5_c_timeout = true;
-			read_timer.set_timeout(m_timeout_3_5_c - m_timeout_1_5_c);
-			read_timer.schedule();
+			read_timer.schedule(m_timeout_3_5_c - m_timeout_1_5_c);
 		}
 	}
 }
 
-void bc_serial_rtu_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
+void bc_serial_rtu_parser::send_adu(BaseConnection* conn, ADU &adu) {
 	unsigned short crc = 0xffff;
-	crc = update_crc(crc, unit_id);
-	crc = update_crc(crc, pdu.func_code);
-	for (size_t i = 0; i < pdu.data.size(); i++)
-		crc = update_crc(crc, pdu.data[i]);
+	crc = update_crc(crc, adu.unit_id);
+	crc = update_crc(crc, adu.func_code);
+	for (size_t i = 0; i < adu.data.size(); i++)
+		crc = update_crc(crc, adu.data[i]);
 
 	unsigned char cl, cm;
 	cl = crc & 0xff;
 	cm = crc >> 8;
 
 	m_output_buffer.resize(0);
-	m_output_buffer.push_back(unit_id);
-	m_output_buffer.push_back(pdu.func_code);
-	m_output_buffer.insert(m_output_buffer.end(), pdu.data.begin(), pdu.data.end());
+	m_output_buffer.push_back(adu.unit_id);
+	m_output_buffer.push_back(adu.func_code);
+	m_output_buffer.insert(m_output_buffer.end(), adu.data.begin(), adu.data.end());
 	m_output_buffer.push_back(cl);
 	m_output_buffer.push_back(cm);
 
 	if (m_delay_between_chars) {
 		write_timer_event();
 	} else {
-		m_connection->WriteData(&m_output_buffer[0], m_output_buffer.size());
+		conn->WriteData(&m_output_buffer[0], m_output_buffer.size());
 	}
 }
 
@@ -2131,13 +2010,13 @@ unsigned char bc_serial_ascii_parser::finish_crc(unsigned char crc) const {
 	return 0x100 - crc; 
 }
 
-bc_serial_ascii_parser::bc_serial_ascii_parser(BaseConnection* conn, boruta_daemon* boruta, bc_serial_connection_handler* serial_handler, slog log) : bc_serial_parser(conn, boruta, serial_handler, log), m_state(COLON) { }
+bc_serial_ascii_parser::bc_serial_ascii_parser(BaseConnection* conn, bc_handler* serial_handler, slog log) : bc_serial_parser(conn, serial_handler, log), m_state(COLON) { }
 
 bool bc_serial_ascii_parser::check_crc() {
 	unsigned char crc = 0;
-	std::vector<unsigned char>& d = m_sdu.pdu.data;
-	crc = update_crc(crc, m_sdu.unit_id);
-	crc = update_crc(crc, m_sdu.pdu.func_code);
+	std::vector<unsigned char>& d = m_adu.data;
+	crc = update_crc(crc, m_adu.unit_id);
+	crc = update_crc(crc, m_adu.func_code);
 	if (d.size() == 0)
 		return false;
 	for (size_t i = 0; i < d.size() - 1; i++)
@@ -2154,7 +2033,7 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 		case COLON:
 			if (c != ':') {
 				m_log->log(1, "Modbus ascii frame did not start with the colon");
-				m_serial_handler->error(bc_serial_connection_handler::FRAME_ERROR);
+				m_serial_handler->error(FRAME_ERROR);
 				return;
 			}
 			m_state = ADDR_1; 
@@ -2164,13 +2043,13 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 			m_state = ADDR_2;
 			break;
 		case ADDR_2:
-			if (ascii::from_ascii(m_previous_char, c, m_sdu.unit_id)) {
+			if (ascii::from_ascii(m_previous_char, c, m_adu.unit_id)) {
 				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(bc_serial_connection_handler::FRAME_ERROR);
+				m_serial_handler->error(FRAME_ERROR);
 				m_state = COLON;
 				return;
 			}
-			m_log->log(9, "Parsing new frame, unit_id: %d", (int) m_sdu.unit_id);
+			m_log->log(9, "Parsing new frame, unit_id: %d", (int) m_adu.unit_id);
 			m_state = FUNC_CODE_1;
 			break;
 		case FUNC_CODE_1:
@@ -2178,13 +2057,13 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 			m_state = FUNC_CODE_2; 
 			break;
 		case FUNC_CODE_2:
-			if (ascii::from_ascii(m_previous_char, c, m_sdu.pdu.func_code)) {
+			if (ascii::from_ascii(m_previous_char, c, m_adu.func_code)) {
 				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(bc_serial_connection_handler::FRAME_ERROR);
+				m_serial_handler->error(FRAME_ERROR);
 				m_state = COLON;
 				return;
 			}
-			m_sdu.pdu.data.resize(0);
+			m_adu.data.resize(0);
 			m_state = DATA_1;
 			break;
 		case DATA_1:
@@ -2198,24 +2077,24 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 		case DATA_2:
 			if (ascii::from_ascii(m_previous_char, c, c)) {
 				m_log->log(1, "Invalid value received in request");
-				m_serial_handler->error(bc_serial_connection_handler::FRAME_ERROR);
+				m_serial_handler->error(FRAME_ERROR);
 				m_state = COLON;
 				return;
 			}
-			m_sdu.pdu.data.push_back(c);
+			m_adu.data.push_back(c);
 			m_state = DATA_1;
 			break;
 		case LF:
 			if (c != '\n') {
 				m_log->log(1, "Modbus ascii frame did not end with crlf");
 				m_state = COLON;
-				m_serial_handler->error(bc_serial_connection_handler::FRAME_ERROR);
+				m_serial_handler->error(FRAME_ERROR);
 				return;
 			}
 			if (check_crc()) 
-				m_serial_handler->frame_parsed(m_sdu, const_cast<BaseConnection*>(conn));
+				m_serial_handler->frame_parsed(m_adu, const_cast<BaseConnection*>(conn));
 			else 
-				m_serial_handler->error(bc_serial_connection_handler::CRC_ERROR);
+				m_serial_handler->error(CRC_ERROR);
 			m_state = COLON;
 			return;
 	}
@@ -2224,11 +2103,11 @@ void bc_serial_ascii_parser::read_data(const BaseConnection* conn, const std::ve
 }
 
 void bc_serial_ascii_parser::read_timer_event() {
-	m_serial_handler->error(bc_serial_connection_handler::TIMEOUT);
+	m_serial_handler->error(TIMEOUT);
 	reset();
 }
 
-void bc_serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
+void bc_serial_ascii_parser::send_adu(BaseConnection* conn, ADU &adu) {
 	unsigned char crc = 0;
 	unsigned char c1, c2;
 
@@ -2236,15 +2115,15 @@ void bc_serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
 
 	m_output_buffer.resize(0);
 
-	out_ascii.push_back(unit_id);
-	out_ascii.push_back(pdu.func_code);
+	out_ascii.push_back(adu.unit_id);
+	out_ascii.push_back(adu.func_code);
 
-	crc = update_crc(crc, unit_id);
-	crc = update_crc(crc, pdu.func_code);
+	crc = update_crc(crc, adu.unit_id);
+	crc = update_crc(crc, adu.func_code);
 	
-	for (size_t i = 0; i < pdu.data.size(); i++) {
-		crc = update_crc(crc, pdu.data[i]);
-		out_ascii.push_back(pdu.data[i]);
+	for (size_t i = 0; i < adu.data.size(); i++) {
+		crc = update_crc(crc, adu.data[i]);
+		out_ascii.push_back(adu.data[i]);
 	}
 
 	crc = finish_crc(crc);
@@ -2261,7 +2140,7 @@ void bc_serial_ascii_parser::send_sdu(unsigned char unit_id, PDU &pdu) {
 	m_output_buffer.push_back('\r');
 	m_output_buffer.push_back('\n');
 
-	m_connection->WriteData(&m_output_buffer[0], m_output_buffer.size());
+	conn->WriteData(&m_output_buffer[0], m_output_buffer.size());
 }
 
 int bc_serial_ascii_parser::configure(TUnit* unit, const SerialPortConfiguration &) {
@@ -2277,18 +2156,10 @@ void bc_serial_ascii_parser::reset() {
 }
 
 
-driver_iface* create_bc_modbus_serial_server(BaseConnection* conn, boruta_daemon* boruta, slog log) {
-	return new bc_modbus_serial_server(conn, boruta, log);
-}
-
-driver_iface* create_bc_modbus_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log) {
-	return new bc_modbus_serial_client(conn, boruta, log);
-}
-
-driver_iface* create_bc_modbus_tcp_server(TcpServerConnectionHandler* conn, boruta_daemon* boruta, slog log) {
-	return new bc_modbus_tcp_server(conn, boruta, log);
-}
-
 driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon* boruta, slog log) {
 	return new bc_modbus_tcp_client(conn, boruta, log);
+}
+
+driver_iface* create_bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log) {
+	return new bc_modbus_driver(conn, boruta, log);
 }
