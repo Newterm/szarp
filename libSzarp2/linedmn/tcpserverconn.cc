@@ -154,7 +154,7 @@ void TcpServerConnectionHandler::OpenFinished(const BaseConnection *conn) {}
 void TcpServerConnectionHandler::SetConfigurationFinished(const BaseConnection *conn) {}
 
 
-bool TcpServerConnectionHandler::ip_is_allowed(struct sockaddr_in in_s_addr) {
+bool TcpServerConnectionHandler::ip_is_allowed(struct sockaddr_in in_s_addr) const {
 	return m_allowed_ips.size() == 0 || m_allowed_ips.count(in_s_addr.sin_addr.s_addr) != 0;
 }
 
@@ -170,10 +170,7 @@ void TcpServerConnectionHandler::ReadError(const BaseConnection *conn, short int
 
 void TcpServerConnectionHandler::CloseConnection(const BaseConnection* conn) {
 	auto _conn = const_cast<BaseConnection*>(conn);
-	auto it = std::find_if(m_connections.begin(), m_connections.end(), [_conn](const std::unique_ptr<BaseConnection>& other){ return other.get() == _conn; });
-
-	if (it != m_connections.end())
-		m_connections.erase(it);
+	m_connections.erase(std::remove_if(m_connections.begin(), m_connections.end(), [_conn](const std::unique_ptr<BaseConnection>& other){ return other.get() == _conn; }));
 }
 
 void TcpServerConnectionHandler::Init(UnitInfo* unit) {
@@ -197,11 +194,10 @@ void TcpServerConnectionHandler::ConfigureAllowedIps(UnitInfo* unit) {
 	while (ss >> ip_allowed) {
 		struct in_addr ip;
 		if (inet_aton(ip_allowed.c_str(), &ip)) {
-			// m_log.log(1, "incorrect IP address '%s'", ip_allowed.c_str());
+			sz_log(1, "incorrect IP address '%s'", ip_allowed.c_str());
 			m_allowed_ips.insert(ip.s_addr);
 		} else {
-			// m_log.log(5, "IP address '%s' allowed", ip_allowed.c_str());
-			continue;
+			sz_log(5, "IP address '%s' allowed", ip_allowed.c_str());
 		}
 	}
 }
