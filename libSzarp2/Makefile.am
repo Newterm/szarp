@@ -84,6 +84,7 @@ BASECONN = \
 	@srcdir@/linedmn/serialport.cc \
 	@srcdir@/linedmn/serialadapter.cc \
 	@srcdir@/linedmn/tcpconn.cc \
+	@srcdir@/linedmn/tcpserverconn.cc \
 	@srcdir@/linedmn/httpclient.cc \
 	@srcdir@/linedmn/atcconn.cc \
 	@srcdir@/linedmn/evbase.cc \

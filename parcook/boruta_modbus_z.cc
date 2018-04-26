@@ -484,41 +484,11 @@ class RegsFactory {
 
 public:
 	RegsFactory(slog log): m_log(log) {}
-	void configure(TUnit* unit);
+	void configure(UnitInfo* unit);
 
 	template <uint32_t N_REGS>
 	std::array<uint32_t, N_REGS> get_addresses(TAttribHolder* param, uint32_t addr) const;
 
-};
-
-class cycle_callback_handler {
-public:
-	virtual void start_cycle() = 0;
-};
-
-class CycleScheduler: public Callback {
-	std::mutex cycle_mutex;
-
-	Scheduler scheduler;
-	cycle_callback_handler* cycle_handler;
-
-public:
-	CycleScheduler(cycle_callback_handler* handler): scheduler() {
-		scheduler.set_callback(this);
-		cycle_handler = handler;
-	}
-
-	void configure(TUnit* unit) {
-		auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-		scheduler.set_timeout(ms(cycle_timeout));
-		scheduler.schedule();
-	}
-
-	void operator()() override {
-		std::lock_guard<std::mutex> cycle_guard(cycle_mutex);
-		scheduler.schedule();
-		cycle_handler->start_cycle();
-	}
 };
 
 class modbus_unit: public cycle_callback_handler {
@@ -567,7 +537,7 @@ protected:
 
 	void configure_param(IPCParamInfo* param);
 	void configure_send(SendParamInfo* param);
-	void configure_unit(TUnit* u);
+	void configure_unit(UnitInfo* u);
 
 	const char* error_string(const unsigned char& error);
 
@@ -587,12 +557,14 @@ public:
 	modbus_unit(zmqhandler* _zmq, slog logger);
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 
-	virtual int configure(TUnit *unit, size_t read, size_t send);
+	virtual int configure(UnitInfo *unit, size_t read, size_t send);
 
-	void start_cycle() override {
+	void do_ipc() {
 		to_parcook();
 		from_sender();
 	}
+
+	void start_cycle() override {}
 
 	void to_parcook();
 	void from_sender();
@@ -660,7 +632,7 @@ protected:
 
 public:
 	modbus_client(BaseConnection* conn, bc_handler* handler, boruta_daemon* boruta, slog log);
-	int configure(TUnit *unit, size_t read, size_t send) override;
+	int configure(UnitInfo *unit, size_t read, size_t send) override;
 
 	void reset_cycle() override;
 	void send_next_query();
@@ -680,7 +652,7 @@ public:
 
 class bc_parser {
 public:
-	virtual int configure(TUnit* unit, const SerialPortConfiguration &) = 0;
+	virtual int configure(UnitInfo* unit, const SerialPortConfiguration &) = 0;
 	virtual void send_adu(BaseConnection* conn, ADU& adu) = 0;
 	virtual void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) = 0;
 	virtual void write_finished() = 0;
@@ -690,6 +662,7 @@ public:
 class bc_modbus_driver: public bc_driver, public bc_handler, public cycle_callback_handler {
 protected:
 	CycleScheduler cycle_scheduler;
+	Scheduler reconnection_timer;
 	modbus_unit* m_unit;
 	bc_parser* m_parser;
 	slog m_log;
@@ -701,69 +674,37 @@ private:
 public:
 	bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log);
 
-	void start_cycle() override {
-		m_log->log(7, "Starting cycle");
-		if (!m_connection->Ready()) {
-			m_connection->Close();
-			m_connection->Open();
-		}
+	void start_cycle() override;
 
-		m_unit->start_cycle();
-	}
-
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration &conf) override {
-		configure_unit(unit, read, send);
-		configure_parser(unit, conf);
-
-		cycle_scheduler.configure(unit);
-		return 0;
-	}
-
-	int configure_unit(TUnit* unit, size_t read, size_t send);
-	int configure_parser(TUnit* unit, const SerialPortConfiguration &conf);
+	int configure(UnitInfo* unit, size_t read, size_t send, const SerialPortConfiguration &conf) override;
+	int configure_unit(UnitInfo* unit, size_t read, size_t send);
+	int configure_parser(UnitInfo* unit, const SerialPortConfiguration &conf);
 
 	// ConnectionListener impl
-	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override {
-		m_parser->read_data(conn, data);
-	}
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+	void OpenFinished(const BaseConnection *conn) override;
+	void SetConfigurationFinished(const BaseConnection *conn) override;
 
-	void ReadError(const BaseConnection *conn, short int event) override {
-		m_log->log(3, "Connection error, resetting");
-		m_connection->Close();
-		m_parser->reset();
-		m_unit->reset_cycle();
-		// reschedule connection?
-	}
+	void frame_parsed(ADU &adu, BaseConnection* conn) override;
+	void send_frame(BaseConnection* conn, ADU &adu) override;
+	void error(const ERROR_CONDITION e) override;
+};
 
-	void OpenFinished(const BaseConnection *conn) override {}
-	void SetConfigurationFinished(const BaseConnection *conn) override {}
+class bc_modbus_tcp_client: public bc_modbus_driver {
+	unsigned char m_trans_id;
+	std::set<unsigned char> valid_ids;
 
-	void frame_parsed(ADU &adu, BaseConnection* conn) override {
-		auto adu_str = adu2string(adu);
-		m_log->log(10, "Got frame %s", adu_str.c_str());
+public:
+	using bc_modbus_driver::bc_modbus_driver;
 
-		m_unit->adu_received(conn, adu);
-	}
+	// bc_handler impl
+	void send_frame(BaseConnection* conn, ADU &adu) override;
 
-	void send_frame(BaseConnection* conn, ADU &adu) override {
-		try {
-			auto adu_str = adu2string(adu);
-			m_log->log(10, "Sending %s", adu_str.c_str());
+	// bc_onnection_handler impl
+	void frame_parsed(ADU &adu, BaseConnection* conn) override;
 
-			m_parser->send_adu(conn, adu);
-		} catch (...) {
-			m_log->log(3, "Couldn't send frame!");
-
-		}
-	}
-
-	void error(const ERROR_CONDITION e) override {
-		auto error_str = error_condition_str(e);
-		m_log->log(5, "Error during frame parsing: %s, resetting", error_str.c_str());
-
-		m_parser->reset();
-		m_unit->timeout();
-	}
+	void start_cycle() override;
 };
 
 class bc_serial_parser: public bc_parser {
@@ -798,7 +739,7 @@ class bc_tcp_parser: public bc_parser {
 
 public:
 	bc_tcp_parser(bc_handler* _handler, slog log): handler(_handler), m_log(log) {}
-	int configure(TUnit* unit, const SerialPortConfiguration &) override;
+	int configure(UnitInfo* unit, const SerialPortConfiguration &) override;
 
 	void send_adu(BaseConnection* conn, ADU &adu) override;
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
@@ -835,7 +776,7 @@ public:
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
 	void send_adu(BaseConnection* conn, ADU &sdu) override;
 	void reset() override;
-	int configure(TUnit* unit, const SerialPortConfiguration &) override;
+	int configure(UnitInfo* unit, const SerialPortConfiguration &) override;
 
 	static const int max_frame_size = 256;
 };
@@ -856,48 +797,11 @@ public:
 	bc_serial_ascii_parser(BaseConnection* conn, bc_handler *serial_handler, slog log);
 	void read_data(const BaseConnection* conn, const std::vector<unsigned char>& data) override;
 	void send_adu(BaseConnection* conn, ADU &adu) override;
-	int configure(TUnit* unit, const SerialPortConfiguration&) override;
+	int configure(UnitInfo* unit, const SerialPortConfiguration&) override;
 };
 
 unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
-
-class bc_modbus_tcp_client: public bc_modbus_driver {
-	unsigned char m_trans_id;
-	std::set<unsigned char> valid_ids;
-
-public:
-	using bc_modbus_driver::bc_modbus_driver;
-
-	// bc_handler impl
-	void send_frame(BaseConnection* conn, ADU &adu) override {
-		adu.trans_id = ++m_trans_id;
-		valid_ids.insert(m_trans_id);
-		bc_modbus_driver::send_frame(conn, adu);
-	}
-	// bc_onnection_handler impl
-	void frame_parsed(ADU &adu, BaseConnection* conn) override {
-		if (!adu.trans_id) {
-			ASSERT(false);
-			error(FRAME_ERROR);
-			return;
-		}
-
-		if (valid_ids.count(*adu.trans_id) == 0) {
-			m_log->log(4, "Received unexpected tranasction id, expected: %u, ignoring the response", unsigned(m_trans_id));
-			error(FRAME_ERROR);
-			return;
-		}
-
-		valid_ids.erase(*adu.trans_id);
-		bc_modbus_driver::frame_parsed(adu, conn);
-	}
-
-	void start_cycle() override {
-		valid_ids.clear();
-		bc_modbus_driver::start_cycle();
-	}
-};
 
 class modbus_register: public register_iface {
 	modbus_unit *m_modbus_unit;
@@ -908,8 +812,11 @@ class modbus_register: public register_iface {
 	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
 
 public:
-	modbus_register(modbus_unit *daemon, slog log);
-	bool is_valid() const override;
+	modbus_register(modbus_unit* unit, slog log): m_modbus_unit(unit), m_log(log), m_val(sz4::no_data<short>()), m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value) {}
+
+	bool is_valid() const override {
+		return sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time) && !m_modbus_unit->register_val_expired(m_mod_time);
+	}
 
 	void set_val(int16_t val) override { m_val = val; }
 	int16_t get_val() const override { return m_val; }
@@ -917,12 +824,6 @@ public:
 	sz4::nanosecond_time_t get_mod_time() const override { return m_mod_time; }
 	void set_mod_time(const sz4::nanosecond_time_t& time) override { m_mod_time = time; }
 };
-
-modbus_register::modbus_register(modbus_unit* unit, slog log) : m_modbus_unit(unit), m_log(log), m_val(sz4::no_data<short>()), m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value) {}
-
-bool modbus_register::is_valid() const {
-	return sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time) && !m_modbus_unit->register_val_expired(m_mod_time);
-}
 
 class const_val_register: public register_iface {
 	int16_t m_val = sz4::no_data<int16_t>();
@@ -1144,7 +1045,7 @@ std::string get_param_name(TAttribHolder* param) {
 	}
 }
 
-void RegsFactory::configure(TUnit* unit) {
+void RegsFactory::configure(UnitInfo* unit) {
 	default_float_order = get_float_order(unit, MSWLSW);
 	if (default_float_order == MSWLSW)
 		m_log->log(5, "Setting mswlsw float order");
@@ -1433,7 +1334,7 @@ val_op* modbus_unit::create_register(TAttribHolder* param, int prec, unsigned sh
 }
 
 
-void modbus_unit::configure_unit(TUnit* u) {
+void modbus_unit::configure_unit(UnitInfo* u) {
 	std::string _id = u->getAttribute<std::string>("extra:id", "");;
 	if (_id.empty()) {
 		switch (u->GetId()) {
@@ -1463,7 +1364,7 @@ void modbus_unit::configure_unit(TUnit* u) {
 	}
 }
 
-int modbus_unit::configure(TUnit *unit, size_t read, size_t send) {
+int modbus_unit::configure(UnitInfo *unit, size_t read, size_t send) {
 	m_regs_factory->configure(unit);
 
 	m_expiration_time = unit->getAttribute("extra:nodata-timeout", 60);
@@ -1501,9 +1402,7 @@ void modbus_client::reset_cycle() {
 }
 
 void modbus_client::start_cycle() {
-	modbus_unit::start_cycle();
-
-	if (m_state == IDLE) {
+	if (m_state != IDLE) {
 		m_log->log(1, "Did not finish polling on time, dropping next cycle!");
 		return;
 	}
@@ -1513,7 +1412,6 @@ void modbus_client::start_cycle() {
 }
 
 void modbus_client::send_next_query() {
-
 	switch (m_state) {
 		case IDLE:
 			break;
@@ -1576,6 +1474,7 @@ void modbus_client::next_query() {
 			if (m_received_iterator != m_received.end()) {
 				find_continuous_reg_block(m_received_iterator, m_received);
 				next_query_timer.schedule();
+				query_deadline_timer.reschedule();
 				break;
 			} 
 			m_state = WRITING_TO_PEER;
@@ -1583,6 +1482,7 @@ void modbus_client::next_query() {
 			if (m_sent_iterator != m_sent.end()) {
 				find_continuous_reg_block(m_sent_iterator, m_sent);
 				next_query_timer.schedule();
+				query_deadline_timer.reschedule();
 				break;
 			}
 			m_state = IDLE;
@@ -1650,13 +1550,13 @@ void modbus_client::find_continuous_reg_block(RSET::iterator &i, RSET &regs) {
 	}
 }
 
-int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
+int modbus_client::configure(UnitInfo *unit, size_t read, size_t send) {
 	m_single_register_pdu = unit->getAttribute("extra:single-register-pdu", false);
 
 	auto query_interval = unit->getAttribute("extra:query-interval", 1);
 	next_query_timer.set_timeout(ms(query_interval));
 
-	auto request_timeout = unit->getAttribute("extra:request-timeout", 10);
+	auto request_timeout = unit->getAttribute("extra:request-timeout", 200);
 	query_deadline_timer.set_timeout(ms(request_timeout));
 
 	reset_cycle();
@@ -1664,6 +1564,7 @@ int modbus_client::configure(TUnit *unit, size_t read, size_t send) {
 }
 
 void modbus_client::adu_received(BaseConnection* conn, ADU &adu) {
+	query_deadline_timer.cancel();
 	if (adu.unit_id != m_id && adu.unit_id != 0) {
 		m_log->log(1, "Received PDU from unit %d while we wait for response from unit %d, ignoring it!", (int) adu.unit_id, (int)m_id);
 		return;
@@ -1690,10 +1591,6 @@ void modbus_client::adu_received(BaseConnection* conn, ADU &adu) {
 			m_log->log(10, "Received unexpected response from slave - ignoring it.");
 			break;
 	}
-
-	if (m_state == IDLE) {
-		query_deadline_timer.cancel();
-	}
 }
 
 bc_modbus_driver::bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), cycle_scheduler(this), m_log(log) {
@@ -1705,7 +1602,37 @@ bc_modbus_driver::bc_modbus_driver(BaseConnection* conn, boruta_daemon* boruta, 
 	proto_map["ascii"] = std::function<bc_parser*()>([=](){ return new bc_serial_ascii_parser(conn, this, m_log); });
 }
 
-int bc_modbus_driver::configure_unit(TUnit* unit, size_t read, size_t send) {
+void bc_modbus_driver::start_cycle() {
+	m_log->log(7, "Starting cycle");
+	m_unit->do_ipc();
+
+	reconnection_timer.cancel();
+
+	if (!m_connection->Ready()) {
+		m_connection->Close();
+		m_connection->Open();
+	} else {
+		m_unit->start_cycle();
+	}
+}
+
+int bc_modbus_driver::configure(UnitInfo* unit, size_t read, size_t send, const SerialPortConfiguration &conf) {
+	configure_unit(unit, read, send);
+	configure_parser(unit, conf);
+
+	cycle_scheduler.configure(unit);
+
+	reconnection_timer.set_timeout(ms(4000));
+	reconnection_timer.set_callback(new FnPtrScheduler([this](){
+		if (!m_connection->Ready()) {
+			m_connection->Close();
+			m_connection->Open();
+		}
+	}));
+	return 0;
+}
+
+int bc_modbus_driver::configure_unit(UnitInfo* unit, size_t read, size_t send) {
 	auto mode = unit->getAttribute<std::string>("extra:mode", "client");
 	auto fun_it = mode_map.find(mode);
 	if (fun_it == mode_map.end()) {
@@ -1723,19 +1650,20 @@ int bc_modbus_driver::configure_unit(TUnit* unit, size_t read, size_t send) {
 	return 0;
 }
 
-int bc_modbus_driver::configure_parser(TUnit* unit, const SerialPortConfiguration &conf) {
+int bc_modbus_driver::configure_parser(UnitInfo* unit, const SerialPortConfiguration &conf) {
 	std::string proto = "";
 	auto medium = unit->getAttribute<std::string>("extra:medium", "tcp");
 	if (medium == "tcp") {
-		if (unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no") == "no") {
-			proto = "tcp";
-		} else {
+		if (unit->getAttribute<bool>("extra:use_tcp_2_serial_proxy", false)) {
 			proto = "rtu";
+		} else {
+			proto = "tcp";
 		}
 	} else if (medium == "serial") {
 		proto = unit->getAttribute<std::string>("extra:serial_protocol_variant", "rtu");
 	} else {
 		m_log->log(1, "Unsupported medium: %s, unit not configured", medium.c_str());
+		return 1;
 	}
 
 	auto fun_it = proto_map.find(proto);
@@ -1754,7 +1682,83 @@ int bc_modbus_driver::configure_parser(TUnit* unit, const SerialPortConfiguratio
 	return 0;
 }
 
-int bc_tcp_parser::configure(TUnit* unit, const SerialPortConfiguration &) {
+void bc_modbus_driver::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	m_parser->read_data(conn, data);
+}
+
+void bc_modbus_driver::ReadError(const BaseConnection *conn, short int event) {
+	m_log->log(3, "Connection error, resetting");
+	m_connection->Close();
+	m_parser->reset();
+	m_unit->reset_cycle();
+
+	reconnection_timer.schedule();
+}
+
+void bc_modbus_driver::OpenFinished(const BaseConnection *conn) {
+	reconnection_timer.cancel();
+	m_unit->start_cycle();
+}
+
+void bc_modbus_driver::SetConfigurationFinished(const BaseConnection *conn) {}
+
+void bc_modbus_driver::frame_parsed(ADU &adu, BaseConnection* conn) {
+	auto adu_str = adu2string(adu);
+	m_log->log(10, "Got frame %s", adu_str.c_str());
+
+	m_unit->adu_received(conn, adu);
+}
+
+void bc_modbus_driver::send_frame(BaseConnection* conn, ADU &adu) {
+	try {
+		auto adu_str = adu2string(adu);
+		m_log->log(10, "Sending %s", adu_str.c_str());
+
+		m_parser->send_adu(conn, adu);
+	} catch (...) {
+		m_log->log(3, "Couldn't send frame!");
+
+	}
+}
+
+void bc_modbus_driver::error(const ERROR_CONDITION e) {
+	auto error_str = error_condition_str(e);
+	m_log->log(5, "Error during frame parsing: %s, resetting", error_str.c_str());
+
+	m_parser->reset();
+	m_unit->timeout();
+}
+
+void bc_modbus_tcp_client::send_frame(BaseConnection* conn, ADU &adu) {
+	adu.trans_id = ++m_trans_id;
+	valid_ids.insert(m_trans_id);
+	bc_modbus_driver::send_frame(conn, adu);
+}
+
+void bc_modbus_tcp_client::frame_parsed(ADU &adu, BaseConnection* conn) {
+	if (!adu.trans_id) {
+		ASSERT(false);
+		error(FRAME_ERROR);
+		return;
+	}
+
+	if (valid_ids.count(*adu.trans_id) == 0) {
+		m_log->log(4, "Received unexpected tranasction id, expected: %u, ignoring the response", unsigned(m_trans_id));
+		error(FRAME_ERROR);
+		return;
+	}
+
+	valid_ids.erase(*adu.trans_id);
+	bc_modbus_driver::frame_parsed(adu, conn);
+}
+
+void bc_modbus_tcp_client::start_cycle() {
+	valid_ids.clear();
+	bc_modbus_driver::start_cycle();
+}
+
+
+int bc_tcp_parser::configure(UnitInfo* unit, const SerialPortConfiguration &) {
 	return 0;
 }
 
@@ -1883,7 +1887,7 @@ void bc_serial_parser::write_finished() {
 		write_timer.schedule();
 }
 
-int bc_serial_rtu_parser::configure(TUnit* unit, const SerialPortConfiguration &conf) {
+int bc_serial_rtu_parser::configure(UnitInfo* unit, const SerialPortConfiguration &conf) {
 	m_delay_between_chars = unit->getAttribute("extra:out-intra-character-delay", 0);
 	if (m_delay_between_chars == 0)
 		m_log->log(10, "Serial port configuration, delay between chars not given (or 0) assuming no delay");
@@ -2143,7 +2147,7 @@ void bc_serial_ascii_parser::send_adu(BaseConnection* conn, ADU &adu) {
 	conn->WriteData(&m_output_buffer[0], m_output_buffer.size());
 }
 
-int bc_serial_ascii_parser::configure(TUnit* unit, const SerialPortConfiguration &) {
+int bc_serial_ascii_parser::configure(UnitInfo* unit, const SerialPortConfiguration &) {
 	m_delay_between_chars = 0;
 	ms read_timeout = unit->getAttribute("extra:read-timeout", 1000);
 	read_timer.set_timeout(read_timeout);
@@ -2156,7 +2160,7 @@ void bc_serial_ascii_parser::reset() {
 }
 
 
-driver_iface* create_bc_modbus_tcp_client(TcpConnection* conn, boruta_daemon* boruta, slog log) {
+driver_iface* create_bc_modbus_tcp_client(BaseConnection* conn, boruta_daemon* boruta, slog log) {
 	return new bc_modbus_tcp_client(conn, boruta, log);
 }
 

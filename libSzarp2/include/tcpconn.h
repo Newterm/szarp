@@ -2,7 +2,7 @@
 #define __TCPCONN_H_
 
 #include "baseconn.h"
-class TUnit;
+class UnitInfo;
 
 /** Exception specific to TcpConnection class. */
 class TcpConnectionException : public ConnectionException {
@@ -23,7 +23,7 @@ public:
 	 */
 	void InitTcp(const std::string& address, int port);
 
-	void Init(const TUnit* unit);
+	void Init(UnitInfo* unit) override;
 
 	/* BaseConnection interface */
 	void Open() override;

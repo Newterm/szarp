@@ -30,6 +30,13 @@ void SerialAdapter::InitTcp(std::string address, int data_port, int cmd_port)
 	m_cmd_connection->InitTcp(address, cmd_port);
 }
 
+void SerialAdapter::Init(UnitInfo* unit) {
+	auto address = unit->getAttribute<std::string>("extra:tcp-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", DEFAULT_CMD_PORT);
+	InitTcp(address, dataport, cmdport);
+}
+
 void SerialAdapter::Open()
 {
 	if (m_open_pending) {
