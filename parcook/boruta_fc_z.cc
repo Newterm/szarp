@@ -165,7 +165,7 @@ class fc_proto : public bc_driver, public cycle_callback_handler
 	Scheduler read_timer;
 	CycleScheduler cycle_scheduler;
 
-	zmqhandler* m_zmq;
+	non_owning_ptr<zmqhandler> m_zmq;
 
 	size_t m_read;
 	size_t m_send;
@@ -230,7 +230,7 @@ public:
 
 using register_iface = register_iface_t<int32_t>;
 class fc_register: public register_iface, public parcook_val_op {
-	fc_proto *m_fc_proto;
+	non_owning_ptr<fc_proto> m_fc_proto;
 	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
 
 public:
@@ -262,7 +262,7 @@ public:
 		m_val = (value_type) val;
 	}
 
-	void publish_val(zmqhandler *handler, size_t index) override {
+	void publish_val(zmqhandler& handler, size_t index) override {
 		if (is_valid())
 			handler->set_value(index, get_mod_time(), m_val);
 	}
@@ -407,7 +407,7 @@ void fc_proto::to_parcook()
 	size_t i = 0;
 	m_log->log(10, "to_parcook, m_read_count: %zu", m_read_count);
 	for (auto reg: m_registers) {
-		reg.second->publish_val(m_zmq, i + m_read);
+		reg.second->publish_val(*m_zmq, i + m_read);
 		++i;
 	}
 }

@@ -59,6 +59,22 @@
 #include "sz4/defs.h"
 #include "sz4/util.h"
 
+template <typename T>
+struct non_owning_ptr {
+	T* t;
+
+	non_owning_ptr(): t(nullptr) {}
+	non_owning_ptr(T* _t): t(_t) {}
+	non_owning_ptr(T&& _t): t(new T(std::move(_t))) {}
+
+	~non_owning_ptr() {}
+
+	T* operator->() const { return t; }
+	T& operator*() const { return *t; }
+
+	operator T*() const { return t; }
+};
+
 namespace szarp {
 
 namespace util {
@@ -141,7 +157,7 @@ class Scheduler {
 	struct event m_timer;
 	struct timeval tv;
 
-	Callback* callback;
+	non_owning_ptr<Callback> callback;
 
 public:
 	Scheduler();
@@ -185,7 +201,7 @@ class CycleScheduler: public Callback {
 	std::mutex cycle_mutex;
 
 	Scheduler scheduler;
-	cycle_callback_handler* cycle_handler;
+	non_owning_ptr<cycle_callback_handler> cycle_handler;
 
 public:
 	CycleScheduler(cycle_callback_handler* handler);
@@ -208,12 +224,12 @@ public:
 
 class parcook_val_op {
 public:
-	virtual void publish_val(zmqhandler* handler, size_t index) = 0;
+	virtual void publish_val(zmqhandler& handler, size_t index) = 0;
 };
 
 class sender_val_op {
 public:
-	virtual void update_val(zmqhandler* handler, size_t index) = 0;
+	virtual void update_val(zmqhandler& handler, size_t index) = 0;
 };
 
 class driver_iface {
@@ -224,7 +240,7 @@ public:
 
 class bc_driver: public ConnectionListener, public driver_iface {
 protected:
-	BaseConnection* m_connection = nullptr;
+	non_owning_ptr<BaseConnection> m_connection = nullptr;
 
 public:
 	bc_driver(BaseConnection* conn): m_connection(conn) {
@@ -243,22 +259,22 @@ struct boruta_logger {
 using slog = std::shared_ptr<boruta_logger>;
 
 class boruta_daemon {
-	std::set<driver_iface*> conns;
+	std::set<std::unique_ptr<driver_iface>> conns;
 
 	zmq::context_t m_zmq_ctx;
 
-	DaemonConfigInfo* m_cfg;
-	zmqhandler * m_zmq;
+	non_owning_ptr<zmqhandler> m_zmq;
 	struct timeval m_cycle;
 
 	Scheduler m_timer;
 
-	int configure_ipc(const ArgsManager&);
-	int configure_units(const ArgsManager&);
-	void configure_timer(const ArgsManager&);
+	int configure_ipc(const ArgsManager&, DaemonConfigInfo&);
+	int configure_units(const ArgsManager&, DaemonConfigInfo&);
+	void configure_timer(const ArgsManager&, DaemonConfigInfo&);
 public:
 	boruta_daemon();
-	zmqhandler* get_zmq();
+
+	non_owning_ptr<zmqhandler> get_zmq();
 	int configure(int *argc, char *argv[]);
 	void go();
 	void cycle_timer_callback();
