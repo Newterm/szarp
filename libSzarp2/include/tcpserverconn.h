@@ -62,7 +62,7 @@ private:
 
 	// socket handling
 	int start_listening();
-	bool ip_is_allowed(struct sockaddr_in in_s_addr);
+	bool ip_is_allowed(struct sockaddr_in in_s_addr) const;
 	boost::optional<int> accept_socket(int in_fd);
 
 	static void connection_accepted_cb(int _fd, short event, void* _handler);

@@ -264,7 +264,7 @@ public:
 
 	void publish_val(zmqhandler& handler, size_t index) override {
 		if (is_valid())
-			handler->set_value(index, get_mod_time(), m_val);
+			handler.set_value(index, get_mod_time(), m_val);
 	}
 };
 

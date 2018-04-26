@@ -397,7 +397,7 @@ public:
 		if (auto mod_time = m_regs->get_mod_time()) {
 			auto val = val_impl::get_value_from_regs(*m_regs);
 			szlog::log() << szlog::debug << m_log->header << ": setting read value " << val << szlog::endl;
-			handler->set_value(index, *mod_time, val);
+			handler.set_value(index, *mod_time, val);
 		}
 	}
 };
@@ -419,7 +419,7 @@ public:
 	sent_val_op(register_holder* regs, value_type nodata_value, int prec, slog log): m_log(log), m_regs(regs), m_prec(prec), m_nodata_value(nodata_value) {}
 
 	void update_val(zmqhandler& handler, size_t index) override {
-		szarp::ParamValue& value = handler->get_value(index);
+		szarp::ParamValue& value = handler.get_value(index);
 		auto vt_pair = sz4::cast_param_value<value_type>(value, this->m_prec);
 		if (!sz4::is_valid(vt_pair)) {
 			m_log->log(10, "Sent value for index %zu was invalid", index);
@@ -1862,9 +1862,9 @@ bool bc_serial_rtu_parser::check_crc() {
 	m_log->log(8,"Unit ID = %hx",m_input_buffer[0]);
 	m_log->log(8,"Func code = %hx",m_input_buffer[1]);
 	for (size_t i = 0; i < read_bytes; ++i) m_log->log(9, "Data[%zu] = %hx", i, m_input_buffer[i]);
-	m_log->log(8, "Checking crc, result: %s, calculated crc: %hx, frame crc: %hx",
-	       	(crc == frame_crc ? "OK" : "ERROR"), crc, frame_crc);
-	return crc == frame_crc;
+	bool ok = crc == frame_crc;
+	m_log->log(8, "Checking crc, result: %s, calculated crc: %hx, frame crc: %hx", ok? "OK" : "ERROR", crc, frame_crc);
+	return ok;
 }
 
 
