@@ -408,7 +408,7 @@ struct driver_factory {
 	}
 } factory; // Global! Do not store any state!
 
-int boruta_daemon::configure_ipc(const ArgsManager& args_mgr) {
+int boruta_daemon::configure_ipc(const ArgsManager& args_mgr, DaemonConfigInfo& cfg) {
 	bopt<char*> sub_conn_address = args_mgr.get<char*>("parhub", "sub_conn_addr");
 	bopt<char*> pub_conn_address = args_mgr.get<char*>("parhub", "pub_conn_addr");
 
@@ -418,7 +418,7 @@ int boruta_daemon::configure_ipc(const ArgsManager& args_mgr) {
 	}
 
 	try {
-		m_zmq = new zmqhandler(m_cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
+		m_zmq = new zmqhandler(&cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
 		sz_log(10, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
 		sz_log(0, "ZMQ initialization failed, %s", e.what());
@@ -431,30 +431,30 @@ int boruta_daemon::configure_ipc(const ArgsManager& args_mgr) {
 	return 0;
 }
 
-int boruta_daemon::configure_units(const ArgsManager&) {
+int boruta_daemon::configure_units(const ArgsManager&, DaemonConfigInfo& cfg) {
 	size_t read = 0;
 	size_t send = 0;
-	for (auto unit: m_cfg->GetUnits()) {
+	for (auto unit: cfg.GetUnits()) {
 		auto driver = factory.create(unit, this, read, send);
 		if (!driver)
 			return 1;
 
-		conns.insert(driver);
+		conns.insert(std::unique_ptr<driver_iface>(driver));
 		read += unit->GetParamsCount();
 		send += unit->GetSendParamsCount(true);
 	}
 	return 0;
 }
 
-void boruta_daemon::configure_timer(const ArgsManager&) {
+void boruta_daemon::configure_timer(const ArgsManager&, DaemonConfigInfo& cfg) {
 	m_timer.set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
-	int duration = m_cfg->GetDeviceInfo()->getAttribute<int>("extra:cycle_duration", 10000);
+	int duration = cfg.GetDeviceInfo()->getAttribute<int>("extra:cycle_duration", 10000);
 	m_timer.set_timeout(szarp::ms(duration));
 }
 
 boruta_daemon::boruta_daemon(): m_zmq_ctx(1) {}
 
-zmqhandler* boruta_daemon::get_zmq() {
+non_owning_ptr<zmqhandler> boruta_daemon::get_zmq() {
 	return m_zmq;
 }
 
@@ -463,22 +463,24 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
 	args_mgr.initLibpar();
 
+	DaemonConfigInfo* cfg;
+
 	if (args_mgr.has("use-cfgdealer")) {
 		szlog::init(args_mgr, "borutadmn");
-		m_cfg = new ConfigDealerHandler(args_mgr);
+		cfg = new ConfigDealerHandler(args_mgr);
 	} else {
 		auto d_cfg = new DaemonConfig("borutadmn_z");
 		if (d_cfg->Load(args_mgr))
 			return 101;
-		m_cfg = d_cfg;
+		cfg = d_cfg;
 	}
 
-	if (configure_ipc(args_mgr))
+	if (configure_ipc(args_mgr, *cfg))
 		return 102;
-	if (configure_units(args_mgr))
+	if (configure_units(args_mgr, *cfg))
 		return 103;
 
-	configure_timer(args_mgr);
+	configure_timer(args_mgr, *cfg);
 	return 0;
 }
 

@@ -357,32 +357,34 @@ public:
 	void set_val(int16_t val) override {}
 	sz4::nanosecond_time_t get_mod_time() const override { return sz4::time_trait<sz4::nanosecond_time_t>::invalid_value; }
 	void set_mod_time(const sz4::nanosecond_time_t&) override {}
-} null_reg;
+};
+
+std::shared_ptr<null_register> null_reg = std::make_shared<null_register>();
 
 class register_holder {
 public:
 	virtual boost::optional<sz4::nanosecond_time_t> get_mod_time() const = 0;
 	virtual void set_mod_time(const sz4::nanosecond_time_t&) const = 0;
-	virtual register_iface* operator[](size_t) const = 0;
+	virtual std::shared_ptr<register_iface> operator[](size_t) const = 0;
 };
 
 template <int N_REGS>
 class modbus_registers_holder: public register_holder {
-	std::array<register_iface*, N_REGS> m_regs;
+	std::array<std::shared_ptr<register_iface>, N_REGS> m_regs;
 
 public:
-	modbus_registers_holder(std::array<register_iface*, N_REGS> regs): m_regs(regs) {}
+	modbus_registers_holder(std::array<std::shared_ptr<register_iface>, N_REGS> regs): m_regs(regs) {}
 
 	boost::optional<sz4::nanosecond_time_t> get_mod_time() const override;
 	void set_mod_time(const sz4::nanosecond_time_t& time) const override;
-	register_iface* operator[](size_t i) const override;
+	std::shared_ptr<register_iface> operator[](size_t i) const override;
 };
 
 template <class _val_impl>
 class read_val_op: public parcook_val_op {
 protected:
 	slog m_log;
-	register_holder* m_regs;
+	std::unique_ptr<register_holder> m_regs;
 
 public:
 	using val_impl = _val_impl;
@@ -391,7 +393,7 @@ public:
 
 	read_val_op(register_holder* regs, value_type, int, slog log): m_log(log), m_regs(regs) {}
 
-	void publish_val(zmqhandler* handler, size_t index) override {
+	void publish_val(zmqhandler& handler, size_t index) override {
 		if (auto mod_time = m_regs->get_mod_time()) {
 			auto val = val_impl::get_value_from_regs(*m_regs);
 			szlog::log() << szlog::debug << m_log->header << ": setting read value " << val << szlog::endl;
@@ -409,14 +411,14 @@ public:
 
 protected:
 	slog m_log;
-	register_holder* m_regs;
+	std::unique_ptr<register_holder> m_regs;
 	int m_prec;
 	value_type m_nodata_value;
 
 public:
 	sent_val_op(register_holder* regs, value_type nodata_value, int prec, slog log): m_log(log), m_regs(regs), m_prec(prec), m_nodata_value(nodata_value) {}
 
-	void update_val(zmqhandler* handler, size_t index) override {
+	void update_val(zmqhandler& handler, size_t index) override {
 		szarp::ParamValue& value = handler->get_value(index);
 		auto vt_pair = sz4::cast_param_value<value_type>(value, this->m_prec);
 		if (!sz4::is_valid(vt_pair)) {
@@ -442,7 +444,7 @@ public:
 public:
 	sent_const_val_op(register_holder* regs, value_type _value, slog log): sent_val_op<val_impl>(regs, 0, sz4::no_data<value_type>(), log), value(_value) {}
 
-	void update_val(zmqhandler* handler, size_t index) override {
+	void update_val(zmqhandler& handler, size_t index) override {
 		sz4::nanosecond_time_t t_now((const sz4::second_time_t) time(NULL));
 		this->m_regs->set_mod_time(t_now);
 		val_impl::set_value_to_regs(*(this->m_regs), value);
@@ -493,11 +495,11 @@ public:
 
 class modbus_unit: public cycle_callback_handler {
 protected:
-	zmqhandler* zmq;
+	non_owning_ptr<zmqhandler> zmq;
 
 	unsigned char m_id;
 
-	using RMAP = std::map<unsigned short, register_iface*>;
+	using RMAP = std::map<unsigned short, std::shared_ptr<register_iface>>;
 	RMAP m_registers;
 
 	using RSET = std::set<std::pair<REGISTER_TYPE, unsigned short>>;
@@ -507,8 +509,8 @@ protected:
 	size_t m_read;
 	size_t m_send;
 
-	std::vector<parcook_val_op*> m_parcook_ops;
-	std::vector<std::pair<sender_val_op*, size_t>> m_sender_ops;
+	std::vector<std::unique_ptr<parcook_val_op>> m_parcook_ops;
+	std::vector<std::pair<std::unique_ptr<sender_val_op>, size_t>> m_sender_ops;
 	std::unique_ptr<RegsFactory> m_regs_factory;
 
 	slog m_log;
@@ -517,9 +519,9 @@ protected:
 	long long m_expiration_time;
 	float m_nodata_value;
 
-	register_iface* register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*);
-	register_iface* register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*);
-	register_iface* get_register(uint32_t addr);
+	std::shared_ptr<register_iface> register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*);
+	std::shared_ptr<register_iface> register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*);
+	std::shared_ptr<register_iface> get_register(uint32_t addr);
 
 	template <template <typename> class val_op>
 	typename base_type<val_op>::type* configure_register(TAttribHolder* param, int prec_e);
@@ -555,6 +557,7 @@ protected:
 
 public:
 	modbus_unit(zmqhandler* _zmq, slog logger);
+
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
 
 	virtual int configure(UnitInfo *unit, size_t read, size_t send);
@@ -589,7 +592,7 @@ public:
 };
 
 class modbus_server: public modbus_unit {
-	bc_handler* handler;
+	non_owning_ptr<bc_handler> handler;
 
 public:
 	modbus_server(bc_handler* _handler, boruta_daemon* boruta, slog log): modbus_unit(boruta->get_zmq(), log), handler(_handler) {}
@@ -605,8 +608,8 @@ public:
 };
 
 class modbus_client: public modbus_unit {
-	bc_handler* handler;
-	BaseConnection* m_connection;
+	non_owning_ptr<bc_handler> handler;
+	non_owning_ptr<BaseConnection> m_connection;
 	
 protected:
 	RSET::iterator m_received_iterator;
@@ -663,8 +666,8 @@ class bc_modbus_driver: public bc_driver, public bc_handler, public cycle_callba
 protected:
 	CycleScheduler cycle_scheduler;
 	Scheduler reconnection_timer;
-	modbus_unit* m_unit;
-	bc_parser* m_parser;
+	std::unique_ptr<modbus_unit> m_unit;
+	std::unique_ptr<bc_parser> m_parser;
 	slog m_log;
 
 private:
@@ -710,9 +713,8 @@ public:
 class bc_serial_parser: public bc_parser {
 protected:
 	slog m_log;
-	BaseConnection* m_connection;
-
-	bc_handler *m_serial_handler;
+	non_owning_ptr<BaseConnection> m_connection;
+	std::unique_ptr<bc_handler> m_serial_handler;
 
 	ADU m_adu;
 
@@ -734,7 +736,7 @@ public:
 };
 
 class bc_tcp_parser: public bc_parser {
-	bc_handler* handler;
+	non_owning_ptr<bc_handler> handler;
 	slog m_log;
 
 public:
@@ -804,7 +806,7 @@ unsigned short bc_serial_rtu_parser::crc16[256] = {};
 bool bc_serial_rtu_parser::crc_table_calculated = false;
 
 class modbus_register: public register_iface {
-	modbus_unit *m_modbus_unit;
+	non_owning_ptr<modbus_unit> m_modbus_unit;
 	slog m_log;
 
 	// allow accessing data members
@@ -1004,15 +1006,15 @@ bool modbus_unit::create_error_response(unsigned char error, ADU &adu) {
 
 void modbus_unit::to_parcook() {
 	size_t m = 0;
-	for (auto reg: m_parcook_ops)
-		reg->publish_val(zmq, m_read + m++);
+	for (auto& reg: m_parcook_ops)
+		reg->publish_val(*zmq, m_read + m++);
 }
 
 void modbus_unit::from_sender() {
 	m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
 
-	for (auto sent: m_sender_ops)
-		sent.first->update_val(zmq, sent.second);
+	for (auto& sent: m_sender_ops)
+		sent.first->update_val(*zmq, sent.second);
 }
 
 bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
@@ -1118,19 +1120,19 @@ std::array<uint32_t, 4> RegsFactory::get_addresses<4>(TAttribHolder* param, uint
 	}
 }
 
-register_iface* modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*) {
+std::shared_ptr<register_iface> modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, parcook_val_op*) {
 	m_received.insert(std::make_pair(rt, addr));
 	return get_register(addr);
 }
 
-register_iface* modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*) {
+std::shared_ptr<register_iface> modbus_unit::register_for_addr(uint32_t addr, REGISTER_TYPE rt, sender_val_op*) {
 	m_sent.insert(std::make_pair(rt, addr));
 	return get_register(addr);
 }
 
-register_iface* modbus_unit::get_register(uint32_t addr) {
+std::shared_ptr<register_iface> modbus_unit::get_register(uint32_t addr) {
 	if (m_registers.find(addr) == m_registers.end()) {
-		m_registers[addr] = new modbus_register(this, m_log);
+		m_registers[addr] = std::make_shared<modbus_register>(this, m_log);
 	}
 	return m_registers[addr];
 }
@@ -1156,8 +1158,8 @@ void modbus_registers_holder<N_REGS>::set_mod_time(const sz4::nanosecond_time_t&
 }
 
 template <int N_REGS>
-register_iface* modbus_registers_holder<N_REGS>::operator[](size_t i) const {
-	if (i >= N_REGS) return &null_reg;
+std::shared_ptr<register_iface> modbus_registers_holder<N_REGS>::operator[](size_t i) const {
+	if (i >= N_REGS) return null_reg;
 	return m_regs[i];
 }
 
@@ -1249,7 +1251,7 @@ REGISTER_TYPE get_rt(TAttribHolder* param) {
 
 void modbus_unit::configure_param(IPCParamInfo* param) { 
 	if (auto nreg = configure_register<read_val_op>(param, param->GetPrec())) {
-		m_parcook_ops.push_back(nreg);
+		m_parcook_ops.push_back(std::unique_ptr<parcook_val_op>(nreg));
 	} else {
 		throw std::runtime_error("Couldn't configure param!");
 	}
@@ -1259,7 +1261,7 @@ void modbus_unit::configure_send(SendParamInfo* param) {
 	if (auto val = param->getOptAttribute<std::string>("value")) {
 		configure_register<sent_const_val_op>(param, param->GetPrec());
 	} else if (auto nreg = configure_register<sent_val_op>(param, param->GetPrec())) {
-		m_sender_ops.push_back({nreg, m_send++});
+		m_sender_ops.push_back({std::unique_ptr<sender_val_op>(nreg), m_send++});
 	} else {
 		throw std::runtime_error("Couldn't configure send param!");
 	}
@@ -1295,7 +1297,7 @@ typename base_type<val_op>::type* modbus_unit::configure_register(TAttribHolder*
 template <typename val_op>
 val_op* modbus_unit::create_register(TAttribHolder* param, int prec, unsigned short addr, REGISTER_TYPE rt, void*) {
 	std::array<uint32_t, val_op::N_REGS> r_addrs = m_regs_factory->get_addresses<val_op::N_REGS>(param, addr);
-	std::array<register_iface*, val_op::N_REGS> registers;
+	std::array<std::shared_ptr<register_iface>, val_op::N_REGS> registers;
 
 	int32_t i = 0;
 	for (auto r_addr: r_addrs) {
@@ -1311,13 +1313,13 @@ val_op* modbus_unit::create_register(TAttribHolder* param, int prec, unsigned sh
 
 	if (auto v = param->getOptAttribute<typename val_op::value_type>("value")) {
 		std::array<uint32_t, val_op::N_REGS> r_addrs = m_regs_factory->get_addresses<val_op::N_REGS>(param, addr);
-		std::array<register_iface*, val_op::N_REGS> regs;
+		std::array<std::shared_ptr<register_iface>, val_op::N_REGS> regs;
 		int i = 0;
 
 		for (auto addr: r_addrs) {
 			m_sent.insert(std::make_pair(rt, addr));
 			if (m_registers.find(addr) == m_registers.end()) {
-				regs[i++] = m_registers[addr] = new const_val_register();
+				regs[i++] = m_registers[addr] = std::make_shared<const_val_register>();
 			} else {
 				throw std::runtime_error("Register for given address already exists");
 			}
@@ -1640,7 +1642,7 @@ int bc_modbus_driver::configure_unit(UnitInfo* unit, size_t read, size_t send) {
 		return 1;
 	}
 
-	m_unit = (fun_it->second)();
+	m_unit = std::unique_ptr<modbus_unit>((fun_it->second)());
 
 	if (m_unit->configure(unit, read, send)) {
 		m_log->log(1, "Couldn't configure parser!");
@@ -1672,7 +1674,7 @@ int bc_modbus_driver::configure_parser(UnitInfo* unit, const SerialPortConfigura
 		return 1;
 	}
 
-	m_parser = (fun_it->second)();
+	m_parser = std::unique_ptr<bc_parser>((fun_it->second)());
 
 	if (m_parser->configure(unit, conf)) {
 		m_log->log(1, "Couldn't configure parser!");
