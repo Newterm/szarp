@@ -108,6 +108,8 @@ public:
 	void InitTcp(std::string address, int data_port=DEFAULT_DATA_PORT,
 		int cmd_port=DEFAULT_CMD_PORT);
 
+	void Init(UnitInfo* unit) override;
+
 private:
 	void ProcessCmdResponse(const std::vector<unsigned char> &cmd_buf);
 	void WriteCmd(std::vector<unsigned char> &cmd_buffer);

@@ -24,6 +24,13 @@ void AtcConnection::InitTcp(const std::string& address,
 	m_control_port = control_port;
 }
 
+void AtcConnection::Init(UnitInfo* unit) {
+	auto address = unit->getAttribute<std::string>("extra:atc-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", DEFAULT_CONTROL_PORT);
+	InitTcp(address, dataport, cmdport);
+}
+
 void AtcConnection::AtcError(const AtcHttpClient* client)
 {
 	// use "unrecoverable error encountered"

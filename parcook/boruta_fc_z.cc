@@ -160,10 +160,10 @@ const unsigned char MAX_EXTRA_ID = 32; // max address of inverter
 class fc_register;
 using FCRMAP = std::map<unsigned int, fc_register *>;
 
-class fc_proto : public bc_driver
+class fc_proto : public bc_driver, public cycle_callback_handler
 {
 	Scheduler read_timer;
-	Scheduler cycle_timer;
+	CycleScheduler cycle_scheduler;
 
 	zmqhandler* m_zmq;
 
@@ -213,10 +213,12 @@ protected:
 public:
 	fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log);
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
-	int configure(TUnit* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
-	void configure_timers(TUnit* unit);
+	int configure(UnitInfo* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
+	void configure_timers(UnitInfo* unit);
 	void configure_register(TAttribHolder* param);
-	void scheduled();
+
+	// cycle_callback_handler impl
+	void start_cycle() override;
 
 	// ConnectionListener impl
 	void OpenFinished(const BaseConnection *conn) override {}
@@ -267,7 +269,7 @@ public:
 };
 
 
-fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), cycle_timer(), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), cycle_scheduler(this), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
@@ -415,7 +417,7 @@ void fc_proto::terminate_connection()
 	m_connection->Close();
 }
 
-int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortConfiguration&)
+int fc_proto::configure(UnitInfo *unit, size_t read, size_t send, const SerialPortConfiguration&)
 {
 	m_read_count = unit->GetParamsCount();
 	m_send_count = unit->GetSendParamsCount();
@@ -448,75 +450,58 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, const SerialPortC
 	return 0;
 }
 
-void fc_proto::configure_timers(TUnit* unit) {
-	auto read_callback = [this](){ next_request(); };
-	read_timer.set_callback(new LambdaScheduler<decltype(read_callback)>(std::move(read_callback)));
+void fc_proto::configure_timers(UnitInfo* unit) {
+	read_timer.set_callback(new FnPtrScheduler([this](){ next_request(); }));
 	read_timer.set_timeout(ms(1500));
-
-	auto cycle_callback = [this](){
-		m_log->log(10, "cycle timer callback");
-
-		to_parcook();
-
-		m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
-		read_timer.cancel();
-
-		try {
-			if (!m_connection->Ready()) {
-				m_connection->Close();
-				m_connection->Open();
-			}
-		} catch (...) {
-			m_log->log(1, "Couldn't establish connection!");
-		}
-
-		scheduled();
-		cycle_timer.schedule();
-	};
-
-	cycle_timer.set_callback(new LambdaScheduler<decltype(cycle_callback)>(std::move(cycle_callback)));
-
-	int64_t cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
-	cycle_timer.set_timeout(ms(cycle_timeout));
-	cycle_timer.schedule();
+	cycle_scheduler.configure(unit);
 }
 
-void fc_proto::configure_register(TAttribHolder* param) {
-	auto pnu = param->getOptAttribute<unsigned>("extra:parameter-number");
-	if (!pnu)
-		throw std::runtime_error("No option extra:parameter-number passed!");
+void fc_proto::start_cycle() {
+	m_log->log(10, "cycle timer callback");
 
-	m_log->log(10, "configure extra:parameter-number: %d", *pnu);
+	m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
+	to_parcook();
+
+	if (m_state != IDLE) {
+		m_log->log(3, "New cycle before end of querying, dropping");
+		return;
+	}
+
+	read_timer.cancel();
+
+	if (!m_connection->Ready()) {
+		m_connection->Close();
+		m_connection->Open();
+	}
+
+	m_registers_iterator = m_registers.begin();
+	send_request();
+};
+
+namespace {
+
+std::map<std::string, std::function<fc_register*(fc_proto* proto)>> val_map = {
+	{"ushort", [](fc_proto* proto){ return new fc_register_impl<uint16_t>(proto); }},
+	{"uinteger", [](fc_proto* proto){ return new fc_register_impl<uint32_t>(proto); }},
+	{"integer", [](fc_proto* proto){ return new fc_register_impl<int32_t>(proto); }},
+};
+
+} // annon ns
+
+
+void fc_proto::configure_register(TAttribHolder* param) {
+	auto pnu = param->getAttribute<unsigned>("extra:parameter-number");
+
+	m_log->log(10, "configure extra:parameter-number: %d", pnu);
 
 	std::string val_type = param->getAttribute<std::string>("extra:val_type");
-	if (val_type == "ushort") {
-		m_registers[*pnu] = new fc_register_impl<uint16_t>(this);
-	}
-	else if (val_type == "uinteger") {
-		m_registers[*pnu] = new fc_register_impl<uint32_t>(this);
-	}
-	else if (val_type == "integer") {
-		m_registers[*pnu] = new fc_register_impl<int32_t>(this);
-	}
-	else {
+	auto val_f = val_map.find(val_type);
+	if (val_f == val_map.end()) {
 		m_log->log(1, "Unsupported value type: %s", val_type.c_str());
 		throw std::runtime_error("Invalid value type");
 	}
-}
 
-void fc_proto::scheduled()
-{
-	m_log->log(10, "scheduled");
-	switch (m_state) {
-	case IDLE:
-		m_registers_iterator = m_registers.begin();
-		send_request();
-		break;
-	case REQUEST:
-	case RESPONSE:
-		m_log->log(7, "New cycle before end of querying");
-		break;
-	}
+	m_registers[pnu] = val_f->second(this);
 }
 
 void fc_proto::ReadError(const BaseConnection *conn, short int event) {
@@ -556,16 +541,14 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 bool fc_proto::register_val_expired(const sz4::nanosecond_time_t& time) {
 	if (m_expiration_time == 0) {
 		return false;
-	}
-	else {
+	} else {
 		auto t = time;
 		t += m_expiration_time;
 		return t <= m_current_time;
 	}
 }
 
-driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log)
-{
+driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log) {
 	return new fc_proto(conn, boruta, log);
 }
 

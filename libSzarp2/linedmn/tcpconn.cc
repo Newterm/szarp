@@ -32,16 +32,10 @@ void TcpConnection::InitTcp(const std::string& address, int port)
 	m_server_addr.sin_port = htons(port);
 }
 
-void TcpConnection::Init(const TUnit* unit) {
-	auto addr = unit->getOptAttribute<std::string>("extra:tcp-address");
-	auto port = unit->getOptAttribute<int>("extra:tcp-port");
-
-	if (!addr)
-		throw TcpConnectionException("No tcp-address given! Cannot configure connection!");
-	if (!port)
-		throw TcpConnectionException("No tcp-port given! Cannot configure connection!");
-
-	InitTcp(*addr, *port);
+void TcpConnection::Init(UnitInfo* unit) {
+	auto addr = unit->getAttribute<std::string>("extra:tcp-address");
+	auto port = unit->getAttribute<int>("extra:tcp-port");
+	InitTcp(addr, port);
 }
 
 void TcpConnection::Open()

@@ -2,6 +2,7 @@
 #define __BASECONN_H_
 
 #include "serialportconf.h"
+#include "szarp_config.h"
 #include "exception.h"
 #include <event.h>
 #include <string>
@@ -47,6 +48,8 @@ public:
 		:m_event_base(base)
 	{}
 	virtual ~BaseConnection() {}
+
+	virtual void Init(UnitInfo* unit) = 0;
 
 	/** Open connection (previously initialized).
 	  * Open must result either in OpenFinished or ReadError callback or throw */
