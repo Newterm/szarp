@@ -64,6 +64,9 @@ public:
 
 	virtual ~Defdmn() {}
 
+	static sz4::nanosecond_time_t time_now;
+	static sz4::second_time_t data_timeout;
+
 	void go();
 	void configure(int* argc, char** argv);
 
@@ -75,7 +78,7 @@ protected:
 	void executeScripts();
 	void Calcul(DefParamBase*);
 
-	static double getGlobalParamValue(const std::wstring& name);
+	static boost::optional<double> getGlobalParamValue(const std::wstring& name);
 private:
 	const int NO_PROCESSING_THREADS = 1;
 	std::unique_ptr<IPCHandler> m_ipc;
@@ -92,14 +95,13 @@ private:
 	struct timeval m_cycle;
 	bool connectToParcook = false;
 	bool single = false;
-
 public:
 	double getParamData(TParam* p, sz4::nanosecond_time_t t, SZARP_PROBE_TYPE pt = SZARP_PROBE_TYPE::PT_SEC10);
 	sz4::lua_interpreter<sz4::base>& get_lua_interpreter() { return m_base->get_lua_interpreter(); }
 
 	static void cycle_timer_callback(int fd, short event, void* arg);
-	static double IPCParamValue(const std::wstring& name);
-	static double IPCParamValue(const char* pname);
+	static boost::optional<double> IPCParamValue(const std::wstring& name);
+	static boost::optional<double> IPCParamValue(const char* pname);
 	static double Sz4BaseValue(const std::wstring& name, sz4::nanosecond_time_t t, SZARP_PROBE_TYPE pt);
 };
 

@@ -7,23 +7,14 @@
 float ChooseFun(float funid, float *parlst);
 void putParamsFromString(const std::wstring& script_string, boost::regex& ipc_par_reg, const int& name_match_prefix, const int& name_match_sufix, std::vector<std::wstring>& ret_params);
 
-namespace sz4 {
-template <class time_type> time_type getTimeNow() { return time_type(NULL); }
+template <class time_type> time_type getTimeNow() = delete;
 
 template<> sz4::second_time_t getTimeNow<sz4::second_time_t>() {
-	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-	auto duration = now.time_since_epoch();
-	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-	return sz4::second_time_t(seconds);
+	return Defdmn::time_now.second;
 }
 
 template<> sz4::nanosecond_time_t getTimeNow<sz4::nanosecond_time_t>() {
-	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-	auto duration = now.time_since_epoch();
-	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-	const auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-	return sz4::nanosecond_time_t(seconds, nanoseconds);
-}
+	return Defdmn::time_now;
 }
 
 class DefParamBase: public sz4::param_observer {
@@ -76,10 +67,10 @@ public:
 	BaseParamImpl(TParam* param, size_t index): DefParamBase(param, index), val(0), t() {}
 	void setZmqVal(zmqhandler& zmq) const override {
 		// val is a double, as we are using them in RPNs and LUAs regardless if data_type
-		if (val == sz4::no_data<double>())
-			zmq.set_value(index, sz4::getTimeNow<time_type>(), sz4::no_data<data_type>());
+		if (val != val)
+			zmq.set_value(index, getTimeNow<time_type>(), sz4::no_data<data_type>());
 		else
-			zmq.set_value(index, sz4::getTimeNow<time_type>(), static_cast<data_type>(val));
+			zmq.set_value(index, getTimeNow<time_type>(), static_cast<data_type>(val));
 	}
 
 	void sendValueToParcook(short* read) const override {
@@ -89,7 +80,7 @@ public:
 			val_to_parcook*= 10;
 		}
 
-		if (val_to_parcook > (data_type) std::numeric_limits<short>::max() || val_to_parcook < (data_type) std::numeric_limits<short>::min()) read[index] = SZARP_NO_DATA;
+		if (val != val || val_to_parcook > (data_type) std::numeric_limits<short>::max() || val_to_parcook < (data_type) std::numeric_limits<short>::min()) read[index] = SZARP_NO_DATA;
 		else read[index] = (short) val_to_parcook;
 	}
 
@@ -151,7 +142,7 @@ public:
 		lua_State* lua = Defdmn::getObject().get_lua_interpreter().lua();
 		lua_rawgeti(lua, LUA_REGISTRYINDEX, this->param->GetLuaParamReference());
 
-		lua_pushnumber(lua, (double) sz4::getTimeNow<sz4::nanosecond_time_t>());
+		lua_pushnumber(lua, (double) getTimeNow<sz4::nanosecond_time_t>());
 		lua_pushnumber(lua, SZARP_PROBE_TYPE::PT_SEC10);
 
 		int ret = lua_pcall(lua, 2, 1, 0);
@@ -222,13 +213,13 @@ public:
 				tmp = wcstof(chptr, NULL);
 				chptr = wcschr(chptr, L' ');
 				auto pname = this->preparedParams[p_no++];
-				double par_val = Defdmn::IPCParamValue(pname);
-				if (par_val == sz4::no_data<double>()) nodata[sp] = 1; // check if val is not nan
+				auto par_val = Defdmn::IPCParamValue(pname);
+				if (!par_val) nodata[sp] = 1; // check if val is not nan
 				else nodata[sp] = 0;
 
 				precs_on_stack.insert({sp, this->precisions[pname]});
 
-				stack[sp++] = par_val;	
+				stack[sp++] = *par_val;	
 			} else {
 				switch (*chptr) {
 					case L'&':
