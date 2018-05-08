@@ -51,11 +51,8 @@ class FileRemover {
 		void TimeToYearMonth(time_t t);
 		/** Reset directory iterator. */
 		void Reset();
-		/** Check if path is a file to be removed and remove it.
-		 * @param p path to file to check
-		 * @return true if file was removed, false otherwise
-		 */
-		bool CheckPath(const path& p);
+
+		bool ShouldRemove(const path& p);
 		/** Check if file is outdated - older then m_months.
 		 * @return true if file is outdated and should be remove, false otherwise
 		 */
