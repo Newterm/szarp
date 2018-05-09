@@ -515,7 +515,7 @@ protected:
 
 	slog m_log;
 
-	sz4::nanosecond_time_t m_current_time;
+	sz4::nanosecond_time_t m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
 	long long m_expiration_time;
 	float m_nodata_value;
 
@@ -1144,7 +1144,7 @@ boost::optional<sz4::nanosecond_time_t> modbus_registers_holder<N_REGS>::get_mod
 		if (!m_regs[i]->is_valid())
 			return boost::none;
 
-		mod_time = std::min(mod_time, this->m_regs[i]->get_mod_time());
+		mod_time = std::max(mod_time, this->m_regs[i]->get_mod_time());
 	}
 
 	return mod_time;
@@ -1291,7 +1291,7 @@ typename base_type<val_op>::type* modbus_unit::configure_register(TAttribHolder*
 	if (fun_it == type_fun_map.end())
 		throw std::runtime_error(std::string("Invalid type ") + *val_type + std::string(" specified in param ") + get_param_name(param));
 	
-	return fun_it->second();
+	return (fun_it->second)();
 }
 
 template <typename val_op>
@@ -1472,6 +1472,7 @@ void modbus_client::next_query() {
 	switch (m_state) {
 		case IDLE:
 			m_state = READING_FROM_PEER;
+			//[fallthrough]
 		case READING_FROM_PEER:
 			if (m_received_iterator != m_received.end()) {
 				find_continuous_reg_block(m_received_iterator, m_received);
@@ -1858,10 +1859,6 @@ bool bc_serial_rtu_parser::check_crc() {
 		crc = update_crc(crc, m_input_buffer[i]);
 
 	unsigned short frame_crc = m_input_buffer[read_bytes - 2] | (m_input_buffer[read_bytes - 1] << 8);
-
-	m_log->log(8,"Unit ID = %hx",m_input_buffer[0]);
-	m_log->log(8,"Func code = %hx",m_input_buffer[1]);
-	for (size_t i = 0; i < read_bytes; ++i) m_log->log(9, "Data[%zu] = %hx", i, m_input_buffer[i]);
 	bool ok = crc == frame_crc;
 	m_log->log(8, "Checking crc, result: %s, calculated crc: %hx, frame crc: %hx", ok? "OK" : "ERROR", crc, frame_crc);
 	return ok;

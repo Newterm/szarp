@@ -5,6 +5,8 @@
 #include "szarp_config.h"
 #include "custom_assert.h"
 
+#include "evbase.h"
+
 class BaseServerConnectionHandler: public BaseConnection {
 public:
 	using BaseConnection::BaseConnection;
@@ -13,60 +15,29 @@ public:
 	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
 };
 
-class FdTcpServerConnection: public BaseConnection {
-	BaseServerConnectionHandler* handler;
-	struct bufferevent *m_bufferevent;
-	int m_fd;
-
-	// private - only handler can create
-	friend class TcpServerConnectionHandler;
-	FdTcpServerConnection(BaseServerConnectionHandler* _handler, struct event_base *ev_base);
-
-public:
-	~FdTcpServerConnection();
-
-	void InitConnection(int fd);
-	void Init(UnitInfo* unit) override;
-
-	void Open() override;
-	void Close() override;
-
-	/** Returns true if connection is ready for communication */
-	bool Ready() const override;
-	void ReadData(struct bufferevent *bufev);
-	void WriteData(const void* data, size_t size) override;
-
-	/** Set line configuration for an already open port */
-	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
-
-	static void ErrorCallback(struct bufferevent *bufev, short event, void* conn);
-	static void ReadDataCallback(struct bufferevent *bufev, void* conn);
-};
-
 // implements handling incoming connections
 class TcpServerConnectionHandler: public BaseServerConnectionHandler, public ConnectionListener {
-	int m_fd = -1;
+private:
+	PEventBase m_event_base;
+	PEvconnListener m_listener;	/**< event for listening for connections. */
 
-	struct event _event;
-	struct sockaddr_in m_addr;
+	struct sockaddr_in addr;
 
 	std::set<unsigned long> m_allowed_ips;
 	std::list<std::unique_ptr<BaseConnection>> m_connections;
 
 public:
-	using BaseServerConnectionHandler::BaseServerConnectionHandler;
+	TcpServerConnectionHandler(struct event_base* base);
 	void Init(UnitInfo* unit);
 
 private:
 	void ConfigureAllowedIps(UnitInfo* unit);
+	bool ip_is_allowed(struct sockaddr_in *in_s_addr) const;
 
-	// socket handling
-	int start_listening();
-	bool ip_is_allowed(struct sockaddr_in in_s_addr) const;
-	boost::optional<int> accept_socket(int in_fd);
+	static void AcceptErrorCallback(struct evconnlistener *listener, void *ds);
+	static void AcceptCallback(struct evconnlistener *listener, evutil_socket_t fd, struct sockaddr *address, int socklen, void *ds);
 
-	static void connection_accepted_cb(int _fd, short event, void* _handler);
-	void AcceptConnection(int _fd);
+	void AcceptConnection(evutil_socket_t fd, struct sockaddr *addr);
 
 public:
 	// Connection Listener implementation
@@ -80,6 +51,30 @@ public:
 	void Open() override;
 	void Close() override;
 	bool Ready() const override;
+};
+
+class TcpBaseServerConnection: public BaseConnection {
+private:
+	BaseServerConnectionHandler* handler;
+	PBufferevent m_bufferevent;
+
+	// private - only handler can create an instance of this class
+	friend class TcpServerConnectionHandler;
+	TcpBaseServerConnection(BaseServerConnectionHandler* _handler, struct event_base *ev_base);
+
+public:
+	TcpBaseServerConnection(BaseServerConnectionHandler* _handler, PBufferevent bufev);
+
+	void Init(UnitInfo* unit) override;
+	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
+
+	bool Ready() const override;
+	void Open() override;
+	void Close() override;
+	void WriteData(const void* data, size_t size) override;
+
+	static void ReadDataCallback(struct bufferevent *bufev, void* ds);
+	static void ErrorCallback(struct bufferevent *bufev, short event, void* ds);
 };
 
 #endif

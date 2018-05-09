@@ -2,6 +2,7 @@
 #define __TCPCONN_H_
 
 #include "baseconn.h"
+#include <event.h>
 class UnitInfo;
 
 /** Exception specific to TcpConnection class. */
@@ -44,6 +45,7 @@ protected:
 
 	void OpenFinished() override;
 protected:
+	struct event_base *m_event_base;
 	int m_connect_fd;	/**< Client connecting socket file descriptor. */
 	bool m_connected;	/**< Client socket connected to server. */
 	std::string m_address;	/**< address to connect to */
