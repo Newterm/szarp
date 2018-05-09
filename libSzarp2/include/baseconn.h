@@ -4,7 +4,6 @@
 #include "serialportconf.h"
 #include "szarp_config.h"
 #include "exception.h"
-#include <event.h>
 #include <string>
 #include <vector>
 
@@ -44,9 +43,7 @@ class ConnectionException : public SzException {
 class BaseConnection
 {
 public:
-	BaseConnection(struct event_base *base)
-		:m_event_base(base)
-	{}
+	BaseConnection() = default;
 	virtual ~BaseConnection() {}
 
 	virtual void Init(UnitInfo* unit) = 0;
@@ -82,7 +79,6 @@ protected:
 	virtual void Error(short int event);
 
 protected:
-	struct event_base* const m_event_base;
 	std::vector<ConnectionListener*> m_listeners;
 
 public:

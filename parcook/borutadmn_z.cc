@@ -118,7 +118,7 @@
 
 #include "cfgdealer_handler.h"
 
-struct event_base* EventBase::evbase;
+struct event_base* EventBaseHolder::evbase;
 
 static const time_t RECONNECT_ATTEMPT_DELAY = 10;
 
@@ -163,7 +163,7 @@ sz4::nanosecond_time_t time_now() {
 
 Scheduler::Scheduler() {
 	evtimer_set(&m_timer, timer_callback, this);
-	event_base_set(EventBase::evbase, &m_timer);
+	event_base_set(EventBaseHolder::evbase, &m_timer);
 }
 
 void Scheduler::set_callback(Callback* _callback) {
@@ -328,10 +328,10 @@ struct driver_factory {
 	}
 
 	std::map<std::tuple<Mode, Medium>, std::function<BaseConnection*()>> conn_map = {
-		{{Mode::client, Medium::serial}, [](){ return new SerialPort(EventBase::evbase); } },
-		{{Mode::client, Medium::tcp}, [](){ return new TcpConnection(EventBase::evbase); } },
-		{{Mode::server, Medium::serial}, [](){ return new SerialPort(EventBase::evbase); } },
-		{{Mode::server, Medium::tcp}, [](){ return new TcpServerConnectionHandler(EventBase::evbase); } },
+		{{Mode::client, Medium::serial}, [](){ return new SerialPort(EventBaseHolder::evbase); } },
+		{{Mode::client, Medium::tcp}, [](){ return new TcpConnection(EventBaseHolder::evbase); } },
+		{{Mode::server, Medium::serial}, [](){ return new SerialPort(EventBaseHolder::evbase); } },
+		{{Mode::server, Medium::tcp}, [](){ return new TcpServerConnectionHandler(EventBaseHolder::evbase); } },
 	};
 
 	std::map<Medium, std::function<std::string(UnitInfo*)>> addr_str_map = {
@@ -486,7 +486,7 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 
 void boruta_daemon::go() {
 	cycle_timer_callback();
-	event_base_dispatch(EventBase::evbase);
+	event_base_dispatch(EventBaseHolder::evbase);
 }
 
 void boruta_daemon::cycle_timer_callback() {
@@ -496,7 +496,7 @@ void boruta_daemon::cycle_timer_callback() {
 }
 
 int main(int argc, char *argv[]) {
-	EventBase::Initialize();
+	EventBaseHolder::Initialize();
 
 	xmlInitParser();
 	LIBXML_TEST_VERSION

@@ -138,11 +138,11 @@ sz4::nanosecond_time_t time_now();
 
 } // ns szarp
 
-struct EventBase {
+struct EventBaseHolder {
 	static struct event_base* evbase;
 	static void Initialize() {
-		EventBase::evbase = (struct event_base*) event_init();
-		if (!EventBase::evbase) {
+		EventBaseHolder::evbase = (struct event_base*) event_init();
+		if (!EventBaseHolder::evbase) {
 			throw std::runtime_error("Could not initialize event base");
 		}
 	}

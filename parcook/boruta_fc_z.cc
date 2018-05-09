@@ -526,6 +526,7 @@ void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned c
 			m_buffer.clear();
 			read_timer.cancel();
 			m_state = RESPONSE;
+			//[fallthrough]
 		case RESPONSE:
 			m_buffer.push_back(c);
 			if (m_buffer.size() == RESPONSE_SIZE) {

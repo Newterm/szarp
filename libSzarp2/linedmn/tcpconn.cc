@@ -9,7 +9,7 @@
 #include "szarp_config.h"
 
 TcpConnection::TcpConnection(struct event_base* base)
-	:BaseConnection(base),
+	:BaseConnection(), m_event_base(base),
 	m_connect_fd(-1), m_bufferevent(NULL), m_connection_open(false)
 {}
 
@@ -59,8 +59,6 @@ void TcpConnection::Open()
 		throw TcpConnectionException(errno, m_id + " connect() failed");
 	}
 	bufferevent_enable(m_bufferevent, EV_READ | EV_WRITE | EV_PERSIST);
-
-	OpenFinished();
 }
 
 void TcpConnection::ReadDataCallback(struct bufferevent *bufev, void* ds)
