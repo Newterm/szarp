@@ -27,10 +27,6 @@ public:
 	/** Write data to serial port */
 	void WriteData(const void* data, size_t size) override;
 
-	void Init(UnitInfo* unit) override {
-		m_device_path = unit->getAttribute("extra:path");
-	}
-
 	void Init(const std::string& device_path) {
 		m_device_path = device_path;
 	}

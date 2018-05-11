@@ -46,8 +46,6 @@ public:
 	BaseConnection() = default;
 	virtual ~BaseConnection() {}
 
-	virtual void Init(UnitInfo* unit) = 0;
-
 	/** Open connection (previously initialized).
 	  * Open must result either in OpenFinished or ReadError callback or throw */
 	virtual void Open() = 0;
@@ -85,6 +83,12 @@ public:
 	/** Avoid copying */
 	BaseConnection(const BaseConnection&) = delete;
 	BaseConnection& operator=(const BaseConnection&) = delete;
+};
+
+class BaseConnFactory {
+public:
+	template <typename ConnectionType, typename... Args>
+	static ConnectionType* create_from_unit(Args...);
 };
 
 #endif // __BASECONN_H__

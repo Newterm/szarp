@@ -327,11 +327,11 @@ struct driver_factory {
 		}
 	}
 
-	std::map<std::tuple<Mode, Medium>, std::function<BaseConnection*()>> conn_map = {
-		{{Mode::client, Medium::serial}, [](){ return new SerialPort(EventBaseHolder::evbase); } },
-		{{Mode::client, Medium::tcp}, [](){ return new TcpConnection(EventBaseHolder::evbase); } },
-		{{Mode::server, Medium::serial}, [](){ return new SerialPort(EventBaseHolder::evbase); } },
-		{{Mode::server, Medium::tcp}, [](){ return new TcpServerConnectionHandler(EventBaseHolder::evbase); } },
+	std::map<std::tuple<Mode, Medium>, std::function<BaseConnection*(UnitInfo*)>> conn_map = {
+		{{Mode::client, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{{Mode::client, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpConnection>(EventBaseHolder::evbase, unit); } },
+		{{Mode::server, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{{Mode::server, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpServerConnectionHandler>(unit); } },
 	};
 
 	std::map<Medium, std::function<std::string(UnitInfo*)>> addr_str_map = {
@@ -377,8 +377,6 @@ struct driver_factory {
 		if (driver_f == driver_map.end())
 			throw std::runtime_error("Unknown connection type");
 
-		BaseConnection* conn = conn_f->second();
-
 		std::string log_header = proto_names[proto];
 		log_header += " ";
 		log_header += medium_names[medium];
@@ -387,7 +385,8 @@ struct driver_factory {
 		log_header += " at ";
 		log_header += addr_str_f->second(unit);
 		slog logger = std::make_shared<boruta_logger>(log_header);
-		conn->Init(unit);
+
+		BaseConnection* conn = conn_f->second(unit);
 		conn->Open();
 
 		auto driver = driver_f->second(unit, conn, boruta, logger);

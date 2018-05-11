@@ -24,13 +24,6 @@ void AtcConnection::InitTcp(const std::string& address,
 	m_control_port = control_port;
 }
 
-void AtcConnection::Init(UnitInfo* unit) {
-	auto address = unit->getAttribute<std::string>("extra:atc-ip");
-	auto dataport = unit->getAttribute("extra:tcp-data-port", DEFAULT_DATA_PORT);
-	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", DEFAULT_CONTROL_PORT);
-	InitTcp(address, dataport, cmdport);
-}
-
 void AtcConnection::AtcError(const AtcHttpClient* client)
 {
 	// use "unrecoverable error encountered"
@@ -94,4 +87,14 @@ void AtcConnection::ResetDeviceFinished(const AtcHttpClient* client)
 	if (m_open_finished_pending) {
 		TcpConnection::OpenFinished();
 	}
+}
+
+template <>
+AtcConnection* BaseConnFactory::create_from_unit(struct event_base* base, UnitInfo* unit) {
+	auto conn = new AtcConnection(base);
+	auto address = unit->getAttribute<std::string>("extra:atc-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", AtcConnection::DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", AtcConnection::DEFAULT_CONTROL_PORT);
+	conn->InitTcp(address, dataport, cmdport);
+	return conn;
 }

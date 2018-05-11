@@ -9,7 +9,7 @@ void BaseServerConnectionHandler::WriteData(const void* data, size_t size) {
 
 void BaseServerConnectionHandler::SetConfiguration(const SerialPortConfiguration& serial_conf) {}
 
-TcpServerConnectionHandler::TcpServerConnectionHandler(struct event_base* base): BaseServerConnectionHandler() {
+TcpServerConnectionHandler::TcpServerConnectionHandler(): BaseServerConnectionHandler() {
 	m_event_base = std::make_shared<EventBase>(PEvBase(nullptr));
 }
 
@@ -137,10 +137,6 @@ TcpBaseServerConnection::TcpBaseServerConnection(BaseServerConnectionHandler* _h
 	bufferevent_setcb(bufev.get(), ReadDataCallback, NULL, ErrorCallback, this);
 }
 
-void TcpBaseServerConnection::Init(UnitInfo* unit) {
-	throw ConnectionException("Cannot init from unit! ServerConnection accepts only already opened connections!");
-}
-
 bool TcpBaseServerConnection::Ready() const { return true; }
 
 void TcpBaseServerConnection::SetConfiguration(const SerialPortConfiguration& serial_conf) {
@@ -184,4 +180,11 @@ void TcpBaseServerConnection::ErrorCallback(struct bufferevent *bufev, short eve
 	} else {
 		reinterpret_cast<TcpBaseServerConnection*>(ds)->Error(event);
 	}
+}
+
+template <>
+TcpServerConnectionHandler* BaseConnFactory::create_from_unit<TcpServerConnectionHandler, UnitInfo*>(UnitInfo* unit) {
+	auto conn = new TcpServerConnectionHandler();
+	conn->Init(unit);
+	return conn;
 }
