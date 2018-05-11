@@ -27,7 +27,7 @@ private:
 	std::list<std::unique_ptr<BaseConnection>> m_connections;
 
 public:
-	TcpServerConnectionHandler(struct event_base* base);
+	TcpServerConnectionHandler();
 	void Init(UnitInfo* unit);
 
 private:
@@ -65,7 +65,6 @@ private:
 public:
 	TcpBaseServerConnection(BaseServerConnectionHandler* _handler, PBufferevent bufev);
 
-	void Init(UnitInfo* unit) override;
 	void SetConfiguration(const SerialPortConfiguration& serial_conf) override;
 
 	bool Ready() const override;

@@ -24,8 +24,6 @@ public:
 	 */
 	void InitTcp(const std::string& address, int port);
 
-	void Init(UnitInfo* unit) override;
-
 	/* BaseConnection interface */
 	void Open() override;
 	void Close() override;

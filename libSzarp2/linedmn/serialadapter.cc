@@ -30,13 +30,6 @@ void SerialAdapter::InitTcp(std::string address, int data_port, int cmd_port)
 	m_cmd_connection->InitTcp(address, cmd_port);
 }
 
-void SerialAdapter::Init(UnitInfo* unit) {
-	auto address = unit->getAttribute<std::string>("extra:tcp-ip");
-	auto dataport = unit->getAttribute("extra:tcp-data-port", DEFAULT_DATA_PORT);
-	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", DEFAULT_CMD_PORT);
-	InitTcp(address, dataport, cmdport);
-}
-
 void SerialAdapter::Open()
 {
 	if (m_open_pending) {
@@ -395,4 +388,14 @@ void SerialAdapter::LineControl(bool dtr, bool rts)
 		cmd_buffer[3] = 1;
 	}
 	WriteCmd(cmd_buffer);
+}
+
+template <>
+SerialAdapter* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
+	auto conn = new SerialAdapter(base);
+	auto address = unit->getAttribute<std::string>("extra:tcp-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", SerialAdapter::DEFAULT_CMD_PORT);
+	conn->InitTcp(address, dataport, cmdport);
+	return conn;
 }

@@ -20,8 +20,6 @@ public:
 		int data_port=DEFAULT_DATA_PORT,
 		int control_port=DEFAULT_CONTROL_PORT);
 
-	void Init(UnitInfo* unit) override;
-
 	/* BaseConnection interface */
 	void Open() override;
 	void Close() override;

@@ -32,12 +32,6 @@ void TcpConnection::InitTcp(const std::string& address, int port)
 	m_server_addr.sin_port = htons(port);
 }
 
-void TcpConnection::Init(UnitInfo* unit) {
-	auto addr = unit->getAttribute<std::string>("extra:tcp-address");
-	auto port = unit->getAttribute<int>("extra:tcp-port");
-	InitTcp(addr, port);
-}
-
 void TcpConnection::Open()
 {
 	if (m_connect_fd != -1) {
@@ -156,4 +150,13 @@ void TcpConnection::WriteData(const void* data, size_t size)
 void TcpConnection::SetConfiguration(const SerialPortConfiguration& serial_conf)
 {
 	SetConfigurationFinished();
+}
+
+template <>
+TcpConnection* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
+	auto conn = new TcpConnection(base);
+	auto addr = unit->getAttribute<std::string>("extra:tcp-address");
+	auto port = unit->getAttribute<int>("extra:tcp-port");
+	conn->InitTcp(addr, port);
+	return conn;
 }
