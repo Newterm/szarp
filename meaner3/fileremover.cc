@@ -23,7 +23,7 @@
 #include "config.h"
 #include "fileremover.h"
 #include "liblog.h"
-
+#include <vector>
 #include <boost/lexical_cast.hpp>
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
@@ -40,7 +40,6 @@ time_t FileRemover::Go(time_t maxtime)
 	time_t t = time(NULL);
 	time_t first = t;
 	TimeToYearMonth(t);
-	int count = 0;
 
 	if (m_iter == recursive_directory_iterator()) {
 		if (m_last_month == m_current_month) {
@@ -53,15 +52,21 @@ time_t FileRemover::Go(time_t maxtime)
 			m_months);
 	m_last_month = m_current_month;
 
+	std::vector<path> files2remove;
 	for (; m_iter != recursive_directory_iterator(); ++m_iter) {
-		count += CheckPath(m_iter->path());
+		if (ShouldRemove(m_iter->path())) {
+			files2remove.push_back(m_iter->path());
+		}
 		t = time(NULL);
 		if (t >= maxtime) {
-			sz_log(1, "Interrupting remover loop after removing %d files", count);
-			return first - t;
+			sz_log(1, "Interrupting remover loop after finding %d files to remove", (int)files2remove.size());
+			break;
 		}
 	}
-	sz_log(2, "Finished remover loop after removing %d files", count);
+	for (const auto& p : files2remove) {
+		remove(p);
+	}
+	sz_log(2, "Finished remover loop after removing %d files", (int)files2remove.size());
 	return first - t;
 }
 
@@ -78,7 +83,7 @@ void FileRemover::Reset()
 	m_iter = recursive_directory_iterator(m_dir);
 }
 
-bool FileRemover::CheckPath(const path& p)
+bool FileRemover::ShouldRemove(const path& p)
 {
 	if (not is_regular_file(m_iter->path())) {
 		return false;
@@ -88,7 +93,6 @@ bool FileRemover::CheckPath(const path& p)
 #else
 	if (FileOutdated(m_iter->path().filename())) {
 #endif
-		remove(m_iter->path());
 		return true;
 	}
 	return false;
