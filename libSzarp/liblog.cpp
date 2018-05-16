@@ -122,8 +122,7 @@ void Logger::flush() {
 	std::lock_guard<std::mutex> _in_guard(_in_mutex);
 
 	_out_mutex.lock();
-	if (logger_exited) {
-		logger_exited = false;
+	if (!_msg_cv.valid()) {
 		_msg_cv = std::async(std::launch::async, log_thread);
 	}
 	_out_mutex.unlock();
@@ -163,8 +162,7 @@ void Logger::log_later(std::shared_ptr<LogEntry> msg) {
 	_msgs_to_send.push_back(msg);
 
 	// check if logger thread is inactive
-	if (logger_exited) {
-		logger_exited = false;
+	if (!_msg_cv.valid()) {
 		_msg_cv = std::async(std::launch::async, log_thread);
 	}
 }
@@ -178,7 +176,6 @@ void Logger::log_messages() {
 		{	// synchronised
 			std::lock_guard<std::mutex> _guard(_out_mutex);
 			if (_msgs_to_send.size() == 0) {
-				logger_exited = true;
 				return;
 			}
 

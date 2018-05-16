@@ -177,10 +177,7 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 			xmlOutputBufferWriteString(out_buf, c);
 			xmlFree(c);
 		}
-		xmlOutputBufferWriteString(out_buf, "</b></p><p>Data: ");
-		t = time(NULL);
-		xmlOutputBufferWriteString(out_buf, ctime(&t));
-		xmlOutputBufferWriteString(out_buf, "</p>");
+		xmlOutputBufferWriteString(out_buf, "</b>");
 		
 		if (!strcmp((char *)node->name, "node") ||
 				(!strcmp((char *)node->name, "params"))) {

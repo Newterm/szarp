@@ -74,7 +74,6 @@ class Logger {
 	std::deque<std::shared_ptr<LogEntry>> _msgs_to_send;
 
 	std::future<void> _msg_cv;
-	bool logger_exited = true;
 	std::function<void()> log_thread = [this](){ log_messages(); };
 
 	std::mutex _msg_mutex;
