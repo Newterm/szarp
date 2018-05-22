@@ -396,7 +396,7 @@ void SelectDrawWidget::OnTimer(wxTimerEvent&) {
 void
 SelectDrawWidget::SetDrawEnable(int index, bool enable)
 {
-	if (index >= 0 && index < int(m_cb_l.size()));
+	if (index >= 0 && index < int(m_cb_l.size()))
 		m_cb_l[index]->Enable(enable);
 }
 
