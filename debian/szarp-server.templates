@@ -17,3 +17,4 @@ Default: sz4
 _Description: Database type
  Select the SZARP database type to use.
  (Creates /etc/szarp/units-enabled/ with appropriate components if dir doesn't exist).
+ If you want to change existing database type first delete '/etc/szarp/units-enabled' catalogue (but remember that having both sz3 and sz4 files may cause undefined draw3 behaviour).

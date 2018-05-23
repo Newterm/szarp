@@ -72,11 +72,11 @@ case "$1" in
 	# create new unit files if dir doesn't exist, or..
 	# ..if it exists, but there are no other files except (possibly missing) iks-server
 	# it's necessary as szarp-iks-server will always be installed before szarp-server
+	db_get szarp/szbase_type
 	if [ ! -d $UNITSELECT_PATH ] || ( [ -d $UNITSELECT_PATH ] && [ `ls $UNITSELECT_PATH | grep -v "iks-server" | wc -l` -eq 0 ] ); then
 		mkdir -p $UNITSELECT_PATH
 
 		# create default configuration
-		db_get szarp/szbase_type
 		if [ "x$RET" = "xsz4" ]; then
 			switch_to_sz4_units
 		elif [ "x$RET" = "xsz3" ]; then
@@ -98,6 +98,7 @@ case "$1" in
 	/opt/szarp/bin/config_deb Konfiguracja /opt/szarp/$PREFIX $PREFIX
 	ln -sf /opt/szarp/$PREFIX/szarp.cfg /etc/szarp/szarp.cfg
 	ln -sfn /opt/szarp/$PREFIX /etc/szarp/default
+	ln -sf /opt/szarp/$PREFIX/iks/iks-server.ini /etc/szarp/iks-server.ini
 
 	if [ ! -d /opt/szarp/$PREFIX/szbase ] ; then
 		db_get szarp-server/db_catalog;
@@ -133,11 +134,11 @@ END
 			-days 365 -nodes \
 			-config /tmp/sss_ssl.conf
 
-		ln -sf /opt/szarp/$PREFIX/sss_key.pem /etc/szarp || true;
-		ln -sf /opt/szarp/$PREFIX/sss_ca.pem /etc/szarp || true;
-
 		rm /tmp/sss_ssl.conf
 	fi
+
+	ln -sf /opt/szarp/$PREFIX/sss_key.pem /etc/szarp || true;
+	ln -sf /opt/szarp/$PREFIX/sss_ca.pem /etc/szarp || true;
 
 	systemctl unmask szarp-server.target
 	systemctl enable szarp-server.target
