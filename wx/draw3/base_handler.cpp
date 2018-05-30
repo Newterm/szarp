@@ -33,12 +33,16 @@
 #include "sz4_iks.h"
 #include "base_handler.h"
 #include "custom_assert.h"
+#include "blocking_queue.h"
+
+#include "libSzarp2/include/sz4/lua_interpreter_templ.h"
 
 #include <cmath>
 
 #include <algorithm>
+#include <functional>
 #include <limits>
-
+#include <future>
 
 Draw3Base::Draw3Base(wxEvtHandler *response_receiver) : m_response_receiver(response_receiver)
 {}
@@ -106,7 +110,7 @@ void Draw3Base::CompileLuaFormula(DatabaseQuery* query) {
 	query->compile_formula.ok = ret;
 	if (ret == false)
 		query->compile_formula.error = wcsdup(error.c_str());
-		
+
 	DatabaseResponse dr(query);
 	wxPostEvent(m_response_receiver, dr);
 }
@@ -628,9 +632,52 @@ void Sz4Base::RegisterObserver(DatabaseQuery *query) {
 }
 
 
+class Sz4ApiBase::LUAWorker {
+public:
+	LUAWorker(IPKContainer*, wxEvtHandler*, std::shared_ptr<sz4::iks> base);
+	~LUAWorker();
+
+	void PushDefinedQuery(std::function<void()>);
+	void RunDefinedQueriesWorker();
+
+	template<class time_type>
+	void GetData(std::shared_ptr<DatabaseQuery>);
+
+	void SearchData(DatabaseQuery* query);
+private:
+	using sz4_time = Sz4ApiBase::sz4_time;
+	using RangeOperator = std::function<bool(sz4::nanosecond_time_t)>;
+	using QueriesQueue = BlockingQueue<std::function<void()>>;
+
+	template<class time_type>
+	void DoGetData(std::shared_ptr<DatabaseQuery> query);
+
+	template<class time_type>
+	auto GetWeightedSum(const DatabaseQuery& query, sz4_time current, SZARP_PROBE_TYPE pt);
+
+	bool CheckForDataInRange(DatabaseQuery::SearchData&, RangeOperator, sz4_time);
+	RangeOperator GetRangeOperator(int direction, sz4_time end_time);
+
+	sz4_time GetStartingSearchTime(const DatabaseQuery::SearchData& sd, TParam* param);
+	sz4_time GetEndSearchTime(const DatabaseQuery::SearchData& sd, TParam* param);
+
+	sz4_time GetFirstTime(const std::wstring&, SZARP_PROBE_TYPE);
+	sz4_time GetLastTime(const std::wstring&, SZARP_PROBE_TYPE);
+
+	IPKContainer* ipk_container;
+	wxEvtHandler *m_response_receiver;
+
+	std::shared_ptr<sz4::iks> base;
+
+	std::shared_ptr<QueriesQueue> defined_queries_queue;
+	std::future<void> defined_queries_worker;
+	std::atomic<bool> finish_defined_queries{false};
+	std::unique_ptr<sz4::lua_interpreter<sz4::iks>> m_interpreter;
+};
+
 Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 			const std::wstring& address, const std::wstring& port,
-			IPKContainer *ipk_container) 
+			IPKContainer *ipk_container)
 			: Draw3Base(response_receiver)
 			, ipk_container(ipk_container) {
 
@@ -640,7 +687,12 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 	connection_cv = std::move(connection_mgr->connection_cv.get_future());
 
 	io_thread = start_connection_manager(connection_mgr);
+
+	lua_worker.reset( new LUAWorker(ipk_container, m_response_receiver, base) );
 }
+
+//required for pimpl
+Sz4ApiBase::~Sz4ApiBase() = default;
 
 bool Sz4ApiBase::BlockUntilConnected(const unsigned int timeout_s) {
 	if (!connection_cv.valid()) {
@@ -648,13 +700,13 @@ bool Sz4ApiBase::BlockUntilConnected(const unsigned int timeout_s) {
 	}
 
 	const std::chrono::seconds connection_establishing_timeout = std::chrono::seconds(timeout_s);
-	
+
 	if (connection_cv.wait_for(connection_establishing_timeout) == std::future_status::ready) return true;
 	return false;
 }
 
 void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
-			bool poison_cache) 
+			bool poison_cache)
 {
 	auto i = observers.begin();
 	while (i != observers.end()) {
@@ -666,14 +718,20 @@ void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
 				[] (const boost::system::error_code&) { /*XXX*/ });
 
 			i = observers.erase(i);
-		} else 
+		}
+		else {
 			std::advance(i, 1);
+		}
 	}
 }
 
 bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	///XXX: implement
-	return true;
+	lua_State* lua = Lua::GetInterpreter();
+	bool r = lua::compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
+	if (r == false)
+		error = SC::lua_error2szarp(lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	return r;
 }
 
 void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {}
@@ -695,6 +753,20 @@ SzbExtractor* Sz4ApiBase::CreateExtractor() {
 }
 
 
+namespace {
+
+auto getMinMaxValueData(DatabaseQuery::ValueData& vd)
+{
+	using V = DatabaseQuery::ValueData::V;
+	return std::minmax_element(vd.vv->begin(), vd.vv->end(),
+		[](const V& a, const V& b){
+			return a.time_second < b.time_second || (a.time_second == b.time_second && a.time_nanosecond < b.time_nanosecond);
+		}
+	);
+}
+
+}; //anon namespace
+
 void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 	TParam* p = query->param;
 	DatabaseQuery::SearchData& sd = query->search_data;
@@ -709,12 +781,20 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 		return;
 	}
 
-	auto cb = [query, this] (const boost::system::error_code& ec, const sz4::nanosecond_time_t& t) {
+	if( p->isUserDefined() ) {
+		lua_worker->PushDefinedQuery([this, query](){
+				lua_worker->SearchData(query);
+			});
+		return;
+	}
+
+	auto cb = [query, this] (const boost::system::error_code& ec, const sz4_time& t) {
 		DatabaseQuery::SearchData& sd = query->search_data;
 		if (!ec) {
 			sz4_nanonsecond_to_pair(t, sd.response_second, sd.response_nanosecond);
 			sd.ok = true;
-		} else {
+		}
+		else {
 			sd.ok = false;
 			sd.response_second = sd.response_nanosecond = -1;
 			sd.error_str = wcsdup(SC::L2S(ec.message()).c_str());
@@ -725,7 +805,7 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 	};
 
 	if (sd.direction > 0) {
-		base->search_data_right<sz4::nanosecond_time_t>(
+		base->search_data_right<sz4_time>(
 			ParamInfoFromParam(p),
 			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
 			pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond),
@@ -733,12 +813,12 @@ void Sz4ApiBase::SearchData(DatabaseQuery* query) {
 			cb
 		);
 	} else {
-		sz4::nanosecond_time_t end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
-		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(end)) {
+		sz4_time end = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+		if (!sz4::time_trait<sz4_time>::is_valid(end)) {
 			end.second = 0;
 			end.nanosecond = 0;
 		}
-		base->search_data_left<sz4::nanosecond_time_t>(
+		base->search_data_left<sz4_time>(
 			ParamInfoFromParam(p),
 			pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond),
 			end,
@@ -785,7 +865,258 @@ void dummy_prepare_sz4_param(TParam* param) {
 
 }
 
+}
 
+Sz4ApiBase::LUAWorker::LUAWorker(IPKContainer *ipc, wxEvtHandler *rr, std::shared_ptr<sz4::iks> b)
+	: ipk_container(ipc), m_response_receiver(rr), base(b)
+{
+	m_interpreter.reset(new sz4::lua_interpreter<sz4::iks>());
+	m_interpreter->initialize(base.get(), ipk_container);
+
+	defined_queries_queue = std::make_shared<QueriesQueue>();
+}
+
+void Sz4ApiBase::LUAWorker::RunDefinedQueriesWorker()
+{
+	while( !finish_defined_queries.load() )
+	{
+		auto func = defined_queries_queue->pop();
+		func();
+	}
+}
+
+void Sz4ApiBase::LUAWorker::PushDefinedQuery( std::function<void()> f )
+{
+	defined_queries_queue->push( f );
+
+	using namespace std::chrono_literals;
+	if( !defined_queries_worker.valid()
+		|| (defined_queries_worker.wait_for(0s) != std::future_status::timeout) ) {
+		defined_queries_worker = std::async(std::launch::async, [this](){
+				this->RunDefinedQueriesWorker();
+			});
+	}
+}
+
+template<class time_type>
+void Sz4ApiBase::LUAWorker::GetData(std::shared_ptr<DatabaseQuery> query)
+{
+	dummy_prepare_sz4_param(query->param);
+
+	m_interpreter->prepare_param(query->param);
+	DoGetData<time_type>(query);
+	m_interpreter->pop_prepared_param();
+}
+
+template<class time_type>
+void Sz4ApiBase::LUAWorker::DoGetData(std::shared_ptr<DatabaseQuery> query)
+{
+	auto &vd = query->value_data;
+	auto pt = PeriodToProbeType(vd.period_type);
+	auto dt = query->param->GetDataType();
+	auto v = *(getMinMaxValueData(vd).first);
+	int prec = query->param->GetPrec();
+
+	for( auto itr = vd.vv->begin(); itr != vd.vv->end() ; ++itr )
+	{
+		if( finish_defined_queries.load() )
+			return;
+
+		auto current = sz4_time(itr->time_second, itr->time_nanosecond);
+		auto sum = GetWeightedSum<time_type>(*query, current, pt);
+
+		auto *rq = CreateDataQueryPrivate(query->draw_info, query->param,
+					query->value_data.period_type, query->draw_no);
+		rq->inquirer_id = query->inquirer_id;
+		rq->value_data.vv->push_back(v);
+		auto &nv = rq->value_data.vv->back();
+		rq->value_data.vv->back().time_second = current.second;
+		rq->value_data.vv->back().time_nanosecond = current.nanosecond;
+
+		wsum_to_value(nv, sum,
+				PeriodToProbeType(query->value_data.period_type),
+				dt, prec);
+		nv.ok = true;
+
+		DatabaseResponse r(rq);
+		wxPostEvent(m_response_receiver, r);
+	}
+}
+
+template<class time_type>
+auto Sz4ApiBase::LUAWorker::GetWeightedSum(const DatabaseQuery& query,
+		sz4_time current, SZARP_PROBE_TYPE pt)
+{
+	SZARP_PROBE_TYPE step = sz4::get_probe_type_step(pt);
+	sz4::weighted_sum<double, time_type> sum;
+
+	auto first_time = GetFirstTime(query.param->GetSzarpConfig()->GetPrefix(), pt);
+	auto last_time = GetLastTime(query.param->GetSzarpConfig()->GetPrefix(), pt);
+	auto end_time = szb_move_time(current, 1, pt);
+	double result;
+
+	while (current < end_time) {
+		auto next = szb_move_time(current, 1, step);
+		if( current > last_time || current < first_time )
+			result = sz4::no_data<double>();
+		else
+			result = m_interpreter->calculate_value(current, step, 0);
+
+		if ( !sz4::value_is_no_data(result) )
+			sum.add(result, next - current);
+		else
+			sum.add_no_data_weight(next - current);
+
+		current = next;
+	}
+
+	if( current > last_time || current < first_time )
+		result = sz4::no_data<double>();
+	else
+		result = m_interpreter->calculate_value(current, step, 0);
+	sum.set_fixed(!sz4::value_is_no_data(result));
+
+	return sum;
+}
+
+
+void Sz4ApiBase::LUAWorker::SearchData(DatabaseQuery* query) {
+	DatabaseQuery::SearchData& sd = query->search_data;
+
+	auto end_time = GetEndSearchTime(sd, query->param);
+	auto inRange = GetRangeOperator(sd.direction, end_time);
+	auto current = GetStartingSearchTime(sd, query->param);
+
+	m_interpreter->prepare_param(query->param);
+	CheckForDataInRange(sd, inRange, current);
+	m_interpreter->pop_prepared_param();
+
+	DatabaseResponse dr(query);
+	wxPostEvent(m_response_receiver, dr);
+}
+
+bool Sz4ApiBase::LUAWorker::CheckForDataInRange(DatabaseQuery::SearchData& sd, RangeOperator isInRange, sz4_time current)
+{
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(sd.period_type);
+	sd.ok = true;
+	sd.response_second = sd.response_nanosecond = -1;
+	while (isInRange(current)) {
+		double result = m_interpreter->calculate_value(current, pt, 0);
+
+		if (!sz4::value_is_no_data(result)) {
+			sz4_nanonsecond_to_pair(current, sd.response_second, sd.response_nanosecond);
+			return true;
+		}
+		current = szb_move_time(current, sd.direction, pt);
+	}
+	return false;
+}
+
+Sz4ApiBase::LUAWorker::sz4_time
+Sz4ApiBase::LUAWorker::GetStartingSearchTime(const DatabaseQuery::SearchData& sd, TParam* param)
+{
+	auto current = pair_to_sz4_nanosecond(sd.start_second, sd.start_nanosecond);
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(sd.period_type);
+
+	if( sd.direction > 0 ) {
+		auto first_time = GetFirstTime(param->GetSzarpConfig()->GetPrefix(), pt);
+		current = std::max(current, first_time);
+	}
+	else {
+		auto last_time = GetLastTime(param->GetSzarpConfig()->GetPrefix(), pt);
+		current = std::min(current, last_time);
+	}
+	current = szb_round_time(current, pt);
+	return current;
+}
+
+Sz4ApiBase::LUAWorker::sz4_time
+Sz4ApiBase::LUAWorker::GetEndSearchTime(const DatabaseQuery::SearchData& sd, TParam* param)
+{
+	SZARP_PROBE_TYPE pt = PeriodToProbeType(sd.period_type);
+	auto end_time = pair_to_sz4_nanosecond(sd.end_second, sd.end_nanosecond);
+
+	if( sd.direction > 0 ) {
+		auto last_time = GetLastTime(param->GetSzarpConfig()->GetPrefix(), pt);
+		if( !sz4::time_trait<sz4_time>::is_valid(end_time)
+				|| end_time > last_time )
+			end_time = last_time;
+	}
+	else {
+		auto first_time = GetFirstTime(param->GetSzarpConfig()->GetPrefix(), pt);
+		if( !sz4::time_trait<sz4_time>::is_valid(end_time)
+				|| end_time < first_time )
+			end_time = first_time;
+	}
+	return end_time;
+}
+
+Sz4ApiBase::LUAWorker::RangeOperator
+Sz4ApiBase::LUAWorker::GetRangeOperator(int direction, sz4_time end_time)
+{
+	std::function<bool(sz4::nanosecond_time_t)> inRange;
+	if( direction > 0 ) {
+		inRange = [end_time](sz4_time current) {
+			return current <= end_time;
+		};
+	}
+	else {
+		inRange = [end_time](sz4_time current) {
+			return current >= end_time;
+		};
+	}
+
+	return inRange;
+}
+
+Sz4ApiBase::LUAWorker::sz4_time
+Sz4ApiBase::LUAWorker::GetFirstTime(const std::wstring& prefix, SZARP_PROBE_TYPE pt)
+{
+	auto cb_promise = std::make_shared<std::promise<sz4_time>>();
+	auto cb_future = cb_promise->get_future();
+
+	auto cb = [this, cb_promise] (const boost::system::error_code& ec, const sz4_time& t) {
+		if (!ec) {
+			cb_promise->set_value(t);
+		} else {
+			cb_promise->set_value(pair_to_sz4_nanosecond(-1, -1));
+		}
+	};
+
+	base->search_data_right<sz4_time>(
+		sz4::param_info(prefix, L"Status:Meaner3:program_uruchomiony"),
+		pair_to_sz4_nanosecond(0, 0),
+		pair_to_sz4_nanosecond(-1, -1),
+		pt,
+		cb
+	);
+
+	return cb_future.get();
+}
+
+Sz4ApiBase::LUAWorker::sz4_time
+Sz4ApiBase::LUAWorker::GetLastTime(const std::wstring& prefix, SZARP_PROBE_TYPE pt)
+{
+	auto cb_promise = std::make_shared<std::promise<sz4_time>>();
+	auto cb_future = cb_promise->get_future();
+
+	auto cb = [this, cb_promise] (const boost::system::error_code& ec, const sz4_time& t) {
+		if (!ec) {
+			cb_promise->set_value(t);
+		} else {
+			cb_promise->set_value(pair_to_sz4_nanosecond(-1, -1));
+		}
+	};
+
+	base->search_data_left<sz4_time>(
+		sz4::param_info(prefix, L"Status:Meaner3:program_uruchomiony"),
+		pair_to_sz4_nanosecond(-1, -1),
+		pair_to_sz4_nanosecond(0, 0),
+		pt,
+		cb
+	);
+
+	return cb_future.get();
 }
 
 template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
@@ -799,24 +1130,25 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 	TParam::DataType dt = query->param->GetDataType();
 	int prec = query->param->GetPrec();
 
-	using V = DatabaseQuery::ValueData::V;
-	auto minmax = std::minmax_element(vd.vv->begin(), vd.vv->end(),
-		[](const V& a, const V& b){
-			return a.time_second < b.time_second || (a.time_second == b.time_second && a.time_nanosecond < b.time_nanosecond);
-		}
-	);
+	auto minmax = getMinMaxValueData(vd);
 
 	const auto& v = *minmax.first;
-	auto t_start = sz4::nanosecond_time_t(v.time_second, v.time_nanosecond);
-	auto t_end = szb_move_time(sz4::nanosecond_time_t(minmax.second->time_second, minmax.second->time_nanosecond), 1, pt);
+	auto t_start = sz4_time(v.time_second, v.time_nanosecond);
+	auto t_end = szb_move_time(sz4_time(minmax.second->time_second, minmax.second->time_nanosecond), 1, pt);
 
+	if( query->param->isUserDefined() ) {
+		lua_worker->PushDefinedQuery([this, query_ptr](){
+				lua_worker->GetData<time_type>(query_ptr);
+			});
+	}
+	else {
 	base->get_weighted_sum<double, time_type>(
 		ParamInfoFromParam(query->param),
 		t_start, t_end, pt,
 		[query_ptr, t_start, pt, this, v, dt, prec]
 		(const boost::system::error_code& ec, const std::vector<sz4::weighted_sum<double, time_type>> & sums) {
 
-			sz4::nanosecond_time_t s_time = t_start;
+			sz4_time s_time = t_start;
 			for (const auto& sum: sums) {
 				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
 							query_ptr->value_data.period_type, query_ptr->draw_no);
@@ -846,6 +1178,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 			} // for each sum
 		} // callback
 	); // get_weighted_sum
+	}
 }
 
 void Sz4ApiBase::GetData(DatabaseQuery* query) {
@@ -865,7 +1198,7 @@ void Sz4ApiBase::ResetBuffer(DatabaseQuery* query) {
 void Sz4ApiBase::ClearCache(DatabaseQuery* query) {
 
 }
-	
+
 void Sz4ApiBase::StopSearch() {
 
 }
@@ -916,10 +1249,13 @@ void Sz4ApiBase::RegisterObserver(DatabaseQuery* query) {
 	delete query;
 }
 
-Sz4ApiBase::~Sz4ApiBase() {}
-
-
-
+Sz4ApiBase::LUAWorker::~LUAWorker()
+{
+	if( defined_queries_worker.valid() ) {
+		finish_defined_queries.store(true);
+		defined_queries_queue->push([](){});
+	}
+}
 
 Draw3Base::ptr SzbaseHandler::GetIksHandlerFromBase(const wxString& prefix)
 {
@@ -1052,3 +1388,73 @@ void SzbaseHandler::SetupHandlers(const wxString& szarp_dir, const wxString& sza
 			&ConfigurationFileChangeHandler::handle, cache_size);
 	sz3_base_handler = std::shared_ptr<Draw3Base>( sz3 );
 }
+
+namespace sz4 {
+
+template<> int lua_sz4<iks>(lua_State *lua) {
+	const unsigned char* param_name = (unsigned char*) luaL_checkstring(lua, 1);
+	if (param_name == NULL)
+                 luaL_error(lua, "Invalid param name");
+
+	TParam* param = NULL;
+	try {
+		nanosecond_time_t time(lua_tonumber(lua, 2));
+		SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
+
+		base_ipk_pair<sz4::iks>* base_ipk = get_base_ipk_pair<sz4::iks>(lua);
+		param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
+
+		if (param)
+		{
+			weighted_sum<double, nanosecond_time_t> sum;
+			auto t_start = time;
+			auto t_end = szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0);
+
+			std::shared_ptr<std::promise<double>> accumulate_promise =
+				std::make_shared<std::promise<double>>();
+			auto fut = accumulate_promise->get_future();
+
+			auto value_scaler = [param](const sz4::weighted_sum<double, nanosecond_time_t>& sum) {
+				return scale_value(sum.avg(), param);
+			};
+
+			base_ipk->first->get_weighted_sum<double, nanosecond_time_t>(
+				sz4::param_info(param->GetSzarpConfig()->GetPrefix(), param->GetName()),
+				t_start, t_end, probe_type,
+				[accumulate_promise, value_scaler]
+				(const boost::system::error_code& ec,
+				 const std::vector<sz4::weighted_sum<double, nanosecond_time_t>> & sums) {
+					if(sums.size()) {
+						accumulate_promise->set_value(value_scaler(sums[0]));
+					}
+					else {
+						accumulate_promise->set_value(nan(""));
+					}
+				} // callback
+			); // get_weighted_sum
+			fut.wait();
+			auto result = fut.get();
+			lua_pushnumber(lua, result);
+
+			return 1;
+		}
+
+	} catch (exception &e) {
+		luaL_where(lua, 1);
+		lua_pushfstring(lua, "%s", e.what());
+		lua_concat(lua, 2);
+	}
+
+	if (param)
+	{
+		return lua_error(lua);
+	}
+	else
+	{
+		return luaL_error(lua, "Param %s not found", param_name);
+	}
+}
+
+template class lua_interpreter<iks>;
+
+} // sz4 namespace

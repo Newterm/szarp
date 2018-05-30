@@ -44,51 +44,29 @@ QueryExecutor::QueryExecutor(DatabaseQueryQueue *_queue, wxEvtHandler *_response
 }
 
 SZARP_PROBE_TYPE PeriodToProbeType(PeriodType period) {
-	SZARP_PROBE_TYPE pt;
-	switch (period) {
-		case PERIOD_T_DECADE:
-			pt = PT_YEAR;
-			break;
-		case PERIOD_T_YEAR:
-			pt = PT_MONTH;
-			break;
-		case PERIOD_T_MONTH:
-			pt = PT_DAY;
-			break;
-		case PERIOD_T_WEEK:
-			pt = PT_HOUR8;
-			break;
-		case PERIOD_T_SEASON:
-			pt = PT_WEEK;
-			break;
-		case PERIOD_T_DAY:
-			pt = PT_MIN10;
-			break;
-		case PERIOD_T_30MINUTE:
-			pt = PT_SEC10;
-			break;
-		case PERIOD_T_5MINUTE:
-			pt = PT_SEC;
-			break;
-		case PERIOD_T_MINUTE:
-			pt = PT_HALFSEC;
-			break;
-		case PERIOD_T_30SEC:
-			pt = PT_MSEC10;
-			break;
-		default:
-			pt = PT_CUSTOM;
-			assert (0);
-	}
+	const static std::map<PeriodType, SZARP_PROBE_TYPE> period_to_probe = {
+		{PERIOD_T_DECADE,	PT_YEAR},
+		{PERIOD_T_YEAR,		PT_MONTH},
+		{PERIOD_T_SEASON,	PT_WEEK},
+		{PERIOD_T_MONTH,	PT_DAY},
+		{PERIOD_T_WEEK,		PT_HOUR8},
+		{PERIOD_T_30MINUTE,	PT_SEC10},
+		{PERIOD_T_5MINUTE,	PT_SEC},
+		{PERIOD_T_DAY,		PT_MIN10},
+		{PERIOD_T_MINUTE,	PT_HALFSEC},
+		{PERIOD_T_30SEC,	PT_MSEC10}
+	};
 
-	return pt;
+	auto it = period_to_probe.find(period);
+	assert( it != period_to_probe.end());
+	return it != period_to_probe.end() ? it->second : PT_CUSTOM;
 }
 
 void ToNanosecondTime(const wxDateTime& time, time_t& second, time_t& nanosecond) {
 	if (time.IsValid()) {
 		second = time.GetTicks();
 		nanosecond = time.GetMillisecond() * 1000000;
-	} else {	
+	} else {
 		second = -1;
 		nanosecond = -1;
 	}
@@ -278,7 +256,7 @@ double DatabaseQueryQueue::FindQueryRanking(DatabaseQuery* q) {
 
 void DatabaseQueryQueue::ShufflePriorities() {
 
-	wxMutexLocker lock(mutex);
+	std::lock_guard<std::mutex> lock(queue_mutex);
 
 	if (cant_prioritise_entries)
 		return;
@@ -296,25 +274,23 @@ void DatabaseQueryQueue::ShufflePriorities() {
 	queue.sort(QueryCmp);
 
 }
+
 void DatabaseQueryQueue::CleanOld(DatabaseQuery *query) {
 	time_t start = query->search_data.start_second;
 	time_t end = query->search_data.end_second;
 
 	assert(start<end);
 
+	std::lock_guard<std::mutex> lock(queue_mutex);
 	if(queue.size()>100)
 	{
-		wxMutexLocker lock(mutex);
-
-		std::list<QueueEntry>::iterator i=queue.begin();
-
-		for(i=queue.begin();i!=queue.end();i++)
+		for(auto i = queue.begin(); i != queue.end();)
 		{
-			if((i->query->search_data.start_second < start)||(i->query->search_data.end_second>end))
-			{
-				wxSemaError err = semaphore.TryWait();
-				assert(err == wxSEMA_NO_ERROR);
-				queue.erase(i++);
+			if((i->query->search_data.start_second < start)||(i->query->search_data.end_second>end)) {
+				i = queue.erase(i);
+			}
+			else {
+				++i;
 			}
 		}
 	}
@@ -324,7 +300,7 @@ void DatabaseQueryQueue::Add(DatabaseQuery *query) {
 	QueueEntry entry;
 	entry.query = query;
 	entry.ranking = FindQueryRanking(query);
-	wxMutexLocker lock(mutex);
+	std::lock_guard<std::mutex> lock(queue_mutex);
 	if (std::isnan(entry.ranking))
 		cant_prioritise_entries += 1;
 	std::list<QueueEntry>::iterator i;
@@ -333,7 +309,7 @@ void DatabaseQueryQueue::Add(DatabaseQuery *query) {
 	else
        		i = std::upper_bound(queue.begin(), queue.end(), entry, QueryCmp);
 	queue.insert(i, entry);
-	semaphore.Post();
+	queue_cv.notify_one();
 }
 
 void DatabaseQueryQueue::Add(std::list<DatabaseQuery*> &qlist){
@@ -356,17 +332,18 @@ void DatabaseQueryQueue::Add(std::list<DatabaseQuery*> &qlist){
 		querylist.sort(QueryCmp);
 	}
 
-	wxMutexLocker lock(mutex);
-	unsigned int size = querylist.size();
+	std::lock_guard<std::mutex> lock(queue_mutex);
 	queue.merge(querylist, QueryCmp);
-	for (unsigned int x = 0; x < size; x++)
-		semaphore.Post();
+	queue_cv.notify_all();
 }
 
 DatabaseQuery* DatabaseQueryQueue::GetQuery() {
-	semaphore.Wait();
-	wxMutexLocker lock(mutex);
+	std::unique_lock<std::mutex> lock(queue_mutex);
 
+	while(queue.empty())
+	{
+		queue_cv.wait(lock);
+	}
 	QueueEntry& qe = queue.front();
 	if (std::isnan(qe.ranking))
 		cant_prioritise_entries -= 1;

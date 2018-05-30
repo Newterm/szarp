@@ -536,6 +536,8 @@ void DrawApp::StopThreads() {
 	}
 	if (m_remarks_handler)
 		m_remarks_handler->Stop();
+
+	m_dbmgr->GetBaseHandler()->ClearBaseHandlers();
 #if 0
 	delete m_db_queue;
 	delete m_remarks_handler;

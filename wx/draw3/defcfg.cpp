@@ -1550,6 +1550,7 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 	}
 	for (size_t i = 0; i < defined_params.size(); i++) {
 		DefinedParam* param = defined_params[i];
+		param->setUserDefined(true);
 		definedParams.push_back(param);
 		if (param->IsNetworkParam())
 			m_network_param_and_set_prefixes.insert(param->GetBasePrefix());
@@ -1594,7 +1595,7 @@ void DefinedDrawsSets::LoadSets(wxString path, std::vector<DefinedDrawSet*>& dra
 
 	xmlXPathRegisterNs(xpath_ctx, BAD_CAST "draw3", BAD_CAST "http://www.praterm.com.pl/SZARP/draw3");
 
-	parse<DefinedParam>(BAD_CAST "/draw3:windows/draw3:param", [](){return new DefinedParam();}, defined_params, importedInvalidDefinedParams, defined_params, verify, xpath_ctx);
+	parse<DefinedParam>(BAD_CAST "/draw3:windows/draw3:param", [](){ return new DefinedParam(); }, defined_params, importedInvalidDefinedParams, defined_params, verify, xpath_ctx);
 
 	auto create_defined_set = [this](){
 		auto defined_set = new DefinedDrawSet(this, false);

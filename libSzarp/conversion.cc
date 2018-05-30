@@ -16,7 +16,6 @@
 
 /* IconvWrapper - wrapper class for iconv library conversions */
 class IconvWrapper {
-
 	public:
 		IconvWrapper (const char* tocode, const char* fromcode) {
 			/* create iconv handler */

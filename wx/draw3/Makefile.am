@@ -49,6 +49,7 @@ draw3_SOURCES = \
 		dbmgr.cpp dbmgr.h \
 		database.h database.cpp \
 		base_handler.h base_handler.cpp \
+		blocking_queue.h blocking_queue.cpp \
 		disptime.cpp disptime.h \
 		drawpnl.cpp drawpnl.h \
                 drawswdg.cpp drawswdg.h \

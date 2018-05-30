@@ -53,7 +53,7 @@
 
 class DrawParam {
 protected:
-	TParam *m_param;	
+	TParam *m_param;
 public:
 	DrawParam() : m_param(NULL) {}
 
@@ -62,11 +62,11 @@ public:
 	virtual bool IsValid() const;
 
 	virtual wxString GetBasePrefix() const;
-	
+
 	virtual wxString GetParamName() const;
 
 	TParam* GetIPKParam();
-	
+
 	virtual wxString GetUnit();
 
 	virtual wxString GetDrawName();
@@ -87,26 +87,26 @@ class DrawInfo
 {
     public:
 	DrawInfo();
-	
+
 	DrawInfo(TDraw *d, DrawParam *p);
-	
+
 	/** @return name of draw */
 	virtual wxString GetName();
-	
+
 	/** @return name of parameter */
 	virtual wxString GetParamName() const;
 
 	virtual wxString GetShortName();
-	
+
 	/** @return pointer to parameter object */
 	DrawParam *GetParam() const;
-	
+
 	/** @return pointer to draw object */
 	TDraw *GetDraw();
 
 	/** @return declared minimal value for draw */
 	virtual double GetMin();
-	
+
 	/** @return declared maximum value for draw */
 	virtual double GetMax();
 
@@ -125,23 +125,23 @@ class DrawInfo
 	virtual double GetScaleMax();
 
 	virtual TDraw::SPECIAL_TYPES GetSpecial();
-	
+
 	/** @return color of draw */
 	virtual wxColour GetDrawColor();
-	
+
 	/** set color of draw
 	 * @param color new color, no checking */
 	virtual void SetDrawColor(wxColour color);
-	
+
 	/** comparison function used to sort arrays */
 	static bool CompareDraws(DrawInfo *first, DrawInfo *second);
-	
+
 	/** @return priority of draws set (window) */
 	virtual double GetPrior();
 
 	/** @return draw number (position in params.xml) */
 	int GetNumber();
-	
+
 	/** @return prefix of base configuration */
 	virtual wxString GetBasePrefix() const;
 
@@ -155,7 +155,7 @@ class DrawInfo
 	virtual bool IsValid() const;
 
 	AverageValueCalculationMethod GetAverageValueCalculationMethod()  const;
-	
+
 	void SetAverageValueCalculationMethod(AverageValueCalculationMethod _avm);
 
 	bool isBadOrder() const;
@@ -163,9 +163,9 @@ class DrawInfo
 	virtual ~DrawInfo() { }
     protected:
 	TDraw *d;	/**< Pointer to draw. */
-	
+
 	DrawParam *p;	/**< Pointer to parameter. */
-	
+
 	wxColour c;	/**< Color of draw. */
 
 	AverageValueCalculationMethod avm;
@@ -220,7 +220,7 @@ class DrawSet
 	/** Default constructor */
 	DrawSet(DrawsSets *cfg) : m_name(wxString()), m_prior(-1.0),  m_number(-1), m_cfg(cfg)
 	    { m_draws = new DrawInfoArray(); };
-    
+ 
 	/**
 	 * Constructor setting name of DrawSet
 	 * @param DrawSet name
@@ -272,10 +272,10 @@ class DrawSet
 
 	/** @return Draw with given index */
 	DrawInfo* GetDraw(int index);
-	
+
 	/** @return Name of draw with given index */
 	wxString GetDrawName(int index);
-	
+
 	/** @return ParamName of draw with given index */
 	wxString GetParamName(int index) const;
 
@@ -304,7 +304,7 @@ class DrawSet
 
 	DrawInfoArray* m_draws; /**< Array of DrawInfos */
 };
-    
+ 
 
 /** Hash map, sets names are keys, draw array are values. */
 WX_DECLARE_STRING_HASH_MAP(DrawSet *, DrawSetsHash);
@@ -318,11 +318,11 @@ public:
 	enum ELEMENT_TYPE { LEAF, NODE };
 protected:
 	ELEMENT_TYPE m_elemet_type;
-	DrawSet* m_child_set;	
+	DrawSet* m_child_set;
 	std::vector<DrawTreeNode*> m_child_nodev;
 	double m_prior;
 	wxString m_name;
-public:	
+public:
 	DrawTreeNode();
 	void Sort();
 	wxString GetName() const;
@@ -353,13 +353,13 @@ class DrawsSets
 	DrawsSets(ConfigManager *cfg);
 	/** Destructor */
 	virtual ~DrawsSets();
-	
+
 	/** Return configuration ID (title) */
 	virtual wxString GetID() = 0;
 
 	/** Return configuration prefix*/
 	virtual wxString GetPrefix() const = 0;
-	
+
 	/** Set of draws. This is HashMap with set name keys. Contains sets present in this config as well as sets
 	 * that relate to these params from this config and are in 'User defined sets'*/
 	virtual DrawSetsHash& GetDrawsSets(bool all = true) = 0;
@@ -373,7 +373,7 @@ class DrawsSets
 	virtual DrawSetsHash& GetRawDrawsSets() = 0;
 
 	virtual void AttachDefined() = 0;
-	
+
 	void AddUserSet(DefinedDrawSet *s);
 
 	void RemoveUserSet(wxString name);
@@ -387,28 +387,28 @@ class DrawsSets
     protected:
 	ConfigManager*  m_cfgmgr;    /**< parent ConfigManager */
 
-	DrawTreeRoot m_tree_root;		
+	DrawTreeRoot m_tree_root;
 };
 
-class IPKConfig : public DrawsSets 
+class IPKConfig : public DrawsSets
 {
     public:
-	/** 
+	/**
 	 * Constructor, initializes 'c' attribute.
 	 * @param c IPK configuration, not NULL, freeing by destructor
 	 * @param basemgr database access manager, freeing by destructor
 	 */
 	IPKConfig(TSzarpConfig *c, ConfigManager *mgr);
-	
+
 	/** Destructor */
 	virtual ~IPKConfig();
-	
+
 	/** Return configuration ID (title) */
 	wxString GetID() override;
 
 	/** Return configuration prefix*/
 	wxString GetPrefix() const override;
-	
+
 	/** @return @see TSzarpConfig associated with this draw*/
 	TSzarpConfig* GetTSzarpConfig() { return m_sc; }
 
@@ -430,7 +430,7 @@ protected:
 
 	/** Set of draws. This is HashMap with set name keys, these are sets only present in this config.*/
 	DrawSetsHash baseDrawSets;
-	
+
 	bool defined_attached;
 
 };
@@ -442,13 +442,12 @@ class ConfigManager
     public:
 	/** Default constructor, does nothing. */
 	ConfigManager(wxString szarp_data_dir, std::shared_ptr<UserDefinedIPKManager> _ipk_manager, const wxString &prefix = wxEmptyString);
-	
-	/** Loads configuration for given base name 
+	/* Load configuration for given base name
 	 * @param prefix prefix of configration to load
 	 * @param config_path optional path to a file with a configuration to load
 	 * @return loaded configuration*/
 	DrawsSets *LoadConfig(const wxString& prefix, const wxString& config_path = wxEmptyString);
-	
+
 	/** @return configuration object for given prefix, NULL if configuration cannot be laoded*/
 	DrawsSets *GetConfigByPrefix(const wxString& prefix, bool load = true);
 
@@ -471,7 +470,7 @@ class ConfigManager
 	 * @param index index of draw in set
 	 * @return pointer to draw info */
 	DrawInfo *GetDraw(const wxString id, const wxString set, int index);
-	
+
 	bool RemoveDefinedParam(DefinedParam *p);
 
 	bool RemoveDefinedParam(wxString prefix, wxString name);
@@ -515,13 +514,13 @@ class ConfigManager
 	 * @param name - new name of the set*/
 	void NotifySetRenamed(wxString prefix, wxString from, wxString to, DrawSet *set);
 
-	/** Notifies observers that a set has been modified 
+	/** Notifies observers that a set has been modified
 	 * @param prefix - prefix of the configuration
 	 * @param from - name of the set
 	 * @param set - pointer to actual set*/
 	void NotifySetModified(wxString prefix, wxString name, DrawSet *set);
 
-	/** Notifies observers that a new set has been added 
+	/** Notifies observers that a new set has been added
 	 * @param prefix - prefix of the configuration
 	 * @param from - name of the set
 	 * @param set - pointer to new set*/
@@ -559,7 +558,7 @@ class ConfigManager
 	void DrawInfoAverageValueCalculationChanged(DrawInfo *d);
 
 	const wxString& GetPrefix() const { return m_base_prefix; }
-	
+
 	~ConfigManager();
 protected:
 	void FinishConfigurationLoad(wxString prefix);
@@ -573,7 +572,7 @@ protected:
 	wxArrayString GetPrefixes();
 
 	wxString m_szarp_data_dir;
-	
+
 	/** Container for a IPKs */
 	std::shared_ptr<UserDefinedIPKManager> ipk_manager;
 
@@ -582,7 +581,7 @@ protected:
 
 	/**@see DatabaseManager*/
 	DatabaseManager *m_db_mgr;
-	
+
 	/** @see SplashScreen*/
 	SplashScreen *splashscreen;
 
