@@ -33,6 +33,7 @@ class ParamTest(unittest.TestCase):
 		self.types 	= [ "short"        , "integer"       , "float"       , "double"       , "ushort"    , "uinteger"    ]
 		self.val_lens   = [ 2              , 4           , 4             , 8              , 2           , 4           ]
 		self.formats	= [ "<h"           , "<i"        , "<f"          , "<d"           , "<H"       , "<I"       ]
+		self.val_cast = [lambda x: int(x), lambda x: int(x), lambda x: x, lambda x: x, lambda x: int(x), lambda x: int(x)]
 		self.values	= [ 1	           , 1000000     , 1.5           , 1.234567889    , 40000       , 3000000  ]
 		self.msg_attrs  = [ "int_value"	   , "int_value" , "float_value" , "double_value" , "int_value" , "int_value" ]
 
@@ -90,4 +91,26 @@ class ParamTest(unittest.TestCase):
 
 			self.assertEqual(p.value_from_msg(msg), self.values[i])
 
+	def test_crosscast_types(self):
+		from random import randint
+		int_value = randint(1, 2000)
+		float_value = randint(1, 2000) / 10.0 # prec 1
+		eps = 10**-10
+		for i, n in enumerate(self.nodes):
+			p = param.from_node(n)
+
+			self.assertEqual(p.data_type, self.types[i])
+			self.assertEqual(p.value_format_string, self.formats[i])
+			self.assertEqual(p.value_lenght, self.val_lens[i])
+			self.assertEqual(p.time_prec, 4)
+			self.assertEqual(p.written_to_base, True)
+			self.assertTrue(p.value_from_binary(p.value_to_binary(int_value)) - self.val_cast[i](int_value) < eps)
+			self.assertTrue(p.value_from_binary(p.value_to_binary(float_value)) - self.val_cast[i](float_value) < eps)
+
+			msg = paramsvalues_pb2.ParamValue()
+			msg.param_no = 100;
+			msg.time = 123456;
+			setattr(msg, self.msg_attrs[i], self.values[i])
+
+			self.assertEqual(p.value_from_msg(msg), self.values[i])
 
