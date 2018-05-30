@@ -558,7 +558,7 @@ protected:
 public:
 	modbus_unit(zmqhandler* _zmq, slog logger);
 
-	bool register_val_expired(const sz4::nanosecond_time_t& time);
+	bool register_val_expired(const sz4::nanosecond_time_t& time) const;
 
 	virtual int configure(UnitInfo *unit, size_t read, size_t send);
 
@@ -579,8 +579,8 @@ public:
 
 enum ERROR_CONDITION { TIMEOUT, FRAME_ERROR, CRC_ERROR };
 std::string error_condition_str(const ERROR_CONDITION e) {
-	std::map<ERROR_CONDITION, std::string> error_str_map = { {TIMEOUT, "timeout"}, {FRAME_ERROR, "frame error"}, {CRC_ERROR,"crc error"} };
-	return error_str_map[e];
+	const std::map<ERROR_CONDITION, std::string> error_str_map = { {TIMEOUT, "timeout"}, {FRAME_ERROR, "frame error"}, {CRC_ERROR,"crc error"} };
+	return error_str_map.at(e);
 }
 
 class bc_handler {
@@ -1017,7 +1017,7 @@ void modbus_unit::from_sender() {
 		sent.first->update_val(*zmq, sent.second);
 }
 
-bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) {
+bool modbus_unit::register_val_expired(const sz4::nanosecond_time_t& time) const {
 	if (m_expiration_time == 0)
 		return false;
 	else {
@@ -1033,7 +1033,7 @@ modbus_unit::modbus_unit(zmqhandler* _zmq, slog log) : zmq(_zmq), m_log(log) {
 	m_regs_factory = std::unique_ptr<RegsFactory>(new RegsFactory(log));
 }
 
-std::string get_param_name(TAttribHolder* param) {
+std::string get_param_name(const TAttribHolder* param) {
 	using str = std::string;
 	if (auto name = param->getOptAttribute<std::string>("name")) {
 		return *name;
@@ -1278,7 +1278,7 @@ typename base_type<val_op>::type* modbus_unit::configure_register(TAttribHolder*
 	}
 	
 	int prec = exp10(prec_e);
-	std::map<std::string, std::function<typename val_op<void>::base_type*()>> type_fun_map = {
+	const std::map<std::string, std::function<typename val_op<void>::base_type*()>> type_fun_map = {
 		{ "integer", [=]() { return create_register<val_op<short_modbus_op>>(param, prec, addr, rt); }},
 		{ "bcd", [=]() { return create_register<val_op<bcd_modbus_op>>(param, prec, addr, rt); }},
 		{ "long", [=]() { return create_register<val_op<long_modbus_op>>(param, prec, addr, rt); }},
@@ -1441,7 +1441,7 @@ void modbus_client::send_write_query() {
 		uint16_t v = m_registers[m_start_addr + i]->get_val();
 		m_du.data.push_back(v >> 8);
 		m_du.data.push_back(v & 0xff);
-		m_log->log(7, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
+		m_log->log(9, "Sending register: %zu, value: %hu:", m_start_addr + i, v);
 	}
 
 	m_du.unit_id = m_id;

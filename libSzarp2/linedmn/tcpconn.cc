@@ -154,9 +154,9 @@ void TcpConnection::SetConfiguration(const SerialPortConfiguration& serial_conf)
 
 template <>
 TcpConnection* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
-	auto conn = new TcpConnection(base);
+	std::unique_ptr<TcpConnection> conn(new TcpConnection(base));
 	auto addr = unit->getAttribute<std::string>("extra:tcp-address");
 	auto port = unit->getAttribute<int>("extra:tcp-port");
 	conn->InitTcp(addr, port);
-	return conn;
+	return conn.release();
 }

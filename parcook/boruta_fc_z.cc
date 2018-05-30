@@ -256,7 +256,11 @@ class fc_register_impl: public fc_register {
 public:
 	using fc_register::fc_register;
 
-	int32_t get_val() const override { return (int32_t) m_val; } // unused in fc (no sends)
+	// unused in fc (no sends)
+	int32_t get_val() const override {
+		ASSERT(!"This function is unused!");
+		return (int32_t) m_val;
+	}
 
 	void set_val(int val) override {
 		m_val = (value_type) val;

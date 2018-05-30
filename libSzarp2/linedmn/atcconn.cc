@@ -91,10 +91,10 @@ void AtcConnection::ResetDeviceFinished(const AtcHttpClient* client)
 
 template <>
 AtcConnection* BaseConnFactory::create_from_unit(struct event_base* base, UnitInfo* unit) {
-	auto conn = new AtcConnection(base);
+	std::unique_ptr<AtcConnection> conn(new AtcConnection(base));
 	auto address = unit->getAttribute<std::string>("extra:atc-ip");
 	auto dataport = unit->getAttribute("extra:tcp-data-port", AtcConnection::DEFAULT_DATA_PORT);
 	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", AtcConnection::DEFAULT_CONTROL_PORT);
 	conn->InitTcp(address, dataport, cmdport);
-	return conn;
+	return conn.release();
 }

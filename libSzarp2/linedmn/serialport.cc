@@ -112,8 +112,8 @@ void SerialPort::Error(struct bufferevent *bufev, short event)
 
 template <>
 SerialPort* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
-	auto conn = new SerialPort(base);
+	std::unique_ptr<SerialPort> conn(new SerialPort(base));
 	auto device_path = unit->getAttribute("extra:path");
 	conn->Init(device_path);
-	return conn;
+	return conn.release();
 }

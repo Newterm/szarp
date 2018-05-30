@@ -16,6 +16,8 @@ TcpServerConnectionHandler::TcpServerConnectionHandler(): BaseServerConnectionHa
 void TcpServerConnectionHandler::AcceptConnection(evutil_socket_t fd, struct sockaddr *addr)
 {
 	if (!ip_is_allowed((struct sockaddr_in*) addr)) {
+		char *addr_cstr = inet_ntoa(((struct sockaddr_in*) addr)->sin_addr);
+		sz_log(2, "Received connection from unvalidated address: %s", addr_cstr);
 		close(fd);
 		return;
 	}
@@ -50,7 +52,7 @@ void TcpServerConnectionHandler::AcceptErrorCallback(struct evconnlistener *list
 			return;
 		default:
 			std::string error_str = evutil_socket_error_to_string(error);
-			sz_log(1, "Tcp server could not open connection, reason was: %s", error_str.c_str());
+			sz_log(0, "Tcp server could not open connection, reason was: %s", error_str.c_str());
 			throw ConnectionException("Unable to open socket");
 	}
 }
@@ -74,8 +76,7 @@ void TcpServerConnectionHandler::ReadError(const BaseConnection *conn, short int
 }
 
 void TcpServerConnectionHandler::CloseConnection(const BaseConnection* conn) {
-	auto _conn = conn;//const_cast<BaseConnection*>(conn);
-	m_connections.erase(std::remove_if(m_connections.begin(), m_connections.end(), [_conn](const std::unique_ptr<BaseConnection>& other){ return other.get() == _conn; }));
+	m_connections.erase(std::remove_if(m_connections.begin(), m_connections.end(), [conn](const std::unique_ptr<BaseConnection>& other){ return other.get() == conn; }));
 }
 
 void TcpServerConnectionHandler::Init(UnitInfo* unit) {
@@ -110,10 +111,10 @@ void TcpServerConnectionHandler::ConfigureAllowedIps(UnitInfo* unit) {
 	while (ss >> ip_allowed) {
 		struct in_addr ip;
 		if (inet_aton(ip_allowed.c_str(), &ip)) {
-			sz_log(1, "incorrect IP address '%s'", ip_allowed.c_str());
+			sz_log(5, "IP address '%s' allowed", ip_allowed.c_str());
 			m_allowed_ips.insert(ip.s_addr);
 		} else {
-			sz_log(5, "IP address '%s' allowed", ip_allowed.c_str());
+			sz_log(1, "incorrect IP address '%s'", ip_allowed.c_str());
 		}
 	}
 }
@@ -184,7 +185,7 @@ void TcpBaseServerConnection::ErrorCallback(struct bufferevent *bufev, short eve
 
 template <>
 TcpServerConnectionHandler* BaseConnFactory::create_from_unit<TcpServerConnectionHandler, UnitInfo*>(UnitInfo* unit) {
-	auto conn = new TcpServerConnectionHandler();
+	std::unique_ptr<TcpServerConnectionHandler> conn(new TcpServerConnectionHandler());
 	conn->Init(unit);
-	return conn;
+	return conn.release();
 }
