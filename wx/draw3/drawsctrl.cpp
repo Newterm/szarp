@@ -464,7 +464,9 @@ void DrawsController::SearchLeft::Enter(const DTime& search_from) {
 	const TimeIndex& index = m_c->GetSelectedDraw()->GetTimeIndex();
 
 	// first check for data between now and next hop
-	SendSearchQuery(m_search_time, m_c->GetCurrentTime() - wxTimeSpan::Milliseconds(1), RIGHT);
+	auto c_time = m_c->GetCurrentTime();
+	auto time_before_current_probe = c_time.AdjustToPeriod().TimeJustBefore();
+	SendSearchQuery(m_search_time, time_before_current_probe, RIGHT);
 }
 
 void DrawsController::SearchLeft::HandleRightResponse(wxDateTime& time) {
@@ -474,10 +476,10 @@ void DrawsController::SearchLeft::HandleRightResponse(wxDateTime& time) {
 		draw_time.AdjustToPeriod();
 		m_c->MoveToTime(m_c->ChooseStartDate(draw_time));
 		m_c->EnterState(WAIT_DATA_NEAREST, draw_time);
+	} else {
+		// no data between now and next hop, jump left
+		SendSearchQuery(m_search_time.GetTime(), wxInvalidDateTime, LEFT);
 	}
-
-	// no data between now and next hop, jump left
-	SendSearchQuery(m_search_time.GetTime(), wxInvalidDateTime, LEFT);
 }
 
 void DrawsController::SearchLeft::HandleLeftResponse(wxDateTime& time) {
