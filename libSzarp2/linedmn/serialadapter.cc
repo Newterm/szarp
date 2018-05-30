@@ -392,10 +392,10 @@ void SerialAdapter::LineControl(bool dtr, bool rts)
 
 template <>
 SerialAdapter* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
-	auto conn = new SerialAdapter(base);
+	std::unique_ptr<SerialAdapter> conn(new SerialAdapter(base));
 	auto address = unit->getAttribute<std::string>("extra:tcp-ip");
 	auto dataport = unit->getAttribute("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
 	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", SerialAdapter::DEFAULT_CMD_PORT);
 	conn->InitTcp(address, dataport, cmdport);
-	return conn;
+	return conn.release();
 }

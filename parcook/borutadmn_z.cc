@@ -420,6 +420,9 @@ int boruta_daemon::configure_ipc(const ArgsManager& args_mgr, DaemonConfigInfo& 
 		m_zmq = new zmqhandler(&cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
 		sz_log(10, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
+		free(*sub_conn_address);
+		free(*pub_conn_address);
+
 		sz_log(0, "ZMQ initialization failed, %s", e.what());
 		return 1;
 	}
@@ -469,15 +472,20 @@ int boruta_daemon::configure(int *argc, char *argv[]) {
 		cfg = new ConfigDealerHandler(args_mgr);
 	} else {
 		auto d_cfg = new DaemonConfig("borutadmn_z");
-		if (d_cfg->Load(args_mgr))
+		if (d_cfg->Load(args_mgr)) {
+			sz_log(0, "Unable to parse configuration, check previous logs.");
 			return 101;
+		}
 		cfg = d_cfg;
 	}
 
-	if (configure_ipc(args_mgr, *cfg))
+	if (configure_ipc(args_mgr, *cfg)) {
+		sz_log(0, "Unable to initialize IPC, check previous logs.");
 		return 102;
-	if (configure_units(args_mgr, *cfg))
+	} if (configure_units(args_mgr, *cfg)) {
+		sz_log(0, "Unable to process units, check previous logs.");
 		return 103;
+	}
 
 	configure_timer(args_mgr, *cfg);
 	return 0;
