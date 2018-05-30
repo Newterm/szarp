@@ -1,3 +1,4 @@
+#include <iostream>
 /* 
   SZARP: SCADA software 
   
@@ -667,8 +668,12 @@ void Sz4ApiBase::RemoveConfig(const std::wstring& prefix,
 }
 
 bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& error) {
-	///XXX: implement
-	return true;
+	lua_State* lua = Lua::GetInterpreter();
+	bool r = lua::compile_lua_formula(lua, (const char*)SC::S2U(formula).c_str());
+	if (r == false)
+		error = SC::lua_error2szarp(lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	return r;
 }
 
 void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
@@ -810,6 +815,11 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 			return a.time_second < b.time_second || (a.time_second == b.time_second && a.time_nanosecond < b.time_nanosecond);
 		}
 	);
+
+	std::wcout<<query->param->GetSzbaseName()<<std::endl;
+	if( query->param->isUserDefined() ) {
+		std::wcout<<L"Działa!"<<std::endl;
+	}
 
 	const auto& v = *minmax.first;
 	auto t_start = sz4::nanosecond_time_t(v.time_second, v.time_nanosecond);

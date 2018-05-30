@@ -624,7 +624,8 @@ public:
 	    _raports(NULL),
 	    _draws(NULL),
 	    _szbase_name(),
-	    _psc(false)
+	    _psc(false),
+		userDefined(false)
 	{ }
 
 	/** Deletes whole list. */
@@ -816,6 +817,8 @@ public:
 	void SetConfigId(unsigned configId) { _configId = configId; }
 
 	static bool IsHourSumUnit(const std::wstring& unit);
+
+	bool isUserDefined() const { return userDefined; }
 protected:
 
 	std::wstring _translatedName;	    /**< Full name */
@@ -850,6 +853,8 @@ protected:
 	bool _psc; /**< marks if parameter can be set by psc */
 
 	Sz4ParamType _sz4ParamType{ Sz4ParamType::NONE };
+
+	bool userDefined;
 };
 
 /**
