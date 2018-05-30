@@ -269,6 +269,8 @@ void DrawsController::WaitState::Enter(const DTime& time) {
 	}
 
 	m_time_to_go = time;
+	m_time_to_go.AdjustToPeriod();
+
 	m_c->FetchData();
 
 	Draw* draw = m_c->GetSelectedDraw();
