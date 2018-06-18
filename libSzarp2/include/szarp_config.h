@@ -819,6 +819,8 @@ public:
 	static bool IsHourSumUnit(const std::wstring& unit);
 
 	bool isUserDefined() const { return userDefined; }
+
+	void setUserDefined(bool s) { userDefined = s; }
 protected:
 
 	std::wstring _translatedName;	    /**< Full name */

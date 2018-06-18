@@ -60,5 +60,6 @@ int lua_sz4_nan(lua_State* lua) {
 }
 
 template class lua_interpreter<base_templ<base_types>>;
+template class lua_interpreter<iks>;
 
 }

@@ -636,6 +636,9 @@ Sz4ApiBase::Sz4ApiBase(wxEvtHandler* response_receiver,
 	connection_cv = std::move(connection_mgr->connection_cv.get_future());
 
 	io_thread = start_connection_manager(connection_mgr);
+
+	m_interpreter.reset(new sz4::lua_interpreter<sz4::iks>());
+	m_interpreter->initialize(base.get(), ipk_container);
 }
 
 bool Sz4ApiBase::BlockUntilConnected(const unsigned int timeout_s) {
@@ -816,15 +819,58 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 		}
 	);
 
-	std::wcout<<query->param->GetSzbaseName()<<std::endl;
-	if( query->param->isUserDefined() ) {
-		std::wcout<<L"Działa!"<<std::endl;
-	}
-
 	const auto& v = *minmax.first;
 	auto t_start = sz4::nanosecond_time_t(v.time_second, v.time_nanosecond);
 	auto t_end = szb_move_time(sz4::nanosecond_time_t(minmax.second->time_second, minmax.second->time_nanosecond), 1, pt);
 
+	if( query->param->isUserDefined() ) {
+		std::async( std::launch::async,
+		[query_ptr, pt, this, v, dt, prec] () {
+			std::lock_guard<std::mutex> guard(this->lua_mutex);
+			m_interpreter->prepare_param(query_ptr->param);
+			DatabaseQuery::ValueData &vd = query_ptr->value_data;
+			for( auto itr = vd.vv->begin(); itr != vd.vv->end() ; ++itr )
+			{
+				auto current = sz4::nanosecond_time_t(itr->time_second, itr->time_nanosecond);
+				sz4::nanosecond_time_t s_time = current;
+				auto end_time = szb_move_time(current, 1, pt);
+				sz4::weighted_sum<double, time_type> sum;
+				SZARP_PROBE_TYPE step = sz4::get_probe_type_step(pt);
+				while (current < end_time) {
+					bool fixed = false;
+					auto next = szb_move_time(current, 1, step);
+					double result = m_interpreter->calculate_value(current, step, 0);
+
+					if (!sz4::value_is_no_data(result)) {
+						sum.add(result, next - current);
+					} else {
+						sum.add_no_data_weight(next - current);
+					}
+
+					sum.set_fixed(fixed);
+					current = next;
+				}
+
+				auto *rq = CreateDataQueryPrivate(query_ptr->draw_info, query_ptr->param,
+							query_ptr->value_data.period_type, query_ptr->draw_no);
+				rq->inquirer_id = query_ptr->inquirer_id;
+				rq->value_data.vv->push_back(v);
+				auto &nv = rq->value_data.vv->back();
+				rq->value_data.vv->back().time_second = s_time.second;
+				rq->value_data.vv->back().time_nanosecond = s_time.nanosecond;
+
+				wsum_to_value(nv, sum,
+						PeriodToProbeType(query_ptr->value_data.period_type),
+						dt, prec);
+				nv.ok = true;
+
+				DatabaseResponse r(rq);
+				wxPostEvent(m_response_receiver, r);
+			}
+			m_interpreter->pop_prepared_param();
+		} );
+	}
+	else {
 	base->get_weighted_sum<double, time_type>(
 		ParamInfoFromParam(query->param),
 		t_start, t_end, pt,
@@ -861,6 +907,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 			} // for each sum
 		} // callback
 	); // get_weighted_sum
+	}
 }
 
 void Sz4ApiBase::GetData(DatabaseQuery* query) {

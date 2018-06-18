@@ -1,3 +1,4 @@
+#include <iostream>
 /* 
   SZARP: SCADA software 
   
@@ -68,7 +69,6 @@ template<class base> int lua_sz4(lua_State *lua) {
 
 		if (param)
 		{
-
 			weighted_sum<double, nanosecond_time_t> sum;
 			base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
 
@@ -88,7 +88,7 @@ template<class base> int lua_sz4(lua_State *lua) {
 	if (param)
 	{
 		return lua_error(lua);
-	}	
+	}
 	else
 	{
 		return luaL_error(lua, "Param %s not found", param_name);
@@ -194,4 +194,67 @@ template<class base> lua_State* lua_interpreter<base>::lua() {
 
 template<class base> const int lua_interpreter<base>::lua_base_ipk_pair_key = 0;
 
+template<> int lua_sz4<iks>(lua_State *lua) {
+	const unsigned char* param_name = (unsigned char*) luaL_checkstring(lua, 1);
+	if (param_name == NULL)
+                 luaL_error(lua, "Invalid param name");
+
+	TParam* param = NULL;
+	try {
+		nanosecond_time_t time(lua_tonumber(lua, 2));
+		SZARP_PROBE_TYPE probe_type(static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3)));
+
+		base_ipk_pair<iks>* base_ipk = get_base_ipk_pair<iks>(lua);
+		param = base_ipk->second->GetParam(std::basic_string<unsigned char>(param_name));
+
+		if (param)
+		{
+			weighted_sum<double, nanosecond_time_t> sum;
+			auto t_start = time;
+			auto t_end = szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0);
+
+			std::shared_ptr<std::promise<double>> accumulate_promise =
+				std::make_shared<std::promise<double>>();
+			auto fut = accumulate_promise->get_future();
+
+			auto value_scaler = [param](const sz4::weighted_sum<double, nanosecond_time_t>& sum) {
+				return scale_value(sum.avg(), param);
+			};
+
+			base_ipk->first->get_weighted_sum<double, nanosecond_time_t>(
+				sz4::param_info(param->GetSzarpConfig()->GetPrefix(), param->GetName()),
+				t_start, t_end, probe_type,
+				[accumulate_promise, value_scaler]
+				(const boost::system::error_code& ec,
+				 const std::vector<sz4::weighted_sum<double, nanosecond_time_t>> & sums) {
+					if(sums.size()) {
+						accumulate_promise->set_value(value_scaler(sums[0]));
+					}
+					else {
+						accumulate_promise->set_value(nan(""));
+					}
+				} // callback
+			); // get_weighted_sum
+			fut.wait();
+			auto result = fut.get();
+			lua_pushnumber(lua, result);
+
+			return 1;
+		}
+
+	} catch (exception &e) {
+		luaL_where(lua, 1);
+		lua_pushfstring(lua, "%s", e.what());
+		lua_concat(lua, 2);
+	}
+
+	if (param)
+	{
+		return lua_error(lua);
+	}
+	else
+	{
+		return luaL_error(lua, "Param %s not found", param_name);
+	}
+}
 }

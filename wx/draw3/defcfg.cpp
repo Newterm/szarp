@@ -1,3 +1,4 @@
+#include <iostream>
 /* 
   SZARP: SCADA software 
   
@@ -1550,7 +1551,9 @@ void DefinedDrawsSets::LoadSets(wxString path) {
 	}
 	for (size_t i = 0; i < defined_params.size(); i++) {
 		DefinedParam* param = defined_params[i];
+		param->setUserDefined(true);
 		definedParams.push_back(param);
+		std::cout<<"Param name defined: "<<param->GetParamName().ToStdString()<<std::endl;
 		if (param->IsNetworkParam())
 			m_network_param_and_set_prefixes.insert(param->GetBasePrefix());
 	}

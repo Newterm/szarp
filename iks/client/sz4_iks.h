@@ -84,6 +84,9 @@ public:
 
 	void remove_param(const param_info& param, std::function<void(const boost::system::error_code&)> cb);
 
+public:
+	typedef IPKContainer ipk_container_type;
+
 };
 
 }

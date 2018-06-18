@@ -357,6 +357,8 @@ private:
 	std::shared_ptr<boost::asio::io_service> io;
 	std::shared_ptr<sz4::connection_mgr> connection_mgr;
 	std::shared_ptr<sz4::iks> base;
+	std::unique_ptr<sz4::lua_interpreter<sz4::iks>> m_interpreter;
+	std::mutex lua_mutex;
 	IPKContainer* ipk_container;
 	boost::thread io_thread;
 
