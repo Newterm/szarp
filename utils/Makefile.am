@@ -37,6 +37,7 @@ if !MINGW32_OPT
 bin_PROGRAMS = \
 		@AGREGATOR@ \
 		crypt \
+		@IPK2SZARP@ \
 		lpparse \
 		@PRECCONV@ \
 		sproxy \
@@ -47,6 +48,7 @@ bin_PROGRAMS = \
 
 EXTRA_PROGRAMS = \
 		agregator \
+		ipk2szarp \
 		precconv \
 		stampd
 
@@ -106,6 +108,9 @@ remarksserver_PYTHON = \
 
 agregator_SOURCES = agregator.cc
 agregator_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @BOOST_SYSTEM_LIB@ @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@ @SSL_LIBS@
+
+ipk2szarp_SOURCES = ipk2szarp.cc
+ipk2szarp_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP2) @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
 
 lpparse_SOURCES = lpparse.cc
 lpparse_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP) @BOOST_FILESYSTEM_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_LOCALE_LIB@

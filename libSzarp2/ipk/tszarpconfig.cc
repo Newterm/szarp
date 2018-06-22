@@ -568,6 +568,173 @@ TSzarpConfig::GetFirstRaportItem(const std::wstring& title)
     return NULL;
 }
 
+bool TSzarpConfig::checkConfiguration()
+{
+	bool ret = true;
+	ret = checkRepetitions(false) && ret;
+	ret = checkFormulas()         && ret;
+	ret = checkSend()             && ret;
+	return ret;
+}
+
+bool TSzarpConfig::checkFormulas()
+{
+	bool ret = true;
+	bool lua_syntax_ok = true;
+	try {
+		PrepareDrawDefinable();
+	} catch( TCheckException& e) {
+		return false;
+	}
+
+	/** This loop checks every formula and return false if any is invalid */
+	for( TParam* p=GetFirstParam(); p ; p = p->GetNextGlobal() )
+		try {
+			p->GetParcookFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
+	for( TParam* p=GetFirstParam(); p ; p = p->GetNextGlobal() )
+		try {
+			p->GetDrawFormula();
+		} catch( TCheckException& e ) {
+			ret = false;
+		}
+
+	/** This loop checks every formula for lua syntax */
+	for(TParam* p = GetFirstParam(); p; p = p->GetNextGlobal() ) {
+		if(p->GetLuaScript() && !checkLuaSyntax(p)){
+			lua_syntax_ok = false;
+		}
+	}
+
+	// This loop check drawdefinables formulas for SZARP optimalization if lua syntax was correct
+	if(lua_syntax_ok) {
+		IPKContainer::Init(L"/opt/szarp/", L"/opt/szarp/", L"pl");
+		for (TParam * p = drawdefinable; p; p = p->GetNext()) {
+			if(p->GetLuaScript() && !optimizeLuaParam(p)) {
+					ret = false;
+			}
+		}
+	}
+
+	ret = ret && lua_syntax_ok;
+	return ret;
+}
+
+bool TSzarpConfig::checkLuaSyntax(TParam *p)
+{
+	lua_State* lua = Lua::GetInterpreter();
+	if (compileLuaFormula(lua, (const char*) p->GetLuaScript(), (const char*)SC::S2U(p->GetName()).c_str()))
+		return true;
+	else {
+		sz_log(1, "Error compiling param %s: %s\n", SC::S2U(p->GetName()).c_str(), lua_tostring(lua, -1));
+		return false;
+	}
+}
+
+bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const char *formula_name)
+{
+	std::ostringstream paramfunction;
+
+	using std::endl;
+
+	paramfunction <<
+	"return function ()"	<< endl <<
+	"	local p = szbase"	<< endl <<
+	"	local PT_MIN10 = ProbeType.PT_MIN10" << endl <<
+	"	local PT_HOUR = ProbeType.PT_HOUR" << endl <<
+	"	local PT_HOUR8 = ProbeType.PT_HOUR8" << endl <<
+	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
+	"	local PT_WEEK = ProbeType.PT_WEEK" << endl <<
+	"	local PT_MONTH = ProbeType.PT_MONTH" << endl <<
+	"	local PT_YEAR = ProbeType.PT_YEAR" << endl <<
+	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
+	"	local szb_move_time = szb_move_time" << endl <<
+	"	local state = {}" << endl <<
+	"	return function (t,pt)" << endl <<
+	"		local v = nil" << endl <<
+	formula << endl <<
+	"		return v" << endl <<
+	"	end" << endl <<
+	"end"	<< endl;
+
+	std::string str = paramfunction.str();
+
+	const char* content = str.c_str();
+
+	int ret = luaL_loadbuffer(lua, content, std::strlen(content), formula_name);
+	if (ret != 0)
+		return false;
+
+	ret = lua_pcall(lua, 0, 1, 0);
+	if (ret != 0)
+		return false;
+
+	return true;
+}
+
+bool TSzarpConfig::optimizeLuaParam(TParam* p) {
+	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
+	p->SetLuaExecParam(ep);
+
+	IPKContainer* container = IPKContainer::GetObject();
+	if (LuaExec::optimize_lua_param(p, container))
+		return true;
+	return false;
+}
+
+bool TSzarpConfig::checkRepetitions(int quiet)
+{
+	std::vector<std::wstring> str;
+	int all_repetitions_number = 0, the_same_repetitions_number=1;
+
+	for (TParam* p = GetFirstParam(); p; p = p->GetNextGlobal()) {
+		str.push_back(p->GetSzbaseName());
+	}
+	std::sort(str.begin(), str.end());
+
+	for( size_t j=0 ; j<str.size() ; ++j )
+	{
+		if( j<str.size()-1 && str[j] == str[j+1] )
+			++the_same_repetitions_number;
+		else if( the_same_repetitions_number > 1 ) {
+			if( !quiet )
+				sz_log(1, "There are %d repetitions of: %s", the_same_repetitions_number, SC::S2L(str[j-1]).c_str());
+
+			all_repetitions_number += the_same_repetitions_number;
+			the_same_repetitions_number = 1;
+		}
+	}
+
+	return all_repetitions_number == 0;
+}
+
+bool TSzarpConfig::checkSend()
+{
+	bool ret = true;
+    for (auto d = GetFirstDevice(); d; d = d->GetNext()) {
+		for (TUnit* u = d->GetFirstUnit(); u != nullptr; u = u->GetNext()) {
+			for (TSendParam *sp = u->GetFirstSendParam(); sp; sp = sp->GetNext()) {
+				{
+					if( !sp->IsConfigured() || sp->GetParamName().empty() )
+						continue;
+
+					TParam* p = getParamByName(sp->GetParamName());
+					if( p == NULL ) {
+						sz_log(1, "Cannot find parameter to send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					} else if( p->IsDefinable() ) {
+						sz_log(1, "Cannot use drawdefinable param in send (%s)", SC::S2A(sp->GetParamName()).c_str());
+						ret = false;
+					}
+				}
+			}
+		}
+	}
+	return ret;
+}
+
 const TSSeason* TSzarpConfig::GetSeasons() const {
 	return seasons;
 }
