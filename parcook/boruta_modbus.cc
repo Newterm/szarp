@@ -1104,7 +1104,8 @@ void modbus_register::set_val(unsigned short val, time_t time) {
 }
 
 bool modbus_unit::process_request(unsigned char unit, PDU &pdu) {
-	if (m_id != unit) {
+	static constexpr int BROADCAST_ADDRESS = 0;
+	if (m_id != unit && unit != BROADCAST_ADDRESS) {
 		m_log.log(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) unit);
 		return false;
 	}
