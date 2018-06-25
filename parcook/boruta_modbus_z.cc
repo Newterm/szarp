@@ -469,7 +469,7 @@ public:
 	using sent_val_op::base_type;
 };
 
-template <template <typename> typename val_op>
+template <template <typename> class val_op>
 struct base_type {
 	using type = typename val_op<void>::base_type;
 };
