@@ -45,16 +45,10 @@ template <>
 int32_t cast_with_precision(double val, int32_t prec_adj) { return rint(val * prec_adj); }
 
 template <>
-uint32_t cast_with_precision(double val, int32_t prec_adj) { return rint(val * prec_adj); }
-
-template <>
 double cast_with_precision(double val, int32_t prec_adj) { return val; }
 
 template <>
 int32_t cast_with_precision(int32_t val, int32_t prec_adj) { return val; }
-
-template <>
-uint32_t cast_with_precision(int32_t val, int32_t prec_adj) { return (uint32_t) val; }
 
 template <>
 double cast_with_precision(int32_t val, int32_t prec_adj) { return ((double) val) / prec_adj; }
@@ -101,15 +95,6 @@ value_time_pair<int16_t, nanosecond_time_t> cast_param_value<int16_t>(const szar
 }
 
 template <>
-value_time_pair<uint16_t, nanosecond_time_t> cast_param_value<uint16_t>(const szarp::ParamValue& pv, int32_t prec_adj) {
-	value_time_pair<uint16_t, nanosecond_time_t> ret;
-	auto ui32_p = cast_param_value<uint32_t>(pv, prec_adj);
-	ret.value = ui32_p.value;
-	ret.time = ui32_p.time;
-	return ret;
-}
-
-template <>
 value_time_pair<float, nanosecond_time_t> cast_param_value<float>(const szarp::ParamValue& pv, int32_t prec_adj) {
 	value_time_pair<float, nanosecond_time_t> ret;
 	auto d64_p = cast_param_value<double>(pv, prec_adj);
@@ -119,7 +104,6 @@ value_time_pair<float, nanosecond_time_t> cast_param_value<float>(const szarp::P
 }
 
 template value_time_pair<int32_t, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
-template value_time_pair<uint32_t, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
 template value_time_pair<double, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
 
 } // namespace util

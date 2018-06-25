@@ -73,9 +73,8 @@ template<class value_type, class time_type> class live_block : public generic_li
 	typename time_difference<time_type>::type m_retention;
 	
 	time_type m_start_time;
-	int32_t prec;
 public:
-	live_block(time_difference<second_time_t>::type retention, int32_t _prec);
+	live_block(time_difference<second_time_t>::type retention);
 
 	std::pair<bool, time_type>
 	search_data_left(const time_type& start, const time_type& end, const search_condition& condition);
@@ -86,8 +85,8 @@ public:
 	virtual void get_last_time(time_type &t);
 
   	void process_live_value(const time_type& time, const value_type& value);
-	void process_live_value(szarp::ParamValue* value) override;
-	void set_observer(live_values_observer* observer) override;
+	void process_live_value(szarp::ParamValue* value);
+	void set_observer(live_values_observer* observer);
 
 	cache_ret get_weighted_sum(const time_type& start, time_type& end,
 					weighted_sum<value_type, time_type>& sum);

@@ -22,7 +22,6 @@
 #ifndef MINGW32
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "sz4/util.h"
 #endif
 
 namespace sz4 {
@@ -119,6 +118,44 @@ void live_block<value_type, time_type>::get_last_time(time_type &t) {
 		t = time_trait<time_type>::invalid_value;
 }
 
+#ifndef MINGW32
+namespace {
+
+void get_time(szarp::ParamValue* value, second_time_t &t) {
+	t = value->time();
+}
+
+void get_time(szarp::ParamValue* value, nanosecond_time_t &t) {
+	t = nanosecond_time_t(value->time(), value->nanotime());
+}
+
+void get_value(szarp::ParamValue* value, int16_t& v) {
+	v = value->int_value();
+}
+
+void get_value(szarp::ParamValue* value, int32_t& v) {
+	v = value->int_value();
+}
+
+void get_value(szarp::ParamValue* value, float& v) {
+	v = value->float_value();
+}
+
+void get_value(szarp::ParamValue* value, double& v) {
+	v = value->double_value();
+}
+
+void get_value(szarp::ParamValue* value, uint16_t& v) {
+	v = value->int_value();
+}
+
+void get_value(szarp::ParamValue* value, uint32_t& v) {
+	v = value->int_value();
+}
+
+}
+#endif
+
 template<class value_type, class time_type>
 void live_block<value_type, time_type>::process_live_value(
 		const time_type& t,
@@ -152,9 +189,13 @@ template<class value_type, class time_type>
 void live_block<value_type, time_type>::process_live_value(szarp::ParamValue* value)
 {
 #ifndef MINGW32
-	value_time_pair<value_type, nanosecond_time_t> vtp = cast_param_value<value_type>(*value, prec);
+	time_type t;
+	get_time(value, t);
 
-	process_live_value(static_cast<time_type>(vtp.time), vtp.value);
+	value_type v;
+	get_value(value, v);
+
+	process_live_value(t, v);
 
 	auto observer = m_observer.load(std::memory_order_consume);
 	if (observer)
@@ -177,7 +218,7 @@ void convert_retention(const time_difference<second_time_t>::type& f, time_diffe
 }
 
 template<class value_type, class time_type>
-live_block<value_type, time_type>::live_block(time_difference<second_time_t>::type retention, int32_t _prec) : m_observer(nullptr), prec(_prec) {
+live_block<value_type, time_type>::live_block(time_difference<second_time_t>::type retention) : m_observer(nullptr) {
 	convert_retention(retention, m_retention);
 }
 
@@ -219,7 +260,7 @@ template<class entry_builder> live_cache::live_cache(
 				p = p->GetNextGlobal()) {
 
 			auto entry(factory<generic_live_block, entry_builder>::op
-				(p, config.retention, p->GetPrec()));
+				(p, config.retention));
 
 			config_cache.push_back(entry);
 		}
