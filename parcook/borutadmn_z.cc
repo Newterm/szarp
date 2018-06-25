@@ -327,11 +327,12 @@ struct driver_factory {
 		}
 	}
 
+	using TMM = std::tuple<Mode, Medium>;
 	std::map<std::tuple<Mode, Medium>, std::function<BaseConnection*(UnitInfo*)>> conn_map = {
-		{{Mode::client, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
-		{{Mode::client, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpConnection>(EventBaseHolder::evbase, unit); } },
-		{{Mode::server, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
-		{{Mode::server, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpServerConnectionHandler>(unit); } },
+		{TMM{Mode::client, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::client, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpConnection>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::server, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::server, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpServerConnectionHandler>(unit); } },
 	};
 
 	std::map<Medium, std::function<std::string(UnitInfo*)>> addr_str_map = {
@@ -341,19 +342,19 @@ struct driver_factory {
 		{Medium::serial, [](UnitInfo* unit){ return unit->getAttribute<std::string>("extra:path", "/dev/null"); }},
 	};
 
-
+	using TPMM = std::tuple<Proto, Mode, Medium>;
 	std::map<std::tuple<Proto, Mode, Medium>, std::function<driver_iface*(UnitInfo*, BaseConnection*, boruta_daemon*, slog)>> driver_map = {
-		{{Proto::fc, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::fc, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			return create_fc_serial_client(conn, boruta, logger); }},
-		{{Proto::fc, Mode::client, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::fc, Mode::client, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			return create_fc_serial_client(conn, boruta, logger); }},
-		{{Proto::modbus, Mode::server, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::modbus, Mode::server, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			return create_bc_modbus_driver(conn, boruta, logger); }},
-		{{Proto::modbus, Mode::server, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::modbus, Mode::server, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			return create_bc_modbus_driver(conn, boruta, logger); }},
-		{{Proto::modbus, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::modbus, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			return create_bc_modbus_driver(conn, boruta, logger); }},
-		{{Proto::modbus, Mode::client, Medium::tcp}, [](UnitInfo* unit, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+		{TPMM{Proto::modbus, Mode::client, Medium::tcp}, [](UnitInfo* unit, BaseConnection* conn, boruta_daemon* boruta, slog logger){
 			if (unit->getAttribute<bool>("extra:use_tcp_2_serial_proxy", false))
 				return create_bc_modbus_driver(conn, boruta, logger);
 			else
@@ -366,9 +367,9 @@ struct driver_factory {
 		auto mode = get_mode(unit);
 		auto medium = get_medium(unit);
 
-		auto conn_f = conn_map.find({mode, medium});
+		auto conn_f = conn_map.find(TMM{mode, medium});
 		auto addr_str_f = addr_str_map.find({medium});
-		auto driver_f = driver_map.find({proto, mode, medium});
+		auto driver_f = driver_map.find(TPMM{proto, mode, medium});
 
 		if (conn_f == conn_map.end())
 			throw std::runtime_error("Unknown connection type");
