@@ -539,27 +539,37 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	TParam *p = d->GetParam()->GetIPKParam();
 	TSzarpConfig* sc = p->GetSzarpConfig();
 
-	wxString link = sc->getAttribute("documentation_base_url");
+	auto link_to_check = sc->getOptAttribute<std::string>("documentation_base_url");
 
-	if (link.IsEmpty())
-		link = _T("http://www.doc.szarp.org");
+	if (!link_to_check) {
+		wxMessageBox(_("Documentation not configured."), _("Missing doc configuration"), wxOK | wxICON_INFORMATION, this);
+		return;
+	}
 
-	link += _T("/cgi-bin/param_docs.py?");
-	link << _T("prefix=") << d->GetBasePrefix().c_str();
+	std::string link = *link_to_check;
+	link += "/cgi-bin/param_docs.py?";
+	link += "prefix=";
+	link += d->GetBasePrefix().c_str();
 
-	link << _T("&param=") << encode_string(p->GetName().c_str());
+	link += "&param=";
+	link += encode_string(p->GetName().c_str());
 
 	TUnit* u;
 	if ((u = p->GetParentUnit())) {
 		TDevice* dev = u->GetDevice();
-		link << _T("&path=") << encode_string(dev->getAttribute("path").c_str());
+		auto dev_path = dev->getOptAttribute<std::string>("path");
+		if (dev_path) {
+			link += "&path=";
+			link += encode_string(*dev_path);
+		}
 	}
 
 	int validity = 8 * 3600;
 	std::wstringstream tss;
 	tss << (wxDateTime::Now().GetTicks() / validity * validity);
 
-	link << _T("&id=") << sz_md5(tss.str());
+	link += "&id=";
+	link += sz_md5(tss.str());
 
 #if __WXMSW__
 	if (wxLaunchDefaultBrowser(link) == false)
