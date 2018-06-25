@@ -466,6 +466,19 @@ def do_tests():
 def test_isl_file():
 	check_if_parameter_exist()
 
+def run_ipk2szarp(input_file):
+	conf_parser = "/opt/szarp/bin/ipk2szarp"
+	command = [conf_parser]
+	if input_file:
+		command.append(input_file)
+	process = Popen(command, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = process.communicate()
+	for stream in [stdout, stderr]:
+		if not stream:
+			continue
+		for error in stream.strip().splitlines():
+			printerr("ipk2szarp: " + error)
+
 parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
 parser.add_argument('-i', '--input-file',
 	help='XML config file (default is params.xml)')
@@ -475,6 +488,8 @@ parser.add_argument('-q', '--quiet', action='store_true',
 	help="hide not important messages, to be used e.g. in scripts")
 
 args = parser.parse_args()
+
+run_ipk2szarp(args.input_file)
 
 quiet = args.quiet
 

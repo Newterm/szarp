@@ -230,6 +230,38 @@ public:
 	/** @return first raport item with given title */
 	TRaport* GetFirstRaportItem(const std::wstring& title);
 
+	/**
+	 * Check if configuration is valid. Basicly calls all check* functions
+	 */
+	bool checkConfiguration();
+
+	/**
+	 * Check if formulas are well defined
+	 */
+	bool checkFormulas();
+
+	/**
+	 * Check if formulas are correct in mean of lua syntax
+	 */
+	bool checkLuaSyntax(TParam *);
+	bool compileLuaFormula(lua_State *, const char *, const char *);
+
+	/**
+	 * Check if formulas are correct in mean of SZARP optimalization
+	 */
+	bool optimizeLuaParam(TParam *);
+
+	/** Checks if repetitions of parameters names in params.xml occurred
+	 * @param quiet if equal 1 do not print anything to standard output
+	 * @return 0 if there is no repetitions or 1 if there are some
+	 */
+	bool checkRepetitions(int quiet = 0);
+
+	/**
+	 * Check if sends are ok -- this means if every send has valid param
+	 */
+	bool checkSend();
+
 	/** @return object representing seasons limit's
 	 * NULL if no seasons configuration is present*/
 	const TSSeason* GetSeasons() const;
