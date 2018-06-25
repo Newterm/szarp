@@ -246,11 +246,6 @@ public:
 	bool checkLuaSyntax(TParam *);
 	bool compileLuaFormula(lua_State *, const char *, const char *);
 
-	/**
-	 * Check if formulas are correct in mean of SZARP optimalization
-	 */
-	bool optimizeLuaParam(TParam *);
-
 	/** Checks if repetitions of parameters names in params.xml occurred
 	 * @param quiet if equal 1 do not print anything to standard output
 	 * @return 0 if there is no repetitions or 1 if there are some

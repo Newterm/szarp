@@ -608,16 +608,6 @@ bool TSzarpConfig::checkFormulas()
 		}
 	}
 
-	// This loop check drawdefinables formulas for SZARP optimalization if lua syntax was correct
-	if(lua_syntax_ok) {
-		IPKContainer::Init(L"/opt/szarp/", L"/opt/szarp/", L"pl");
-		for (TParam * p = drawdefinable; p; p = p->GetNext()) {
-			if(p->GetLuaScript() && !optimizeLuaParam(p)) {
-					ret = false;
-			}
-		}
-	}
-
 	ret = ret && lua_syntax_ok;
 	return ret;
 }
@@ -672,16 +662,6 @@ bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const 
 		return false;
 
 	return true;
-}
-
-bool TSzarpConfig::optimizeLuaParam(TParam* p) {
-	LuaExec::SzbaseParam* ep = new LuaExec::SzbaseParam;
-	p->SetLuaExecParam(ep);
-
-	IPKContainer* container = IPKContainer::GetObject();
-	if (LuaExec::optimize_lua_param(p, container))
-		return true;
-	return false;
 }
 
 bool TSzarpConfig::checkRepetitions(int quiet)
