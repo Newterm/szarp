@@ -20,6 +20,7 @@ class FileloggerTest : public CPPUNIT_NS::TestFixture
 
 void FileloggerTest::test() {
 	const std::string LOGFILE = "/tmp/test.log";
+	truncate(LOGFILE.c_str(), (size_t) 0);
 
 	szlog::log().set_logger<szlog::FileLogger>(LOGFILE);
 	szlog::log() << szlog::critical << "0" << szlog::flush;

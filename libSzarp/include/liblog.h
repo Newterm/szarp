@@ -74,7 +74,7 @@ class Logger {
 	std::deque<std::shared_ptr<LogEntry>> _msgs_to_send;
 
 	std::future<void> _msg_cv;
-	std::function<void()> log_thread = [this](){ log_messages(); };
+	std::function<void()> log_thread;
 
 	std::mutex _msg_mutex;
 	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
@@ -86,6 +86,7 @@ class Logger {
 	void log(const std::string& msg, priority p);
 
 public:
+	Logger();
 	~Logger() {
 		flush();
 	}

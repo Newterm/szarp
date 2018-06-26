@@ -44,12 +44,15 @@
 #include "argsmgr.h"
 
 #include <csignal>
+#include <chrono>
 
 namespace szlog {
 
 std::shared_ptr<Logger> logger{new Logger()};
 
 }
+
+using namespace std::chrono_literals;
 
 int sz_loginit_cmdline(int level, const char * logfile, int *argc, char *argv[], SZ_LIBLOG_FACILITY)
 {
@@ -108,6 +111,14 @@ void init(const ArgsManager& args_mgr, const std::string& logtag) {
 	log().parse_args(args_mgr);
 }
 
+Logger::Logger() {
+	log_thread = [](){
+		try {
+			logger->log_messages();
+		} catch (...) {}
+	};
+}
+
 void Logger::parse_args(const ArgsManager& args_mgr) {
 	auto log_level = args_mgr.get<int>("log_level").get_value_or(2);
 
@@ -122,7 +133,7 @@ void Logger::flush() {
 	std::lock_guard<std::mutex> _in_guard(_in_mutex);
 
 	_out_mutex.lock();
-	if (!_msg_cv.valid()) {
+	if (!_msg_cv.valid() || (_msg_cv.wait_for(0s) != std::future_status::timeout)) {
 		_msg_cv = std::async(std::launch::async, log_thread);
 	}
 	_out_mutex.unlock();
@@ -162,7 +173,7 @@ void Logger::log_later(std::shared_ptr<LogEntry> msg) {
 	_msgs_to_send.push_back(msg);
 
 	// check if logger thread is inactive
-	if (!_msg_cv.valid()) {
+	if (!_msg_cv.valid() || (_msg_cv.wait_for(0s) != std::future_status::timeout)) {
 		_msg_cv = std::async(std::launch::async, log_thread);
 	}
 }

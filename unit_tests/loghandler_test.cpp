@@ -7,7 +7,6 @@
 
 class DummyLogHandler: public szlog::LogHandler {
 public:
-	mutable bool reinit_called = false;
 	mutable bool msg_logged = false;
 	mutable std::string _msg = "";
 
