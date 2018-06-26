@@ -11,6 +11,7 @@ AM_CPPFLAGS = @CPPUNIT_CFLAGS@ -I$(SOURCE_DIR)/../libSzarp2/include \
 	@LUA_CFLAGS@ @BOOST_CPPFLAGS@ @ZIP_CFLAGS@
 
 LIBS = ../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la \
+	../iks/server/data/libiks-server-data.a \
 	@CPPUNIT_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ \
 	@BOOST_LOCALE_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @CURL_LIBS@ \

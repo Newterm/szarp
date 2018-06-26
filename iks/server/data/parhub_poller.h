@@ -12,11 +12,9 @@
 #include "protobuf/paramsvalues.pb.h"
 
 
-struct TParamValue;
-
 class ParhubSubscriber {
 public:
-	virtual void param_value_changed(size_t param_ipc_ind, TParamValue value) = 0;
+	virtual void param_value_changed(size_t param_ipc_ind, const szarp::ParamValue& value) = 0;
 };
 
 class SocketHolder {
@@ -45,75 +43,18 @@ class ParhubPoller {
 	std::atomic<bool> should_exit{false};
 
 public:
-	ParhubPoller(std::unique_ptr<SocketHolder> _socket_holder, ParhubSubscriber& _subscriber): socket_holder(std::move(_socket_holder)), subscriber(_subscriber) {
-		run_poller();
-	}
+	ParhubPoller(std::unique_ptr<SocketHolder> _socket_holder, ParhubSubscriber& _subscriber);
+	ParhubPoller(std::string url, ParhubSubscriber& _subscriber);
 
-	ParhubPoller(std::string url, ParhubSubscriber& _subscriber): ParhubPoller(std::unique_ptr<SocketHolder>(new ZmqSocketHolder(url)), _subscriber) {}
-
-	~ParhubPoller() {
-		should_exit = true;
-		if (poll_cv.valid()) poll_cv.wait();
-	}
+	~ParhubPoller();
 
 	void poll();
 
 	void process_msg(szarp::ParamsValues& values);
 
 private:
-	void run_poller() {
-		poll_cv = std::async(std::launch::async, [this](){ this->poll(); });
-	}
+	void run_poller();
 
 };
-
-struct TParamValue {
-	// all integrals are kept in int64, all floating-points are kept in double
-	mutable boost::variant<int64_t, double> value;
-
-	template <typename T, typename std::enable_if<std::is_integral<T>::value,
-	int>::type = 0> TParamValue(T v): value(int64_t(v)) {}
-
-	template <typename T, typename std::enable_if<std::is_floating_point<T>::value,
-	int>::type = 0> TParamValue(T v): value((double)v) {}
-
-	TParamValue(const szarp::ParamValue& pv) {
-		if (pv.has_int_value())
-			value = int64_t(pv.int_value());
-		if (pv.has_float_value())
-			value = double(pv.float_value());
-		if (pv.has_double_value())
-			value = double(pv.double_value());
-	}
-
-	TParamValue(const TParamValue& o): value(o.value) {}
-	TParamValue& operator=(const TParamValue& o) {
-		value = o.value;
-		return *this;
-	}
-
-	TParamValue(TParamValue&& o): value(std::move(o.value)) {}
-	TParamValue& operator=(TParamValue&& o) {
-		value = std::move(o.value);
-		return *this;
-	}
-
-
-	template <typename T>
-	T get() const { return boost::get<T>(value); }
-
-	template <typename T>
-	bool has() const {
-		if (T* val = boost::get<T>(&value))
-			return true;
-		else
-			return false;
-	}
-
-	bool operator==(const TParamValue& other) const {
-		return value == other.value;
-	}
-};
-
 
 #endif

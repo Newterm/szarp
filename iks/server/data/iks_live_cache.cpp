@@ -1,7 +1,8 @@
 #include "iks_live_cache.h"
 #include "parhub_poller.h"
+#include "sz4/util.h"
 
-void LiveCache::param_value_changed(size_t ipc_ind, TParamValue value) {
+void LiveCache::param_value_changed(size_t ipc_ind, const szarp::ParamValue& value) {
 	// unordered_map lookup is fast enough for us to double-check not to block mutex if there is no subscriber (we MIGHT rarely miss first update on param about to be subscribed).
 	if (!live_callbacks.count(ipc_ind)) return;
 
@@ -10,7 +11,11 @@ void LiveCache::param_value_changed(size_t ipc_ind, TParamValue value) {
 	auto param_it = live_callbacks.find(ipc_ind);
 	if (param_it == live_callbacks.end()) return;
 
-	param_it->second.first = value;
+	auto prec_adj_it = params_prec_adjs.find(ipc_ind);
+	if (prec_adj_it == params_prec_adjs.end()) return;
+
+	auto vp = sz4::cast_param_value<double>(value, prec_adj_it->second);
+	param_it->second.first = vp.value;
 
 	auto end = param_it->second.second.end();
 	for (auto ob_it = param_it->second.second.begin(); ob_it != end;) {
@@ -29,8 +34,8 @@ void LiveCache::param_value_changed(size_t ipc_ind, TParamValue value) {
 		auto ind_it = params_inds.find(name_it->second);
 		if (ind_it != params_inds.end()) params_inds.erase(ind_it);
 
-		auto prec_it = params_precs.find(ipc_ind);
-		if (prec_it != params_precs.end()) params_precs.erase(prec_it);
+		auto prec_adj_it = params_prec_adjs.find(ipc_ind);
+		if (prec_adj_it != params_prec_adjs.end()) params_prec_adjs.erase(prec_adj_it);
 
 		params_names.erase(name_it);
 		live_callbacks.erase(param_it);
@@ -58,13 +63,7 @@ double LiveCache::get_value(size_t ind) const {
 	auto param_it = live_callbacks.find(ind);
 	if (param_it == live_callbacks.end()) return sz4::no_data<double>();
 
-	auto prec_it = params_precs.find(ind);
-	if (prec_it == params_precs.end()) return sz4::no_data<double>();
-
-	if (param_it->second.first.has<double>()) return param_it->second.first.get<double>();
-	if (param_it->second.first.has<int64_t>()) return param_it->second.first.get<int64_t>() / pow(10.0, prec_it->second);
-
-	return sz4::no_data<double>();
+	return param_it->second.first;
 }
 
 double LiveCache::get_value(const std::string& pname) const {
@@ -83,7 +82,7 @@ std::shared_ptr<LiveObserver> LiveCache::add_observer(const std::string& pname, 
 		live_callbacks.insert({ipc_ind, {init_value(), {observer_ptr}}});
 		params_inds.insert({pname, ipc_ind});
 		params_names.insert({ipc_ind, pname});
-		params_precs.insert({ipc_ind, prec});
+		params_prec_adjs.insert({ipc_ind, pow(10.0, prec)});
 	} else {
 		c_it->second.second.push_back(observer_ptr);
 	}
