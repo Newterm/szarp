@@ -75,7 +75,6 @@ void ZmqHandlerTest::setUp() {
 
 	context.reset(new zmq::context_t(1));
 
-
 	sock.reset(new zmq::socket_t(*context, ZMQ_PUB));
 	sock->bind(sub_uri.c_str());
 
@@ -98,9 +97,6 @@ void ZmqHandlerTest::test() {
 	// notifications to work
 	handler.receive();
 
-	/* THIS IS NOT CORRECT, SUBSOCKET WILL BE -1 AS WE ARE NOT RECEIVING REAL PARAMS
-	// mmoru 23.10.2017
-	// TODO: fix this
 	int subsocket = handler.subsocket();
 	CPPUNIT_ASSERT(subsocket != -1);
 
@@ -108,6 +104,7 @@ void ZmqHandlerTest::test() {
 	auto value = values.add_param_values();
 	value->set_param_no(1);
 	value->set_time(1);
+	value->set_is_nan(false);
 	value->set_int_value(1);
 	std::string* buffer = new std::string();
 	google::protobuf::io::StringOutputStream stream(buffer);
@@ -122,7 +119,7 @@ void ZmqHandlerTest::test() {
 	fd.events = POLLIN;
 
 	int r = poll(&fd, 1, 3000);
-	CPPUNIT_ASSERT_EQUAL(1, r); */
+	CPPUNIT_ASSERT_EQUAL(1, r);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ZmqHandlerTest );

@@ -90,6 +90,7 @@ void TSendParam::Configure(const std::wstring& paramName, int value, int repeat,
 		TProbeType _type, int sendNoData)
 {
 	this->paramName = paramName;
+	storeAttribute("param", SC::S2L(paramName));
 	storeAttribute("value", std::to_string(value));
 	storeAttribute("repeat", std::to_string(repeat));
 	storeAttribute("send_no_data", std::to_string(sendNoData));
