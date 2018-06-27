@@ -138,7 +138,7 @@ void get_value(szarp::ParamValue* value, int32_t& v) {
 }
 
 void get_value(szarp::ParamValue* value, float& v) {
-	v = value->float_value();
+	v = value->double_value();
 }
 
 void get_value(szarp::ParamValue* value, double& v) {

@@ -23,6 +23,7 @@
 #include <zmq.hpp>
 
 #include "protobuf/paramsvalues.pb.h"
+#include "sz4/util.h"
 
 #include "szarp_config.h"
 #include "dmncfg.h"
@@ -45,8 +46,20 @@ public:
 		const std::string& sub_address,
 		const std::string& pub_address);
 
-	template<class T, class V> void set_value(size_t i, const T& t, const V& value);
+	template <class T, class V> void set_value(size_t index, const T& t, const V& value) {
+		szarp::ParamValue* param = m_pubs.add_param_values();
+		param->set_param_no(index + m_pubs_idx);
+		param->set_is_nan(false);
+		sz4::pv_set_time(*param, t);
+		sz4::pv_set_value(*param, value);
+	}
+
 	szarp::ParamValue& get_value(size_t i);
+
+	template <class VT> sz4::value_time_pair<VT, sz4::nanosecond_time_t> get_send(size_t i, int32_t prec_adj) {
+		auto& pv = get_value(i);
+		return sz4::cast_param_value<VT>(pv, prec_adj);
+	}
 
 	int subsocket();
 

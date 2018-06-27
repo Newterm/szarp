@@ -1523,7 +1523,14 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 			szarp::ParamValue* param_value = param_values.add_param_values();
 			param_value->set_param_no(i);
 			param_value->set_time(now);
-			int tmp = Probe[i];
+			int16_t tmp = Probe[i];
+
+			if (tmp == SZARP_NO_DATA) {
+				param_value->set_is_nan(true);
+			} else {
+				param_value->set_is_nan(false);
+			}
+
 			param_value->set_int_value(tmp);
 		}
 
@@ -1532,9 +1539,17 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 			tParamInfo* pi = CombinedParams[i];	
 			param_value->set_param_no(pi->param_no);
 			param_value->set_time(now);
-			param_value->set_int_value(
-				unsigned(Probe[pi->lsw]) << 16
-				| unsigned(Probe[pi->msw]));
+
+			int16_t msw = Probe[pi->msw];
+			int16_t lsw = Probe[pi->lsw];
+
+			if (lsw == SZARP_NO_DATA && msw == SZARP_NO_DATA) {
+				param_value->set_is_nan(true);
+			} else {
+				param_value->set_is_nan(false);
+			}
+
+			param_value->set_int_value(uint32_t(lsw) << 16 | uint32_t(msw));
 		}
 
 		param_values.SerializeToZeroCopyStream(&stream);

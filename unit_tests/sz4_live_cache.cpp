@@ -116,6 +116,7 @@ void Sz4LiveCache::zmqHandlingTest() {
 	auto value = values.add_param_values();
 	value->set_param_no(0);
 	value->set_time(1);
+	value->set_is_nan(false);
 	value->set_int_value(1);
 
 	cache->register_cache_observer(param, &obs);
@@ -134,7 +135,7 @@ void Sz4LiveCache::zmqHandlingTest() {
 }
 
 void Sz4LiveCache::retentionTest() {
-	sz4::live_block<short, sz4::second_time_t> block(1000);
+	sz4::live_block<short, sz4::second_time_t> block(1000, 1);
 	block.process_live_value(1, 1);
 
 	sz4::second_time_t t;
@@ -210,7 +211,7 @@ public:
 }
 
 void Sz4LiveCache::blockTest() {
-	sz4::live_block<short, sz4::second_time_t> live_block(1000);
+	sz4::live_block<short, sz4::second_time_t> live_block(1000, 1);
 	fake_base base;
 
 	real_entry entry(&base, param);

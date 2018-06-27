@@ -419,8 +419,7 @@ public:
 	sent_val_op(register_holder* regs, value_type nodata_value, int prec, slog log): m_log(log), m_regs(regs), m_prec(prec), m_nodata_value(nodata_value) {}
 
 	void update_val(zmqhandler& handler, size_t index) override {
-		szarp::ParamValue& value = handler.get_value(index);
-		auto vt_pair = sz4::cast_param_value<value_type>(value, this->m_prec);
+		auto vt_pair = handler.get_send<value_type>(index, this->m_prec);
 		if (!sz4::is_valid(vt_pair)) {
 			m_log->log(10, "Sent value for index %zu was invalid", index);
 			return; // do not overwrite, wait for data timeout instead

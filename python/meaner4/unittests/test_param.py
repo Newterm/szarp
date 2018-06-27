@@ -35,7 +35,8 @@ class ParamTest(unittest.TestCase):
 		self.formats	= [ "<h"           , "<i"        , "<f"          , "<d"           , "<H"       , "<I"       ]
 		self.val_cast = [lambda x: int(x), lambda x: int(x), lambda x: x, lambda x: x, lambda x: int(x), lambda x: int(x)]
 		self.values	= [ 1	           , 1000000     , 1.5           , 1.234567889    , 40000       , 3000000  ]
-		self.msg_attrs  = [ "int_value"	   , "int_value" , "float_value" , "double_value" , "int_value" , "int_value" ]
+		self.epsilons = [0, 0, 10**-7, 10**-10, 0, 0]
+		self.msg_attrs  = [ "int_value"	   , "int_value" , "double_value" , "double_value" , "int_value" , "int_value" ]
 
 		self.node_def = lxml.etree.fromstring("""
       <param xmlns="http://www.praterm.com.pl/SZARP/ipk" name="Kocioł 3:Sterownik:Aktualne wysterowanie falownika podmuchu" short_name="imp_p" draw_name="Wyst. fal. podm." unit="%" prec="1" base_ind="auto">
@@ -68,6 +69,7 @@ class ParamTest(unittest.TestCase):
 
 		msg = paramsvalues_pb2.ParamValue()
 		msg.param_no = 100;
+		msg.is_nan = False;
 		msg.time = 123456;
 		msg.int_value = 10;
 
@@ -86,6 +88,7 @@ class ParamTest(unittest.TestCase):
 
 			msg = paramsvalues_pb2.ParamValue()
 			msg.param_no = 100;
+			msg.is_nan = False;
 			msg.time = 123456;
 			setattr(msg, self.msg_attrs[i], self.values[i])
 
@@ -95,7 +98,6 @@ class ParamTest(unittest.TestCase):
 		from random import randint
 		int_value = randint(1, 2000)
 		float_value = randint(1, 2000) / 10.0 # prec 1
-		eps = 10**-10
 		for i, n in enumerate(self.nodes):
 			p = param.from_node(n)
 
@@ -104,13 +106,57 @@ class ParamTest(unittest.TestCase):
 			self.assertEqual(p.value_lenght, self.val_lens[i])
 			self.assertEqual(p.time_prec, 4)
 			self.assertEqual(p.written_to_base, True)
-			self.assertTrue(p.value_from_binary(p.value_to_binary(int_value)) - self.val_cast[i](int_value) < eps)
-			self.assertTrue(p.value_from_binary(p.value_to_binary(float_value)) - self.val_cast[i](float_value) < eps)
+			self.assertTrue(p.value_from_binary(p.value_to_binary(int_value)) - self.val_cast[i](int_value) <= int_value*self.epsilons[i])
+			self.assertTrue(p.value_from_binary(p.value_to_binary(float_value)) - self.val_cast[i](float_value) <= int_value*self.epsilons[i])
 
 			msg = paramsvalues_pb2.ParamValue()
 			msg.param_no = 100;
+			msg.is_nan = False;
 			msg.time = 123456;
 			setattr(msg, self.msg_attrs[i], self.values[i])
 
 			self.assertEqual(p.value_from_msg(msg), self.values[i])
 
+	def test_casting_nans(self):
+		def _msg(is_nan):
+			msg = paramsvalues_pb2.ParamValue()
+			msg.param_no = 100;
+			msg.time = 123456;
+			msg.is_nan = is_nan
+			return msg
+
+		from random import randint
+		for i, n in enumerate(self.nodes):
+			p = param.from_node(n)
+			self.assertTrue(p.isnan(p.nan))
+
+			# nan msg w/o value
+			msg = _msg(True)
+			self.assertTrue(p.isnan(p.value_from_msg(msg)))
+
+			# nan w/ value
+			msg.double_value = 10.4
+			msg.int_value = 104
+			self.assertTrue(p.isnan(p.value_from_msg(msg)))
+
+			# non-nan w/ value
+			msg = _msg(False)
+			msg.int_value = 104
+			self.assertFalse(p.isnan(p.value_from_msg(msg)))
+
+			msg = _msg(False)
+			msg.double_value = 10.4
+			self.assertFalse(p.isnan(p.value_from_msg(msg)))
+
+			# non-nan w/o value (should be nan)
+			msg = _msg(False)
+			self.assertTrue(p.isnan(p.value_from_msg(msg)))
+
+			# non-nan w/ nan value (should be nan)
+			msg = _msg(False)
+			setattr(msg, self.msg_attrs[i], p.nan)
+			self.assertTrue(p.isnan(p.value_from_msg(msg)))
+
+			msg = _msg(False)
+			msg.double_value = float('nan')
+			self.assertTrue(p.isnan(p.value_from_msg(msg)))

@@ -212,7 +212,7 @@ class Converter:
 			
 			if prev_time is not None and value is not None and time > prev_time and not sp.param.isnan(value):
 				sp.update_last_time_unlocked(prev_time, 0)
-				value = sp.param.nan()
+				value = sp.param.nan
 				sp.write_value(value, prev_time, 0)
 
 			is_szc = path.endswith(".szc")

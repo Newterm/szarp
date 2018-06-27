@@ -27,17 +27,15 @@ extra_ns = '{http://www.praterm.com.pl/SZARP/ipk-extra}'
 def cast_value_to_int(pv, prec_adj):
 	if pv.HasField('int_value'):
 		return pv.int_value
-	elif pv.HasField('float_value'):
-		return int(pv.float_value * prec_adj)
 	elif pv.HasField('double_value'):
+		if math.isnan(pv.double_value):
+			return None
 		return int(pv.double_value * prec_adj)
 	return None
 
 def cast_value_to_double(pv, prec_adj):
-	if pv.HasField('int_value'):
+	if pv.HasField('int_value'): # if int value is nodata we lose the info
 		return float(pv.int_value) / prec_adj
-	elif pv.HasField('float_value'):
-		return pv.float_value
 	elif pv.HasField('double_value'):
 		return pv.double_value
 	return None
@@ -52,39 +50,39 @@ class Param:
 		if self.data_type == "short":
 			self.value_format_string = "<h"
 			self.value_lenght = 2
-			self.value_from_msg = lambda x : cast_value_to_int(x, 10**self.prec)
-			self.nan = lambda : -2 ** 15
+			self._cast_val = lambda x : cast_value_to_int(x, 10**self.prec)
+			self.nan = -2 ** 15
 			self.isnan = lambda x: x == self.nan
 		elif self.data_type == "ushort":
 			self.value_format_string = "<H"
 			self.value_lenght = 2
-			self.value_from_msg = lambda x : cast_value_to_int(x, 10**self.prec)
-			self.nan = lambda : 2 ** 16 - 1
+			self._cast_val = lambda x : cast_value_to_int(x, 10**self.prec)
+			self.nan = 2 ** 16 - 1
 			self.isnan = lambda x: x == self.nan
 		elif self.data_type == "integer":
 			self.value_format_string = "<i"
 			self.value_lenght = 4
-			self.value_from_msg = lambda x : cast_value_to_int(x, 10**self.prec)
-			self.nan = lambda : -2 ** 31
+			self._cast_val = lambda x : cast_value_to_int(x, 10**self.prec)
+			self.nan = -2 ** 31
 			self.isnan = lambda x: x == self.nan
 		elif self.data_type == "uinteger":
 			self.value_format_string = "<I"
 			self.value_lenght = 4
-			self.value_from_msg = lambda x : cast_value_to_int(x, 10**self.prec)
-			self.nan = lambda : 2 ** 32 - 1
+			self._cast_val = lambda x : cast_value_to_int(x, 10**self.prec)
+			self.nan = 2 ** 32 - 1
 			self.isnan = lambda x: x == self.nan
 		elif self.data_type == "float":
 			self.value_format_string = "<f"
 			self.value_lenght = 4
-			self.value_from_msg = lambda x : cast_value_to_double(x, 10**self.prec)
+			self._cast_val = lambda x : cast_value_to_double(x, 10**self.prec)
 			self.isnan = lambda x: math.isnan(x)
-			self.nan = lambda : float('nan')
+			self.nan = float('nan')
 		elif self.data_type == "double": 
 			self.value_format_string = "<d"
 			self.value_lenght = 8
-			self.value_from_msg = lambda x : cast_value_to_double(x, 10**self.prec)
+			self._cast_val = lambda x : cast_value_to_double(x, 10**self.prec)
 			self.isnan = lambda x: math.isnan(x)
-			self.nan = lambda : float('nan')
+			self.nan = float('nan')
 
 		else:
 			raise ValueError("Unsupported value type: %s" % (self.data_type,))
@@ -92,11 +90,21 @@ class Param:
 		self.written_to_base = written_to_base
 		self.max_file_item_size = self.value_lenght + self.time_prec + 1
 
+	def value_from_msg(self, msg):
+		if msg.is_nan:
+			return self.nan
+		else:
+			v = self._cast_val(msg)
+			if v is not None:
+				return v
+			else:
+				return self.nan
+
 	def value_to_binary(self, value):
 		try:
 			return struct.pack(self.value_format_string, value)
 		except:
-			return struct.pack(self.value_format_string, self.nan())
+			return struct.pack(self.value_format_string, self.nan)
 
 	def time_to_binary(self, time, nanotime):
 		if self.time_prec == 8:
