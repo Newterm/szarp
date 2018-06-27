@@ -138,7 +138,6 @@ value_time_pair<float, nanosecond_time_t> cast_param_value<float>(const szarp::P
 
 template value_time_pair<int64_t, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
 template value_time_pair<uint64_t, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
-
 template value_time_pair<double, nanosecond_time_t> cast_param_value(const szarp::ParamValue& pv, int32_t prec_adj);
 
 void pv_set_time(szarp::ParamValue& pv, const sz4::second_time_t& t) {
