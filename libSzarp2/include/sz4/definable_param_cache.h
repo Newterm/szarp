@@ -22,6 +22,7 @@
 #include <map>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
+#include "util.h"
 
 namespace sz4 {
 
@@ -172,10 +173,10 @@ public:
 	template <typename VT>
 	void store_value(const VT& _value, const time_type& time, bool fixed) {
 		value_type value;
-		if (_value == no_data<VT>()) {
+		if (value_is_no_data(_value)) {
 			value = no_data<value_type>();
 		} else {
-			value = _value;
+			value = static_cast<value_type>(_value);
 		}
 
 		unsigned entry_version = fixed ? 0 : m_current_non_fixed;
