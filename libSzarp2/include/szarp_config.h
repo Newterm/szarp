@@ -1399,8 +1399,32 @@ private:
 
 };
 
+
+class IPKContainerInfo {
+public:
+	virtual ~IPKContainerInfo() {}
+
+	virtual void AddUserDefined(const std::wstring& prefix, TParam *param) = 0;
+	virtual void RemoveUserDefined(const std::wstring& prefix, TParam *param) = 0;
+
+	/* ipk access by global name */
+	virtual TParam* GetParam(const std::wstring&, bool = true) = 0;
+	virtual TParam* GetParam(const std::basic_string<unsigned char>&, bool = true);
+
+	/**Retrieves config from the container
+	 * @return configuration object or NULL if given config is not available*/
+	virtual TSzarpConfig* GetConfig(const std::wstring& prefix) = 0;
+	virtual TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
+
+	/**Loads config into the container
+	 * @return loaded config object, NULL if error occured during configuration load*/
+	virtual TSzarpConfig *LoadConfig(const std::wstring&, const std::wstring& = std::wstring()) = 0;
+
+	static IPKContainerInfo* GetObject();
+};
+
 /**Synchronized IPKs container*/
-class IPKContainer {
+class IPKContainer: public IPKContainerInfo {
 	class UnsignedStringHash {
 		std::hash<std::string> m_hasher;
 		public:
@@ -1469,46 +1493,37 @@ class IPKContainer {
 
 	void RemoveParamFromHash(TParam* p);
 
-	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
+	void AddUserDefinedImpl(const std::wstring& prefix, TParam *param);
+	void RemoveUserDefinedImpl(const std::wstring& prefix, TParam *p);
 
-	void RemoveExtraParamImpl(const std::wstring& prefix, TParam *p);
 public:
 	IPKContainer(const std::wstring& szarp_data_dir,
 			const std::wstring& szarp_system_dir,
 			const std::wstring& lang);
-			
 
 	~IPKContainer();
 
-	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
+	void AddUserDefined(const std::wstring& prefix, TParam *param) override;
+	void RemoveUserDefined(const std::wstring& prefix, TParam *param) override;
 
-	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);
+	/* Cache both types of strings for faster lookup in LUA scripts */
+	TParam* GetParam(const std::wstring&, bool = true) override;
+	TParam* GetParam(const std::basic_string<unsigned char>&, bool = true) override;
 
+	template <typename T> TParam* GetParamImpl(const std::basic_string<T>&, bool = true);
+
+	TSzarpConfig* GetConfig(const std::wstring& prefix) override;
+	using IPKContainerInfo::GetConfig; // declare casting function
+
+	TSzarpConfig* LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring()) override;
+
+	/* used by draw3 to verify configurations - this should not be here */
 	bool ReadyConfigurationForLoad(const std::wstring &prefix);
 
-	template<class T> TParam* GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present = true);
-
-	void AddExtraParam(const std::wstring& prefix, TParam *param);
-
-	/**Retrieves config from the container
-	 * @return configuration object or NULL if given config is not available*/
-	TSzarpConfig *GetConfig(const std::wstring& prefix);
-	
-	TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
-	/**Loads config into the container
-	 * @return loaded config object, NULL if error occured during configuration load*/
-	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
-
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams() const;
-
-	/**@return the container object*/
-	static IPKContainer* GetObject();
-	/**Inits the container
-	 * @param szarp_dir path to main szarp directory*/
 	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
-
-	/**Destroys the container*/
 	static void Destroy();
+
+	static IPKContainer* GetObject();
 };
 
 class TDictionary {

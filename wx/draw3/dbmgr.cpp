@@ -134,7 +134,7 @@ void DatabaseManager::OnDatabaseResponse(DatabaseResponse &response) {
 
 	if (query->type == DatabaseQuery::REMOVE_PARAM) {
 		IPKContainer *ic = IPKContainer::GetObject();
-		ic->RemoveExtraParam(query->defined_param.prefix, query->defined_param.p);
+		ic->RemoveUserDefined(query->defined_param.prefix, query->defined_param.p);
 		free(query->defined_param.prefix);
 		delete query;
 	} else if (query->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
@@ -340,7 +340,7 @@ void DatabaseManager::AddParams(const std::vector<DefinedParam*>& ddi) {
 		wxLogInfo(_T("Adding param with prefix: %s"), (*i)->GetBasePrefix().c_str());
 
 		IPKContainer *ic = IPKContainer::GetObject();
-		ic->AddExtraParam((*i)->GetBasePrefix().wc_str(), (*i)->GetIPKParam());
+		ic->AddUserDefined((*i)->GetBasePrefix().wc_str(), (*i)->GetIPKParam());
 
 		DatabaseQuery* query = new DatabaseQuery;
 		query->type = DatabaseQuery::ADD_PARAM;

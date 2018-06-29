@@ -27,6 +27,18 @@
 
 IPKContainer* IPKContainer::_object = NULL;
 
+TParam* IPKContainerInfo::GetParam(const std::basic_string<unsigned char>& pname, bool add_cfg) {
+	return GetParam(SC::U2S(pname), add_cfg);
+}
+
+TSzarpConfig* IPKContainerInfo::GetConfig(const std::basic_string<unsigned char>& prefix) {
+	return GetConfig(SC::U2S(prefix));
+}
+
+IPKContainerInfo* IPKContainerInfo::GetObject() {
+	return IPKContainer::GetObject();
+}
+
 IPKContainer::IPKContainer(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring &language) {
 	this->szarp_data_dir = szarp_data_dir;
 	this->szarp_system_dir = szarp_system_dir;
@@ -48,10 +60,6 @@ void IPKContainer::Init(const std::wstring& szarp_data_dir, const std::wstring& 
 IPKContainer* IPKContainer::GetObject() {
 	assert(_object);
 	return _object;
-}
-
-TSzarpConfig* IPKContainer::GetConfig(const std::basic_string<unsigned char>& prefix) {
-	return GetConfig(SC::U2S(prefix));
 }
 
 TSzarpConfig* IPKContainer::GetConfig(const std::wstring& prefix) {
@@ -95,6 +103,14 @@ TParam* IPKContainer::GetParamFromHash(const std::wstring& global_param_name) {
 		return NULL;
 }
 
+TParam* IPKContainer::GetParam(const std::wstring& pn, bool af) {
+	return GetParamImpl(pn, af);
+}
+
+TParam* IPKContainer::GetParam(const std::basic_string<unsigned char>& pn, bool af) {
+	return GetParamImpl(pn, af);
+}
+
 template<class T>  struct comma_char_trait {
 };
 
@@ -110,7 +126,8 @@ template<> struct comma_char_trait<unsigned char> {
 
 const std::basic_string<unsigned char> comma_char_trait<unsigned char>::comma = (const unsigned char*)":";
 
-template<class T> TParam* IPKContainer::GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present) {
+template <typename T>
+TParam* IPKContainer::GetParamImpl(const std::basic_string<T>& global_param_name, bool add_config_if_not_present) {
 	{
 		boost::shared_lock<boost::shared_mutex> shared_lock(m_lock);
 		TParam* param = GetParamFromHash(global_param_name);
@@ -132,8 +149,8 @@ template<class T> TParam* IPKContainer::GetParam(const std::basic_string<T>& glo
 	return GetParam(global_param_name, false);
 }
 
-template TParam* IPKContainer::GetParam<wchar_t>(const std::basic_string<wchar_t>& global_param_name, bool add_config_if_not_present);
-template TParam* IPKContainer::GetParam<unsigned char>(const std::basic_string<unsigned char>& global_param_name, bool add_config_if_not_present);
+template TParam* IPKContainer::GetParamImpl<wchar_t>(const std::basic_string<wchar_t>&, bool);
+template TParam* IPKContainer::GetParamImpl<unsigned char>(const std::basic_string<unsigned char>&, bool);
 
 bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) { 
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
@@ -162,7 +179,7 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) {
 	return true;
 }
 
-void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
+void IPKContainer::AddUserDefinedImpl(const std::wstring& prefix, TParam *n) {
 	m_extra_params[prefix].emplace_back(n);
 
 	CM::iterator i = configs.find(prefix);
@@ -175,14 +192,16 @@ void IPKContainer::AddExtraParamImpl(const std::wstring& prefix, TParam *n) {
 		std::set<unsigned>::iterator i = aux._freeIds.begin();
 		n->SetParamId(*i);
 		aux._freeIds.erase(i);
-	} else
+	} else {
 		n->SetParamId(aux._maxParamId++);
+	}
+
 	n->SetConfigId(aux._configId);
 
 	AddParamToHash(n);
 }
 
-void IPKContainer::RemoveExtraParamImpl(const std::wstring& prefix, TParam *p) {
+void IPKContainer::RemoveUserDefinedImpl(const std::wstring& prefix, TParam *p) {
 	auto& tp = m_extra_params[prefix];
 	auto ei = std::find_if(tp.begin(), tp.end(), 
 		[p] (std::shared_ptr<TParam> &_p) { return _p.get() == p; }
@@ -202,29 +221,14 @@ void IPKContainer::RemoveExtraParamImpl(const std::wstring& prefix, TParam *p) {
 	tp.erase(ei);
 }
 
-
-void IPKContainer::AddExtraParam(const std::wstring& prefix, TParam *n) {
+void IPKContainer::AddUserDefined(const std::wstring& prefix, TParam *n) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	AddExtraParamImpl(prefix, n);
+	AddUserDefinedImpl(prefix, n);
 }
 
-void IPKContainer::RemoveExtraParam(const std::wstring& prefix, TParam *p) {
+void IPKContainer::RemoveUserDefined(const std::wstring& prefix, TParam *p) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	RemoveExtraParamImpl(prefix, p);
-}
-
-void IPKContainer::RemoveExtraParam(const std::wstring& prefix, const std::wstring &name) {
-	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-
-	auto& tp = m_extra_params[prefix];
-	auto ei = std::find_if(tp.begin(), tp.end(), 
-		[&name] (std::shared_ptr<TParam> &_p) { return _p->GetName() == name; }
-	);
-
-	if (ei == tp.end())
-		return;
-
-	RemoveExtraParamImpl(prefix, ei->get());
+	RemoveUserDefinedImpl(prefix, p);
 }
 
 void IPKContainer::RemoveParamFromHash(TParam* p) {
@@ -336,7 +340,7 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 		TParam *p = new TParam(NULL);
 		p->Configure(L"Status:Meaner3:program_uruchomiony",
 			L"", L"", L"", NULL, 0, -1, 1);
-		AddExtraParamImpl(prefix, p);
+		AddUserDefinedImpl(prefix, p);
 	}
 
 	return ipk;
@@ -345,11 +349,6 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::wstring& file) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	return AddConfig(prefix, file);
-}
-
-std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> IPKContainer::GetExtraParams() const {
-	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	return m_extra_params;
 }
 
 void IPKContainer::Destroy() {

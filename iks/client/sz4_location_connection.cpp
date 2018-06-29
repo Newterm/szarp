@@ -26,63 +26,6 @@ namespace bsec = boost::system::errc;
 
 namespace sz4 {
 
-void location_connection::add_param(const std::string& base, TParam* param, IksCmdCallback callback) {
-	auto name = param->GetName();
-
-	std::vector<std::wstring> strings;
-	auto formula = SC::U2S(param->GetLuaScript());
-	extract_strings_from_formula(formula, strings);
-
-	for (auto& string : strings) {
-		if (std::count(string.begin(), string.end(), L':') != 3)
-			continue;
-
-		auto i = formula.find( SC::U2S( (unsigned char *) m_defined_param_prefix.c_str() ) );
-		if (i == std::wstring::npos)
-			continue;
-
-		formula = formula.substr(0, i) + L'*' + formula.substr(i);
-	}
-
-	boost::property_tree::ptree out;
-	out.put( "base"       , base );
-	out.put( "prec"       , param->GetPrec() );
-	out.put( "formula"    , (const char*) SC::S2U(formula).c_str() );
-	out.put( "type"       , (param->GetFormulaType() == FormulaType::LUA_AV) ? "av" : "va" );
-	out.put( "start_time" , param->GetLuaStartDateTime() );
-
-	std::stringstream data;
-	data << "\"" << SC::S2U(param->GetName()) << "\" " << ptree_to_json(out);
-
-	m_connection->send_command("add_param", data.str(), callback);
-
-}
-
-void location_connection::add_defined_params() {
-
-	if (m_container == nullptr) return;
-
-	auto defined = m_container->GetExtraParams();
-	auto self = shared_from_this();
-	
-	for (auto& params : defined) {
-		std::string base = (const char*) SC::S2U(params.first).c_str();
-		for (auto& param : params.second) {
-			if (param->GetType() != ParamType::LUA)
-				continue;
-
-			add_param(base, param.get(), [self] ( const bs::error_code& ec
-							    , const std::string& status
-							    , std::string& data) {
-				if ( ec )
-					/*XXX: report this error*/;
-
-				return IksCmdStatus::cmd_done;
-			});
-		}
-	}
-}
-
 namespace {
 
 struct visitor : public boost::static_visitor<> {
@@ -130,8 +73,6 @@ void location_connection::connect_to_location()
 
 		self->m_connected = true;
 
-		self->add_defined_params();
-
 		self->send_cached();
 
 		self->connected_sig();
@@ -152,30 +93,6 @@ location_connection::location_connection(IPKContainer* container, boost::asio::i
 	      , this, m_connection.get(), location.c_str() );
 	      
 } 
-
-void location_connection::add_param(const param_info& param, IksCmdCallback callback) {
-	if (m_container == nullptr) return;
-
-	auto defined = m_container->GetExtraParams();
-	auto i = defined.find(param.prefix());
-	if (i != defined.end()) {
-		auto j = std::find_if(i->second.rbegin(), i->second.rend(),
-					[&param] (std::shared_ptr<TParam> &p) { return p->GetName() == param.name() ; });
-		if (j != i->second.rend()) {
-			add_param( (const char*) SC::S2U(i->first).c_str() , j->get(), callback );
-			return;
-		}
-	}
-
-	std::string empty;
-	callback(make_error_code(bsec::success), "", empty);
-}
-
-void location_connection::remove_param(const param_info& param, IksCmdCallback callback) {
-	std::stringstream data;
-	data << "\"" << SC::S2U(param.name()) << "\" " << SC::S2U(param.prefix());
-	send_command("remove_param", data.str(), callback);
-}
 
 void location_connection::send_command(const std::string& cmd, const std::string& data, IksCmdCallback callback )
 {

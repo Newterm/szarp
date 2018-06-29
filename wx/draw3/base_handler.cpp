@@ -679,19 +679,9 @@ bool Sz4ApiBase::CompileLuaFormula(const std::wstring& formula, std::wstring& er
 	return true;
 }
 
-void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {
-	sz4::param_info p(prefix, param->GetName());
-	base->add_param(p, [this] (const boost::system::error_code& ec) {
-		//XXX:*
-	});
-}
+void Sz4ApiBase::AddExtraParam(const std::wstring& prefix, TParam *param) {}
 
-void Sz4ApiBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {
-	sz4::param_info p(prefix, param->GetName());
-	base->remove_param(p, [this] (const boost::system::error_code& ec) {
-		//XXX:*
-	});
-}
+void Sz4ApiBase::RemoveExtraParam(const std::wstring& prefix, TParam *param) {}
 
 void Sz4ApiBase::NotifyAboutConfigurationChanges() {
 }
