@@ -335,14 +335,6 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 
 	ca._maxParamId = id;
 	config_aux[prefix] = ca;
-
-	if (first_time_added) {
-		TParam *p = new TParam(NULL);
-		p->Configure(L"Status:Meaner3:program_uruchomiony",
-			L"", L"", L"", NULL, 0, -1, 1);
-		AddUserDefinedImpl(prefix, p);
-	}
-
 	return ipk;
 }
 

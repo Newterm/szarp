@@ -30,11 +30,16 @@ namespace sz4 {
 template<class base> buffer_templ<base>::buffer_templ(base* _base, SzbParamMonitor* param_monitor, ipk_container_type* ipk_container, const std::wstring& prefix, const std::wstring& buffer_directory)
 			: m_base(_base), m_param_monitor(param_monitor), m_ipk_container(ipk_container), m_buffer_directory(buffer_directory) {
 
-	TParam* heart_beat_param = m_ipk_container->GetParam(prefix + L":Status:Meaner3:program_uruchomiony");
-	if (heart_beat_param)
-		m_heart_beat_entry = get_param_entry(heart_beat_param);
-	else
-		m_heart_beat_entry = NULL;
+	TParam *p = new TParam(NULL);
+	p->Configure(L"Status:Meaner3:program_uruchomiony", L"", L"", L"", NULL, 0, -1, 1);
+
+	m_heart_beat_entry = create_param_entry(p);
+
+	auto live_cache = m_base->get_live_cache();
+	if (live_cache)
+		live_cache->register_cache_observer(p, m_heart_beat_entry);
+
+	m_heart_beat_entry->register_at_monitor(m_param_monitor);
 }
 
 template<class base> generic_param_entry* buffer_templ<base>::get_param_entry(TParam* param) {
@@ -224,6 +229,12 @@ template<class base> buffer_templ<base>::~buffer_templ() {
 			(*i)->deregister_from_monitor(m_param_monitor);
 		delete *i;
 	}
+
+	if (m_heart_beat_entry) {
+		m_heart_beat_entry->deregister_from_monitor(m_param_monitor);
+		delete m_heart_beat_entry;
+	}
+
 }
 
 }
