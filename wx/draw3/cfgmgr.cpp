@@ -1157,7 +1157,7 @@ bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
 	m_db_mgr->RemoveParams(m_defined_sets->GetDefinedParams());
 	std::wstring wprefix = prefix.wc_str();
-	if (m_ipks->ReadyConfigurationForLoad(wprefix) == false)
+	if (m_ipks->PreloadConfig(wprefix) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
 

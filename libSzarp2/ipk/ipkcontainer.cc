@@ -86,23 +86,6 @@ TSzarpConfig* IPKContainer::GetConfig(const std::wstring& prefix) {
 
 }
 
-TParam* IPKContainer::GetParamFromHash(const std::basic_string<unsigned char>& global_param_name) {
-	utf_hash_type::iterator i = m_utf_params.find(global_param_name);
-	if (i != m_utf_params.end())
-		return i->second;
-	else
-		return NULL;
-
-}
-
-TParam* IPKContainer::GetParamFromHash(const std::wstring& global_param_name) {
-	hash_type::iterator i = m_params.find(global_param_name);
-	if (i != m_params.end())
-		return i->second;
-	else
-		return NULL;
-}
-
 TParam* IPKContainer::GetParam(const std::wstring& pn, bool af) {
 	return GetParamImpl(pn, af);
 }
@@ -111,48 +94,43 @@ TParam* IPKContainer::GetParam(const std::basic_string<unsigned char>& pn, bool 
 	return GetParamImpl(pn, af);
 }
 
-template<class T>  struct comma_char_trait {
-};
+template<class T>  struct comma_char_trait {};
 
 template<> struct comma_char_trait<wchar_t> {
-	static const std::wstring comma;
+	static constexpr wchar_t comma =  L':';
 };
-
-const std::wstring comma_char_trait<wchar_t>::comma = L":";
 
 template<> struct comma_char_trait<unsigned char> {
-	static const std::basic_string<unsigned char> comma;
+	static constexpr unsigned char comma = ':';
 };
-
-const std::basic_string<unsigned char> comma_char_trait<unsigned char>::comma = (const unsigned char*)":";
 
 template <typename T>
 TParam* IPKContainer::GetParamImpl(const std::basic_string<T>& global_param_name, bool add_config_if_not_present) {
 	{
 		boost::shared_lock<boost::shared_mutex> shared_lock(m_lock);
-		TParam* param = GetParamFromHash(global_param_name);
-		if (param != NULL)
+		TParam* param = cacher.GetParam(global_param_name);
+		if (param != nullptr)
 			return param;	
 		if (!add_config_if_not_present)
-			return NULL;
+			return nullptr;
 	}
 
 	
 	size_t cp = global_param_name.find_first_of(comma_char_trait<T>::comma);
 	if (cp == std::basic_string<T>::npos)
-		return NULL;
+		return nullptr;
 
 	std::basic_string<T> prefix = global_param_name.substr(0, cp);
-	if (GetConfig(prefix) == NULL)
-		return NULL;
+	if (GetConfig(prefix) == nullptr)
+		return nullptr;
 
-	return GetParam(global_param_name, false);
+	return GetParamImpl(global_param_name, false);
 }
 
 template TParam* IPKContainer::GetParamImpl<wchar_t>(const std::basic_string<wchar_t>&, bool);
 template TParam* IPKContainer::GetParamImpl<unsigned char>(const std::basic_string<unsigned char>&, bool);
 
-bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) { 
+bool IPKContainer::PreloadConfig(const std::wstring &prefix) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
 	if (configs_ready_for_load.find(prefix) != configs_ready_for_load.end())
 		return true;
@@ -179,97 +157,38 @@ bool IPKContainer::ReadyConfigurationForLoad(const std::wstring &prefix) {
 	return true;
 }
 
-void IPKContainer::AddUserDefinedImpl(const std::wstring& prefix, TParam *n) {
-	m_extra_params[prefix].emplace_back(n);
-
-	CM::iterator i = configs.find(prefix);
-	if (i == configs.end())
-		return;
-	n->SetParentSzarpConfig(i->second);
-
-	ConfigAux& aux = config_aux[prefix];
-	if (aux._freeIds.size()) {
-		std::set<unsigned>::iterator i = aux._freeIds.begin();
-		n->SetParamId(*i);
-		aux._freeIds.erase(i);
-	} else {
-		n->SetParamId(aux._maxParamId++);
-	}
-
-	n->SetConfigId(aux._configId);
-
-	AddParamToHash(n);
-}
-
-void IPKContainer::RemoveUserDefinedImpl(const std::wstring& prefix, TParam *p) {
-	auto& tp = m_extra_params[prefix];
-	auto ei = std::find_if(tp.begin(), tp.end(), 
-		[p] (std::shared_ptr<TParam> &_p) { return _p.get() == p; }
-	);
-	assert(ei != tp.end());
-
-	ConfigAux& aux = config_aux[prefix];
-	if (p->GetParamId() + 1 == aux._maxParamId)
-		aux._maxParamId--;
-	else
-		aux._freeIds.insert(p->GetParamId());
-
-	auto i = configs.find(prefix);
-	if (i != configs.end())
-		RemoveParamFromHash(p);
-
-	tp.erase(ei);
-}
-
 void IPKContainer::AddUserDefined(const std::wstring& prefix, TParam *n) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	AddUserDefinedImpl(prefix, n);
+
+	auto config = configs.find(prefix);
+	if (config == configs.end())
+		return;
+
+	n->SetParentSzarpConfig(config->second);
+
+	if (defined_manager.AddUserDefined(prefix, n)) {
+		/* update param's id in config cache */
+		ConfigAux& aux = config_aux[prefix];
+		if (aux._freeIds.size()) {
+			std::set<unsigned>::iterator i = aux._freeIds.begin();
+			n->SetParamId(*i);
+			aux._freeIds.erase(i);
+		} else {
+			n->SetParamId(aux._maxParamId++);
+		}
+	}
 }
 
 void IPKContainer::RemoveUserDefined(const std::wstring& prefix, TParam *p) {
 	boost::unique_lock<boost::shared_mutex> lock(m_lock);
-	RemoveUserDefinedImpl(prefix, p);
-}
-
-void IPKContainer::RemoveParamFromHash(TParam* p) {
-	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
-	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
-
-	{
-		auto i = m_params.find(global_param_name);
-		if (i != m_params.end() && i->second == p)
-			m_params.erase(i);
+	if (defined_manager.RemoveUserDefined(prefix, p)) {
+		/* update param's id in config cache */
+		ConfigAux& aux = config_aux[prefix];
+		if (p->GetParamId() + 1 == aux._maxParamId)
+			aux._maxParamId--;
+		else
+			aux._freeIds.insert(p->GetParamId());
 	}
-
-	{
-		auto i = m_params.find(translated_global_param_name);
-		if (i != m_params.end() && i->second == p)
-			m_params.erase(i);
-	}
-
-	{
-		auto i = m_utf_params.find(SC::S2U(global_param_name));
-		if (i != m_utf_params.end() && i->second == p)
-			m_utf_params.erase(i);
-	}
-
-	{
-		auto i = m_utf_params.find(SC::S2U(translated_global_param_name));
-		if (i != m_utf_params.end() && i->second == p)
-			m_utf_params.erase(i);
-	}
-
-}
-
-void IPKContainer::AddParamToHash(TParam* p) {
-	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
-	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
-
-	m_params[global_param_name] = p;
-	m_params[translated_global_param_name] = p;
-
-	m_utf_params[SC::S2U(global_param_name)] = p;
-	m_utf_params[SC::S2U(translated_global_param_name)] = p;
 }
 
 TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wstring &file) {
@@ -322,15 +241,14 @@ TSzarpConfig* IPKContainer::AddConfig(const std::wstring& prefix, const std::wst
 	for (TParam* p = ipk->GetFirstParam(); p; p = p->GetNextGlobal()) {
 		p->SetParamId(id++);
 		p->SetConfigId(ca._configId);
-		AddParamToHash(p);
+		cacher.AddParam(p);
 	}
 
-	auto& pv = m_extra_params[prefix];
-	for (auto i = pv.begin(); i != pv.end(); i++) {
-		(*i)->SetParamId(id++);
-		(*i)->SetParentSzarpConfig(ipk);
-		(*i)->SetConfigId(ca._configId);
-		AddParamToHash(i->get());
+	for (auto p: defined_manager.GetUserDefinedParams(prefix)) {
+		p->SetParamId(id++);
+		p->SetParentSzarpConfig(ipk);
+		p->SetConfigId(ca._configId);
+		cacher.AddParam(p.get());
 	}
 
 	ca._maxParamId = id;
@@ -346,4 +264,89 @@ TSzarpConfig* IPKContainer::LoadConfig(const std::wstring& prefix, const std::ws
 void IPKContainer::Destroy() {
 	delete _object;
 	_object = NULL;
+}
+
+void ParamsCacher::AddParam(TParam* p) {
+	ASSERT(p);
+	if (!p) return;
+
+	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
+	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
+
+	m_params.insert(global_param_name, p);
+	m_params.insert(translated_global_param_name, p);
+
+	m_utf_params.insert(SC::S2U(global_param_name), p);
+	m_utf_params.insert(SC::S2U(translated_global_param_name), p);
+}
+
+TParam* ParamsCacher::GetParam(const US& global_param_name) {
+	return m_utf_params.get(global_param_name);
+}
+
+TParam* ParamsCacher::GetParam(const SS& global_param_name) {
+	return m_params.get(global_param_name);
+}
+
+void ParamsCacher::RemoveParam(TParam* p) {
+	ASSERT(p);
+	if (!p) return;
+
+	std::wstring global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetName();
+	std::wstring translated_global_param_name = p->GetSzarpConfig()->GetPrefix() + L":" + p->GetTranslatedName();
+
+	m_params.remove(global_param_name);
+	m_params.remove(translated_global_param_name);
+	m_utf_params.remove(SC::S2U(global_param_name));
+	m_utf_params.remove(SC::S2U(translated_global_param_name));
+}
+
+UserDefinedParamsManager::UserDefinedParamsManager(ParamsCacher& cacher_): cacher(cacher_) {}
+
+bool UserDefinedParamsManager::AddUserDefined(const std::wstring& prefix, TParam *n) {
+	m_extra_params[prefix].emplace_back(n);
+	cacher.AddParam(n);
+	return true;
+}
+
+const std::vector<std::shared_ptr<TParam>>& UserDefinedParamsManager::GetUserDefinedParams(const std::wstring& prefix) {
+	return m_extra_params[prefix];
+}
+
+bool UserDefinedParamsManager::RemoveUserDefined(const std::wstring& prefix, TParam *p) {
+	auto sc = m_extra_params.find(prefix);
+	if (sc == m_extra_params.end())
+		return false;
+
+	auto& tp = sc->second;
+	auto ei = std::find_if(tp.begin(), tp.end(), 
+		[p] (std::shared_ptr<TParam> &_p) { return _p.get() == p; }
+	);
+
+	if (ei == tp.end())
+		return false;
+
+	cacher.RemoveParam(p);
+	tp.erase(ei);
+	return true;
+}
+
+template <typename ST, typename HT>
+void ParamsCacher::Cache<ST, HT>::remove(const ST& pn) {
+	auto i = params.find(pn);
+	if (i != params.end())
+		params.erase(i);
+}
+
+template <typename ST, typename HT>
+void ParamsCacher::Cache<ST, HT>::insert(const ST& pn, TParam* p) {
+	params[pn] = p;
+}
+
+template <typename ST, typename HT>
+TParam* ParamsCacher::Cache<ST, HT>::get(const ST& pn) {
+	auto i = params.find(pn);
+	if (i == params.end())
+		return nullptr;
+	return i->second;
 }

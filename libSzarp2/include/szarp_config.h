@@ -1423,26 +1423,60 @@ public:
 	static IPKContainerInfo* GetObject();
 };
 
-/**Synchronized IPKs container*/
-class IPKContainer: public IPKContainerInfo {
-	class UnsignedStringHash {
-		std::hash<std::string> m_hasher;
-		public:
-		size_t operator() (const std::basic_string<unsigned char>& v) const {
-			return m_hasher((const char*) v.c_str());
+class ParamsCacher {
+	using US = std::basic_string<unsigned char>; // UTF-8 encoded string for LUA lookup
+	using SS = std::wstring; // Unicode for other params
+
+	template <typename ST, typename HT = std::hash<ST>>
+	struct Cache {
+		using container_type = std::unordered_map<ST, TParam*, HT>;
+		container_type params;
+		void remove(const ST& pn);
+		void insert(const ST& pn, TParam* p);
+		TParam* get(const ST& pn);
+	};
+
+	struct USHash {
+		// https://en.cppreference.com/w/cpp/utility/hash
+		size_t operator() (const US& v) const {
+			return std::hash<std::string>{}((const char*) v.c_str());
 		}
 	};
 
-	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
-	 UTF-8 encoded param names are used by LUA formulas*/
-	typedef std::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
-	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
-	is to avoid frequent conversions between two encodings*/
-	typedef std::unordered_map<std::wstring, TParam* > hash_type;
+	Cache<SS> m_params;
+	Cache<US, USHash> m_utf_params;
 
-	hash_type m_params;
+public:
+	/* access by global name */
+	TParam* GetParam(const SS&);
+	TParam* GetParam(const US&);
 
-	utf_hash_type m_utf_params;
+	void AddParam(TParam* param);
+	void RemoveParam(TParam* param);
+};
+
+class UserDefinedParamsManager {
+	// reference will be deleted with global IPK object
+	ParamsCacher& cacher;
+
+	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
+
+public:
+	UserDefinedParamsManager(ParamsCacher&);
+
+	/** @return true if added successfully */
+	bool AddUserDefined(const std::wstring& prefix, TParam *param);
+
+	/** @return true if removed successfully */
+	bool RemoveUserDefined(const std::wstring& prefix, TParam *param);
+	
+	const std::vector<std::shared_ptr<TParam>>& GetUserDefinedParams(const std::wstring& prefix);
+};
+
+/**Synchronized IPKs container*/
+class IPKContainer: public IPKContainerInfo {
+	ParamsCacher cacher;
+	UserDefinedParamsManager defined_manager{cacher};
 
 	mutable boost::shared_mutex m_lock;
 
@@ -1477,24 +1511,11 @@ class IPKContainer: public IPKContainerInfo {
 
 	static IPKContainer* _object;
 
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
-
 	/**Adds configuration to the the container
 	 * @param prefix configuration prefix
 	 * @param file path to the file with the configuration
 	 */
 	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
-
-	TParam* GetParamFromHash(const std::basic_string<unsigned char>& global_param_name);
-
-	TParam* GetParamFromHash(const std::wstring& global_param_name);
-
-	void AddParamToHash(TParam* p);
-
-	void RemoveParamFromHash(TParam* p);
-
-	void AddUserDefinedImpl(const std::wstring& prefix, TParam *param);
-	void RemoveUserDefinedImpl(const std::wstring& prefix, TParam *p);
 
 public:
 	IPKContainer(const std::wstring& szarp_data_dir,
@@ -1518,7 +1539,7 @@ public:
 	TSzarpConfig* LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring()) override;
 
 	/* used by draw3 to verify configurations - this should not be here */
-	bool ReadyConfigurationForLoad(const std::wstring &prefix);
+	bool PreloadConfig(const std::wstring &prefix);
 
 	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
 	static void Destroy();

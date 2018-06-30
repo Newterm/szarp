@@ -1020,7 +1020,7 @@ void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 			}
 		} else {
 			for( int i = 0; i < num_of_tries; ++i )
-				if( IPKContainer::GetObject()->ReadyConfigurationForLoad(prefix.ToStdWstring()) )
+				if( IPKContainer::GetObject()->PreloadConfig(prefix.ToStdWstring()) )
 					break;
 
 			base_handlers[prefix] = GetSz3Handler();
@@ -1028,7 +1028,7 @@ void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 	}
 	else {
 		for( int i = 0; i < num_of_tries; ++i )
-			if( IPKContainer::GetObject()->ReadyConfigurationForLoad(prefix.ToStdWstring()) )
+			if( IPKContainer::GetObject()->PreloadConfig(prefix.ToStdWstring()) )
 				break;
 
 		base_handlers[prefix] = GetSz3Handler();
