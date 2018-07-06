@@ -89,6 +89,7 @@
 
 #include "../../resources/wx/icons/draw64.xpm"
 #include "wx_exceptions.h"
+#include "user_def_ipk.h"
 
 extern void InitXmlResource();
 
@@ -313,11 +314,9 @@ bool DrawApp::OnInit() {
 
 	splash->PushStatusText(_("Initializing IPKContainer..."));
 
-	IPKContainer::Init(GetSzarpDataDir().wc_str(), 
-			GetSzarpDir().wc_str(), 
-			_lang.wc_str());
+	auto ipk_manager = std::make_shared<UserDefinedIPKManager>(GetSzarpDataDir().wc_str(), GetSzarpDir().wc_str(), _lang.wc_str());
 
-	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), IPKContainer::GetObject(), m_base);
+	m_cfg_mgr = new ConfigManager(GetSzarpDataDir(), ipk_manager, m_base);
 
 	m_cfg_mgr->SetSplashScreen(splash);
 
@@ -330,9 +329,9 @@ bool DrawApp::OnInit() {
 	splash->PushStatusText(_("Starting database query mechanism..."));
 
 	m_db_queue = new DatabaseQueryQueue();
-	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
+	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr, ipk_manager);
 	m_db_queue->SetDatabaseManager(m_dbmgr);
-	auto base_handler = std::shared_ptr<SzbaseHandler>(new SzbaseHandler(m_dbmgr));
+	auto base_handler = std::shared_ptr<SzbaseHandler>(new SzbaseHandler(m_dbmgr, ipk_manager));
 	base_handler->SetupHandlers(GetSzarpDir(), GetSzarpDataDir(),
 			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
 	if( use_iks_base )
@@ -397,7 +396,7 @@ bool DrawApp::OnInit() {
 			return FALSE;
 		}
 	} else if (!m_base.IsEmpty()) {
-		if ((config = m_cfg_mgr->LoadConfig(m_base,std::wstring())) == NULL) {
+		if ((config = m_cfg_mgr->LoadConfig(m_base)) == NULL) {
 			wxLogError(_("Error occurred while loading default configuration. Check your szarp.cfg file or use i2smo test."));
 			StopThreads();
 			return FALSE;

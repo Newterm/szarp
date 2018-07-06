@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 
 	SZARP_PROBE_TYPE pt = PT_MONTH;
-	IPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
+	ParamCachingIPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
 
 	IPKContainer* ipk = IPKContainer::GetObject();
 

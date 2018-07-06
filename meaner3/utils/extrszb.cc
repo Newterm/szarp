@@ -54,6 +54,7 @@
 #include "libpar.h"
 #include "szbase/szbbase.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "szbextr/extr.h"
 #include "conversion.h"
 
@@ -514,7 +515,7 @@ int main(int argc, char* argv[])
 	LIBXML_TEST_VERSION
 	xmlSubstituteEntitiesDefault(1);
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 	
 	TSzarpConfig *ipk = IPKContainer::GetObject()->GetConfig(SC::L2S(ipk_prefix));
 	if (ipk == NULL) {

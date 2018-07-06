@@ -66,6 +66,7 @@
 
 
 #include "sz4/lua_interpreter_templ.h"
+#include "ipkcontainer.h"
 #include <sstream>
 #include <assert.h>
 
@@ -173,7 +174,7 @@ void Defdmn::cycle_timer_callback(int fd, short event, void* arg) {
 }
 
 void Defdmn::configure(int* argc, char** argv) {
-	IPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
+	ParamCachingIPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
 	m_cfg.reset(new DaemonConfig("defdmn"));
 
 	configure_events();

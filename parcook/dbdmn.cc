@@ -321,7 +321,7 @@ int DbDaemon::ParseConfig(DaemonConfig * cfg)
 		return 1;
 	}
 
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 
 	Szbase* szbase = Szbase::GetObject();

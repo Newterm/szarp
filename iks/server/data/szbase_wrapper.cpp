@@ -4,6 +4,7 @@
 #include "sz4/live_cache.h"
 #include "sz4/util.h"
 #include "liblog.h"
+#include "ipkcontainer.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -57,7 +58,7 @@ bool SzbaseWrapper::init( const std::string& _szarp_dir , const CfgSections& loc
 
 	szarp_dir = _szarp_dir;
 
-	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
+	ParamCachingIPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
 	auto ipk = IPKContainer::GetObject();
 
 	sz4::live_cache_config live_cfg;

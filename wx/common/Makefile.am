@@ -56,7 +56,8 @@ libwxcommon_la_SOURCES = \
 	@srcdir@/helpctrlex/helpdlgex.cpp @srcdir@/helpctrlex/helpdlgex.h \
 	@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
 	@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
-	@srcdir@/validate.cpp @srcdir/validate.h
+	@srcdir@/validate.cpp @srcdir@/validate.h \
+	@srcdir@/user_def_ipk.cpp @srcdir@/user_def_ipk.h
 
 # Additional files for deleting on 'make maintainer-clean'
 MAINTAINERCLEANFILES = Makefile.in

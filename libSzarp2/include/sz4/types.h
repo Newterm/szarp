@@ -20,7 +20,7 @@
 */
 
 #include "config.h"
-#include "szarp_config.h"
+#include "ipkcontainer.h"
 
 namespace sz4 {
 

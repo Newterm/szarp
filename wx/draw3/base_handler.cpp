@@ -33,6 +33,7 @@
 #include "sz4_iks_param_info.h"
 #include "sz4_iks.h"
 #include "base_handler.h"
+#include "custom_assert.h"
 
 #include <cmath>
 
@@ -183,11 +184,13 @@ void SzbaseBase::releaseCancelHandle(TParam* p) {
 }
 
 SzbaseBase::SzbaseBase(wxEvtHandler* response_receiver,
-	   	const std::wstring& data_path,
+	   	const std::wstring& data_path, IPKContainer* _ipk_container,
 	   	void (*conf_changed_cb)(std::wstring, std::wstring),
-	   	int cache_size) : Draw3Base(response_receiver) {
+	   	int cache_size) : Draw3Base(response_receiver), ipk_container(_ipk_container) {
 	Szbase::Init(data_path, conf_changed_cb, true, cache_size);
 	szbase = Szbase::GetObject();
+
+	ASSERT(ipk_container);
 }
 
 SzbaseBase::~SzbaseBase() {
@@ -222,10 +225,7 @@ void SzbaseBase::SetProberAddress(const std::wstring& prefix,
 }
 
 SzbExtractor* SzbaseBase::CreateExtractor() {
-	IPKContainer* ipk = IPKContainer::GetObject();
-	assert(ipk);
-
-	return new SzbExtractor(ipk, szbase);
+	return new SzbExtractor(ipk_container, szbase);
 }
 
 void SzbaseBase::SearchData(DatabaseQuery* query) {
@@ -459,7 +459,7 @@ template<> struct pair_to_sz4_type<sz4::second_time_t> {
 
 Sz4Base::Sz4Base(wxEvtHandler* response_receiver, const std::wstring& data_dir, IPKContainer* ipk_conatiner)
 	: Draw3Base(response_receiver), data_dir(data_dir), ipk_container(ipk_conatiner) {
-
+	ASSERT(ipk_container);
 	base = new sz4::base(data_dir, ipk_conatiner);
 
 }
@@ -495,9 +495,7 @@ void Sz4Base::NotifyAboutConfigurationChanges() {
 }
 
 SzbExtractor* Sz4Base::CreateExtractor() {
-	IPKContainer* ipk = IPKContainer::GetObject();
-	assert(ipk);
-
+	IPKContainer* ipk = ipk_container;
 	return new SzbExtractor(ipk, base);
 }
 
@@ -953,7 +951,7 @@ Draw3Base::ptr SzbaseHandler::GetIksHandlerFromBase(const wxString& prefix)
 
 Draw3Base::ptr SzbaseHandler::GetIksHandler(const wxString& iks_server, const wxString& iks_port)
 {
-	auto iks_base = new Sz4ApiBase(response_receiver, iks_server.wc_str(), iks_port.wc_str(), IPKContainer::GetObject());
+	auto iks_base = new Sz4ApiBase(response_receiver, iks_server.wc_str(), iks_port.wc_str(), ipk_manager->GetIPKContainer());
 	if ( !iks_base->BlockUntilConnected() ) {
 		return std::shared_ptr<Draw3Base>(nullptr);
 	}
@@ -1020,7 +1018,7 @@ void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 			}
 		} else {
 			for( int i = 0; i < num_of_tries; ++i )
-				if( IPKContainer::GetObject()->PreloadConfig(prefix.ToStdWstring()) )
+				if( ipk_manager->PreloadConfig(prefix.ToStdWstring()) )
 					break;
 
 			base_handlers[prefix] = GetSz3Handler();
@@ -1028,7 +1026,7 @@ void SzbaseHandler::AddBasePrefix(const wxString& prefix)
 	}
 	else {
 		for( int i = 0; i < num_of_tries; ++i )
-			if( IPKContainer::GetObject()->PreloadConfig(prefix.ToStdWstring()) )
+			if( ipk_manager->PreloadConfig(prefix.ToStdWstring()) )
 				break;
 
 		base_handlers[prefix] = GetSz3Handler();
@@ -1049,9 +1047,9 @@ void SzbaseHandler::SetupHandlers(const wxString& szarp_dir, const wxString& sza
 {
 	base_path = szarp_dir;
 	auto sz4 = new Sz4Base(response_receiver,
-				szarp_data_dir.wc_str(), IPKContainer::GetObject());
+				szarp_data_dir.wc_str(), ipk_manager->GetIPKContainer());
 	sz4_base_handler = std::shared_ptr<Draw3Base>( sz4 );
-	auto sz3 = new SzbaseBase(response_receiver, szarp_data_dir.wc_str(),
+	auto sz3 = new SzbaseBase(response_receiver, szarp_data_dir.wc_str(), ipk_manager->GetIPKContainer(),
 			&ConfigurationFileChangeHandler::handle, cache_size);
 	sz3_base_handler = std::shared_ptr<Draw3Base>( sz3 );
 }

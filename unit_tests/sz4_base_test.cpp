@@ -147,7 +147,7 @@ R"(<?xml version="1.0" encoding="utf-8"?>
 		}
 	}
 
-	IPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
+	ParamCachingIPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
 
 }
 

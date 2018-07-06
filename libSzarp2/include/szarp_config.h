@@ -37,8 +37,6 @@
 #include <vector>
 #include <unordered_map>
 #include <tr1/unordered_map>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <string>
 #include <set>
@@ -50,10 +48,6 @@
 #ifndef NO_LUA
 #include <lua.hpp>
 #endif
-
-#include <boost/filesystem/path.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/any.hpp>
 
 #include "szbase/szbdefines.h"
 #include <libxml/xmlreader.h>
@@ -1397,154 +1391,6 @@ private:
 	/**default season definition used if no season is explicitly given for given year*/
 	Season defs;
 
-};
-
-
-class IPKContainerInfo {
-public:
-	virtual ~IPKContainerInfo() {}
-
-	virtual void AddUserDefined(const std::wstring& prefix, TParam *param) = 0;
-	virtual void RemoveUserDefined(const std::wstring& prefix, TParam *param) = 0;
-
-	/* ipk access by global name */
-	virtual TParam* GetParam(const std::wstring&, bool = true) = 0;
-	virtual TParam* GetParam(const std::basic_string<unsigned char>&, bool = true);
-
-	/**Retrieves config from the container
-	 * @return configuration object or NULL if given config is not available*/
-	virtual TSzarpConfig* GetConfig(const std::wstring& prefix) = 0;
-	virtual TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
-
-	/**Loads config into the container
-	 * @return loaded config object, NULL if error occured during configuration load*/
-	virtual TSzarpConfig *LoadConfig(const std::wstring&, const std::wstring& = std::wstring()) = 0;
-
-	static IPKContainerInfo* GetObject();
-};
-
-class ParamsCacher {
-	using US = std::basic_string<unsigned char>; // UTF-8 encoded string for LUA lookup
-	using SS = std::wstring; // Unicode for other params
-
-	template <typename ST, typename HT = std::hash<ST>>
-	struct Cache {
-		using container_type = std::unordered_map<ST, TParam*, HT>;
-		container_type params;
-		void remove(const ST& pn);
-		void insert(const ST& pn, TParam* p);
-		TParam* get(const ST& pn);
-	};
-
-	struct USHash {
-		// https://en.cppreference.com/w/cpp/utility/hash
-		size_t operator() (const US& v) const {
-			return std::hash<std::string>{}((const char*) v.c_str());
-		}
-	};
-
-	Cache<SS> m_params;
-	Cache<US, USHash> m_utf_params;
-
-public:
-	/* access by global name */
-	TParam* GetParam(const SS&);
-	TParam* GetParam(const US&);
-
-	void AddParam(TParam* param);
-	void RemoveParam(TParam* param);
-};
-
-class UserDefinedParamsManager {
-	// reference will be deleted with global IPK object
-	ParamsCacher& cacher;
-
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
-
-public:
-	UserDefinedParamsManager(ParamsCacher&);
-
-	/** @return true if added successfully */
-	bool AddUserDefined(const std::wstring& prefix, TParam *param);
-
-	/** @return true if removed successfully */
-	bool RemoveUserDefined(const std::wstring& prefix, TParam *param);
-	
-	const std::vector<std::shared_ptr<TParam>>& GetUserDefinedParams(const std::wstring& prefix);
-};
-
-/**Synchronized IPKs container*/
-class IPKContainer: public IPKContainerInfo {
-	ParamsCacher cacher;
-	UserDefinedParamsManager defined_manager{cacher};
-
-	mutable boost::shared_mutex m_lock;
-
-	/**Szarp data directory*/
-	boost::filesystem::wpath szarp_data_dir;
-
-	typedef std::unordered_map<std::wstring, TSzarpConfig*> CM;
-
-	struct ConfigAux {
-		unsigned _maxParamId;
-		std::set<unsigned> _freeIds;
-		unsigned _configId;
-	};
-
-	typedef std::unordered_map<std::wstring, ConfigAux> CAUXM;
-
-	/**Szarp system directory*/
-	boost::filesystem::wpath szarp_system_dir;
-
-	/**current language*/
-	std::wstring language;
-
-	/**Configs hash table*/
-	CM configs;
-
-	/**Preload configurations*/
-	CM configs_ready_for_load;
-
-	CAUXM config_aux;
-
-	unsigned max_config_id;
-
-	static IPKContainer* _object;
-
-	/**Adds configuration to the the container
-	 * @param prefix configuration prefix
-	 * @param file path to the file with the configuration
-	 */
-	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
-
-public:
-	IPKContainer(const std::wstring& szarp_data_dir,
-			const std::wstring& szarp_system_dir,
-			const std::wstring& lang);
-
-	~IPKContainer();
-
-	void AddUserDefined(const std::wstring& prefix, TParam *param) override;
-	void RemoveUserDefined(const std::wstring& prefix, TParam *param) override;
-
-	/* Cache both types of strings for faster lookup in LUA scripts */
-	TParam* GetParam(const std::wstring&, bool = true) override;
-	TParam* GetParam(const std::basic_string<unsigned char>&, bool = true) override;
-
-	template <typename T> TParam* GetParamImpl(const std::basic_string<T>&, bool = true);
-
-	TSzarpConfig* GetConfig(const std::wstring& prefix) override;
-	using IPKContainerInfo::GetConfig; // declare casting function
-
-	TSzarpConfig* LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring()) override;
-
-	/* used by draw3 to verify configurations - this should not be here */
-	bool PreloadConfig(const std::wstring &prefix);
-
-	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
-	static void Destroy();
-
-	static IPKContainer* GetObject();
 };
 
 class TDictionary {

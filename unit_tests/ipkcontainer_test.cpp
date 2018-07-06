@@ -1,8 +1,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "szarp_config.h"
 #include <unistd.h>
 #include <boost/filesystem.hpp>
+#include "../wx/common/user_def_ipk.h"
 
 class NullLogHandler: public szlog::LogHandler {
 public:
@@ -15,7 +15,8 @@ class IpkContainerTest: public CPPUNIT_NS::TestFixture
 {
 	std::wstring base_data_name;
 	std::wstring base_name = L"testbase";
-	IPKContainer *ipk;
+	std::unique_ptr<UserDefinedIPKManager> ipk_manager;
+	UserDefinedIPKContainer* ipk;
 
 public:
 	void smoke_test1();
@@ -41,8 +42,8 @@ void IpkContainerTest::setUp() {
 	boost::filesystem::wpath path(base_data_name + L"/" + base_name);
 	boost::filesystem::create_directories(path / L"config");
 
-	IPKContainer::Init(base_data_name, L"/opt/szarp", L"pl");
-	ipk = IPKContainer::GetObject();
+	ipk_manager.reset(new UserDefinedIPKManager(base_data_name, L"/opt/szarp", L"pl"));
+	ipk = ipk_manager->GetIPKContainer();
 
 #if BOOST_FILESYSTEM_VERSION == 3
 	std::ofstream ofs((path / L"config/params.xml").native().c_str(), std::ios_base::binary);
@@ -69,13 +70,12 @@ void IpkContainerTest::tearDown() {
 }
 
 void IpkContainerTest::smoke_test1() {
-	CPPUNIT_ASSERT(ipk != nullptr);
+	CPPUNIT_ASSERT(ipk_manager);
+	CPPUNIT_ASSERT(ipk);
 
 	/* Getting and caching configs */
-	CPPUNIT_ASSERT(ipk->GetConfig(L"nonexistent", false) == nullptr);
-	CPPUNIT_ASSERT(ipk->GetConfig(L"nonexistent", true) == nullptr);
-	CPPUNIT_ASSERT(ipk->GetConfig(base_name, false) == nullptr); // was not added yet so should be nullptr
-	CPPUNIT_ASSERT(ipk->GetConfig(base_name, true) != nullptr);
+	CPPUNIT_ASSERT(ipk->GetConfig(L"nonexistent") == nullptr);
+	CPPUNIT_ASSERT(ipk->GetConfig(base_name) != nullptr); // was not added yet so should be nullptr
 
 	/* Getting params UC/WC */
 	CPPUNIT_ASSERT(ipk->GetParam(L"nonexistent:a:a:a", false) == nullptr);

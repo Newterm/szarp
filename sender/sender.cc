@@ -43,6 +43,7 @@
 #include "szarp.h"
 #include "ipctools.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "conversion.h"
 
 #include "daemon.h"
@@ -564,7 +565,7 @@ int main(int argc, char *argv[])
 	sz_log(1, "sender: started");
 
 	char *config_prefix = libpar_getpar("sender", "config_prefix", 1);
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
 	IPKContainer *ic = IPKContainer::GetObject();
 	TSzarpConfig *ipk = ic->GetConfig(SC::L2S(config_prefix));
 	if (ipk == NULL) {

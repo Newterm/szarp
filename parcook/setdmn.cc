@@ -88,6 +88,7 @@ presented to user.
 
 #include "conversion.h"
 #include "ipchandler.h"
+#include "ipkcontainer.h"
 #include "liblog.h"
 #include "libpar.h"
 #include "szbase/szbbase.h"
@@ -346,7 +347,7 @@ void SetDaemon::AddParam(const std::wstring& name, double min, double max, doubl
 
 void SetDaemon::ReadVals()
 {
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	Szbase* szb = Szbase::GetObject();
 

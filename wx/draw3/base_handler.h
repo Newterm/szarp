@@ -33,7 +33,10 @@
 #include <tr1/tuple>
 #include <unordered_map>
 
+#include "user_def_ipk.h"
+
 #include "szbase/szbbase.h"
+
 
 class SzbExtractor;
 
@@ -253,6 +256,7 @@ public:
 
 class SzbaseBase : public Draw3Base {
 	Szbase *szbase;
+	IPKContainer* ipk_container;
 
 	boost::mutex m_mutex;
 
@@ -263,7 +267,7 @@ class SzbaseBase : public Draw3Base {
 	void maybeSetCancelHandle(TParam* param);
 	void releaseCancelHandle(TParam* param);
 public:
-	SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
+	SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, IPKContainer* _ipk_container, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
 
 	~SzbaseBase();	
 
@@ -428,7 +432,7 @@ public:
 
 class SzbaseHandler : public BaseHandler {
 public:
-	SzbaseHandler(wxEvtHandler *rr) : response_receiver(rr) {}
+	SzbaseHandler(wxEvtHandler *rr, std::shared_ptr<UserDefinedIPKManager> _ipk_manager) : response_receiver(rr), ipk_manager(_ipk_manager) {}
 	void SetupHandlers(const wxString& szarp_dir, const wxString& szarp_data_dir, int cache_size);
 
 	void SetDefaultBaseHandler(Draw3Base::ptr d)
@@ -471,6 +475,7 @@ private:
 	wxString current_prefix;
 
 	wxEvtHandler *response_receiver{nullptr};
+	std::shared_ptr<UserDefinedIPKManager> ipk_manager;
 	std::map<wxString, Draw3Base::ptr> base_handlers;
 	bool use_iks{false};
 };

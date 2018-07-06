@@ -1113,27 +1113,32 @@ void DrawPanel::SetActive(bool _active) {
 
 		int thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), 2);
 
+		wxMenuItem *tmi = nullptr;
 		switch(thickness) {
 			case 1:
-				menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness1"));
 				break;
 			case 2:
-				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness2"));
 				break;
 			case 3:
-				menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness3"));
 				break;
 			case 4:
-				menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness4"));
 				break;
 			case 5:
-				menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness5"));
 				break;
 			default:
 				thickness = 2;
-				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness2"));
 				ASSERT(!"Bad thickness!");
 				break;
+		}
+
+		if (tmi) {
+			tmi->Check(true);
 		}
 
 		dg->SetGraphThickness(thickness);

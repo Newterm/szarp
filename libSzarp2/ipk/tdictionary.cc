@@ -19,6 +19,8 @@
 #include "szarp_config.h"
 #include "conversion.h"
 
+#include <boost/filesystem/path.hpp>
+
 bool match_text(const std::wstring& expr, const std::wstring& text, std::vector<std::wstring>& matched);
 
 TDictionary::TDictionary(const std::wstring& szarp_dir) {

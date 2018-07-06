@@ -26,7 +26,7 @@
 #include "config.h"
 #endif
 
-#include "szarp_config.h"
+#include "ipkcontainer.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 	char * ipk_prefix = libpar_getpar("", "config_prefix", 1);
 	assert (ipk_prefix != NULL);
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 
 	Szbase * szbase = Szbase::GetObject();

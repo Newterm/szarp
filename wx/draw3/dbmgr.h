@@ -41,6 +41,8 @@
 #include "sz4/param_observer.h"
 #include "database.h"
 
+#include "user_def_ipk.h"
+
 /**Event encapsulating response from database*/
 class DatabaseResponse : public wxCommandEvent {
 	/**@see DatabaseQuery*/
@@ -134,6 +136,7 @@ class DatabaseManager : public wxEvtHandler, public sz4::param_observer {
 	DatabaseQueryQueue *query_queue;
 	/**@see ConfigManager*/
 	ConfigManager *config_manager;
+	std::shared_ptr<UserDefinedIPKManager> ipk_manager;
 	/**current inquirer*/
 	InquirerId current_inquirer;
 	/**next free inquirer identifier*/
@@ -148,7 +151,7 @@ class DatabaseManager : public wxEvtHandler, public sz4::param_observer {
 	BaseHandler::ptr base_handler{nullptr};
 
 public:
-	DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager);
+	DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager, std::shared_ptr<UserDefinedIPKManager> _ipk_manager);
 	/**Sets current inquirer identifier*/
 
 	void SetFrameController(wxEvtHandler* c)
@@ -166,6 +169,8 @@ public:
 
 	BaseHandler::ptr GetBaseHandler() const
 	{ return base_handler; }
+	std::shared_ptr<UserDefinedIPKManager> GetIPKManager() const
+	{ return ipk_manager; }
 
 	void SetCurrentInquirer(InquirerId id);
 	/**Forces recalulcation of priorities in @see DatabaseQueryQueue*/

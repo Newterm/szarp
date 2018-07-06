@@ -4,6 +4,7 @@
 
 #include "conversion.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "sz4_iks_param_info.h"
 #include "iks_connection.h"
 #include "sz4_connection_mgr.h"

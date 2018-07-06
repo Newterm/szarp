@@ -78,6 +78,7 @@
 #include "liblog.h"
 #include "ipcdefines.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 
 #include "conversion.h"
 #include "custom_assert.h"
@@ -1826,7 +1827,7 @@ int main(int argc, char *argv[])
 	/* end szarp.cfg processing */
 	libpar_done();
 	
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
 	Szbase::Init(SC::L2S(PREFIX));
 
 	IPKContainer* ic = IPKContainer::GetObject();

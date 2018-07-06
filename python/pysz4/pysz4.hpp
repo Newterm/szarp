@@ -1,5 +1,6 @@
 #include <boost/python.hpp>
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "sz4/base.h"
 #include "conversion.h"
 
@@ -24,7 +25,7 @@ public:
 private:
 	TParam* get_param(const std::wstring& param_name);
 
-	IPKContainer m_ipk;
+	ParamCachingIPKContainer m_ipk;
 	sz4::base m_sz4;
 
 

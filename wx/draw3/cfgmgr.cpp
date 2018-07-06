@@ -549,7 +549,7 @@ const double DrawSet::unassigned_prior_value = std::numeric_limits<double>::max(
 
 const double DrawSet::defined_draws_prior_start = -2;
 
-ConfigManager::ConfigManager(wxString szarp_data_dir, IPKContainer *ipks, const wxString &prefix) : m_szarp_data_dir(szarp_data_dir), m_ipks(ipks), splashscreen(NULL), m_base_prefix(prefix)
+ConfigManager::ConfigManager(wxString szarp_data_dir, std::shared_ptr<UserDefinedIPKManager> _ipk_manager, const wxString &prefix) : m_szarp_data_dir(szarp_data_dir), ipk_manager(_ipk_manager), splashscreen(NULL), m_base_prefix(prefix)
 {
 	m_defined_sets = NULL;
 
@@ -571,11 +571,11 @@ ConfigManager::LoadConfig(const wxString& prefix, const wxString &config_path)
 
 	TSzarpConfig *ipk = NULL;
 	if (config_path == wxEmptyString)
-		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
+		ipk = ipk_manager->GetIPKContainer()->LoadConfig(prefix.wc_str());
 
 	if ( ipk == NULL) {
 		errorStruct.continueOnParseError = true;
-		ipk = m_ipks->LoadConfig(prefix.wc_str(),std::wstring());
+		ipk = ipk_manager->GetIPKContainer()->LoadConfig(prefix.wc_str());
 		errorStruct.continueOnParseError = false;
 		wxLogWarning(_("Reading from deprecated params.xml"));
 	}
@@ -1157,7 +1157,7 @@ bool ConfigManager::ReloadConfiguration(wxString prefix) {
 	wxCriticalSectionLocker locker(m_reload_config_CS);
 	m_db_mgr->RemoveParams(m_defined_sets->GetDefinedParams());
 	std::wstring wprefix = prefix.wc_str();
-	if (m_ipks->PreloadConfig(wprefix) == false)
+	if (ipk_manager->PreloadConfig(wprefix) == false)
 		return false;
 	m_db_mgr->InitiateConfigurationReload(prefix);
 
@@ -1189,7 +1189,7 @@ void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 void ConfigManager::ConfigurationReadyForLoad(wxString prefix) {
 	NotifyStartConfigurationReload(prefix);
 
-	TSzarpConfig *cfg = m_ipks->LoadConfig(prefix.wc_str(), std::wstring());
+	TSzarpConfig *cfg = ipk_manager->GetIPKContainer()->LoadConfig(prefix.wc_str());
 	AddConfig(cfg);
 	FinishConfigurationLoad(prefix);
 
