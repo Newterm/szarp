@@ -159,6 +159,7 @@ binary-arch-common:
 	dh_installdebconf
 	dh_gencontrol
 	dh_md5sums
+	$(MAKE) check
 	dh_builddeb
 
 debian/build-doc-pdf:
