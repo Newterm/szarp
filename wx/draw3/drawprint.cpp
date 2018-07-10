@@ -793,7 +793,7 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	
 				str = wxString(_T(": ")) 
 					+ _("min.=") + d->GetDrawInfo()->GetValueStr(vt.m_min, _T("- -")) + 
-					+ _T(" ; ") + _("avg.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_count, _T("- -"))) + 
+					+ _T(" ; ") + _("avg.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_sum / vt.m_data_probes_count, _T("- -"))) +
 					+ _T(" ; ") + _("max.=") + wxString(d->GetDrawInfo()->GetValueStr(vt.m_max, _T("- -"))) +
 					+ _T(" ") + unit;
 	
