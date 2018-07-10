@@ -245,7 +245,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 		
 		if (q == nullptr)
 			q = CreateDataQuery(m_draw_info, period, m_draw_no);
-		AddTimeToDataQuery(q, pt.GetTime()).count = v.max_probes;
+		AddTimeToDataQuery(q, pt.GetTime()).no_data_count = v.max_probes;
 	}
 
 	return q;
@@ -771,7 +771,8 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, NewValuesInsertSta
 	vi.sum = v->sum;
 	vi.first_val = v->first_val;
 	vi.last_val = v->last_val;
-	vi.count_probes = v->count;
+	vi.max_probes = v->no_data_count + v->data_count;
+	vi.count_probes = v->data_count;
 	vi.m_db_fixed = v->fixed;
 
 	if (!v->fixed)

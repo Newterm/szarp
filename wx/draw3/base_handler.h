@@ -92,8 +92,10 @@ struct DatabaseQuery {
 			double last_val;
 			/**Sum of probes*/
 			double sum;
+			/**Number of valid probes*/
+			int data_count = 0;
 			/**Number of no no-data probes*/
-			int count;
+			int no_data_count;
 			/** False if error ocurred during data retrieval*/
 			bool ok;
 			/** error no*/	

@@ -333,11 +333,12 @@ void SzbaseBase::GetData(DatabaseQuery* query) {
 					i->time_second,
 					end,
 					&i->sum,
-					&i->count,
+					&i->data_count,
 					pt,
 					&fixed,
 					&i->first_val,
 					&i->last_val);
+			i->no_data_count -= i->data_count;
 			if (szb->last_err != SZBE_OK) {
 				i->ok = false;
 				i->error = szb->last_err;
@@ -427,12 +428,12 @@ void wsum_to_value(DatabaseQuery::ValueData::V& v,
 			scale = 10 * 60.;
 			break;
 	}
+
 	v.sum = sz4::scale_value(double(sum), dt, prec) / scale;
 
-	if (weight && v.count)
-		v.count = v.count * double(weight) / (double(weight) + double(wsum.no_data_weight()));
-	else
-		v.count = 0;
+	const double data_time_span = 10; // used to change no-data time weight to period-based missing probes
+	v.data_count = double(weight) / data_time_span;
+	v.no_data_count = double(wsum.no_data_weight()) / data_time_span;
 
 	v.fixed = wsum.fixed();
 }
@@ -550,7 +551,6 @@ void Sz4Base::SearchData(DatabaseQuery* query) {
 template<class time_type> void Sz4Base::GetValue(DatabaseQuery::ValueData::V& v,
 		time_t second, time_t nanosecond, TParam* p, SZARP_PROBE_TYPE pt) {
 	if (!p) {
-		v.count = 0;
 		v.response = nan("");
 		return;
 	}
@@ -588,7 +588,7 @@ void Sz4Base::GetData(DatabaseQuery* query) {
 			i->response = nan("");
 			i->error = 1;
 			i->error_str = wcsdup(SC::U2S((const unsigned char*)(e.what())).c_str());
-			i->count = 0;
+			i->data_count = 0;
 			i->ok = false;
 
 		}
@@ -835,7 +835,7 @@ template<class time_type> void Sz4ApiBase::DoGetData(DatabaseQuery* query) {
 				} else {
 					nv.error = 1;
 					nv.error_str = wcsdup(SC::L2S(ec.message()).c_str());
-					nv.count = 0;
+					nv.data_count = 0;
 					nv.response = nan("");
 					nv.ok = false;
 				}
