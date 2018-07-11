@@ -1427,18 +1427,17 @@ int add_drawdefinable(xmlXPathObjectPtr children, xmlDocPtr output)
  * @return digest length */
 unsigned int get_digest(char *text, unsigned char *digest)
 {
-	EVP_MD_CTX mdctx;
 	const EVP_MD *md;
 	unsigned int md_len;
 
 	OpenSSL_add_all_digests();
 	md = EVP_get_digestbyname("md5");
 
-	EVP_MD_CTX_init(&mdctx);
-	EVP_DigestInit_ex(&mdctx, md, NULL);
-	EVP_DigestUpdate(&mdctx, text, strlen(text));
-	EVP_DigestFinal_ex(&mdctx, digest, &md_len);
-	EVP_MD_CTX_cleanup(&mdctx);
+	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+	EVP_DigestInit_ex(mdctx, md, NULL);
+	EVP_DigestUpdate(mdctx, text, strlen(text));
+	EVP_DigestFinal_ex(mdctx, digest, &md_len);
+	EVP_MD_CTX_free(mdctx);
 
 	return md_len;
 }
