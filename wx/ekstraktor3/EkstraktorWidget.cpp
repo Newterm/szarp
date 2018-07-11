@@ -27,7 +27,6 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "ekstraktor3.h"
-#include "szmutex.h"
 
 #include "geometry.h"
 #include "cconv.h"

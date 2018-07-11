@@ -67,8 +67,6 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**Displays @see IncSearch widget allowing user to switch set*/
 	void StartSetSearch();
 
-	void StartPSC();
-
 	/**Makes given set a current set.
 	 * @param set set to select*/
 	void SelectSet(DrawSet *set);

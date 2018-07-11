@@ -450,10 +450,6 @@
                     <name>ClearCache</name>
                 </item>
                 <item>
-                    <label>Set Params\tCtrl+O</label>
-                    <name>SetParams</name>
-                </item>
-                <item>
                     <label>---</label>
                     <id>---</id>
                     <name>---</name>

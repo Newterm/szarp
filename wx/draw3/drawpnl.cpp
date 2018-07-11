@@ -49,7 +49,6 @@
 #include "drawtb.h"
 #include "drawdnd.h"
 #include "incsearch.h"
-#include "pscgui.h"
 #include "dbmgr.h"
 #include "drawpick.h"
 #include "defcfg.h"
@@ -721,11 +720,6 @@ void DrawPanel::StartSetSearch() {
 		dw->SetSet(s);
 }
 
-void DrawPanel::StartPSC()
-{
-	cfg->EditPSC(prefix);
-}
-
 void DrawPanel::ShowSummaryWindow(bool show) {
 	smw->Show(show);
 	if (show)
@@ -1103,11 +1097,6 @@ void DrawPanel::SetActive(bool _active) {
 		menu_bar->Enable(XRCID("EditSet"),  IsUserDefined());
 		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
 		menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
-
-		if (cfg->IsPSC(prefix))
-			menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
-		else
-			menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
 
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
 		item->Check(smw->IsShown());

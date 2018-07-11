@@ -1388,9 +1388,6 @@
             <object class="wxMenuItem" name="ClearCache">
                 <label>Clear cache\tCtrl+Shift+R</label>
             </object>
-            <object class="wxMenuItem" name="SetParams">
-                <label>Set Params\tCtrl+O</label>
-            </object>
             <object class="separator"/>
             <object class="wxMenu">
                 <label>Remarks</label>

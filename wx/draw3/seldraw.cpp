@@ -42,7 +42,6 @@
 
 
 #include "drawobs.h"
-#include "pscgui.h"
 #include "database.h"
 #include "drawtime.h"
 #include "draw.h"
@@ -141,8 +140,6 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	wxMenu menu;
 
 	DrawParam* dp = di->GetParam();
-	if (di->IsValid() && dp->GetIPKParam()->GetPSC())
-		menu.Append(seldrawID_PSC,_("Set parameter"));
 
 	menu.SetClientData(m_cb);
 
@@ -214,7 +211,6 @@ SelectDrawValidator::~SelectDrawValidator() {
 
 BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget::OnBlockCheck)
-	EVT_MENU(seldrawID_PSC, SelectDrawWidget::OnPSC)
 	EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget::OnDocs)
 	EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget::OnCopyParamName )
 	EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget::OnAverageValueCalucatedMethodChange)
@@ -311,8 +307,6 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 			m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
 
 			label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
-			if (draw_info->GetParam()->GetIPKParam()->GetPSC())
-				label += _T("*");
 			if (draw->GetBlocked())
 				label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
 			m_cb_l[i]->Enable(!draw->GetNoData());
@@ -451,15 +445,6 @@ SelectDrawWidget::SetBlocked(int idx, bool blocked) {
 	}
 	m_cb_l[idx]->SetLabel(label);
 
-}
-
-void
-SelectDrawWidget::OnPSC(wxCommandEvent &event) {
-	int i = GetClicked(event);
-	if (i == -1)
-		return;
-	DrawInfo* info = m_draws_wdg->GetDrawInfo(i);
-	m_cfg->EditPSC(info->GetBasePrefix(), info->GetParamName());
 }
 
 void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {

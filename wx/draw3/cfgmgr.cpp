@@ -46,7 +46,6 @@
 
 #include "cfgmgr.h"
 #include "libpar.h"
-#include "drawpsc.h"
 
 #include "cconv.h"
 #include "coobs.h"
@@ -555,16 +554,6 @@ ConfigManager::ConfigManager(wxString szarp_data_dir, IPKContainer *ipks, const 
 	m_defined_sets = NULL;
 
 	LoadDefinedDrawsSets();
-
-	psc = new DrawPsc(szarp_data_dir);
-}
-
-bool ConfigManager::IsPSC(wxString prefix) {
-	return psc->IsSettable(prefix);
-}
-
-void ConfigManager::EditPSC(wxString prefix, wxString param) {
-	psc->Edit(prefix, param);
 }
 
 DefinedDrawsSets* ConfigManager::GetDefinedDrawsSets() {
@@ -1194,7 +1183,6 @@ void ConfigManager::FinishConfigurationLoad(wxString prefix) {
 	}
 
 	m_db_mgr->AddParams(m_defined_sets->GetDefinedParams());
-	psc->ConfigurationLoaded(dynamic_cast<IPKConfig*>(config_hash[prefix]));
 }
 
 

@@ -44,12 +44,10 @@ libwxcommon_la_SOURCES = \
 	@srcdir@/imagepanel.cpp @srcdir@/imagepanel.h \
 	@srcdir@/szapp.cpp @srcdir@/szapp.h \
 	@srcdir@/szhlpctrl.cpp @srcdir@/szhlpctrl.h \
-	@srcdir@/szmutex.cpp @srcdir@/szmutex.h \
 	@srcdir@/ipc.cc @srcdir@/ipc.h \
 	@srcdir@/cfgnames.cpp @srcdir@/cfgnames.h \
 	@srcdir@/balloontaskbaritem.cpp @srcdir@/balloontaskbaritem.h \
 	@srcdir@/authdiag.cpp @srcdir@/authdiag.h \
-	@srcdir@/pscgui.cpp @srcdir@/pscgui.h \
 	@srcdir@/biowxsock.h @srcdir@/biowxsock.cpp \
 	@srcdir@/cfgdlg.h @srcdir@/cfgdlg.cpp \
 	@srcdir@/szframe.h @srcdir@/szframe.cpp \

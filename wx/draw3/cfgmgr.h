@@ -545,10 +545,6 @@ class ConfigManager
 	/**Loads defined draws set from file*/
 	bool SaveDefinedDrawsSets();
 
-	bool IsPSC(wxString prefix);
-
-	void EditPSC(wxString prefix, wxString param = wxString());
-
 	void ImportSet();
 
 	void ExportSet(DefinedDrawSet *set, wxString our_name);
@@ -592,8 +588,6 @@ protected:
 	DefinedDrawsSets* m_defined_sets;
 
 	wxCriticalSection m_reload_config_CS;
-
-	DrawPsc *psc;
 
 	//prefix of base given(either default one or given with argument -base)
 	wxString m_base_prefix;
