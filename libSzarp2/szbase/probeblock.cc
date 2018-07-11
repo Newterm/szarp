@@ -123,7 +123,7 @@ void szb_probeblock_real_t::FetchProbes() {
 	buffer->prober_connection->GetData(values, count);
 	count = std::min(count, probes_per_block - fixed_probes_count);
  
-	int prec10 = pow10(param->GetPrec());
+	int prec10 = exp10(param->GetPrec());
 	for (int i = 0; i < count; i++) {
 		if (values[i] == SZB_FILE_NODATA)
 			data[i + fixed_probes_count] = SZB_NODATA;
@@ -160,7 +160,7 @@ void szb_probeblock_combined_t::FetchProbes() {
 	short buf_lsw[lsw_count];
 	buffer->prober_connection->GetData(buf_lsw, lsw_count);
 	size_t count = std::min(lsw_count, msw_count);
-	double prec10 = pow10(param->GetPrec());
+	double prec10 = exp10(param->GetPrec());
 	for (size_t i = 0; i < count; i++) {
 		if (buf_msw[i] == SZB_FILE_NODATA) {
 			data[fixed_probes_count + i] = SZB_NODATA;
@@ -260,7 +260,7 @@ void szb_probeblock_lua_t::FetchProbes() {
 
 	lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 	time_t t = start_time + fixed_probes_count * SZBASE_PROBE_SPAN;
-	double prec10 = pow10(param->GetPrec());
+	double prec10 = exp10(param->GetPrec());
 	for (int i = fixed_probes_count; i < probes_per_block && t < range_end; i++, t += SZBASE_PROBE_SPAN) {
 		if (t < param_start_time) { 
 			fixed_probes_count++;

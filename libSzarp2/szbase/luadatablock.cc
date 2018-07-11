@@ -159,7 +159,7 @@ void LuaNativeDatablock::FinishInitialization() {
 			this->fixed_probes_count++;
 		}
 		if (!IS_SZB_NODATA(this->data[i])) {
-			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
+			data[i] = rint(data[i] * exp10(param->GetPrec())) / exp10(param->GetPrec()); 
 			if (this->first_data_probe_index < 0)
 				this->first_data_probe_index = i;
 			this->last_data_probe_index = i;
@@ -218,7 +218,7 @@ LuaNativeDatablock::Refresh() {
 			this->fixed_probes_count++;
 		}
 		if(!IS_SZB_NODATA(this->data[i])) {
-			data[i] = rint(data[i] * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
+			data[i] = rint(data[i] * exp10(param->GetPrec())) / exp10(param->GetPrec()); 
 			if(this->first_data_probe_index < 0)
 				this->first_data_probe_index = i;
 			this->last_data_probe_index = i;

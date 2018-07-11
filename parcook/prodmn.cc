@@ -258,7 +258,7 @@ int PRO2000Daemon::Configure(DaemonConfig * cfg)
 		}
 		m_param_addrs.push_back(atoi(c));
 		xmlFree(c);
-		m_precs.push_back(pow10(p->GetPrec()));
+		m_precs.push_back(exp10(p->GetPrec()));
 	}
 	c = (char *)xmlGetNsProp(cfg->GetXMLDevice(), BAD_CAST("read_freq"),
 				 BAD_CAST(IPKEXTRA_NAMESPACE_STRING));

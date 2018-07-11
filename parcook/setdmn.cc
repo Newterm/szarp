@@ -641,7 +641,7 @@ void SetDaemon::SetValue(const std::wstring& name, double val)
 	if (val > p.max) throw ValueToLarge();
 	m_ipc.m_read[p.index] = p.param->ToIPCValue(val);
 	dolog(10, "Setting value to %d", m_ipc.m_read[p.index]);
-	p.current = double(m_ipc.m_read[p.index]) / pow10(p.param->GetPrec());
+	p.current = double(m_ipc.m_read[p.index]) / exp10(p.param->GetPrec());
 
 	std::map<struct bufferevent*, int>::iterator i;
 	for (i = m_connections.begin(); i != m_connections.end(); ++i) {
