@@ -561,14 +561,15 @@ AC_ARG_WITH([ssl], AC_HELP_STRING([--without-ssl], [do not use OpenSSL library])
 	fi
 ],)
 if test "$no_ssl" != "yes" ; then
-	AC_PATH_SSL( [], [no_ssl=yes] )
-		if test x$no_ssl = xyes ; then
-                AC_MSG_WARN([
+	AC_CHECK_LIB(ssl, SSL_new, [], [no_ssl=yes])
+	AC_CHECK_LIB([crypto], [CRYPTO_get_ex_data], [], [no_ssl=yes])
+	if test x$no_ssl = xyes ; then
+		AC_MSG_WARN([
 			OpenSSL library not found on your system, check if
 			libssl development package is installed;
 			configuring without
 		])
-        fi
+	fi
 fi
 
 if test "x$no_ssl" = "xyes" ; then
