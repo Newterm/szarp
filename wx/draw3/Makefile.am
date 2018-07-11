@@ -92,7 +92,6 @@ draw3_SOURCES = \
 		paramslist.cpp paramslist.h \
 		paredit.cpp paredit.h \
 		codeeditor.cpp codeeditor.h \
-		drawpsc.h drawpsc.cpp \
 		wxgraphs.h wxgraphs.cpp \
 		glgraphs.h glgraphs.cpp \
 		gcdcgraphs.h gcdcgraphs.cpp \

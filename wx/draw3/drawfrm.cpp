@@ -248,11 +248,6 @@ void DrawFrame::OnFind(wxCommandEvent & event)
 	draw_panel->StartDrawSearch();
 }
 
-void DrawFrame::OnSetParams(wxCommandEvent & evt)
-{
-	draw_panel->StartPSC();
-}
-
 void DrawFrame::OnSave(wxCommandEvent & event)
 {
 	if (config_manager->SaveDefinedDrawsSets())
@@ -1330,7 +1325,6 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("About"), DrawFrame::OnAbout)
     EVT_MENU(XRCID("Help"), DrawFrame::OnHelp)
     EVT_MENU(XRCID("Find"), DrawFrame::OnFind)
-    EVT_MENU(XRCID("SetParams"), DrawFrame::OnSetParams)
     EVT_MENU(XRCID("ClearCache"), DrawFrame::OnClearCache)
     EVT_MENU(XRCID("EditSet"), DrawFrame::OnEdit)
     EVT_MENU(XRCID("EditAsNew"), DrawFrame::OnEditSetAsNew)

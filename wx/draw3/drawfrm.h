@@ -103,9 +103,6 @@ public:
 	 */
 	void OnFind(wxCommandEvent &evt);
 	
-	/** Method show parameter setting widget */
-	void OnSetParams(wxCommandEvent &evt); 
-	
 	/**
 	 * Adding new defined window
 	 */

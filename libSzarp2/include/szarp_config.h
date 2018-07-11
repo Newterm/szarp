@@ -652,8 +652,7 @@ public:
 	    _inbase(0),
 	    _raports(NULL),
 	    _draws(NULL),
-	    _szbase_name(),
-	    _psc(false)
+	    _szbase_name()
 	{ }
 
 	/** Deletes whole list. */
@@ -829,9 +828,6 @@ public:
 	 */
 	TDraw* AddDraw(TDraw* draw);
 
-	bool GetPSC() { return _psc; }
-	void SetPSC(bool psc) { _psc = psc; }
-
 	Sz4ParamType GetSz4Type() const { return _sz4ParamType; }
 
 	void SetSz4Type(Sz4ParamType sz4ParamType) { _sz4ParamType = sz4ParamType; }
@@ -875,8 +871,6 @@ protected:
 	std::wstring _szbase_name;	/**< Name of parameter converted to szbase format.
 				  May be empty - will get converted on next call to
 				  GetSzbaseName(). */
-
-	bool _psc; /**< marks if parameter can be set by psc */
 
 	Sz4ParamType _sz4ParamType{ Sz4ParamType::NONE };
 };

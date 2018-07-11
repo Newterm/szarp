@@ -76,7 +76,6 @@
 
 #include "szapp.h"
 #include "singleinstance.h"
-#include "szmutex.h"
 #include "szbase/szbbase.h"
 #include "database.h"
 #include "dbmgr.h"
