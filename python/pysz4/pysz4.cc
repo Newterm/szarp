@@ -1,4 +1,5 @@
 #include "pysz4.hpp"
+#include "liblog.h"
 
 namespace libpysz4 {
 
@@ -48,6 +49,10 @@ double Sz4::search(const std::wstring &param_name, double start, double end, int
 	return ret;
 }
 
+void Sz4::close_logger() {
+	szlog::log().close_logger();
+}
+
 TParam* Sz4::get_param(const std::wstring& param_name) {
 	TParam* param = m_ipk.GetParam(param_name);
 
@@ -83,6 +88,7 @@ BOOST_PYTHON_MODULE(libpysz4)
         .def("search_first", &libpysz4::Sz4::search_first)
         .def("search_last", &libpysz4::Sz4::search_last)
         .def("search", &libpysz4::Sz4::search)
+        .def("close_logger", &libpysz4::Sz4::close_logger)
         ;
 }
 

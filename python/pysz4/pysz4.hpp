@@ -3,6 +3,7 @@
 #include "sz4/base.h"
 #include "conversion.h"
 
+
 namespace libpysz4 {
 
 class Sz4
@@ -17,6 +18,8 @@ public:
 	double search_last(const std::wstring &param_name);
 
 	double search(const std::wstring &param_name, double start, double end, int direction, SZARP_PROBE_TYPE probe);
+
+	void close_logger();
 
 private:
 	TParam* get_param(const std::wstring& param_name);

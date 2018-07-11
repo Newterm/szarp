@@ -124,6 +124,10 @@ public:
 		set_log_treshold(PriorityForLevel(level));
 	}
 
+	void close_logger() {
+		_logger.reset();
+	}
+
 	template <typename T>
 	Logger& operator<<(const T& msg);
 

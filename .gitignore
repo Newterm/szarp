@@ -33,3 +33,4 @@ py-compile
 current_tag
 tags
 test-driver
+cfgdealer/cfgdealer_test
