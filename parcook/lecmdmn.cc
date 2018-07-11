@@ -153,7 +153,7 @@ class           LecMbus {
 	 * @param n 
 	 * @return - n power of 10
  	*/
-	unsigned long pow10(int n);
+	unsigned long exp10(int n);
 	/**
 	 * Parses one packet and returns data in decimal value
 	 * @param Packet - Pointer to packet data
@@ -236,7 +236,7 @@ int LecMbus::GetResponse(int fd, unsigned char *Response)
 }
 
 
-unsigned long LecMbus::pow10(int n)
+unsigned long LecMbus::exp10(int n)
 {
 	int i;
 	unsigned long tmp;
@@ -255,7 +255,7 @@ unsigned long LecMbus::ParseValue(unsigned char *Packet)
  if (Packet[0] - 0x06 <=0) return 0;
  length = Packet[0] - 0x06 ;
  for (i=2;i<length;i++){
-	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*pow10((i-2)*2);
+	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*exp10((i-2)*2);
  }
  return tmpValue ;
 }
@@ -269,7 +269,7 @@ unsigned long LecMbus::ParseValue2(unsigned char *Packet)
  if (Packet[0] - 0x06 <=0) return 0;
  length = Packet[0] +1 - 0x06 ;
  for (i=2;i<length;i++){
-	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*pow10((i-2)*2);
+	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*exp10((i-2)*2);
  }
  return tmpValue ;
 }

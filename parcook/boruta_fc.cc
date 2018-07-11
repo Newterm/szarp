@@ -561,7 +561,7 @@ int fc_proto_impl::configure(UnitInfo *unit, short *read, short *send, serial_po
 		if (l == SCALING_PREC) {
 			prec = 3.4;
 		} else {
-			prec = pow10(l);
+			prec = exp10(l);
 		}
 		m_log.log(10, "configure extra:prec: %f", prec);
 

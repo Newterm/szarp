@@ -198,13 +198,13 @@ public:
 	bool out_of_range(double value, long int pid) {
 		// For integers use default precision for comparison 
 		int prec = getPrec(pid);
-		long int_value = (long)(value * pow10(prec));
+		long int_value = (long)(value * exp10(prec));
 		if (hasMin(pid)) {
-			long min = (long)(getMin(pid) * pow10(prec));
+			long min = (long)(getMin(pid) * exp10(prec));
 			if (int_value < min) return true;
 		}
 		if (hasMax(pid)) {
-			long max = (long)(getMax(pid) * pow10(prec));
+			long max = (long)(getMax(pid) * exp10(prec));
 			if (int_value > max) return true;
 		}
 		return false;
@@ -223,7 +223,7 @@ public:
 		*pblock8 = _param_lsws[getAddr(pid) - 2].second[1]; pblock8++;
 		*pblock8 = _param_lsws[getAddr(pid) - 2].second[0];
 
-		uint32_t float_block = (uint32_t)(float_value * pow10(getPrec(pid)));
+		uint32_t float_block = (uint32_t)(float_value * exp10(getPrec(pid)));
 		int16_t lsw = (int16_t) float_block;
 		int16_t msw = (int16_t) (float_block >> 16);
 
@@ -328,7 +328,7 @@ public:
 		*pblock16 = lsw; pblock16++;
 		*pblock16 = msw;
 		
-		float float_value = (float)(int_value / pow10(getPrec(pid)));
+		float float_value = (float)(int_value / exp10(getPrec(pid)));
 		
 		sz_log(10, "Send value (float) id:%lu, val:%f", lsw_pid, float_value);
 		

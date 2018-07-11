@@ -111,7 +111,7 @@ void SzProbeCache::flush( const Key& k )
 	
 	TParam * p = m_ipk->getParamByName(last_key->name);
 
-	double prec = pow10(p->GetPrec());
+	double prec = exp10(p->GetPrec());
 
 	if (last_key->is_double) {
 		short* sp_lsw = new short[m_values.length];
