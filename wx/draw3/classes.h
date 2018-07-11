@@ -67,7 +67,6 @@ class ParamsListDialog;
 class DrawEdit;
 class ParamEdit;
 class DrawPicker;
-class DrawServer;
 class DatabaseQueryQueue;
 class DrawToolBar;
 class Remark;

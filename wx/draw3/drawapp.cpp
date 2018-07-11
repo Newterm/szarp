@@ -65,7 +65,6 @@
 
 #include "drawobs.h"
 #include "drawapp.h"
-#include "drawipc.h"
 #include "libpar.h"
 #include "liblog.h"
 
@@ -75,7 +74,6 @@
 #include "frmmgr.h"
 
 #include "szapp.h"
-#include "singleinstance.h"
 #include "szbase/szbbase.h"
 #include "database.h"
 #include "dbmgr.h"
@@ -189,7 +187,6 @@ bool DrawApp::OnInit() {
 		std::cout << SZARP_VERSION << std::endl;
 		return false;
 	}
-	m_server = NULL;
 	m_db_queue = NULL;
 	m_executor = NULL;
 	m_remarks_handler = NULL;
@@ -254,25 +251,6 @@ bool DrawApp::OnInit() {
 	wxLog *logger = new wxLogStderr();
 	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
-
-
-	m_instance = new szSingleInstanceChecker(_T(".szarp_m_instance_lock"), wxEmptyString,
-			_T("draw3"));
-	if (m_instance->IsAnotherRunning()) {
-		if (!m_url.IsEmpty()) {
-			if (m_url_open_in_existing)
-				SendToRunningInstance(_T("START_URL"), m_url.c_str());
-			else
-				SendToRunningInstance(_T("START_URL_EXISTING"), m_url.c_str());
-		} else if (!m_base.IsEmpty()) {
-			SendToRunningInstance(_T("START_BASE"), m_base.c_str());
-		} else {
-			wxLogError(_T("base not given"));
-			return false;
-		}
-		return false;
-	}
-
 
 	InitGL();
 
@@ -437,8 +415,6 @@ bool DrawApp::OnInit() {
 		return FALSE;
 	}
 
-	StartInstanceServer(fm, m_cfg_mgr);
-
 	wxToolTip::SetDelay(1000);
 
 	SetAppName(_T("SZARPDRAW3"));
@@ -464,7 +440,7 @@ void DrawApp::OnInitCmdLine(wxCmdLineParser &parser) {
 	parser.AddOption(_T("url"), wxEmptyString, _("url address"), wxCMD_LINE_VAL_STRING);
 
 	parser.AddSwitch(_T("e"), wxEmptyString,
-		_("open url in existing window"));
+		_("ignored (deprecated)"));
 
 	parser.AddSwitch(_T("f"), wxEmptyString,
 		_("open window in full screen mode"));
@@ -523,8 +499,6 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 
 	parser.Found(_T("url"), &m_url);
 
-	m_url_open_in_existing = parser.Found(_T("e"));
-
 	if (m_base.IsEmpty())
 		for (size_t i = 0; i < parser.GetParamCount(); ++i) {
 			wxString arg = parser.GetParam(i);
@@ -569,9 +543,6 @@ void DrawApp::StopThreads() {
 }
 
 int DrawApp::OnExit() {
-	delete m_instance;
-	delete m_server;
-
 	StopThreads();
 
 	m_cfg_mgr->SaveDefinedDrawsSets();
@@ -581,24 +552,6 @@ int DrawApp::OnExit() {
 	ErrorFrame::DestroyWindow();
 
 	return 0;
-}
-
-void DrawApp::StartInstanceServer(FrameManager *frmmgr, ConfigManager *cfgmgr) {
-	m_server = new DrawServer(frmmgr, cfgmgr);
-
-	wxString service = wxGetHomeDir() + _T("/.draw3_socket");
-
-	if (m_server->Create(service) == false) {
-		wxLogError(_T("Failed to start server"));
-		delete m_server;
-	}
-}
-
-void DrawApp::SendToRunningInstance(wxString topic, wxString msg) {
-	wxString service = wxGetHomeDir() + _T("/.draw3_socket");
-	DrawClient *client = new DrawClient(service);
-	client->SendMsg(topic, msg);
-	delete client;
 }
 
 void DrawApp::DisplayHelp() {

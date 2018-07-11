@@ -86,7 +86,6 @@ draw3_SOURCES = \
 		remarksdialog.h remarksdialog.cpp \
 		remarksfetcher.h remarksfetcher.cpp \
 		splashscreen.cpp splashscreen.h \
-		drawipc.cpp drawipc.h \
 		drawurl.cpp drawurl.h \
 		errfrm.h errfrm.cpp \
 		paramslist.cpp paramslist.h \
