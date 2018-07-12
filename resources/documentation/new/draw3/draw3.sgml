@@ -1597,11 +1597,15 @@ dzia³a dla wszystkich rodzajów ¶redniej, mo¿e byæ u¿yty razem z rozdwojonym kurs
 <para>
 Zmiana trybu wy¶wietlania ¶rednich:
 <itemizedlist>
+<listitem><para>zmiana trybu wy¶wietlania na dekadê - <keycode>Alt + A</keycode></para></listitem>
 <listitem><para>zmiana trybu wy¶wietlania na roczny - <keycode>Alt + R</keycode></para></listitem>
 <listitem><para>zmiana trybu wy¶wietlania na miesiêczny - <keycode>Alt + M</keycode></para></listitem>
 <listitem><para>zmiana trybu wy¶wietlania na tygodniowy - <keycode>Alt + T</keycode></para></listitem>
 <listitem><para>zmiana trybu wy¶wietlania na dobowy - <keycode>Alt + D</keycode></para></listitem>
-<listitem><para>zmiana trybu wy¶wietlania na 30-minutowy - <keycode>Alt + 3</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na 30-minutowy - <keycode>Alt + H</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na 5-minutowy - <keycode>Alt + J</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na minutowy - <keycode>Alt + K</keycode></para></listitem>
+<listitem><para>zmiana trybu wy¶wietlania na 30-sekundowy - <keycode>Alt + L</keycode></para></listitem>
 <listitem><para>zmiana trybu wy¶wietlania na sezonowy - <keycode>Alt + S</keycode></para></listitem>
 </itemizedlist>
 </para>
@@ -1612,16 +1616,24 @@ Nawigacja:
 <listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w lewo po wykresie - <keycode>PgUp</keycode></para></listitem>
 <listitem><para>przesuwanie o d³ugo¶æ jednego ekranu w prawo po wykresie - <keycode>PgDown</keycode></para></listitem>
 <listitem><para>skok pod datê - <keycode>Ctrl + J</keycode></para></listitem>
+<listitem><para>wyszukanie daty - <keycode>Shift + Ctrl + J</keycode></para></listitem>
+<listitem><para>skok pod najnowsz± datê - <keycode>Ctrl + End</keycode></para></listitem>
+<listitem><para>skok do ostatniej próbki na ekranie - <keycode>End</keycode></para></listitem>
 <listitem><para>kopiowanie lokalizacji - <keycode>Ctrl + C</keycode></para></listitem>
 <listitem><para>wklejanie lokalizacji - <keycode>Ctrl + V</keycode></para></listitem>
+<listitem><para>kopiowanie nazwy parametru - <keycode>Shift + Ctrl + C</keycode></para></listitem>
 <listitem><para>blokowanie wykresu - <keycode>Ctrl + B</keycode></para></listitem>
+<listitem><para>pokazanie wszystkich wykresów - <keycode>Ctrl + ]</keycode></para></listitem>
+<listitem><para>ukrycie wszystkich wykresów oprócz zaznaczonego - <keycode>Ctrl + [</keycode></para></listitem>
+<listitem><para>ukrycie wykresu z podanym numerem - <keycode>Alt + (1-9)</keycode></para></listitem>
+<listitem><para>wy¶wietlenie nazwy parametru w oknie wykresu - <keycode>Shift + /</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
 Wykresy pomocnicze:
 <itemizedlist>
 <listitem><para>Warto¶ci sumaryczne - <keycode>Ctrl + G</keycode></para></listitem>
-<listitem><para>¦rednie procentowe - <keycode>Ctrl + Alt + S</keycode></para></listitem>
+<listitem><para>¦rednie procentowe - <keycode>Shift + Ctrl + T</keycode></para></listitem>
 <listitem><para>Stosunek warto¶ci - <keycode>Shift + Ctrl + S</keycode></para></listitem>
 </itemizedlist>
 </para>
@@ -1629,7 +1641,9 @@ Wykresy pomocnicze:
 Wyszukiwanie:
 <itemizedlist>
 <listitem><para>wyszukanie wykresów parametrów - <keycode>Ctrl + F</keycode></para></listitem>
-<listitem><para>wyszukanie zestawu wykresów XYZ - <keycode>Ctrl + Z</keycode></para></listitem>
+<listitem><para>wyszukanie zestawu wykresów - <keycode>Alt + Z</keycode></para></listitem>
+<listitem><para>wyszukanie zestawu wykresów XY - <keycode>Shift + Ctrl + X</keycode></para></listitem>
+<listitem><para>wyszukanie zestawu wykresów XYZ - <keycode>Shift + Ctrl + Z</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
@@ -1642,6 +1656,8 @@ Wydruki i ustawienia wydruków:
 <itemizedlist>
 <listitem><para>zmiana ilo¶ci drukowanych osi - <keycode>Ctrl + X</keycode></para></listitem>
 <listitem><para>drukowanie wykresów - <keycode>Ctrl + P</keycode></para></listitem>
+<listitem><para>ustawienia strony - <keycode>Ctrl + Alt + P</keycode></para></listitem>
+<listitem><para>podgl±d wydruku - <keycode>Shift + Ctrl + P</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
@@ -1660,8 +1676,13 @@ Okna i zak³adki:
 W³asne parametry i zestawy wykresów:
 <itemizedlist>
 <listitem><para>stworzenie w³asnego zestawu wykresów - <keycode>Ctrl + A</keycode></para></listitem>
-<listitem><para>edycja w³asnego zestawu wykresów XYZ - <keycode>Ctrl + E</keycode></para></listitem>
+<listitem><para>stworzenie w³asnego sieciowego zestawu wykresów - <keycode>Ctrl + Alt + A</keycode></para></listitem>
+<listitem><para>edycja w³asnego zestawu wykresów - <keycode>Ctrl + E</keycode></para></listitem>
+<listitem><para>usuniêcie w³asnego zestawu wykresów - <keycode>Ctrl + D</keycode></para></listitem>
+<listitem><para>edycja bie¿±cego w³asnego zestawu wykresów jako nowy - <keycode>Shift + Ctrl + Alt + E</keycode></para></listitem>
+<listitem><para>edycja bie¿±cego w³asnego sieciowego zestawu wykresów jako nowy - <keycode>Shift + Ctrl + Alt + W</keycode></para></listitem>
 <listitem><para>zdefiniowanie w³asnego parametru - <keycode>Ctrl + U</keycode></para></listitem>
+<listitem><para>pobranie parametrów i zestawów sieciowych - <keycode>Shift + Ctrl + Alt + N</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
@@ -1670,6 +1691,15 @@ Pomoc:
 <listitem><para>wy¶wietlenie pomocy - <keycode>F1</keycode></para></listitem>
 <listitem><para>wy¶wietlenie pomocy kontekstowej - <keycode>Shift + F1</keycode></para></listitem>
 <listitem><para>wy¶wietlenie dokumentacji wy¶wietlanego parametru - <keycode>Ctrl + H</keycode></para></listitem>
+<listitem><para>informacje o programie - <keycode>F2</keycode></para></listitem>
+</itemizedlist>
+</para>
+<para>
+Komentarze:
+<itemizedlist>
+<listitem><para>dodanie komentarza - <keycode>Shift + Ctrl + Alt + A</keycode></para></listitem>
+<listitem><para>pobranie komentarzy - <keycode>Shift + Ctrl + Alt + F</keycode></para></listitem>
+<listitem><para>pokazanie komentarzy - <keycode>Shift + Ctrl + Alt + S</keycode></para></listitem>
 </itemizedlist>
 </para>
 <para>
@@ -1678,7 +1708,12 @@ Inne:
 <listitem><para>od¶wie¿enie warto¶ci parametrów - <keycode>Ctrl + R</keycode></para></listitem>
 <listitem><para>uruchomienie/zamkniêcie trybu rozdwojonego kursora - <keycode>Backspace</keycode></para></listitem>
 <listitem><para>import okien definiowalnych z wcze¶niejszej wersji programu - <keycode> Shift + Ctrl + I</keycode></para></listitem>
+<listitem><para>eksport okien definiowalnych - <keycode> Shift + Ctrl + E</keycode></para></listitem>
 <listitem><para>zdalne zmienianie ustawieñ parametrów - <keycode>Ctrl + O</keycode></para></listitem>
+<listitem><para>prze³adowanie konfiguracji - <keycode>Shift + Ctrl + Alt + R</keycode></para></listitem>
+<listitem><para>pokazanie okna komunikatów - <keycode>Shift + Ctrl + E</keycode></para></listitem>
+<listitem><para>usuniêcie zawarto¶ci cache - <keycode>Shift + Ctrl + R</keycode></para></listitem>
+<listitem><para>zapisanie stanu programu - <keycode>Ctrl + S</keycode></para></listitem>
 </itemizedlist>
 </para>
 </section> <!-- draw3-ext-shortcuts -->
