@@ -9,6 +9,7 @@
 
 #include <liblog.h>
 
+#include "locations/common_cmds/cmd_ping.h"
 #include "cmd_set.h"
 #include "cmd_value.h"
 #include "cmd_notify.h"
@@ -63,6 +64,7 @@ SzbaseProt::~SzbaseProt()
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 {
+	MAP_CMD_TAG( "ping"              , CmdPingRcv          );
 	MAP_CMD_TAG( "s"                 , SetRcv              );
 	MAP_CMD_TAG( "set"               , SetRcv              );
 	MAP_CMD_TAG( "list_sets"         , ListSetsRcv         );
