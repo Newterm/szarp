@@ -1228,7 +1228,6 @@ AC_OUTPUT( \
 	wx/viszio/Makefile \
 	wx/confedit/Makefile \
 	wx/wxhelp/Makefile \
-	wx/sync/Makefile \
 	wx/szau/Makefile \
 	)
 
