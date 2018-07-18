@@ -8,7 +8,7 @@ message ParamValue {
 
 	required bool is_nan = 4;
 	optional int64 int_value = 11;
-	optional double double_value = 13;
+    optional double double_value = 13;
 }
 
 message ParamsValues {

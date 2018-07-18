@@ -302,6 +302,9 @@ void ipc::set_no_data(size_t index) {
 
 	if (m_read != nullptr)
 		m_read[index] = SZARP_NO_DATA;
+
+	time_t timev = time(NULL);
+	if (m_zmq) m_zmq->set_no_data(index, timev);
 }
 
 int ipc::get_send(size_t index) {
