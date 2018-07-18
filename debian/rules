@@ -234,4 +234,4 @@ source: sanity_check clean
 
 all: source binary
 
-.PHONY: build clean binary install-indep source indstall-doc-html install-doc-pdf build-indep binary-arch binary-arch-common binary-no-cb binary-cb all sanity_check create-indep
+.PHONY: build clean binary install-indep source install-doc-html install-doc-pdf build-indep binary-arch binary-arch-common binary-no-cb binary-cb all sanity_check create-indep
