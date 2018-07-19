@@ -1101,17 +1101,6 @@ if test "x$no_lber" != "xyes"; then
 fi
 AC_SUBST(DLMSDMN)
 
-#szarp sync applications
-want_ssc=""
-want_sss=""
-if test x$no_ssl != xyes -a x$no_rsync != xyes ; then
-	if test x$no_wx != xyes  -a x$no_cares != xyes; then
-		want_ssc=yes;
-	fi
-	if test x$with_mingw32 != xyes; then
-		want_sss=yes;
-	fi
-fi
 
 no_cppnit="yes"
 PKG_CHECK_MODULES(CPPUNIT, cppunit, no_cppunit="no", [AC_MSG_RESULT([

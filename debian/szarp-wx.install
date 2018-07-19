@@ -6,8 +6,6 @@ opt/szarp/bin/raporter3
 opt/szarp/bin/reporter4
 opt/szarp/bin/wxhelp
 opt/szarp/bin/scc
-opt/szarp/bin/ssc
-opt/szarp/bin/ssc_sudowrap.sh
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/common.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/ekstraktor3.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/ipkedit.mo
@@ -52,7 +50,6 @@ opt/szarp/resources/wx/images/star.png
 opt/szarp/resources/wx/images/draw_background1_tex.bmp
 opt/szarp/resources/wx/images/left-arrow.png
 opt/szarp/resources/wx/images/right-arrow.png
-opt/szarp/resources/ssc.desktop
 opt/szarp/resources/scc.desktop
 opt/szarp/resources/regulators
 etc/xdg/autostart/scc.desktop

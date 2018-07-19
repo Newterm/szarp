@@ -5,7 +5,6 @@
 . /usr/share/debconf/confmodule;
 
 [ -e /etc/cron.d/szarp-viewer ] && rm /etc/cron.d/szarp-viewer;
-[ -e /usr/share/autostart/ssc.desktop ] && rm /usr/share/autostart/ssc.desktop;
 
 MAN_UPDATE_SCRIPT=$(/opt/szarp/bin/lpparse -s scc update_command)
 if [ "x$MAN_UPDATE_SCRIPT" != "x" -a -e $MAN_UPDATE_SCRIPT ]; then 
