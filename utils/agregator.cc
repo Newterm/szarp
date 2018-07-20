@@ -1433,11 +1433,20 @@ unsigned int get_digest(char *text, unsigned char *digest)
 	OpenSSL_add_all_digests();
 	md = EVP_get_digestbyname("md5");
 
+#if OPENSSL_VERSION_NUMBER > 0x010100000
 	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
 	EVP_DigestInit_ex(mdctx, md, NULL);
 	EVP_DigestUpdate(mdctx, text, strlen(text));
 	EVP_DigestFinal_ex(mdctx, digest, &md_len);
 	EVP_MD_CTX_free(mdctx);
+#else
+	EVP_MD_CTX mdctx;
+	EVP_MD_CTX_init(&mdctx);
+	EVP_DigestInit_ex(&mdctx, md, NULL);
+	EVP_DigestUpdate(&mdctx, text, strlen(text));
+	EVP_DigestFinal_ex(&mdctx, digest, &md_len);
+	EVP_MD_CTX_cleanup(&mdctx);
+#endif
 
 	return md_len;
 }
