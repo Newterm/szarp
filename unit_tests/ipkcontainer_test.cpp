@@ -51,16 +51,15 @@ void IpkContainerTest::setUp() {
 	std::ofstream ofs((path / L"config/params.xml").external_file_string().c_str(), std::ios_base::binary);
 #endif
 
-	ofs << 
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-"<params xmlns=\"http://www.praterm.com.pl/SZARP/ipk\" version=\"1.0\" read_freq=\"10\" send_freq=\"10\" title=\"Globalmalt Bydgoszcz\" documentation_base_url=\"http://www.szarp.com\">"
-"  <device xmlns:modbus=\"http://www.praterm.com.pl/SZARP/ipk-extra\" daemon=\"/dev/null\">"
-"    <unit id=\"1\" type=\"1\" subtype=\"1\" bufsize=\"1\">"
-"    	<param name=\"a:a:a\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\"/>"
-"    	<param name=\"b:b:b\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\"/>"
-"    </unit>"
-"  </device>"
-"</params>";
+	ofs << R"(<?xml version="1.0" encoding="utf-8"?>
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" version="1.0" read_freq="10" send_freq="10" title="Globalmalt Bydgoszcz" documentation_base_url="http://www.szarp.com">
+  <device xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra" daemon="/dev/null">
+    <unit id="1" type="1" subtype="1" bufsize="1">
+    	<param name="a:a:a" data_type="uinteger" short_name="-" unit="C" prec="1" draw_name="" base_ind="auto"/>
+    	<param name="b:b:b" data_type="uinteger" short_name="-" unit="C" prec="1" draw_name="" base_ind="auto"/>
+    </unit>
+  </device>
+</params>)";
 	ofs.close();
 }
 
@@ -75,7 +74,7 @@ void IpkContainerTest::smoke_test1() {
 
 	/* Getting and caching configs */
 	CPPUNIT_ASSERT(ipk->GetConfig(L"nonexistent") == nullptr);
-	CPPUNIT_ASSERT(ipk->GetConfig(base_name) != nullptr); // was not added yet so should be nullptr
+	CPPUNIT_ASSERT(ipk->GetConfig(base_name) != nullptr);
 
 	/* Getting params UC/WC */
 	CPPUNIT_ASSERT(ipk->GetParam(L"nonexistent:a:a:a", false) == nullptr);
