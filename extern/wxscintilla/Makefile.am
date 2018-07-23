@@ -110,4 +110,3 @@ libwxscintilla_la_SOURCES = \
 test:
 	echo $(libwxscintilla_la_SOURCES)
 
-MAINTAINERCLEANFILES = Makefile.in

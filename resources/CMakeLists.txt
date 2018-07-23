@@ -1,1 +1,3 @@
-message("no wbiłem do ./resources/CMakeLists.txt")
+cmake_minimum_required(VERSION 3.5)
+
+add_subdirectory( documentation )

@@ -1,1 +1,1 @@
-message("no wbiłem do ./python/meaner4/unittests/CMakeLists.txt")
+cmake_minimum_required(VERSION 3.5)

@@ -5,7 +5,6 @@
 
 SUBDIRS = 
 
-MAINTAINERCLEANFILES = Makefile.in
 
 LOCALES = @srcdir@/sssweb/i18n/pl/LC_MESSAGES/sssweb.mo
 LOCALES_SRC = sssweb/i18n/pl/LC_MESSAGES/sssweb.po

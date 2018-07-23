@@ -7,7 +7,6 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
 AM_CPPFLAGS = @WX_CXXFLAGS@ -I@srcdir@/../common -DPREFIX=\"@prefix@\" \

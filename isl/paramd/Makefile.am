@@ -15,7 +15,7 @@ AM_CPPFLAGS = -I@srcdir@/../../include \
 LDADD=../server/libserver.la \
       ../../libSzarp/libSzarp.la \
       ../../libSzarp2/libSzarp2.la  \
-      @PAM_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LUA_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
+      @SSL_LIBS@ @PAM_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LUA_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
 
 SHORTHOST=$(shell hostname -s)
 
@@ -75,6 +75,5 @@ pam:
 	@$(INSTALL) $(PAMFILE) $(DESTDIR)/etc/pam.d/paramd
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = \
                  Makefile.in 
 

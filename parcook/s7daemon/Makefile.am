@@ -3,9 +3,6 @@
 # No subdirectories
 SUBDIRS = 
 
-# Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
-
 # Compilations flags
 AM_CPPFLAGS = @CPPUNIT_CFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ $(BOOST_CPPFLAGS) \
 	-DPREFIX=\"@prefix@\" \

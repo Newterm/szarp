@@ -5,11 +5,10 @@
 
 SUBDIRS = 
 
-SOURCE_DIR=@srcdir@
-INCLUDE_DIR=$(SOURCE_DIR)/include
+INCLUDE_DIR=include
 
 LDADD=
-AM_CPPFLAGS = -I$(INCLUDE_DIR) @BOOST_CPPFLAGS@ @XML_CFLAGS@ -DYYLMAX=32768 -DSD_JOURNAL_SUPPRESS_LOCATION
+AM_CPPFLAGS = -I./$(INCLUDE_DIR) @BOOST_CPPFLAGS@ @XML_CFLAGS@ -DYYLMAX=32768 -DSD_JOURNAL_SUPPRESS_LOCATION
 
 
 LEX=@LEX@
@@ -36,24 +35,6 @@ libSzarp_la_SOURCES = \
 		      ipctools.cc \
 		      mingw32_missing.cc
                       
-noinst_HEADERS = \
-                 $(INCLUDE_DIR)/libpar.h \
-                 $(INCLUDE_DIR)/libpar_int.h \
-                 $(INCLUDE_DIR)/libparnt.parse.h \
-                 $(INCLUDE_DIR)/liblog.h \
-                 $(INCLUDE_DIR)/argsmgr.h \
-                 $(INCLUDE_DIR)/cmdlineparser.h \
-                 $(INCLUDE_DIR)/loghandlers.h \
-                 $(INCLUDE_DIR)/msgerror.h \
-                 $(INCLUDE_DIR)/msgtools.h \
-                 $(INCLUDE_DIR)/daemon.h \
-                 $(INCLUDE_DIR)/execute.h \
-		 $(INCLUDE_DIR)/mbrtu.h \
-		 $(INCLUDE_DIR)/modbus.h \
-		 $(INCLUDE_DIR)/ipctools.h \
-		 $(INCLUDE_DIR)/conversion.h \
-		 $(INCLUDE_DIR)/mingw32_missing.h 
-
 if MINGW32_OPT
 libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@
 else
@@ -61,12 +42,8 @@ libSzarp_la_LIBADD = @BOOST_PROGRAM_OPTIONS_LIB@ -lsystemd
 endif
 
  
-EXTRA_DIST = \
+EXTRA_DIST =
              libparnt.lex 
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = \
-                 Makefile.in \
-                 libparnt.yy.cc
-                      
-
+                 Makefile.in

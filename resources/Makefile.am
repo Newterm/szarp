@@ -2,7 +2,6 @@
 
 SUBDIRS = documentation
 
-MAINTAINERCLEANFILES = Makefile.in
 CLEANFILES = szarp.cfg szarp_in.cfg
 
 helpcommand = @HELPCOMMAND@
@@ -20,6 +19,7 @@ RESOURCES = \
 		@srcdir@/szarp_in.cfg \
 		@srcdir@/rsyslog_conf_TEMPLATE \
 		@srcdir@/SZARP_CFG_TEMPLATE \
+		@srcdir@/ssc.desktop \
 		@srcdir@/scc.desktop \
 		@srcdir@/sysctl_conf_TEMPLATE \
 		@srcdir@/filler2.desktop \

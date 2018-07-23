@@ -2,7 +2,6 @@
 SUBDIRS=
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 SOURCE_DIR=@srcdir@
 
@@ -11,7 +10,6 @@ AM_CPPFLAGS = @CPPUNIT_CFLAGS@ -I$(SOURCE_DIR)/../libSzarp2/include \
 	@LUA_CFLAGS@ @BOOST_CPPFLAGS@ @ZIP_CFLAGS@
 
 LIBS = ../libSzarp2/libSzarp2.la ../libSzarp/libSzarp.la \
-	../iks/server/data/libiks-server-data.a ../wx/common/libwxcommon.la \
 	@CPPUNIT_LIBS@ @XML_LIBS@ @LUA_LIBS@ @BOOST_LDFLAGS@ \
 	@BOOST_LOCALE_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ @BOOST_DATE_TIME_LIB@ @CURL_LIBS@ \
@@ -23,10 +21,8 @@ TESTS = unit_tests
 
 unit_tests_SOURCES = \
 	unit_tests.cpp \
-	ipkcontainer_test.cpp \
 	sz4_block_unit_test.cpp \
 	parhublistener_test.cpp \
-	conversion_test.cpp \
 	szb_param_monitor_unit_test.cpp \
 	sz4_file_search.cpp \
 	sz4_buffer_unit_test.cpp \

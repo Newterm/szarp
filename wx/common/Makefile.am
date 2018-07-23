@@ -16,6 +16,9 @@ AM_CPPFLAGS = \
 	@GDK_CFLAGS@ @GTK_CFLAGS@ @LUA_CFLAGS@
 
 GTK_CFLAGS=__WXGTK__
+GUIDIR=@srcdir@/GUI/
+GUIFILES=xrc
+TMP_GETTEXT=XRC_gettext_file
 
 
 noinst_LTLIBRARIES = libwxcommon.la
@@ -41,10 +44,12 @@ libwxcommon_la_SOURCES = \
 	@srcdir@/imagepanel.cpp @srcdir@/imagepanel.h \
 	@srcdir@/szapp.cpp @srcdir@/szapp.h \
 	@srcdir@/szhlpctrl.cpp @srcdir@/szhlpctrl.h \
+	@srcdir@/szmutex.cpp @srcdir@/szmutex.h \
 	@srcdir@/ipc.cc @srcdir@/ipc.h \
 	@srcdir@/cfgnames.cpp @srcdir@/cfgnames.h \
 	@srcdir@/balloontaskbaritem.cpp @srcdir@/balloontaskbaritem.h \
 	@srcdir@/authdiag.cpp @srcdir@/authdiag.h \
+	@srcdir@/pscgui.cpp @srcdir@/pscgui.h \
 	@srcdir@/biowxsock.h @srcdir@/biowxsock.cpp \
 	@srcdir@/cfgdlg.h @srcdir@/cfgdlg.cpp \
 	@srcdir@/szframe.h @srcdir@/szframe.cpp \
@@ -52,15 +57,14 @@ libwxcommon_la_SOURCES = \
 	@srcdir@/singleinstance.h @srcdir@/singleinstance.cc \
 	@srcdir@/md5.h @srcdir@/md5.cpp \
 	@srcdir@/getprobersaddresses.h @srcdir@/getprobersaddresses.cpp \
+	@srcdir@/GUI/resource.cpp \
 	@srcdir@/helpctrlex/helpctrlex.cpp @srcdir@/helpctrlex/helpctrlex.h \
 	@srcdir@/helpctrlex/helpdlgex.cpp @srcdir@/helpctrlex/helpdlgex.h \
 	@srcdir@/helpctrlex/helpfrmex.cpp @srcdir@/helpctrlex/helpfrmex.h \
 	@srcdir@/helpctrlex/helpwinex.cpp @srcdir@/helpctrlex/helpwinex.h \
-	@srcdir@/validate.cpp @srcdir@/validate.h \
-	@srcdir@/user_def_ipk.cpp @srcdir@/user_def_ipk.h
+	@srcdir@/validate.cpp @srcdir/validate.h
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 common_LOCALES_TMP = common.pot
 
@@ -94,6 +98,7 @@ install-data-local: fr/common.mo pl/common.mo pl/wx.mo fr/wx.mo de/wx.mo de/comm
 		$(DESTDIR)@prefix@/resources/locales/de_DE/LC_MESSAGES
 
 update-po:
+	@WXRC@ -g @srcdir@/$(GUIDIR)*.$(GUIFILES) > @srcdir@/$(TMP_GETTEXT).h
 	@XGETTEXT@ -o $(common_LOCALES_TMP) -L C++ --from-code=UTF-8 --keyword=_  $(libwxcommon_la_SOURCES) @srcdir@/$(TMP_GETTEXT).h
 	@MSGMERGE@ -U pl/common.po $(common_LOCALES_TMP)
 	@MSGMERGE@ -U fr/common.po $(common_LOCALES_TMP)
@@ -106,6 +111,9 @@ winsetup: ${WIN_APP_NAME}Setup.exe
 	echo -n "#define SZARP_VERSION \"" > @srcdir@/version.h
 	@ @top_srcdir@/script/version-info -v @top_srcdir@/debian/changelog >> @srcdir@/version.h;
 	echo "\"" >> @srcdir@/version.h
+
+@srcdir@/GUI/resource.cpp: @srcdir@/GUI/*xrc
+	wxrc -n InitCommonXmlResource -c -o @srcdir@/GUI/resource.cpp @srcdir@/GUI/*xrc
 
 ${WIN_APP_NAME}Setup.exe: $(common_LOCALES) $(wx_LOCALES)
 	@srcdir@/../../script/nsis/winsetup.sh -c \

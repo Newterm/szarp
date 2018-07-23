@@ -5,7 +5,6 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Filler 2: helper scripts
 filler2_script = @srcdir@/filler2

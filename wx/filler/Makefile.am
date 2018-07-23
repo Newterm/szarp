@@ -5,7 +5,6 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Program to create
 

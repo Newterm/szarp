@@ -7,7 +7,6 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
 AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ @GTK_CFLAGS@ @GDK_CFLAGS@ \

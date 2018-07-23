@@ -9,7 +9,6 @@ SUBDIRS =
 SOURCE_DIR=@srcdir@
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 if !MINGW32_OPT
 # Python modules - also .pyc and .pyo versions are installed

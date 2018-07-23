@@ -5,7 +5,6 @@
 
 SUBDIRS = 
 
-MAINTAINERCLEANFILES = Makefile.in
 
 PACKAGED_SCRIPT = \
 	@srcdir@/insum.sh \

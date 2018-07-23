@@ -1,1 +1,1 @@
-message("no wbiłem do ./wx/filler/CMakeLists.txt")
+cmake_minimum_required(VERSION 3.5)

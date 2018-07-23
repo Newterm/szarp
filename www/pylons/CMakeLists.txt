@@ -1,1 +1,3 @@
-message("no wbiłem do ./www/pylons/CMakeLists.txt")
+cmake_minimum_required(VERSION 3.5)
+
+add_subdirectory( sssweb )

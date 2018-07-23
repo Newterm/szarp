@@ -5,7 +5,6 @@
 
 SUBDIRS = 
 
-MAINTAINERCLEANFILES = \
              Makefile.in
 
 bin_SCRIPTS = \

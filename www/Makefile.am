@@ -5,4 +5,3 @@
 
 SUBDIRS = pylons
 
-MAINTAINERCLEANFILES = Makefile.in

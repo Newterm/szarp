@@ -18,7 +18,7 @@ endif # CURL
 
 
 SUBDIRS = common draw3 $(INCLUDE_SUBDIRS) \
-	wxhelp scc $(CURL_SUBDIRS) \
+	wxhelp scc $(CURL_SUBDIRS) sync \
 	isledit $(WNCK_SUBDIRS)
 
 winsetup:
@@ -26,6 +26,7 @@ winsetup:
 		-d bin \
 		-f draw3.exe draw3/.libs/draw3.exe \
 		-f scc.exe scc/.libs/scc.exe \
+		-f ssc.exe sync/.libs/ssc.exe \
 		-f szau.exe szau/.libs/szau.exe \
 		-f ekstraktor3.exe ekstraktor3/.libs/ekstraktor3.exe \
 		-f raporter3.exe raporter3/.libs/raporter3.exe \
@@ -51,6 +52,7 @@ winsetup:
 		-f ekstraktor3.mo ekstraktor3/pl/ekstraktor3.mo \
 		-f raporter3.mo raporter3/pl/raporter3.mo \
 		-f scc.mo scc/pl/scc.mo \
+		-f ssc.mo sync/pl/ssc.mo \
 		-f szau.mo szau/pl/szau.mo \
 		-f kontroler3.mo kontroler3/pl/kontroler3.mo \
 		-f common.mo common/pl/common.mo \
@@ -129,4 +131,3 @@ winsetup:
 		-d resources/fonts \
 		@srcdir@/../resources/fonts/*ttf
 
-MAINTAINERCLEANFILES = Makefile.in

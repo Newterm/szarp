@@ -1,1 +1,1 @@
-message("no wbiłem do ./python/utils/CMakeLists.txt")
+cmake_minimum_required(VERSION 3.5)

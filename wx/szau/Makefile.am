@@ -7,10 +7,9 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
-AM_CPPFLAGS = @WX_CXXFLAGS@ @CURL_CFLAGS@  @XML_CFLAGS@ @BOOST_CPPFLAGS@ \
+AM_CPPFLAGS = @WX_CXXFLAGS@ @CURL_CFLAGS@ @SSL_CFLAGS@ @XML_CFLAGS@ @BOOST_CPPFLAGS@ \
 	-I@srcdir@/../../libSzarp/include \
 	-I@srcdir@/../../libSzarp2/include \
         -I@srcdir@/../../include \
@@ -50,7 +49,7 @@ RESOURCES =
 endif
 
 szau_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2)
-szau_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@  $(LIBSZARP2) @XML_LIBS@
+szau_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) @WX_LIBS@ @CURL_LIBS@ @BOOST_LDFLAGS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@ @SSL_LIBS@ $(LIBSZARP2) @XML_LIBS@
 
 # Creating resources file with icons for Windows
 ICON_SRC := ../../resources/wx/icons/szau_16.xpm

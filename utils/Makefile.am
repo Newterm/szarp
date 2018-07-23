@@ -13,13 +13,12 @@ SUBDIRS = $(INCLUDE_SUBDIRS)
 SOURCE_DIR=@srcdir@
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Compilations flags
 AM_CPPFLAGS = \
 		@XML_CFLAGS@ \
 		@LUA_CFLAGS@ \
-		 \
+		@SSL_CFLAGS@ \
 		@PTHREAD_CFLAGS@ \
 		-I$(SOURCE_DIR)/../libSzarp/include \
 		-I$(SOURCE_DIR)/../libSzarp2/include \
@@ -37,7 +36,6 @@ if !MINGW32_OPT
 bin_PROGRAMS = \
 		@AGREGATOR@ \
 		crypt \
-		@IPK2SZARP@ \
 		lpparse \
 		@PRECCONV@ \
 		sproxy \
@@ -48,7 +46,6 @@ bin_PROGRAMS = \
 
 EXTRA_PROGRAMS = \
 		agregator \
-		ipk2szarp \
 		precconv \
 		stampd
 
@@ -107,10 +104,7 @@ remarksserver_PYTHON = \
 
 
 agregator_SOURCES = agregator.cc
-agregator_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @BOOST_SYSTEM_LIB@ @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@ 
-
-ipk2szarp_SOURCES = ipk2szarp.cc
-ipk2szarp_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP2) $(LIBSZARP2) @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@
+agregator_LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @BOOST_SYSTEM_LIB@ @XML_LIBS@ @BOOST_LDFLAGS@ @BOOST_FILESYSTEM_LIB@ @BOOST_LOCALE_LIB@ @SSL_LIBS@
 
 lpparse_SOURCES = lpparse.cc
 lpparse_LDADD = @PTHREAD_CFLAGS@ @XML_LIBS@ $(LIBSZARP) @BOOST_FILESYSTEM_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_LOCALE_LIB@

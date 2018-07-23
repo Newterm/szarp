@@ -5,6 +5,5 @@
 
 SUBDIRS = sssweb
 
-MAINTAINERCLEANFILES = Makefile.in
 
 

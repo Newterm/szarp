@@ -6,5 +6,4 @@
 
 SUBDIRS = new
 
-MAINTAINERCLEANFILES = Makefile.in 
 

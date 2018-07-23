@@ -1,1 +1,3 @@
-message("no wbiłem do ./isl/CMakeLists.txt")
+add_subdirectory( server )
+add_subdirectory( paramd )
+#add_subdirectory( python )

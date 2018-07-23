@@ -48,7 +48,6 @@ DOCS=\
 
 SUBDIRS =
 
-MAINTAINERCLEANFILES = Makefile.in
 
 ##### TARGETS #####
 

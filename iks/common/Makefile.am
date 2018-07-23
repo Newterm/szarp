@@ -3,7 +3,6 @@
 SUBDIRS = 
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 lib_LIBRARIES = libiks-common.a
 

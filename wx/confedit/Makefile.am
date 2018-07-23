@@ -45,7 +45,6 @@ CLEANFILES = $(ipkedit_LOCALES)
 EXTRA_DIST = $(ipkedit_LOCALES_SRC) $(ipkedit_LOCALES)
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 # Rule to create mo files
 %.mo: %.po

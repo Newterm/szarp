@@ -7,7 +7,6 @@
 SUBDIRS =
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in
 
 if MINGW32_OPT
 RESOURCES = resources.o
@@ -16,7 +15,7 @@ RESOURCES =
 endif
 
 # Compilations flags
-AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ @CGAL_CFLAGS@ \
+AM_CPPFLAGS = @WX_CXXFLAGS@ @XML_CFLAGS@ @LUA_CFLAGS@ @SSL_CFLAGS@ @BOOST_CPPFLAGS@ @CARES_CFLAGS@ @CGAL_CFLAGS@ \
 	   @GDK_CFLAGS@ @GTK_CFLAGS@ @SQLITE3_CFLAGS@ @FREETYPE_CFLAGS@ @XMLRPC_EPI_CFLAGS@ \
 	   -I@srcdir@/../../libSzarp/include \
 	   -I@srcdir@/../../libSzarp2/include \
@@ -67,7 +66,6 @@ draw3_SOURCES = \
 		incsearch.cpp incsearch.h \
 		drawobs.h drawobs.cpp \
 		summwin.h summwin.cpp \
-		dbtypeswin.h dbtypeswin.cpp \
 		drawfrm.h drawfrm.cpp \
 		frmmgr.h frmmgr.cpp \
 		timeformat.h timeformat.cpp \
@@ -86,11 +84,13 @@ draw3_SOURCES = \
 		remarksdialog.h remarksdialog.cpp \
 		remarksfetcher.h remarksfetcher.cpp \
 		splashscreen.cpp splashscreen.h \
+		drawipc.cpp drawipc.h \
 		drawurl.cpp drawurl.h \
 		errfrm.h errfrm.cpp \
 		paramslist.cpp paramslist.h \
 		paredit.cpp paredit.h \
 		codeeditor.cpp codeeditor.h \
+		drawpsc.h drawpsc.cpp \
 		wxgraphs.h wxgraphs.cpp \
 		glgraphs.h glgraphs.cpp \
 		gcdcgraphs.h gcdcgraphs.cpp \
@@ -107,7 +107,7 @@ draw3_SOURCES = \
 		GUI/resource.cpp
 
 draw3_DEPENDENCIES = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP) $(LIBSZARP2) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON)
-draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON) @XSLT_LIBS@ @ZIP_LIBS@  @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@ @ZMQ_LIBS@ @PROTOBUF_LIBS@
+draw3_LDADD = $(RESOURCES) $(LIBWXCOMMON) $(LIBSZARP2) $(LIBSZARP) $(LIBWXSCINTILLA) $(LIBIKSCLIENT) $(LIBIKSCOMMON) @XSLT_LIBS@ @ZIP_LIBS@ @SSL_LIBS@ @XML_LIBS@ @WX_LIBS@ @LUA_LIBS@ @GDK_LIBS@ @SQLITE3_LIBS@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @BOOST_LDFLAGS@ @BOOST_DATE_TIME_LIB@ @BOOST_THREAD_LIB@ @BOOST_LOCALE_LIB@ @FTGL_LIBS@  @WXGL_LIBS@ @XMLRPC_EPI_LIBS@ @CARES_LIBS@ @MINGW32_LIBS@ @CGAL_LIBS@ @ZMQ_LIBS@ @PROTOBUF_LIBS@
 
 draw3_LOCALES_TMP = @srcdir@/draw3.tpo
 

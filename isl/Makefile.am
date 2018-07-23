@@ -5,4 +5,3 @@
 
 SUBDIRS = server paramd python
 
-MAINTAINERCLEANFILES = Makefile.in

@@ -82,7 +82,6 @@ BASECONN = \
 	@srcdir@/linedmn/serialport.cc \
 	@srcdir@/linedmn/serialadapter.cc \
 	@srcdir@/linedmn/tcpconn.cc \
-	@srcdir@/linedmn/tcpserverconn.cc \
 	@srcdir@/linedmn/httpclient.cc \
 	@srcdir@/linedmn/atcconn.cc \
 	@srcdir@/linedmn/evbase.cc \
@@ -243,7 +242,6 @@ libSzarpLuaParser_la_SOURCES = \
 	@srcdir@/szarp_base_common/lua_parser.cc @srcdir@/include/szarp_base_common/lua_syntax.h
 
 # Additional files for deleting on 'make maintainer-clean'
-MAINTAINERCLEANFILES = Makefile.in \
 	$(EXTRA_HEADERS) \
 	tools/ipk_config \
 	$(PROTOBUF_ALL)
