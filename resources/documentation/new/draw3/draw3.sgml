@@ -61,13 +61,13 @@ Mo¿esz przej¶æ do spisu tre¶ci - <xref linkend="draw3"> lub wybraæ odno¶nik <quo
 <para>
 Ten rozdzia³ opisuje:
 <itemizedlist>
-<listitem><para>jak uruchomiæ programu Draw 3 - <xref linkend="draw3-base-run"></para></listitem>
+<listitem><para>jak uruchomiæ program Draw 3 - <xref linkend="draw3-base-run"></para></listitem>
 <listitem><para>co jest widoczne w g³ównym oknie programu przegl±daj±cego - <xref linkend="draw3-base-win"></para></listitem>
 <listitem><para>jak wybraæ interesuj±cy Ciê zestaw wykresów - <xref linkend="draw3-base-charts"></para></listitem>
 <listitem><para>jak zmieniæ zakres ¶rednich - <xref linkend="draw3-base-range"></para></listitem>
 <listitem><para>jak poruszaæ siê po wykresach - <xref linkend="draw3-base-graphsnavigation"></para></listitem>
 <listitem><para>jak korzystaæ z zak³adek i okien - <xref linkend="draw3-base-tabs"></para></listitem>
-<listitem><para>jak wydrukowaæ interesuj¹ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
+<listitem><para>jak wydrukowaæ interesuj±ce Ciê wykresy - <xref linkend="draw3-base-prints"></para></listitem>
 </itemizedlist>
 </para>
 </section> <!-- draw3-base-main -->
@@ -75,14 +75,14 @@ Ten rozdzia³ opisuje:
 <section id="draw3-base-run">
 <title>Uruchomienie programu</title>
 <para>
-Zwykle bêdziesz uruchamiaæ program pos³uguj¹c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn¹æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj¹c¹ nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
-<figure> <title>Centrum Sterowania SZARP - uruchomienie programu przegl¹daj¹cego (pod Linuxem)</title>
+Zwykle bêdziesz uruchamiaæ program pos³uguj±c siê programem Centrum Sterowania SZARP (SCC). Wystarczy klikn±æ lewym przyciskiem myszki na ikonê SCC i wybraæ interesuj±c± nas ciep³owniê lub wêze³ cieplny (wiêcej informacji o SCC mo¿esz znale¼æ w dokumencie <ulink url="http://szarp.org/szarp/doc/scc/html/scc.html">Centrum Sterowania SZARP</ulink> [<ulink url="http://szarp.org/szarp/doc/pdf/scc-article.pdf">pdf</ulink>]). Proces uruchomienia (tutaj na systemie Linux) jest widoczny poni¿ej:
+<figure> <title>Centrum Sterowania SZARP - uruchomienie programu przegl±daj±cego (pod Linuxem)</title>
 <mediaobject>
 <imageobject><imagedata align="center" fileref="pics/draw3-scc.png"></imageobject>
 </mediaobject></figure>
 <note>
 <para>
-¯eby uruchomiæ program przegl¹daj¹cy, musisz mieæ dostêp do danych, które bêd¹ w nim wy¶wietlane. Mo¿esz ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz zalogowaæ siê bezpo¶rednio (pracuj±c pod Linuxem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
+¯eby uruchomiæ program przegl±daj±cy, musisz mieæ dostêp do danych, które bêd± w nim wy¶wietlane. Mo¿esz ¶ci±gn±æ dane na dysk poprzez synchronizator danych (wiêcej o synchronizacji w dokumencie <ulink url="http://szarp.org/szarp/doc/ssc/html/ssc.html">Synchronizator plików</ulink>), albo zalogowaæ siê do systemu, który takie dane przechowuje. Do systemu mo¿esz zalogowaæ siê bezpo¶rednio (pracuj±c pod Linuxem) lub (w przypadku systemu Windows) za pomoc± emulatora X-terminala (np. Cygwin). Program SCC automatycznie wy¶wietla nazwy wszystkich ciep³owni (lub innych obiektów), dla których dostêpne s± dane.
 </para>
 </note>
 </para>
@@ -98,7 +98,7 @@ Aby zapoznaæ siê z obs³ug± podstawowych funkcji programu, przejd¼ do <xref linke
 Zobacz tak¿e <xref linkend="draw3-ext-cmd">, aby dowiedzieæ siê, jak uruchamiaæ
 program z linii komend.</para></note>
 Aby zakoñczyæ program, zamknij okno programu, wybierz opcjê
-<guimenu>Zamknij</guimenu> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon¹ na dole okna programu.
+<guimenu>Zamknij</guimenu> z menu <guimenu>Plik</guimenu> lub kliknij na ikonê z drzwiami umieszczon± na dole okna programu.
 </para>
 
 </section> <!-- draw3-base-run -->
@@ -124,7 +124,7 @@ Pod oknem graficznym umieszczone s± informacje o warto¶ciach parametru, na który
 <listitem><para>data zapisania próbki/¶redniej</para></listitem>
 <listitem><para>minimalna, ¶rednia i maksymalna warto¶æ parametru w okresie czasu widocznym na ekranie</para></listitem>
 <listitem><para>procent wystêpowania próbek dla danego wykresu</para>
-	<note><para>System SZARP zapisuje dane do bazy co 10 minut. Ogl±daj±c wykres warto¶ci parametru z ca³ego roku, widzimy tylko ¶rednie miesiêczne. Je¿eli np. w wyniku awarii w jednym z miesiêcy zapisana zostanie w bazie tylko 1 próbka, to program poka¿e ¶redni± miesiêczn± równ± warto¶ci tej próbki, ale niekoniecznie musi byæ ona reprezentatywna dla ca³ego miesi±ca. Warto¶æ procentowa wystêpowania próbek istotnie mniejsza ni¿ wizualnie wynikaj±ca z d³ugo¶ci wykresu w oknie sugeruje, ¿e mo¿esz mieæ do czynienia z tak± w³a¶nie sytuacj±, czyli wyliczone warto¶ci ¶rednich nale¿y traktowaæ z ostro¿no¶ci±.</para></note>
+	<note><para>Ogl±daj±c wykres warto¶ci parametru z ca³ego roku, widzimy tylko ¶rednie miesiêczne. Je¿eli np. w wyniku awarii w jednym z miesiêcy zapisana zostanie w bazie tylko 1 próbka, to program poka¿e ¶redni± miesiêczn± równ± warto¶ci tej próbki, ale niekoniecznie musi byæ ona reprezentatywna dla ca³ego miesi±ca. Warto¶æ procentowa wystêpowania próbek istotnie mniejsza ni¿ wizualnie wynikaj±ca z d³ugo¶ci wykresu w oknie sugeruje, ¿e mo¿esz mieæ do czynienia z tak± w³a¶nie sytuacj±, czyli wyliczone warto¶ci ¶rednich nale¿y traktowaæ z ostro¿no¶ci±.</para></note>
 </listitem>
 </itemizedlist>
 oraz ikony skrótów:
@@ -662,13 +662,13 @@ Rozszerzenie wykresów XY stanowi± wykresy XYZ. Wykresy XYZ pokazuj± zale¿no¶æ mi
 warto¶ciami trzech parametrów równocze¶nie. Dla podanego okresu czasu i ¶redniej program
 draw3 zbiera warto¶ci 3 wybranych parametrów dla ka¿dego z punktów w czasie z podanego
 przedzia³u (np. dla ¶redniej dzieñ bêd± to ¶redniej dla ka¿dej godziny z wybranego
-zakresu). Tak wybrane trójki warto¶ci stanowi± punkty w przestrzni trójwymiarowej
+zakresu). Tak wybrane trójki warto¶ci stanowi± punkty w przestrzeni trójwymiarowej
 stanowi±ce bazê budowanego wykresu. Punkty te s± nastêpnie rozpinane na siatce 24 na 24 
 oczka, punktami wygenerowango wykresu bêd± punkty o wspó³rzêdnych Xo, Y¶r, Yo. Gdzie  
 Xo i Zo to odpowiednio wspó³rzêdne x i z ¶rodka danego oczka, a Y¶r to ¶rednia warto¶æ
 y wszystkich punktów które zawieraj± siê w danym oczku (jest to odpowienik u¶redniania
 dla wykresu XY). Wykresy 3D maj± dwie postacie - punktow± oraz "p³aszczyznow±", wykres
-punktowy to taki w którym draw3 rysje po prostu dany wykres, a wykres "p³aszczynowy"
+punktowy to taki w którym draw3 rysuje po prostu dany wykres, a wykres "p³aszczyznowy"
 to wykres w którym program dodatkowo do samych punktów rysuje triangulacje tych
 punktów (w ka¿dej chwili w trakcie ogl±dania wykresu mo¿na siê prze³±czyæ miêdzy
 tymi dwoma trybami naciskaj±c klawisz <keycode>spacja</keycode>.

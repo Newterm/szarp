@@ -56,9 +56,9 @@ nie 'trzeba klikn±æ' tylko 'musisz klikn±æ')
 <abstract>
 <para>
 </para>
-<para>
+<!--para>
 Wersja pliku: $Id$
-</para>
+</para-->
 </abstract>
 
 </bookinfo>

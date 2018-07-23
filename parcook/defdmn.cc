@@ -120,10 +120,15 @@ void Defdmn::go() {
 void Defdmn::executeScripts() {
 	for (auto& i: param_info) {
 		try {
-			i->executeAndUpdate(*m_zmq);
-			if (connectToParcook) i->sendValueToParcook(m_ipc->m_read);
+			i->execute();
+			if (!single) i->update(*m_zmq);
+			if (!single && connectToParcook) i->sendValueToParcook(m_ipc->m_read);
 		} catch (SzException &e) {
-			sz_log(1, "%s", e.what());
+			sz_log(1, "Error while calculating param: %s", e.what());
+
+			// set nodata
+			i->setVal(sz4::no_data<double>());
+			if (!single) i->update(*m_zmq);
 		}
 	}
 }
@@ -166,6 +171,7 @@ void Defdmn::configure(int* argc, char** argv) {
 		throw SzException("Could not load configuration");
 
 	m_cfg->GetIPK()->SetConfigId(0);
+	single = m_cfg->GetSingle();
 
 	try {
 		m_ipc.reset(new IPCHandler(m_cfg.get()));
@@ -308,7 +314,12 @@ void configureHubs(sz4::live_cache_config* live_config) {
 		if (_prefix != NULL) {
 			std::string address(_address);
 			std::wstring prefix = SC::A2S(_prefix);
-			live_config->urls.push_back(std::make_pair(address, IPKContainer::GetObject()->GetConfig(prefix)));
+			auto ipk = IPKContainer::GetObject()->GetConfig(prefix);
+			if (ipk) {
+				live_config->urls.push_back(std::make_pair(address, ipk));
+			} else {
+				sz_log(1, "Error while configuring IPK for base %ls.", prefix.c_str());
+			}
 		}
 		std::free(_prefix);
 		std::free(_address);

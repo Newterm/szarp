@@ -93,20 +93,6 @@
 
 extern void InitXmlResource();
 
-class ConfigurationFileChangeHandler{
-	public:
-		static DatabaseManager *database_manager;
-		static void handle(std::wstring file, std::wstring prefix);
-};
-
-void
-ConfigurationFileChangeHandler::handle(std::wstring file, std::wstring prefix) {
-	ConfigurationChangedEvent e(prefix);
-	wxPostEvent(database_manager, e);
-};
-
-DatabaseManager* ConfigurationFileChangeHandler::database_manager(NULL);
-
 void handler(int sig)
 {
 	wxGetApp().OnExit();
@@ -208,6 +194,7 @@ bool DrawApp::OnInit() {
 	m_executor = NULL;
 	m_remarks_handler = NULL;
 
+	bool use_iks_base = false;
 #ifdef __WXGTK__
 	if (m_base == wxEmptyString) {
 		libpar_init();
@@ -220,6 +207,8 @@ bool DrawApp::OnInit() {
 		std::string config_path = std::string(wxString(base_path + m_base + '/').mb_str());
 		libpar_init_from_folder(config_path);
 	}
+
+	use_iks_base = (m_base_type == IKS_BASE);
 
 	if (m_base_type == NO_BASE) {
 		const auto cfg_base_type = libpar_getpar("draw3", "base_type", 0);
@@ -344,48 +333,51 @@ bool DrawApp::OnInit() {
 	m_db_queue = new DatabaseQueryQueue();
 	m_dbmgr = new DatabaseManager(m_db_queue, m_cfg_mgr);
 	m_db_queue->SetDatabaseManager(m_dbmgr);
-	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
+	auto base_handler = std::shared_ptr<SzbaseHandler>(new SzbaseHandler(m_dbmgr));
+	base_handler->SetupHandlers(GetSzarpDir(), GetSzarpDataDir(),
+			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
+	if( use_iks_base )
+		base_handler->UseIksServerOnly();
 
-	Draw3Base *draw_base = NULL;
+	Draw3Base::ptr draw_base;
 	if (m_base_type == SZ4_BASE) {
 		splash->PushStatusText(_("Starting sz4 database..."));
 		wxLogInfo(_T("Using sz4 base engine"));
-		draw_base = new Sz4Base(m_dbmgr, GetSzarpDataDir().wc_str(), IPKContainer::GetObject());
+		draw_base = base_handler->GetSz4Handler();
 	} else if (m_base_type == IKS_BASE) {
 		wxLogInfo(_T("Connecting to iks at %s:%s"), m_iks_server.wc_str(), m_iks_port.wc_str());
 		try {
-			bool connected = false;
-
-			auto iks_base = new Sz4ApiBase(m_dbmgr, m_iks_server.wc_str(), m_iks_port.wc_str(), IPKContainer::GetObject());
-			draw_base = iks_base;
-
 			do {
-				splash->PushStatusText(_("Connecting to database..."));
-				connected = iks_base->BlockUntilConnected();
-				if (connected) break;
-			} while (wxMessageBox(_("Could not connect to iks-server, should we try again?"), _("Operation failed"), wxYES_NO | wxICON_WARNING) == wxYES);
-
+				draw_base = base_handler->GetIksHandler(m_iks_server, m_iks_port);
+				if( draw_base.get() != nullptr )
+					break;
+			} while (wxMessageBox(_("Could not connect to iks-server, should we try again?"),
+					   	_("Operation failed"), wxYES_NO | wxICON_WARNING) == wxYES);
 		} catch(const DrawBaseException& e) {
 			wxMessageBox(_("Internal error, please restart the application"), _("Operation failed."), wxOK | wxICON_ERROR);
 			return FALSE;
 		}
-	} else {
+	}
+	else {
 		splash->PushStatusText(_("Starting sz3 database..."));
 		wxLogInfo(_T("Using sz3 base engine"));
-		draw_base = new SzbaseBase(m_dbmgr, GetSzarpDataDir().wc_str(),
-			&ConfigurationFileChangeHandler::handle,
-			wxConfig::Get()->Read(_T("SZBUFER_IN_MEMORY_CACHE"), 0L));
+		draw_base = base_handler->GetSz3Handler();
 	}
+	base_handler->SetDefaultBaseHandler(draw_base);
+	base_handler->SetCurrentPrefix(m_base);
+	base_handler->AddBaseHandler(m_base, draw_base);
+
+	m_dbmgr->SetBaseHandler(base_handler);
+	m_dbmgr->SetProbersAddresses(GetProbersAddresses());
 
 	splash->PushStatusText(_("Starting database query mechanism..."));
-	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, draw_base);
+	m_executor = new QueryExecutor(m_db_queue, m_dbmgr, m_dbmgr->GetBaseHandler());
 	m_executor->Create();
 	m_executor->SetPriority((WXTHREAD_MAX_PRIORITY + WXTHREAD_DEFAULT_PRIORITY) / 2);
 	m_executor->Run();
 
 	m_cfg_mgr->SetDatabaseManager(m_dbmgr);
 
-	ConfigurationFileChangeHandler::database_manager = m_dbmgr;
 
 	/* default config */
 	wxString defid;
@@ -417,11 +409,6 @@ bool DrawApp::OnInit() {
 		StopThreads();
 		return FALSE;
 	}
-
-
-#ifndef MINGW32
-	libpar_done();
-#endif
 
 	m_help = new szHelpController;
 #ifndef MINGW32

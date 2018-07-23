@@ -26,13 +26,15 @@ import curses, os, sys, traceback, unicodedata, threading, string, locale, time
 sys.path.append("/opt/szarp/lib/python")
 from libpar import LibparReader
 
+NODATA = -32768 
+
 import zmq
 import paramsvalues_pb2
 
 class Param:
 	def __init__(self, param):
 		self.short_name = param.attrib['short_name'].encode(gb.fileencoding)
-		self.value = 0
+		self.value = NODATA
 		self.unit = param.get('unit', "").encode(gb.fileencoding)
 		self.prec = int(param.get('prec', 0))
 
@@ -147,11 +149,12 @@ def read_socket():
 		for param_value in params_values.param_values:
 			index = param_value.param_no
 			if index in gb.sz4_params.indexes.keys():
-				prec = 1^gb.sz4_params.params[gb.sz4_params.indexes[index]].prec
+				param = gb.sz4_params.params[gb.sz4_params.indexes[index]]
+				prec = 10**param.prec
 				try:
-					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = int(param_value.int_value) + int(param_value.double_value*prec) + int(param_value.float_value*prec)
-                                except:
-					gb.sz4_params.params[gb.sz4_params.indexes[index]].value = 0
+					param.value = int(param_value.int_value) + int(param_value.double_value*prec) + int(param_value.float_value*prec)
+				except Exception as e:
+					param.value = NODATA
 					
 			else:
 				pass

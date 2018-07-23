@@ -53,6 +53,10 @@ public:
 	virtual void StartDrawingParamName() = 0;
 	virtual void StopDrawingParamName() = 0;
 	virtual void SetFocus() = 0;
+	virtual void SetGraphThickness(int thickness) {}
+	virtual void FullRefresh() {}
+	virtual void SetShowArrowsChecked(bool showArrows) {}
+	virtual void SetMarginsRecalculable() {}
 	virtual ~DrawGraphs() {}
 };
 

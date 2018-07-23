@@ -200,6 +200,8 @@ public:
 
 	void OnExportDataToFile(wxCommandEvent& e);
 
+	void OnIksConnectionFailed(wxCommandEvent&);
+
 	/**Schedules removal of a panel (at next Idle event)*/
 	void RemovePanel(DrawPanel *panel);
 
@@ -282,6 +284,9 @@ protected:
 
 	/** Toggles split cursor mode*/
 	void OnSplitCursor(wxCommandEvent &event);
+
+	/** Changes graph thickness */
+	void OnChangeGraphThickness(wxCommandEvent &event);
 
 	void OnLatestDataFollow(wxCommandEvent &event);
 

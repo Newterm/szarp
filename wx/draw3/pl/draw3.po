@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-01 12:23+0100\n"
+"POT-Creation-Date: 2018-02-19 12:20+0100\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -36,14 +36,14 @@ msgstr ""
 "Nie udało się stworzyć katalogu %s. Zestawy definiowane nie mogą zostać "
 "zapisane."
 
-#: cfgmgr.cpp:1230 drawfrm.cpp:732 drawpsc.cpp:426 drawpsc.cpp:439
+#: cfgmgr.cpp:1230 drawfrm.cpp:752 drawpsc.cpp:426 drawpsc.cpp:439
 #: drawpsc.cpp:448 drawpsc.cpp:457 paramslist.cpp:269 paramslist.cpp:305
 #: paramslist.cpp:322 paredit.cpp:219 probadddiag.cpp:109 remarks.cpp:1350
 #: remarks.cpp:1451 remarks.cpp:1497 remarks.cpp:1545 seldraw.cpp:569
 msgid "Error"
 msgstr "Błąd"
 
-#: cfgmgr.cpp:1406 paredit.cpp:751 GUI/resources.xrc:1515
+#: cfgmgr.cpp:1406 paredit.cpp:750 GUI/resources.xrc:1539
 msgid "User:Param:"
 msgstr "Parametr:Użytkownika:"
 
@@ -498,11 +498,11 @@ msgstr "Nie zdefiniowane przez użytkownika"
 msgid "You may only remove user defined sets."
 msgstr "Możesz edytować tylko zestawy zdefiniowane przez użytkownika."
 
-#: drawfrm.cpp:307 incsearch.cpp:751
+#: drawfrm.cpp:307 incsearch.cpp:772
 msgid "Do you really want to remove this set?"
 msgstr "Czy na pewno chcesz usunąć ten zestawy?"
 
-#: drawfrm.cpp:308 incsearch.cpp:752
+#: drawfrm.cpp:308 incsearch.cpp:773
 msgid "Set removal"
 msgstr "Usunięcie zestawu"
 
@@ -530,7 +530,7 @@ msgstr "Ilość osi:"
 msgid "Printing"
 msgstr "Drukowanie"
 
-#: drawfrm.cpp:731
+#: drawfrm.cpp:751
 #, c-format
 msgid ""
 "Configuration '%s' cannot be reloaded, probably new version of this "
@@ -539,67 +539,67 @@ msgstr ""
 "Konfiguracja '%s' nie może zostać przeładowana. Przypuszczalnie nowa wersja "
 "konfiguracji zawiera błędy."
 
-#: drawfrm.cpp:903
+#: drawfrm.cpp:923
 msgid "English"
 msgstr "Angielski"
 
-#: drawfrm.cpp:904
+#: drawfrm.cpp:924
 msgid "French"
 msgstr "Francuski"
 
-#: drawfrm.cpp:905
+#: drawfrm.cpp:925
 msgid "German"
 msgstr "Niemiecki"
 
-#: drawfrm.cpp:906
+#: drawfrm.cpp:926
 msgid "Hungarian"
 msgstr "Węgierski"
 
-#: drawfrm.cpp:907
+#: drawfrm.cpp:927
 msgid "Italian"
 msgstr "Włoski"
 
-#: drawfrm.cpp:908
+#: drawfrm.cpp:928
 msgid "Polish"
 msgstr "Polski"
 
-#: drawfrm.cpp:909
+#: drawfrm.cpp:929
 msgid "Serbian"
 msgstr "Serbski"
 
-#: drawfrm.cpp:914 drawfrm.cpp:920
+#: drawfrm.cpp:934 drawfrm.cpp:940
 msgid "automatic"
 msgstr "automatyczny"
 
-#: drawfrm.cpp:919
+#: drawfrm.cpp:939
 msgid "Current language is "
 msgstr "Obecny język to "
 
-#: drawfrm.cpp:922
+#: drawfrm.cpp:942
 msgid "Choose language"
 msgstr "Wybierz język"
 
-#: drawfrm.cpp:948
+#: drawfrm.cpp:968
 msgid "Current language has been changed. You have to restart draw3"
 msgstr "Aktualny język został zmieniony. Musisz zrestartować program draw3"
 
-#: drawfrm.cpp:949
+#: drawfrm.cpp:969
 msgid "Language changed"
 msgstr "Język zmieniony"
 
-#: drawfrm.cpp:956
+#: drawfrm.cpp:976
 msgid "Antialiased"
 msgstr "Wykresy antyaliasowane"
 
-#: drawfrm.cpp:957
+#: drawfrm.cpp:977
 msgid "currently selected"
 msgstr "aktualnie wybrany"
 
-#: drawfrm.cpp:958
+#: drawfrm.cpp:978
 msgid "Choose graphs window style"
 msgstr "Wybierz styl okna z wykresami"
 
-#: drawfrm.cpp:966 drawfrm.cpp:990
+#: drawfrm.cpp:986 drawfrm.cpp:1010
 msgid ""
 "Remarks sending not configured, You should set username, password, and "
 "remarks server adddress"
@@ -607,47 +607,47 @@ msgstr ""
 "Usługa komentarzy nie została skonfigurowana. Musisz podać nazwę użytkownika "
 "hasło i adres serwera by móc korzystać z komentarzy."
 
-#: drawfrm.cpp:966 drawfrm.cpp:990
+#: drawfrm.cpp:986 drawfrm.cpp:1010
 msgid "Remarks not configured."
 msgstr "Komentarze nie są skonfigurowane."
 
-#: drawfrm.cpp:1042
+#: drawfrm.cpp:1062
 msgid "Enter password:"
 msgstr "Wprowadź hasło:"
 
-#: drawfrm.cpp:1043
+#: drawfrm.cpp:1063
 msgid "New password"
 msgstr "Nowe hasło"
 
-#: drawfrm.cpp:1156
+#: drawfrm.cpp:1176
 msgid "Choose file to extract data to"
 msgstr "Wybierz plik docelowy"
 
-#: drawfrm.cpp:1159
+#: drawfrm.cpp:1179
 msgid "Comma Separated Values (*.csv)"
 msgstr ""
 
-#: drawfrm.cpp:1216 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1236 incsearch.cpp:818 incsearch.cpp:831 paramslist.cpp:351
 msgid "Error in communicatoin with server: "
 msgstr "Błąd komunikacji z serwerem: "
 
-#: drawfrm.cpp:1216 incsearch.cpp:797 incsearch.cpp:810 paramslist.cpp:351
+#: drawfrm.cpp:1236 incsearch.cpp:818 incsearch.cpp:831 paramslist.cpp:351
 msgid "Failed to update paramaters"
 msgstr "Nie udało się zmienić parametru"
 
-#: drawfrm.cpp:1222
+#: drawfrm.cpp:1242
 msgid "Network params and sets were updated"
 msgstr "Parametry i/lub zestawy sieciowe zostały zaktualizowane"
 
-#: drawfrm.cpp:1222
+#: drawfrm.cpp:1242
 msgid "Params and sets updated."
 msgstr "Parametry i zestawy zaktualizowane."
 
-#: drawfrm.cpp:1225
+#: drawfrm.cpp:1245
 msgid "There are no new network params or sets"
 msgstr "Nie ma nowych parametrów/zestawów sieciowych"
 
-#: drawfrm.cpp:1225
+#: drawfrm.cpp:1245
 msgid "No new params and sets."
 msgstr "Brak nowych parametrów/zestawów."
 
@@ -704,7 +704,7 @@ msgstr ""
 "mniejsza niż wartość 'Koniec skalowanego wykresu' oraz większa lub równa "
 "początkowi osi wykresu"
 
-#: drawpick.cpp:367 incsearch.cpp:712 GUI/resources.xrc:297
+#: drawpick.cpp:367 incsearch.cpp:733 GUI/resources.xrc:297
 msgid "Edit"
 msgstr "Edytuj"
 
@@ -728,7 +728,7 @@ msgstr "Wartość minimalna"
 msgid "Max value"
 msgstr "Wartość maksymalna"
 
-#: drawpick.cpp:469 incsearch.cpp:711
+#: drawpick.cpp:469 incsearch.cpp:732
 msgid "Remove"
 msgstr "Usuń"
 
@@ -805,11 +805,11 @@ msgstr "Musisz ustawić tytuł."
 msgid "No title"
 msgstr "Brak tytułu"
 
-#: drawpick.cpp:895 paredit.cpp:919
+#: drawpick.cpp:895 paredit.cpp:918
 msgid "Error while editing network set: "
 msgstr "Błąd podczas edycji zestawu sieciowego:"
 
-#: drawpick.cpp:895 paredit.cpp:919
+#: drawpick.cpp:895 paredit.cpp:918
 msgid "Editing network set error"
 msgstr "Błąd edycji parametru"
 
@@ -817,7 +817,7 @@ msgstr "Błąd edycji parametru"
 msgid "You don't have sufficient privileges too insert/modify this set."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten zestaw."
 
-#: drawpick.cpp:903 paredit.cpp:928 remarks.cpp:1529
+#: drawpick.cpp:903 paredit.cpp:927 remarks.cpp:1529
 msgid "Insufficient privileges"
 msgstr "Brak uprawnień"
 
@@ -830,7 +830,7 @@ msgid "Failed to fetch network sets"
 msgstr "Nie udało się pobrać zestawów sieciowych"
 
 #: drawpick.cpp:922 drawpick.cpp:1004 drawpick.cpp:1034 drawpnl.cpp:645
-#: drawpnl.cpp:680 drawtb.cpp:78 paredit.cpp:787
+#: drawpnl.cpp:680 drawtb.cpp:78 paredit.cpp:786
 msgid "Find"
 msgstr "Wyszukaj"
 
@@ -966,7 +966,7 @@ msgstr "Wartości sumaryczne"
 msgid "Split cursor"
 msgstr "Rozdwojony kursor"
 
-#: drawtb.cpp:81 drawtb.cpp:151 GUI/resources.xrc:1039 GUI/resources.xrc:1407
+#: drawtb.cpp:81 drawtb.cpp:151 GUI/resources.xrc:1039 GUI/resources.xrc:1431
 msgid "Filter"
 msgstr "Filtr"
 
@@ -987,7 +987,7 @@ msgid "Go to latest date"
 msgstr "Idź do najnowszej danej"
 
 #: drawtb.cpp:89 remarks.cpp:490 GUI/resources.xrc:400 GUI/resources.xrc:614
-#: GUI/resources.xrc:619 GUI/resources.xrc:1372 GUI/resources.xrc:1443
+#: GUI/resources.xrc:619 GUI/resources.xrc:1396 GUI/resources.xrc:1467
 msgid "Remarks"
 msgstr "Komentarze"
 
@@ -1072,19 +1072,19 @@ msgstr "Zamknij"
 msgid "Help"
 msgstr "Pomoc"
 
-#: incsearch.cpp:762
+#: incsearch.cpp:783
 msgid "Do you really want to remove this graph?"
 msgstr "Czy na pewno chcesz usunąć ten wykres?"
 
-#: incsearch.cpp:763
+#: incsearch.cpp:784
 msgid "Graph removal"
 msgstr "Usunięcie zestawu"
 
-#: incsearch.cpp:805
+#: incsearch.cpp:826
 msgid "You are not allowed to remove this set"
 msgstr "Nie masz uprawnień by usunąć ten zestaw"
 
-#: incsearch.cpp:805 paramslist.cpp:360 paramslist.cpp:368
+#: incsearch.cpp:826 paramslist.cpp:360 paramslist.cpp:368
 msgid "Failed to remove paramater"
 msgstr "Nie udało się usunąć parametru"
 
@@ -1240,26 +1240,26 @@ msgstr "Błąd podczas kompilacji parametru %s"
 msgid "Invalid expression %s"
 msgstr "Niepoprawne wyrażenie %s"
 
-#: paredit.cpp:693
+#: paredit.cpp:692
 #, c-format
 msgid "Found time: %s"
 msgstr "Znaleziony czas: %s"
 
-#: paredit.cpp:695
+#: paredit.cpp:694
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: paredit.cpp:695
+#: paredit.cpp:694
 msgid "No date found"
 msgstr "Nie znaleziono danych spełniających podany warunek"
 
-#: paredit.cpp:749
+#: paredit.cpp:748
 #, c-format
 msgid "User:%s:"
 msgstr "Parametr:%s:"
 
-#: paredit.cpp:928
+#: paredit.cpp:927
 msgid "You don't have sufficient privileges too insert/update this param."
 msgstr "Nie posiadasz uprawnień by dodać/zmienić ten parametr."
 
@@ -1425,7 +1425,7 @@ msgstr "Wykres zablokowany\tCtrl-B"
 msgid "Parameter documentation\tCtrl-H"
 msgstr "Dokumentacja parametru\tCtrl-H"
 
-#: seldraw.cpp:164 GUI/resources.xrc:1339
+#: seldraw.cpp:164 GUI/resources.xrc:1363
 msgid "Copy parameter name\tCtrl+Shift+C"
 msgstr "Kopiuj nazwę parametru\tCtrl+Shift+C"
 
@@ -1958,7 +1958,7 @@ msgstr "Komentarze:"
 msgid "Edit pack"
 msgstr "Edytuj paczkę"
 
-#: GUI/resources.xrc:456 GUI/resources.xrc:1969
+#: GUI/resources.xrc:456 GUI/resources.xrc:1993
 msgid "Time:"
 msgstr "Czas:"
 
@@ -2034,7 +2034,7 @@ msgstr "Opcje"
 msgid "Close window"
 msgstr "Zamknij okno"
 
-#: GUI/resources.xrc:681 GUI/resources.xrc:1948
+#: GUI/resources.xrc:681 GUI/resources.xrc:1972
 msgid "Author:"
 msgstr "Autor:"
 
@@ -2112,23 +2112,23 @@ msgstr "FC"
 msgid "0"
 msgstr "0"
 
-#: GUI/resources.xrc:1047
+#: GUI/resources.xrc:1047 GUI/resources.xrc:1305
 msgid "1"
 msgstr "1"
 
-#: GUI/resources.xrc:1051
+#: GUI/resources.xrc:1051 GUI/resources.xrc:1309
 msgid "2"
 msgstr "2"
 
-#: GUI/resources.xrc:1055
+#: GUI/resources.xrc:1055 GUI/resources.xrc:1313
 msgid "3"
 msgstr "3"
 
-#: GUI/resources.xrc:1059
+#: GUI/resources.xrc:1059 GUI/resources.xrc:1317
 msgid "4"
 msgstr "4"
 
-#: GUI/resources.xrc:1063
+#: GUI/resources.xrc:1063 GUI/resources.xrc:1321
 msgid "5"
 msgstr "5"
 
@@ -2317,391 +2317,395 @@ msgid "Split cursor\tBACK"
 msgstr "Rozdwojony kursor\tBACK"
 
 #: GUI/resources.xrc:1303
+msgid "Graph thickness"
+msgstr "Grubość wykresów"
+
+#: GUI/resources.xrc:1327
 msgid "Latest data following mode"
 msgstr "Tryb podążania za najnowszą daną"
 
-#: GUI/resources.xrc:1308
+#: GUI/resources.xrc:1332
 msgid "Sort graphs"
 msgstr "Posortuj wykresy po"
 
-#: GUI/resources.xrc:1310
+#: GUI/resources.xrc:1334
 msgid "By average value"
 msgstr "Wartości średniej"
 
-#: GUI/resources.xrc:1313
+#: GUI/resources.xrc:1337
 msgid "By maximum value"
 msgstr "Wartości maksymalnej"
 
-#: GUI/resources.xrc:1316
+#: GUI/resources.xrc:1340
 msgid "By minimum value"
 msgstr "Wartości minimalnej"
 
-#: GUI/resources.xrc:1319
+#: GUI/resources.xrc:1343
 msgid "By hour sum value"
 msgstr "Wartości sumy godzinowej"
 
-#: GUI/resources.xrc:1322
+#: GUI/resources.xrc:1346
 msgid "Restore inital order"
 msgstr "Przywróć zwykłą kolejność"
 
-#: GUI/resources.xrc:1327
+#: GUI/resources.xrc:1351
 msgid "Tools"
 msgstr "&Narzędzia"
 
-#: GUI/resources.xrc:1329
+#: GUI/resources.xrc:1353
 msgid "User Params\tCtrl+U"
 msgstr "Parametry użytkownika\tCtrl+U"
 
-#: GUI/resources.xrc:1333
+#: GUI/resources.xrc:1357
 msgid "Copy location\tCtrl+C"
 msgstr "Kopiuj lokalizację\tCtrl+C"
 
-#: GUI/resources.xrc:1336
+#: GUI/resources.xrc:1360
 msgid "Paste location\tCtrl+V"
 msgstr "Wklej lokalizację\tCtrl+V"
 
-#: GUI/resources.xrc:1343
+#: GUI/resources.xrc:1367
 msgid "Jump to date\tCtrl+J"
 msgstr "Skok pod datę\tCtrl+J"
 
-#: GUI/resources.xrc:1346
+#: GUI/resources.xrc:1370
 msgid "Search Date\tCtr+Shift+J"
 msgstr "Wyszukaj datę\tCtrl+Shift+J"
 
-#: GUI/resources.xrc:1349
+#: GUI/resources.xrc:1373
 msgid "Jump to latest date\tCtrl+End"
 msgstr "Skok do najnowszej danej\tCtrl+END"
 
-#: GUI/resources.xrc:1352
+#: GUI/resources.xrc:1376
 msgid "Move cursor to the end of screen\tEnd"
 msgstr "Skok do ostatniej próbki na ekranie\tEnd"
 
-#: GUI/resources.xrc:1355
+#: GUI/resources.xrc:1379
 msgid "Find\tCtrl+F"
 msgstr "Wyszukaj\tCtrl+F"
 
-#: GUI/resources.xrc:1358
+#: GUI/resources.xrc:1382
 msgid "Number of points on the graph"
 msgstr "Ilość punktów na wykresie"
 
-#: GUI/resources.xrc:1362
+#: GUI/resources.xrc:1386
 msgid "Refresh\tCtrl+R"
 msgstr "Odśwież\tCtrl+R"
 
-#: GUI/resources.xrc:1365
+#: GUI/resources.xrc:1389
 msgid "Clear cache\tCtrl+Shift+R"
 msgstr "Usuń zawartość cache\tCtrl+Shift+R"
 
-#: GUI/resources.xrc:1368
+#: GUI/resources.xrc:1392
 msgid "Set Params\tCtrl+O"
 msgstr "Ustaw parametry\tCtrl+O"
 
-#: GUI/resources.xrc:1374
+#: GUI/resources.xrc:1398
 msgid "Add remark\tCtrl+Shift+Alt+A"
 msgstr "Dodaj komentarz\tCtrl+Shift+Alt+A"
 
-#: GUI/resources.xrc:1377
+#: GUI/resources.xrc:1401
 msgid "Fetch remarks\tCtrl+Shift+Alt+F"
 msgstr "Pobierz komentarze\tCtrl+Shift+Alt+F"
 
-#: GUI/resources.xrc:1380
+#: GUI/resources.xrc:1404
 msgid "Show Remarks\tCtrl+Shift+Alt+S"
 msgstr "Pokaż komentarze\tCtrl+Shift+Alt+S"
 
-#: GUI/resources.xrc:1385
+#: GUI/resources.xrc:1409
 msgid "Import Draw2 definable windows\tCtrl+Shift+I"
 msgstr ""
 "Importuj okna definiowalne z wcześniejszej wersji programu\tCtrl+Shift+I"
 
-#: GUI/resources.xrc:1389
+#: GUI/resources.xrc:1413
 msgid "Reload Configuration\tCtrl+Shift+Alt+R"
 msgstr "Przeładuj konfigurację\tCtrl+Shift+Alt+R"
 
-#: GUI/resources.xrc:1393
+#: GUI/resources.xrc:1417
 msgid "Fetch New Network Parameters And Sets\tCtrl+Shift+Alt+N"
 msgstr "Pobierz parametry i zestawy sieciowe\tCtrl+Shift+Alt+N"
 
-#: GUI/resources.xrc:1397
+#: GUI/resources.xrc:1421
 msgid "Export data to file"
 msgstr "Wyeksportuj dane do pliku"
 
-#: GUI/resources.xrc:1401
+#: GUI/resources.xrc:1425
 msgid "Show error window\tCtrl+Shift+E"
 msgstr "Pokaż okno komunikatów\tCtrl+Shift+E"
 
-#: GUI/resources.xrc:1405
+#: GUI/resources.xrc:1429
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: GUI/resources.xrc:1409
+#: GUI/resources.xrc:1433
 msgid "0\tA"
 msgstr "0\tA"
 
-#: GUI/resources.xrc:1413
+#: GUI/resources.xrc:1437
 msgid "1\tB"
 msgstr "1\tB"
 
-#: GUI/resources.xrc:1417
+#: GUI/resources.xrc:1441
 msgid "2\tC"
 msgstr "2\tC"
 
-#: GUI/resources.xrc:1421
+#: GUI/resources.xrc:1445
 msgid "3\tD"
 msgstr "3\tD"
 
-#: GUI/resources.xrc:1425
+#: GUI/resources.xrc:1449
 msgid "4\tE"
 msgstr "4\tE"
 
-#: GUI/resources.xrc:1429
+#: GUI/resources.xrc:1453
 msgid "5\tF"
 msgstr "5\tF"
 
-#: GUI/resources.xrc:1434
+#: GUI/resources.xrc:1458
 msgid "Number of printed axes\tCtrl+X"
 msgstr "Ilość drukowanych osi\tCtrl+X"
 
-#: GUI/resources.xrc:1437
+#: GUI/resources.xrc:1461
 msgid "Language"
 msgstr "Język"
 
-#: GUI/resources.xrc:1440
+#: GUI/resources.xrc:1464
 msgid "Graphs view"
 msgstr "Widok okna z wykresami"
 
-#: GUI/resources.xrc:1446
+#: GUI/resources.xrc:1470
 msgid "Addresses of probes' servers"
 msgstr "Adres serwera próbek"
 
-#: GUI/resources.xrc:1451
+#: GUI/resources.xrc:1475
 msgid "&Window"
 msgstr "&Okno"
 
-#: GUI/resources.xrc:1453
+#: GUI/resources.xrc:1477
 msgid "Show average type"
 msgstr "Pokaż wybór średnich"
 
-#: GUI/resources.xrc:1457
+#: GUI/resources.xrc:1481
 msgid "Show interface"
 msgstr "Pokaż interfejs"
 
-#: GUI/resources.xrc:1461
+#: GUI/resources.xrc:1485
 msgid "Show arrows"
 msgstr "Pokaż strzałki"
 
-#: GUI/resources.xrc:1466
+#: GUI/resources.xrc:1490
 msgid "&Help"
 msgstr "Pomo&c"
 
-#: GUI/resources.xrc:1468
+#: GUI/resources.xrc:1492
 msgid "Help\tF1"
 msgstr "Pomoc\tF1"
 
-#: GUI/resources.xrc:1471
+#: GUI/resources.xrc:1495
 msgid "Context help\tShift+F1"
 msgstr "Pomoc kontekstowa\tShift+F1"
 
-#: GUI/resources.xrc:1474
+#: GUI/resources.xrc:1498
 msgid "About\tF2"
 msgstr "O programie\tF2"
 
-#: GUI/resources.xrc:1480
+#: GUI/resources.xrc:1504
 msgid "Edit parameter"
 msgstr "Edytuj parametr"
 
-#: GUI/resources.xrc:1502
+#: GUI/resources.xrc:1526
 msgid "Parameter name:"
 msgstr "Nazwa parametru:"
 
-#: GUI/resources.xrc:1536
+#: GUI/resources.xrc:1560
 msgid "Average value calculation method"
 msgstr "Średnie liczone jako:"
 
-#: GUI/resources.xrc:1545
+#: GUI/resources.xrc:1569
 msgid "mean of values of formula application to each probe"
 msgstr "średnia z zastosowania formuły dla każdej próbki"
 
-#: GUI/resources.xrc:1546
+#: GUI/resources.xrc:1570
 msgid "result of formula's application to average values of components"
 msgstr "wynik zastosowania formuły dla średnich"
 
-#: GUI/resources.xrc:1564
+#: GUI/resources.xrc:1588
 msgid "Parameter formula:"
 msgstr "Formuła parametru:"
 
-#: GUI/resources.xrc:1572
+#: GUI/resources.xrc:1596
 msgid "label&11"
 msgstr ""
 
-#: GUI/resources.xrc:1584
+#: GUI/resources.xrc:1608
 msgid "Undo"
 msgstr "Cofnij"
 
-#: GUI/resources.xrc:1585
+#: GUI/resources.xrc:1609
 msgid "<"
 msgstr "<"
 
-#: GUI/resources.xrc:1592
+#: GUI/resources.xrc:1616
 msgid "Redo"
 msgstr "Ponów"
 
-#: GUI/resources.xrc:1593
+#: GUI/resources.xrc:1617
 msgid ">"
 msgstr ">"
 
-#: GUI/resources.xrc:1607
+#: GUI/resources.xrc:1631
 msgid "Plus"
 msgstr "Plus"
 
-#: GUI/resources.xrc:1608
+#: GUI/resources.xrc:1632
 msgid "+"
 msgstr "+"
 
-#: GUI/resources.xrc:1615
+#: GUI/resources.xrc:1639
 msgid "Minus"
 msgstr "Minus"
 
-#: GUI/resources.xrc:1616
+#: GUI/resources.xrc:1640
 msgid "-"
 msgstr "-"
 
-#: GUI/resources.xrc:1623
+#: GUI/resources.xrc:1647
 msgid "Times"
 msgstr "Razy"
 
-#: GUI/resources.xrc:1624
+#: GUI/resources.xrc:1648
 msgid "*"
 msgstr "*"
 
-#: GUI/resources.xrc:1631
+#: GUI/resources.xrc:1655
 msgid "Divide"
 msgstr "Podzielić"
 
-#: GUI/resources.xrc:1632
+#: GUI/resources.xrc:1656
 msgid "/"
 msgstr "/"
 
-#: GUI/resources.xrc:1647
+#: GUI/resources.xrc:1671
 msgid "Insert param from graph"
 msgstr "Wstaw nowy parametr z wykresu"
 
-#: GUI/resources.xrc:1648
+#: GUI/resources.xrc:1672
 msgid "ID"
 msgstr "<W>"
 
-#: GUI/resources.xrc:1656
+#: GUI/resources.xrc:1680
 msgid "Insert user defined param"
 msgstr "Wstaw parametr zdefiniowany przez użytkownika"
 
-#: GUI/resources.xrc:1657
+#: GUI/resources.xrc:1681
 msgid "IP"
 msgstr "<P>"
 
-#: GUI/resources.xrc:1677
+#: GUI/resources.xrc:1701
 msgid "Displayed parameter precision:"
 msgstr "Ilość miejsc po przecinku:"
 
-#: GUI/resources.xrc:1706
+#: GUI/resources.xrc:1730
 msgid "Unit:"
 msgstr "Jednostka:"
 
-#: GUI/resources.xrc:1720
+#: GUI/resources.xrc:1744
 msgid "Insert degree"
 msgstr "Wstaw symbol stopnia"
 
-#: GUI/resources.xrc:1721
+#: GUI/resources.xrc:1745
 msgid "D"
 msgstr "D"
 
-#: GUI/resources.xrc:1746
+#: GUI/resources.xrc:1770
 msgid "Start date:"
 msgstr "Początek:"
 
-#: GUI/resources.xrc:1752
+#: GUI/resources.xrc:1776
 msgid "Choose start date"
 msgstr "Wybierz datę początkową"
 
-#: GUI/resources.xrc:1760
+#: GUI/resources.xrc:1784
 msgid "Choose start hour"
 msgstr "Wybierz godzinę"
 
-#: GUI/resources.xrc:1769
+#: GUI/resources.xrc:1793
 msgid "Choose start minute"
 msgstr "Wybierz minutę"
 
-#: GUI/resources.xrc:1775
+#: GUI/resources.xrc:1799
 msgid "Enable inserting start date"
 msgstr "Wstawianie daty początkowej"
 
-#: GUI/resources.xrc:1776
+#: GUI/resources.xrc:1800
 msgid "enabled"
 msgstr "włącz"
 
-#: GUI/resources.xrc:1798
+#: GUI/resources.xrc:1822
 msgid "Found date:"
 msgstr "Znaleziona data:"
 
-#: GUI/resources.xrc:1812
+#: GUI/resources.xrc:1836
 msgid "Base configuration:"
 msgstr "Konfiguracja odniesienia: "
 
-#: GUI/resources.xrc:1820
+#: GUI/resources.xrc:1844
 msgid "Choose reference configuration"
 msgstr "Wybierz konfigurację odniesienia"
 
-#: GUI/resources.xrc:1821
+#: GUI/resources.xrc:1845
 msgid "LABEL"
 msgstr "LABEL"
 
-#: GUI/resources.xrc:1893
+#: GUI/resources.xrc:1917
 msgid "Remark"
 msgstr "Komentarz"
 
-#: GUI/resources.xrc:1905
+#: GUI/resources.xrc:1929
 msgid "Base:"
 msgstr "Konfiguracja:"
 
-#: GUI/resources.xrc:1913
+#: GUI/resources.xrc:1937
 msgid "label&2"
 msgstr ""
 
-#: GUI/resources.xrc:1927
+#: GUI/resources.xrc:1951
 msgid "Set:"
 msgstr "Zestaw:"
 
-#: GUI/resources.xrc:1977
+#: GUI/resources.xrc:2001
 msgid "label&5"
 msgstr ""
 
-#: GUI/resources.xrc:1990
+#: GUI/resources.xrc:2014
 msgid "Remark referring to:"
 msgstr "Komentarz odnosi się do:"
 
-#: GUI/resources.xrc:2003
+#: GUI/resources.xrc:2027
 msgid "Currently selected window"
 msgstr "aktualnie wybranego okna"
 
-#: GUI/resources.xrc:2010
+#: GUI/resources.xrc:2034
 msgid "Whole base"
 msgstr "całego obiektu"
 
-#: GUI/resources.xrc:2031
+#: GUI/resources.xrc:2055
 msgid "Title:"
 msgstr "Tytuł:"
 
-#: GUI/resources.xrc:2047
+#: GUI/resources.xrc:2071
 msgid "Content:"
 msgstr "Treść:"
 
-#: GUI/resources.xrc:2099
+#: GUI/resources.xrc:2123
 msgid "Go to..."
 msgstr "Idź do..."
 
-#: GUI/resources.xrc:2121
+#: GUI/resources.xrc:2145
 msgid "Probe servers addresses"
 msgstr "Adres serwera próbek"
 
-#: GUI/resources.xrc:2129
+#: GUI/resources.xrc:2153
 msgid "Probe servers addresses:"
 msgstr "Adres serwera próbek:"
 

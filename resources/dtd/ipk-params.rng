@@ -168,6 +168,9 @@
 		</optional>
 		<!-- ipk-extra -->
 		<optional>
+			<attribute name="interface" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
+		</optional>
+		<optional>
 			<attribute name="packet" ns="http://www.praterm.com.pl/SZARP/ipk-extra"/>
 		</optional>
 		<optional>

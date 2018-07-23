@@ -18,7 +18,6 @@
  *
  * 1998.03.12 Codematic
  */
-
 #include "config.h"
 
 #include <stdlib.h>
