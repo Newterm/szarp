@@ -74,8 +74,7 @@ class Logger {
 	std::deque<std::shared_ptr<LogEntry>> _msgs_to_send;
 
 	std::future<void> _msg_cv;
-	bool logger_exited = true;
-	std::function<void()> log_thread = [this](){ log_messages(); };
+	std::function<void()> log_thread;
 
 	std::mutex _msg_mutex;
 	std::map<std::thread::id, std::shared_ptr<LogEntry>> _msgs;
@@ -87,6 +86,7 @@ class Logger {
 	void log(const std::string& msg, priority p);
 
 public:
+	Logger();
 	~Logger() {
 		flush();
 	}
@@ -122,6 +122,10 @@ public:
 
 	void set_log_treshold(int level) {
 		set_log_treshold(PriorityForLevel(level));
+	}
+
+	void close_logger() {
+		_logger.reset();
 	}
 
 	template <typename T>

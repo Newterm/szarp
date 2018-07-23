@@ -23,15 +23,15 @@ public:
 
 class LiveCache: public ParhubSubscriber {
 	using Observers = std::list<std::weak_ptr<LiveObserver>>;
-	std::unordered_map<size_t, std::pair<TParamValue, Observers>> live_callbacks;
+	std::unordered_map<size_t, std::pair<double, Observers>> live_callbacks;
 	std::unordered_map<std::string, size_t> params_inds;
 	std::unordered_map<size_t, std::string> params_names;
-	std::unordered_map<size_t, size_t> params_precs;
+	std::unordered_map<size_t, size_t> params_prec_adjs;
 
 	mutable std::recursive_mutex cb_mutex;
 
 public:
-	void param_value_changed(size_t ipc_ind, TParamValue value) override;
+	void param_value_changed(size_t ipc_ind, const szarp::ParamValue& value) override;
 
 	boost::optional<std::string> get_param_name(size_t ind) const;
 	boost::optional<size_t> get_param_ipc_ind(const std::string& pname) const;

@@ -13,6 +13,7 @@
 #include "ipchandler.h"
 #include "liblog.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "szbase/szbbase.h"
 
 #include "zmqhandler.h"
@@ -381,7 +382,7 @@ void pyszbase::check_no_init() {
 void pyszbase::init(const std::wstring& szarp_path, const std::wstring& lang) {
 	check_no_init();
 
-	IPKContainer::Init(szarp_path, szarp_path, lang);
+	ParamCachingIPKContainer::Init(szarp_path, szarp_path, lang);
 	Szbase::Init(szarp_path, false);
 
 	m_initialized = true;

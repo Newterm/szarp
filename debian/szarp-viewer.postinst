@@ -16,7 +16,6 @@ EOF
 
 configure() {
 	CRON=/etc/cron.d/szarp-viewer
-	KDE_AUTOSTART_DEST=/usr/share/autostart/ssc.desktop;
 	UPDATE_METHOD=;
 	SZARP_SCRIPTER="/opt/szarp/bin/szarp_scripter";
 
@@ -33,25 +32,21 @@ configure() {
 
 	[ -e "$KDE_AUTOSTART_DEST" ] && rm $KDE_AUTOSTART_DEST;
 
-	if [ "x$UPDATE_METHOD" = "xSSC" ]; then
-		ln -s /opt/szarp/resources/ssc.desktop $KDE_AUTOSTART_DEST 2>/dev/null || true;
-		ln -s /opt/szarp/resources/ssc.desktop /etc/xdg/autostart 2>/dev/null || true;
-	else
-		db_get szarp-viewer/userid;
-		if [ "x$RET" = "x" ]; then
-			return;
-		fi
-		ID=$RET;
+
+	db_get szarp-viewer/userid;
+	if [ "x$RET" = "x" ]; then
+		return;
+	fi
+	ID=$RET;
 
 		if [ "x$UPDATE_METHOD" = "xmanual" ]; then 
-			if [ "x$MAN_UPDATE_SCRIPT" != "x" ]; then 
-				echo -e "#/bin/sh\n${SZARP_SCRIPTER} $ID bodas" > $MAN_UPDATE_SCRIPT;
-				chmod a+x $MAN_UPDATE_SCRIPT;
-				/opt/szarp/bin/scc -reload_menu &> /dev/null || true;
-			fi	
-		else
-			echo -e "MAILTO=\"\"\n*/10 * * * *\troot\t${SZARP_SCRIPTER} $ID bodas" > $CRON;
-		fi
+		if [ "x$MAN_UPDATE_SCRIPT" != "x" ]; then 
+			echo -e "#/bin/sh\n${SZARP_SCRIPTER} $ID bodas" > $MAN_UPDATE_SCRIPT;
+			chmod a+x $MAN_UPDATE_SCRIPT;
+			/opt/szarp/bin/scc -reload_menu &> /dev/null || true;
+		fi	
+	else
+		echo -e "MAILTO=\"\"\n*/10 * * * *\troot\t${SZARP_SCRIPTER} $ID bodas" > $CRON;
 	fi
 }
 

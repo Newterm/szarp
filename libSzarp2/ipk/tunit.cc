@@ -142,11 +142,15 @@ size_t TUnit::GetParamsCount() const
 	return i;
 }
 
-size_t TUnit::GetSendParamsCount() const
+size_t TUnit::GetSendParamsCount(bool ignore_non_ipc) const
 {
 	int i;
 	TSendParam* s;
-	for (i = 0, s = sendParams; s; i++, s = s->GetNext());
+	for (i = 0, s = sendParams; s; s = s->GetNext()) {
+		if (!ignore_non_ipc || s->hasAttribute("param"))
+			++i;
+	}
+
 	return i;
 }
 

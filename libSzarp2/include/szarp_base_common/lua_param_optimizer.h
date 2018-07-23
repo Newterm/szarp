@@ -27,7 +27,7 @@
 #include "szarp_base_common/defines.h"
 #include "szarp_base_common/time.h"
 #include "szarp_base_common/lua_syntax.h"
-#include "szarp_config.h"
+#include "ipkcontainer.h"
 
 namespace LuaExec {
 

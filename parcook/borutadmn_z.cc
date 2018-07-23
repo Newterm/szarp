@@ -111,1275 +111,437 @@
 #include "tokens.h"
 #include "borutadmn_z.h"
 
-bool g_debug = false;
+#include "tcpconn.h"
+#include "tcpserverconn.h"
+#include "serialport.h"
+#include "serialportconf.h"
+
+#include "cfgdealer_handler.h"
+
+struct event_base* EventBaseHolder::evbase;
 
 static const time_t RECONNECT_ATTEMPT_DELAY = 10;
 
-driver_logger::driver_logger(boruta_driver* driver) : m_driver(driver) {
-}
-
-void driver_logger::log(int level, const char * fmt, ...) {
-	va_list fmt_args;
-	va_start(fmt_args, fmt);
-	m_driver->vdriver_log(level, fmt, fmt_args);
-	va_end(fmt_args);
-}
-
-void driver_logger::vlog(int level, const char * fmt, va_list fmt_args) {
-	m_driver->vdriver_log(level, fmt, fmt_args);
-}
-
 /*implementation*/
 
-std::string sock_addr_to_string(const std::pair<std::string, short>& addr) {
-	std::stringstream ss;
-	ss << addr.first << ":" << addr.second;
-	return ss.str();
+namespace szarp {
+
+template class time_spec<util::_ms>;
+template class time_spec<util::_us>;
+
+template <typename ts>
+time_spec<ts> operator+(const time_spec<ts>& ms1, const time_spec<ts>& ms2) {
+	time_spec<ts> m = ms1;
+	m += ms2;
+	return m;
 }
 
-int set_nonblock(int fd) {
-
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1) {
-		dolog(1, "set_nonblock: Unable to get socket flags");
-		return -1;
-	}
-
-	flags |= O_NONBLOCK;
-	flags = fcntl(fd, F_SETFL, flags);
-	if (flags == -1) {
-		dolog(1, "set_nonblock: Unable to set socket flags");
-		return -1;
-	}
-
-	return 0;
+template <typename ts>
+time_spec<ts> operator-(const time_spec<ts>& ms1, const time_spec<ts>& ms2) {
+	time_spec<ts> m = ms1;
+	m -= ms2;
+	return m;
 }
 
-int get_serial_port_config(TAttribHolder* unit, serial_port_configuration &spc) {
-	std::string path = unit->getAttribute<std::string>("extra:path", "");
-	if (path.empty())
-		return 1;
-	spc.path = path;
+template time_spec<util::_ms> operator-(const time_spec<util::_ms>&, const time_spec<util::_ms>&);
+template time_spec<util::_us> operator-(const time_spec<util::_us>&, const time_spec<util::_us>&);
 
-	int speed = unit->getAttribute("extra:speed", 0);
-	if (speed == 0) {
-		dolog(10, "Speed not specified, assuming value 9600");
-		speed = 9600;
+sz4::second_time_t time_now() {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	return sz4::second_time_t(time.tv_sec);
+}
+
+template <>
+sz4::nanosecond_time_t time_now() {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	return sz4::nanosecond_time_t(time.tv_sec, time.tv_nsec);
+}
+
+} // ns szarp
+
+Scheduler::Scheduler() {
+	evtimer_set(&m_timer, timer_callback, this);
+	event_base_set(EventBaseHolder::evbase, &m_timer);
+}
+
+void Scheduler::set_callback(Callback* _callback) {
+	callback = _callback;
+}
+
+void Scheduler::schedule() {
+	evtimer_add(&m_timer, &tv);
+}
+
+void Scheduler::reschedule() {
+	cancel();
+	schedule();
+}
+
+void Scheduler::cancel() {
+	event_del(&m_timer);
+}
+
+void Scheduler::timer_callback(int fd, short event, void *obj) {
+	try {
+		auto *sched = (Scheduler*) obj;
+		(*sched->callback)();
+	} catch(const std::exception& e) {
+		sz_log(2, "Exception caught in timer callback: %s", e.what());
 	}
-	dolog(10, "Serial port configuration, speed: %d", speed);
-	spc.speed = speed;
+}
+
+CycleScheduler::CycleScheduler(cycle_callback_handler* handler): scheduler() {
+	scheduler.set_callback(this);
+	cycle_handler = handler;
+}
+
+void CycleScheduler::configure(UnitInfo* unit) {
+	auto cycle_timeout = unit->getAttribute<int>("ms_cycle_period", 10000);
+	scheduler.set_timeout(szarp::ms(cycle_timeout));
+	scheduler.schedule();
+}
+
+void CycleScheduler::operator()() {
+	std::lock_guard<std::mutex> cycle_guard(cycle_mutex);
+	scheduler.schedule();
+	cycle_handler->start_cycle();
+}
+
+
+template <typename T>
+using bopt = boost::optional<T>;
+
+bopt<SerialPortConfiguration> get_serial_conf(UnitInfo* unit) {
+	SerialPortConfiguration conf;
+	
+	if (auto path = unit->getOptAttribute<std::string>("extra:path")) {
+		conf.path = *path;
+	}
+
+	int speed = unit->getAttribute("extra:speed", 9600);
+	conf.speed = speed;
 
 	std::string parity = unit->getAttribute<std::string>("extra:parity", "");
 	if (parity.empty()) {
-		dolog(10, "Serial port configuration, parity not specified, assuming no parity");
-		spc.parity = serial_port_configuration::NONE;
+		sz_log(10, "Serial port configuration, parity not specified, assuming no parity");
+		conf.parity = SerialPortConfiguration::NONE;
 	} else if (parity == "none") {
-		dolog(10, "Serial port configuration, none parity");
-		spc.parity = serial_port_configuration::NONE;
+		sz_log(10, "Serial port configuration, none parity");
+		conf.parity = SerialPortConfiguration::NONE;
 	} else if (parity == "even") {
-		dolog(10, "Serial port configuration, even parity");
-		spc.parity = serial_port_configuration::EVEN;
+		sz_log(10, "Serial port configuration, even parity");
+		conf.parity = SerialPortConfiguration::EVEN;
 	} else if (parity == "odd") {
-		dolog(10, "Serial port configuration, odd parity");
-		spc.parity = serial_port_configuration::ODD;
+		sz_log(10, "Serial port configuration, odd parity");
+		conf.parity = SerialPortConfiguration::ODD;
 	} else {
-		dolog(1, "Unsupported parity %s, confiugration invalid!!!", parity.c_str());
-		return 1;	
+		sz_log(1, "Unsupported parity %s, confiugration invalid!!!", parity.c_str());
+		return boost::none;	
 	}
 
-	std::string stop_bits = unit->getAttribute<std::string>("extra:stopbits", "");
-	if (stop_bits.empty()) {
-		dolog(10, "Serial port configuration, stop bits not specified, assuming 1 stop bit");
-		spc.stop_bits = 1;
-	} else if (stop_bits == "1") {
-		dolog(10, "Serial port configuration, setting one stop bit");
-		spc.stop_bits = 1;
-	} else if (stop_bits == "2") {
-		dolog(10, "Serial port configuration, setting two stop bits");
-		spc.stop_bits = 2;
-	} else {
-		dolog(1, "Unsupported number of stop bits %s, confiugration invalid!!!", stop_bits.c_str());
-		return 1;
+	int stop_bits = unit->getAttribute<int>("extra:stopbits", 1);
+	if (stop_bits != 1 && stop_bits != 2) {
+		sz_log(1, "Unsupported number of stop bits %i, confiugration invalid!!!", stop_bits);
+		return boost::none;
 	}
 
-	std::string char_size = unit->getAttribute<std::string>("extra:char_size", "");
-	if (char_size.empty()) {
-		dolog(10, "Serial port configuration, char size not specified, assuming 8 bit char size");
-		spc.char_size = serial_port_configuration::CS_8;
-	} else if (char_size == "8") {
-		dolog(10, "Serial port configuration, setting 8 bit char size");
-		spc.char_size = serial_port_configuration::CS_8;
-	} else if (char_size == "7") {
-		dolog(10, "Serial port configuration, setting 7 bit char size");
-		spc.char_size = serial_port_configuration::CS_7;
-	} else if (char_size == "6") {
-		dolog(10, "Serial port configuration, setting 6 bit char size");
-		spc.char_size = serial_port_configuration::CS_6;
-	} else {
-		dolog(1, "Unsupported char size %s, confiugration invalid!!!", char_size.c_str());
-		return 1;
-	}
-	return 0;
-}
+	conf.stop_bits = stop_bits;
 
-int set_serial_port_settings(int fd, serial_port_configuration &spc) {
-	struct termios ti;
-	if (tcgetattr(fd, &ti) == -1) {
-		dolog(1, "Cannot retrieve port settings, errno:%d (%s)", errno, strerror(errno));
-		return 1;
+	int char_size = unit->getAttribute<int>("extra:char_size", 8);
+	switch (char_size) {
+	case 5:
+		conf.char_size = SerialPortConfiguration::CS_5;
+		break;
+	case 6:
+		conf.char_size = SerialPortConfiguration::CS_6;
+		break;
+	case 7:
+		conf.char_size = SerialPortConfiguration::CS_7;
+		break;
+	case 8:
+		conf.char_size = SerialPortConfiguration::CS_8;
+		break;
+	default:
+		sz_log(1, "Unsupported char size %i, confiugration invalid!!!", char_size);
+		return boost::none;
 	}
 
-	dolog(8, "setting port speed to %d", spc.speed);
-	switch (spc.speed) {
-		case 300:
-			ti.c_cflag = B300;
-			break;
-		case 600:
-			ti.c_cflag = B600;
-			break;
-		case 1200:
-			ti.c_cflag = B1200;
-			break;
-		case 2400:
-			ti.c_cflag = B2400;
-			break;
-		case 4800:
-			ti.c_cflag = B4800;
-			break;
-		case 9600:
-			ti.c_cflag = B9600;
-			break;
-		case 19200:
-			ti.c_cflag = B19200;
-			break;
-		case 38400:
-			ti.c_cflag = B38400;
-			break;
-		case 115200:
-			ti.c_cflag = B115200;
-			break;
-		default:
-			ti.c_cflag = B9600;
-			dolog(8, "setting port speed to default value 9600");
-	}
+	sz_log(6, "Configured %i char size", conf.GetCharSizeInt());
 
-	if (spc.stop_bits == 2)
-		ti.c_cflag |= CSTOPB;
-
-	switch (spc.parity) {
-		case serial_port_configuration::ODD:
-			ti.c_cflag |= PARODD;
-		case serial_port_configuration::EVEN:
-			ti.c_cflag |= PARENB;
-			break;
-		case serial_port_configuration::NONE:
-			break;
-	}
-			
-	ti.c_oflag = 
-	ti.c_iflag =
-	ti.c_lflag = 0;
-
-	ti.c_cflag |= CREAD | CLOCAL ;
-
-	switch (spc.char_size) {
-		case serial_port_configuration::CS_8:
-			ti.c_cflag |= CS8;
-			break;
-		case serial_port_configuration::CS_7:
-			ti.c_cflag |= CS7;
-			break;
-		case serial_port_configuration::CS_6:
-			ti.c_cflag |= CS6;
-			break;
-	}
-
-	if (tcsetattr(fd, TCSANOW, &ti) == -1) {
-		dolog(1,"Cannot set port settings, errno: %d (%s)", errno, strerror(errno));	
-		return -1;
-	}
-	return 0;
+	return conf;
 }
 
-void boruta_driver::set_event_base(struct event_base* ev_base)
-{
-	m_event_base = ev_base;
-}
 
-void boruta_driver::set_zmq_handler(zmqhandler* zmq)
-{
-	m_zmq = zmq;
-}
+enum class Proto {modbus, fc};
+enum class Mode {client, server};
+enum class Medium {tcp, serial};
 
-void boruta_driver::set_address_string(const std::string& str) {
-	m_address_string = str;		
-}
+struct driver_factory {
+	std::map<Proto, std::string> proto_names = {
+		{Proto::modbus, "modbus"},
+		{Proto::fc, "fc"}
+	};
 
-const std::string& boruta_driver::address_string() const {
-	return m_address_string;
-}
+	std::map<Mode, std::string> mode_names = {
+		{Mode::client, "client"},
+		{Mode::server, "server"}
+	};
 
-const std::pair<size_t, size_t> & client_driver::id() {
-	return m_id;
-}
+	std::map<Medium, std::string> medium_names = {
+		{Medium::serial, "serial"},
+		{Medium::tcp, "tcp"}
+	};
 
-void client_driver::set_id(std::pair<size_t, size_t> id) {
-	m_id = id;
-}
-
-void client_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
-{
-	char *l;
-	if (vasprintf(&l, fmt, fmt_args) != -1) {
-		::dolog(level, "%s:%s:%zu:%s", driver_name(), m_address_string.c_str(), m_id.second, l);
-		free(l);
-	} else {
-		::dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
-					driver_name(), m_address_string.c_str(), strerror(errno));
-	}
-}
-
-void client_driver::set_manager(client_manager* manager) {
-	m_manager = manager;
-}
-
-void client_driver::finished_cycle() {
-	return;
-}
-
-void client_driver::starting_new_cycle() {
-	return;
-}
-
-size_t& server_driver::id() {
-	return m_id;
-}
-
-void server_driver::vdriver_log(int level, const char * fmt, va_list fmt_args)
-{
-	char *l;
-	if (vasprintf(&l, fmt, fmt_args) != -1) {
-		dolog(level, "%s:%s:%s", driver_name(), m_address_string.c_str(), l);
-		free(l);
-	} else {
-		dolog(2, "Error in formatting log message, driver: %s, address: %s, error: %s",
-					driver_name(), m_address_string.c_str(), strerror(errno));
-	}
-}
-
-tcp_proxy_2_serial_client::tcp_proxy_2_serial_client(serial_client_driver* _serial_client) : m_serial_client(_serial_client) { }
-
-
-
-const std::pair<size_t, size_t> & tcp_proxy_2_serial_client::id() {
-	return m_serial_client->id();
-}
-
-void tcp_proxy_2_serial_client::set_id(std::pair<size_t, size_t> id) {
-	m_serial_client->set_id(id);
-}
-
-void tcp_proxy_2_serial_client::set_manager(client_manager* manager) {
-	m_serial_client->set_manager(manager);
-}
-
-void tcp_proxy_2_serial_client::set_event_base(struct event_base* ev_base) {
-	m_serial_client->set_event_base(ev_base);
-}
-
-void tcp_proxy_2_serial_client::set_zmq_handler(zmqhandler* zmq) {
-	m_serial_client->set_zmq_handler(zmq);
-}
-
-const char* tcp_proxy_2_serial_client::driver_name() {
-	return m_serial_client->driver_name();
-}
-
-void tcp_proxy_2_serial_client::set_address_string(const std::string& str) {
-	return m_serial_client->set_address_string(str);
-}
-
-const std::string& tcp_proxy_2_serial_client::address_string() const {
-	return m_address_string;
-}
-
-void tcp_proxy_2_serial_client::connection_error(struct bufferevent *bufev) {
-	m_serial_client->connection_error(bufev);
-}
-
-void tcp_proxy_2_serial_client::scheduled(struct bufferevent* bufev, int fd) {
-	m_serial_client->scheduled(bufev, fd);
-}
-
-void tcp_proxy_2_serial_client::data_ready(struct bufferevent* bufev, int fd) {
-	m_serial_client->data_ready(bufev, fd);
-}
-
-void tcp_proxy_2_serial_client::finished_cycle() {
-	m_serial_client->finished_cycle();
-}
-
-void tcp_proxy_2_serial_client::starting_new_cycle() {
-	m_serial_client->starting_new_cycle();
-}
-
-int tcp_proxy_2_serial_client::configure(TUnit* unit, size_t read, size_t send) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(unit, spc)) {
-		dolog(1, "tcp_proxy_2_serial_client: failed to get serial port settings for tcp_proxy_2_serial_client");
-		return 1;
-	}
-	return m_serial_client->configure(unit, read, send, spc);
-}
-
-tcp_proxy_2_serial_client::~tcp_proxy_2_serial_client() {
-	delete m_serial_client;
-}
-
-void serial_server_driver::set_manager(serial_server_manager* manager) {
-	m_manager = manager;
-}
-
-void tcp_server_driver::set_manager(tcp_server_manager* manager) {
-	m_manager = manager;
-}
-
-protocols::protocols() {
-	m_tcp_client_factories["modbus"] = create_modbus_tcp_client;
-	m_serial_client_factories["modbus"] = create_modbus_serial_client;
-	m_tcp_server_factories["modbus"] = create_modbus_tcp_server;
-	m_serial_server_factories["modbus"] = create_modbus_serial_server;
-	m_serial_client_factories["fc"] = create_fc_serial_client;
-}
-
-std::string protocols::get_proto_name(TUnit* unit) {
-	std::string ret = unit->getAttribute<std::string>("extra:proto", "");
-	return ret;
-}
-
-tcp_client_driver* protocols::create_tcp_client_driver(TUnit* unit) {
-	std::string proto = get_proto_name(unit);
-	if (proto.empty())
-		return NULL;
-	std::string use_tcp_2_serial_proxy = unit->getAttribute<std::string>("extra:use_tcp_2_serial_proxy", "no");
-
-	if (use_tcp_2_serial_proxy != "yes") {
-		tcp_client_factories_table::iterator i = m_tcp_client_factories.find(proto);
-		if (i == m_tcp_client_factories.end()) {
-			dolog(1, "No driver defined for proto %s and tcp client role", proto.c_str());
-			return NULL;
-		}
-		return i->second();
-	} else {
-		serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
-		if (i == m_serial_client_factories.end()) {
-			dolog(1, "No driver defined for proto %s and serial client role", proto.c_str());
-			return NULL;
-		}
-		return new tcp_proxy_2_serial_client(i->second());
-	}
-}
-
-serial_client_driver* protocols::create_serial_client_driver(TUnit* unit) {
-	std::string proto = get_proto_name(unit);
-	if (proto.empty())
-		return NULL;
-	serial_client_factories_table::iterator i = m_serial_client_factories.find(proto);
-	if (i == m_serial_client_factories.end()) {
-		dolog(1, "No driver defined for proto %s and serial client role", proto.c_str());
-		return NULL;
-	}
-	return i->second();
-}
-
-tcp_server_driver* protocols::create_tcp_server_driver(TUnit* unit) {
-	std::string proto = get_proto_name(unit);
-	if (proto.empty())
-		return NULL;
-	tcp_server_factories_table::iterator i = m_tcp_server_factories.find(proto);
-	if (i == m_tcp_server_factories.end()) {
-		dolog(1, "No driver defined for proto %s and tcp server role", proto.c_str());
-		return NULL;
-	}
-	return i->second();
-}
-
-serial_server_driver* protocols::create_serial_server_driver(TUnit* unit) {
-	std::string proto = get_proto_name(unit);
-	if (proto.empty())
-		return NULL;
-	serial_server_factories_table::iterator i = m_serial_server_factories.find(proto);
-	if (i == m_serial_server_factories.end()) {
-		dolog(1, "No driver defined for proto %s and serial server role", proto.c_str());
-		return NULL;
-	}
-	return i->second();
-}
-
-serial_connection::serial_connection(size_t _conn_no, serial_connection_manager *_manager) :
-	conn_no(_conn_no), manager(_manager), fd(-1), bufev(NULL) {}
-
-int serial_connection::open_connection(const std::string& path, struct event_base* ev_base) {
-	fd = open(path.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK, 0);
-	if (fd == -1) {
-		dolog(1, "Failed do open port: %s, error: %s", path.c_str(), strerror(errno));
-		return 1;
-	}
-	bufev = bufferevent_new(fd, connection_read_cb, NULL, connection_error_cb, this);
-	bufferevent_base_set(ev_base, bufev);
-	bufferevent_enable(bufev, EV_READ | EV_WRITE | EV_PERSIST);
-	return 0;
-}
-
-void serial_connection::close_connection() {
-	if (bufev) {
-		bufferevent_free(bufev);
-		bufev = NULL;
-	}
-	if (fd >= 0) {
-		close(fd);
-		fd = -1;
-	}	
-}
-
-void serial_connection::connection_read_cb(struct bufferevent *ev, void* _connection) {
-	serial_connection* c = (serial_connection*) _connection;
-	c->manager->connection_read_cb(c);
-}
-
-void serial_connection::connection_error_cb(struct bufferevent *ev, short event, void* _connection) {
-	serial_connection* c = (serial_connection*) _connection;
-	c->manager->connection_error_cb(c);
-}
-
-void client_manager::finished_cycle() {
-	dolog(7, "client_manager::finished_cycle");
-	for (auto& clients : m_connection_client_map)
-		for (auto* client_driver : clients)
-			client_driver->finished_cycle();
-}
-
-void client_manager::starting_new_cycle() {
-	dolog(7, "client_manager::starting new cycle");
-	for (auto& clients : m_connection_client_map)
-		for (auto* client_driver : clients)
-			client_driver->starting_new_cycle();
-	for (size_t connection = 0; connection < m_connection_client_map.size(); connection++) {
-		size_t& client = m_current_client.at(connection);
-		CONNECTION_STATE state = do_establish_connection(connection);
-		dolog(7, "client_manager::starting_new_cycle connection: %zu state: %d", connection, state);
-		if (state == CONNECTED && client == m_connection_client_map.at(connection).size()) {
-			client = 0;
-			do_schedule(connection, client);
+	Proto get_proto(UnitInfo* unit) {
+		std::string proto_opt = unit->getAttribute<std::string>("extra:proto", "modbus");
+		if (proto_opt == "modbus") {
+			return Proto::modbus;
+		} else if (proto_opt == "fc") {
+			return Proto::fc;
+		} else {
+			throw std::runtime_error("Invalid proto option (can be modbus or fc)");
 		}
 	}
-}
 
-void client_manager::driver_finished_job(client_driver *driver) {
-	size_t connection = driver->id().first;
-	size_t& client = m_current_client.at(connection);
-	if (driver->id().second != client) {
-		dolog(1, "Boruta was notfied by client number %zu (connection %s) that it has finished it's job!",
-			 client, m_connection_client_map.at(connection).at(client)->address_string().c_str());
-		dolog(1, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
-		return;
-	}
-	if (++client < m_connection_client_map.at(connection).size())
-		do_schedule(connection, client);
-}
-
-void client_manager::terminate_connection(client_driver *driver) {
-	size_t connection = driver->id().first;
-	size_t& client = m_current_client.at(connection);
-	dolog(2, "client_manager::terminate_connection: connection: %s, client: %zu",
-		m_connection_client_map.at(connection).at(client)->address_string().c_str(),
-		client);
-	if (driver->id().second != client) {
-		dolog(1, "Boruta core was requested by driver number %zu (connection %s) to terminate connection!",
-				client,
-				m_connection_client_map.at(connection).at(client)->address_string().c_str());
-		dolog(1, "But this driver in not a current driver for this connection, THIS IS VERY, VERY WRONG (BUGGY DRIVER?)");
-		dolog(1, "Request ignored");
-		return;
-	}
-	do_terminate_connection(connection);
-	client += 1;
-	if (client < m_connection_client_map.at(connection).size()) {
-		if (do_establish_connection(connection) != CONNECTED)
-			return;
-		do_schedule(connection, client);
-	}
-}
-
-void client_manager::connection_read_cb(size_t connection, struct bufferevent *bufev, int fd) { 
-	if (m_current_client.at(connection) < m_connection_client_map.at(connection).size()) {
-		client_driver *d = m_connection_client_map.at(connection).at(m_current_client.at(connection));
-		d->data_ready(bufev, fd);
-	} else {
-		dolog(1, "Received data in client_manager when for connection address (%s) no driver is active. Terminating connection",
-				m_connection_client_map.at(connection).at(0)->address_string().c_str());
-		do_terminate_connection(connection);
-	}
-}
-
-void client_manager::connection_error_cb(size_t connection) {
-	size_t &current_client = m_current_client.at(connection);
-	if (m_current_client.at(connection) >= m_connection_client_map.at(connection).size()) {
-		do_terminate_connection(connection);
-		return;
-	}
-	client_driver *d = m_connection_client_map.at(connection).at(current_client);
-	d->connection_error(do_get_connection_buf(connection));
-	do_terminate_connection(connection);
-	size_t clients_count = m_connection_client_map.at(connection).size();
-	current_client += 1;
-	if (current_client == clients_count)
-		return;
-
-	CONNECTION_STATE connection_state = do_establish_connection(connection);
-	if (connection_state == CONNECTED)
-		do_schedule(connection, current_client);	
-}
-
-void client_manager::connection_established_cb(size_t connection) {
-	size_t &current_client = m_current_client.at(connection);
-	if (current_client == m_connection_client_map.at(connection).size())
-		current_client = 0;
-	do_schedule(connection, current_client);
-}
-
-tcp_client_manager::tcp_connection::tcp_connection(tcp_client_manager *_manager, size_t _addr_no, const std::pair<std::string, short>& _address) : state(NOT_CONNECTED), fd(-1), bufev(NULL), conn_no(_addr_no), manager(_manager), address(_address) {}
-
-void tcp_client_manager::tcp_connection::schedule_timer(int secs, int usecs) {
-	struct timeval tv;
-	tv.tv_sec = secs;
-	tv.tv_usec = usecs;
-	evtimer_add(&timer, &tv); 
-}
-				
-int tcp_client_manager::get_address(TUnit* unit, std::pair<std::string, short> &addr) {
-	addr.first = unit->getAttribute<std::string>("extra:tcp-address", "");
-	addr.second = unit->getAttribute<short>("extra:tcp-port", -1);
-	if (addr.first.empty() || addr.second < 0)
-		return 1;
-	return 0;
-}
-
-void tcp_client_manager::close_connection(tcp_connection &c) {
-	if (c.bufev) {
-		bufferevent_free(c.bufev);
-		c.bufev = NULL;
-	}
-	c.fd = -1;
-	c.state = NOT_CONNECTED;
-	dolog(2, "tcp_client_manager::close_connection connection %s closed", c.address.first.c_str());
-}
-
-void tcp_client_manager::open_connection(tcp_connection &c, struct sockaddr_in& addr) {
-	dolog(2, "tcp_client_manager::open_connection %s", c.address.first.c_str());
-	c.fd = socket(PF_INET, SOCK_STREAM, 0);
-	ASSERT(c.fd >= 0);
-	if (set_nonblock(c.fd)) {
-		dolog(1, "Failed to set non blocking mode on socket");
-		close_connection(c);
-		return;
-	}
-	c.bufev = bufferevent_socket_new(
-			m_boruta->get_event_base(),
-			c.fd,
-			BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
-	bufferevent_setcb(c.bufev, connection_read_cb, 
-			NULL, connection_event_cb,
-			&c);
-	if (bufferevent_socket_connect(c.bufev, (struct sockaddr*) &addr, sizeof(addr))) {
-		dolog(1, "Failed to connect: %s", strerror(errno));
-		close_connection(c);
-		return;
-	}
-	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
-	c.state = CONNECTING;
-	c.schedule_timer(c.establishment_timeout, 0);
-}
-
-void tcp_client_manager::resolve_address(tcp_connection& c) {
-	c.state = RESOLVING_ADDR;
-	struct evutil_addrinfo hints;	
-	hints.ai_family = AF_INET;
-	hints.ai_flags = EVUTIL_AI_CANONNAME;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	c.dns_request = evdns_getaddrinfo(m_boruta->get_evdns_base(), c.address.first.c_str(), NULL,
-				&hints, tcp_client_manager::address_resolved_cb, &c);
-}
-
-CONNECTION_STATE tcp_client_manager::do_get_connection_state(size_t conn_no) {
-	return m_tcp_connections.at(conn_no).state;
-}
-
-struct bufferevent* tcp_client_manager::do_get_connection_buf(size_t conn_no) {
-	return m_tcp_connections.at(conn_no).bufev;
-}
-
-void tcp_client_manager::do_terminate_connection(size_t conn_no) {
-	tcp_connection &c = m_tcp_connections.at(conn_no);
-	switch (c.state) {
-		case RESOLVING_ADDR:
-			break;
-		case CONNECTED:
-		case CONNECTING:
-			dolog(2, "tcp_client_manager::do_terminate_connection connection: %s, scheduling recconect", c.address.first.c_str());
-			close_connection(c);
-			c.schedule_timer(c.retry_gap, 0);
-			c.state = IDLING;
-			break;
-		case NOT_CONNECTED:
-		case IDLING:
-			dolog(1, "tcp_client_manager::do_terminate_connection connection: %s,"
-				"however connection is is not connected/idling state, doing nothing",
-				c.address.first.c_str());
-			break;
-	}
-}
-
-CONNECTION_STATE tcp_client_manager::do_establish_connection(size_t conn_no) {
-	tcp_connection &c = m_tcp_connections.at(conn_no);
-	if (c.state == NOT_CONNECTED) {
-		dolog(2, "tcp_client_manager::connecting to address: %s", c.address.first.c_str());
-		resolve_address(c);
-	}
-	return c.state;
-}
-
-void tcp_client_manager::do_schedule(size_t conn_no, size_t client_no) {
-	tcp_connection& c = m_tcp_connections.at(conn_no);
-	dolog(7, "tcp_client_manager::scheduling client %zu for address %s", client_no, c.address.first.c_str());
-	m_connection_client_map.at(conn_no).at(client_no)->scheduled(c.bufev, c.fd);
-}
-
-int tcp_client_manager::configure(TUnit *unit, size_t read, size_t send, protocols& _protocols) {
-	std::pair<std::string, short> addr;
-	if (get_address(unit, addr))
-		return 1;
-	tcp_client_driver* driver = _protocols.create_tcp_client_driver(unit);
-	if (driver == NULL)
-		return 1;
-	driver->set_manager(this);
-	driver->set_event_base(m_boruta->get_event_base());
-	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, read, send)) {
-		delete driver;
-		return 1;
-	}
-	size_t i;
-	for (i = 0; i < m_addresses.size(); i++)
-		if (addr == m_addresses[i])
-			break;
-	if (i == m_addresses.size()) {
-		i = m_addresses.size();
-		m_addresses.push_back(addr);
-		m_connection_client_map.push_back(std::vector<client_driver*>());
-		
-		tcp_connection c(this, i, addr);
-
-		c.retry_gap = unit->getAttribute("extra:connection-retry-gap", 4);
-
-		c.establishment_timeout = unit->getAttribute("extra:connection-establishment-timeout", 10);
-
-		dolog(1, "%s establishment_timeout %d, retry_gap: %d", c.address.first.c_str(), c.establishment_timeout, c.retry_gap);
-		m_tcp_connections.push_back(c);
-	}
-
-	driver->set_id(std::make_pair(i, m_connection_client_map[i].size()));
-	driver->set_address_string(sock_addr_to_string(addr));
-
-	m_connection_client_map[i].push_back(driver);
-	return 0;
-}
-
-int tcp_client_manager::initialize() {
-	m_current_client.resize(m_connection_client_map.size());
-
-	for (size_t i = 0; i < m_connection_client_map.size(); i++)
-		m_current_client.at(i) = m_connection_client_map.at(i).size();
-
-	for (size_t i = 0; i < m_tcp_connections.size(); i++) {
-		tcp_connection& c = m_tcp_connections[i];
-		evtimer_set(&c.timer, connection_timer_cb , &c);
-		event_base_set(m_boruta->get_event_base(), &c.timer);
-	}
-
-	return 0;
-}
-
-void tcp_client_manager::connection_read_cb(struct bufferevent *ev, void* _tcp_connection) {
-	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	tcp_client_manager* t = c->manager;
-	t->client_manager::connection_read_cb(c->conn_no, c->bufev, c->fd);
-}
-
-void tcp_client_manager::connection_event_cb(struct bufferevent *ev, short event, void* _tcp_connection) {
-	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	tcp_client_manager* t = c->manager;
-
-	if (event & BEV_EVENT_CONNECTED) {
-		c->state = CONNECTED;
-		event_del(&c->timer);
-		dolog(2, "tcp_client_manager: connection with address: %s established", c->address.first.c_str());
-		t->connection_established_cb(c->conn_no);
-	} 
-
-	if (event & BEV_EVENT_ERROR) {
-		dolog(1, "tcp_client_manager::connection_error_cb connection with address: %s error", c->address.first.c_str());
-		switch (c->state) {
-			case CONNECTING:
-				event_del(&c->timer);
-				break;
-			case CONNECTED:
-				break;
-			case IDLING:
-				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
-					"while in idling state, this is WRONG!!!", c->address.first.c_str());
-				break;
-			case NOT_CONNECTED:
-				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
-					"while in not not connected state, this is WRONG!!!", c->address.first.c_str());
-				break;
-			case RESOLVING_ADDR:
-				dolog(1, "tcp_client_manager::connection_error_cb failure of connection with address: %s,"
-					"while in resolving address state, this is WRONG!!!", c->address.first.c_str());
-				break;
+	Mode get_mode(UnitInfo* unit) {
+		std::string mode_opt = unit->getAttribute<std::string>("extra:mode", "client");
+		if (mode_opt == "client") {
+			return Mode::client;
+		} else if (mode_opt == "server") {
+			return Mode::server;
+		} else {
+			throw std::runtime_error("Invalid mode option (can be client or server)");
 		}
-		t->client_manager::connection_error_cb(c->conn_no);
 	}
-}
 
-void tcp_client_manager::connection_timer_cb(int fd, short event, void* _tcp_connection) {
-	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	tcp_client_manager* t = c->manager;
-
-	switch (c->state) {
-		case CONNECTED:
-		case NOT_CONNECTED:
-		case RESOLVING_ADDR:
-			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "received timer tick for CONNECTED or NOT_CONNECTED or RESOLVING_ADDR, shouldn't happen",
-				 c->address.first.c_str());
-			break;
-		case IDLING:
-			dolog(2, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "trying to resolve", c->address.first.c_str());
-			t->resolve_address(*c);
-			break;
-		case CONNECTING:
-			dolog(1, "tcp_client_manager::connection_timer_cb (for conn address:%s) "
-				 "time to establish connecton expired, closing socket, will try later", c->address.first.c_str());
-			t->client_manager::connection_error_cb(c->conn_no);
-			break;
-	}
-}
-
-void tcp_client_manager::address_resolved_cb(int result, struct evutil_addrinfo *res, void *_tcp_connection) {
-	tcp_connection* c = (tcp_connection*) _tcp_connection;
-	tcp_client_manager* t = c->manager;
-	if (result != DNS_ERR_NONE) {
-		switch (result) {
-			case DNS_ERR_CANCEL:
-				break;
-			default:
-				c->state = NOT_CONNECTED;
-				dolog(1, "tcp_client_manager::failed to resolve address %s, error:%s",
-					c->address.first.c_str(), evdns_err_to_string(result));
-				break;
-
+	Medium get_medium(UnitInfo* unit) {
+		std::string medium_opt = unit->getAttribute<std::string>("extra:medium", "tcp");
+		if (medium_opt == "tcp") {
+			return Medium::tcp;
+		} else if (medium_opt == "serial") {
+			return Medium::serial;
+		} else {
+			throw std::runtime_error("Invalid medium option (can be tcp or serial)");
 		}
-		return;
 	}
-	struct sockaddr_in* sockaddr = (struct sockaddr_in*) res->ai_addr;
-	sockaddr->sin_port = htons(c->address.second);
-	dolog(2, "tcp_client_manager::address %s resolved to %s, connecting to: %s:%hu", 
-		c->address.first.c_str(), inet_ntoa(sockaddr->sin_addr), inet_ntoa(sockaddr->sin_addr),
-		c->address.second);
-	t->open_connection(*c, *sockaddr);
-	evutil_freeaddrinfo(res);
-}
 
-CONNECTION_STATE serial_client_manager::do_get_connection_state(size_t conn_no) {
-	return m_serial_connections.at(conn_no).fd >= 0 ? CONNECTED : NOT_CONNECTED;
-}
+	using TMM = std::tuple<Mode, Medium>;
+	std::map<std::tuple<Mode, Medium>, std::function<BaseConnection*(UnitInfo*)>> conn_map = {
+		{TMM{Mode::client, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::client, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpConnection>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::server, Medium::serial}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<SerialPort>(EventBaseHolder::evbase, unit); } },
+		{TMM{Mode::server, Medium::tcp}, [](UnitInfo* unit){ return BaseConnFactory::create_from_unit<TcpServerConnectionHandler>(unit); } },
+	};
 
-struct bufferevent* serial_client_manager::do_get_connection_buf(size_t conn_no) {
-	return m_serial_connections.at(conn_no).bufev;
-}
+	std::map<Medium, std::function<std::string(UnitInfo*)>> addr_str_map = {
+		{Medium::tcp, [](UnitInfo* unit){
+			return unit->getAttribute<std::string>("extra:tcp-address", "0.0.0.0")
+				   + std::string(":") + unit->getAttribute<std::string>("extra:tcp-port", "0"); }},
+		{Medium::serial, [](UnitInfo* unit){ return unit->getAttribute<std::string>("extra:path", "/dev/null"); }},
+	};
 
-void serial_client_manager::do_terminate_connection(size_t conn_no) {
-	m_serial_connections.at(conn_no).close_connection();
-}
-
-CONNECTION_STATE serial_client_manager::do_establish_connection(size_t conn_no) {
-	const std::string path = m_configurations.at(conn_no).at(0).path;
-	if (m_serial_connections.at(conn_no).fd < 0) { // not connected
-		m_serial_connections.at(conn_no).open_connection(path, m_boruta->get_event_base());
-	}
-	return do_get_connection_state(conn_no);
-}
-
-void serial_client_manager::do_schedule(size_t conn_no, size_t client_no) {
-	serial_connection& sc = m_serial_connections.at(conn_no);
-	set_serial_port_settings(sc.fd, m_configurations.at(conn_no).at(client_no));
-	m_connection_client_map.at(conn_no).at(client_no)->scheduled(
-			m_serial_connections.at(conn_no).bufev,
-			m_serial_connections.at(conn_no).fd);
-}
-
-int serial_client_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(unit, spc))
-		return 1;
-	serial_client_driver* driver = _protocols.create_serial_client_driver(unit);
-	if (driver == NULL)
-		return 1;
-	driver->set_manager(this);
-	driver->set_event_base(m_boruta->get_event_base());
-	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, read, send, spc)) {
-		delete driver;
-		return 1;
-	}
-	std::map<std::string, size_t>::iterator i = m_ports_client_no_map.find(spc.path);
-	size_t j;	
-	if (i == m_ports_client_no_map.end()) {
-		j = m_connection_client_map.size();
-		m_connection_client_map.push_back(std::vector<client_driver*>());
-		m_configurations.resize(m_configurations.size() + 1);
-		m_ports_client_no_map[spc.path] = j;
-		m_serial_connections.push_back(serial_connection(j, this));
-	} else {
-		j = i->second;
-	}
-	m_connection_client_map.at(j).push_back(driver);
-	m_configurations.at(j).push_back(spc);
-	driver->set_id(std::make_pair(j, m_connection_client_map.at(j).size() - 1));
-	driver->set_address_string(spc.path);
-	return 0;
-}
-
-int serial_client_manager::initialize() {
-	m_current_client.resize(m_connection_client_map.size());
-	for (size_t i = 0; i < m_connection_client_map.size(); i++)
-		m_current_client.at(i) = m_connection_client_map.at(i).size();
-	return 0;
-}
-
-void serial_client_manager::connection_read_cb(serial_connection* c) {
-	client_manager::connection_read_cb(c->conn_no, c->bufev, c->fd);
-}
-
-void serial_client_manager::connection_error_cb(serial_connection* c) {
-	client_manager::connection_error_cb(c->conn_no);		
-}
-
-int serial_server_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
-	serial_port_configuration spc;
-	if (get_serial_port_config(unit, spc))
-		return 1;
-	serial_server_driver* driver = _protocols.create_serial_server_driver(unit);
-	if (driver == NULL)
-		return 1;
-	driver->set_manager(this);
-	driver->set_event_base(m_boruta->get_event_base());
-	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, read, send, spc)) {
-		delete driver;
-		return 1;
-	}
-	driver->id() = m_drivers.size();
-	m_drivers.push_back(driver);
-	m_connections.push_back(serial_connection(m_connections.size(), this));
-	m_configurations.push_back(spc);
-	return 0;
-}
-
-int serial_server_manager::initialize() {
-	return 0;
-}
-
-void serial_server_manager::starting_new_cycle() {
-	for (size_t i = 0; i < m_connections.size(); i++)
-		if (m_connections[i].fd < 0) {
-			if (m_connections[i].open_connection(m_configurations.at(i).path, m_boruta->get_event_base()))
-				m_connections[i].close_connection();
+	using TPMM = std::tuple<Proto, Mode, Medium>;
+	std::map<std::tuple<Proto, Mode, Medium>, std::function<driver_iface*(UnitInfo*, BaseConnection*, boruta_daemon*, slog)>> driver_map = {
+		{TPMM{Proto::fc, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			return create_fc_serial_client(conn, boruta, logger); }},
+		{TPMM{Proto::fc, Mode::client, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			return create_fc_serial_client(conn, boruta, logger); }},
+		{TPMM{Proto::modbus, Mode::server, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			return create_bc_modbus_driver(conn, boruta, logger); }},
+		{TPMM{Proto::modbus, Mode::server, Medium::tcp}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			return create_bc_modbus_driver(conn, boruta, logger); }},
+		{TPMM{Proto::modbus, Mode::client, Medium::serial}, [](UnitInfo*, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			return create_bc_modbus_driver(conn, boruta, logger); }},
+		{TPMM{Proto::modbus, Mode::client, Medium::tcp}, [](UnitInfo* unit, BaseConnection* conn, boruta_daemon* boruta, slog logger){
+			if (unit->getAttribute<bool>("extra:use_tcp_2_serial_proxy", false))
+				return create_bc_modbus_driver(conn, boruta, logger);
 			else
-				set_serial_port_settings(m_connections[i].fd, m_configurations.at(i));
+				return create_bc_modbus_tcp_client(conn, boruta, logger);
+		}}
+	};
+
+	driver_iface* create(UnitInfo* unit, boruta_daemon* boruta, size_t read, size_t send) {
+		auto proto = get_proto(unit);
+		auto mode = get_mode(unit);
+		auto medium = get_medium(unit);
+
+		auto conn_f = conn_map.find(TMM{mode, medium});
+		auto addr_str_f = addr_str_map.find({medium});
+		auto driver_f = driver_map.find(TPMM{proto, mode, medium});
+
+		if (conn_f == conn_map.end())
+			throw std::runtime_error("Unknown connection type");
+		if (addr_str_f == addr_str_map.end())
+			throw std::runtime_error("Unknown connection type");
+		if (driver_f == driver_map.end())
+			throw std::runtime_error("Unknown connection type");
+
+		std::string log_header = proto_names[proto];
+		log_header += " ";
+		log_header += medium_names[medium];
+		log_header += " ";
+		log_header += mode_names[mode];
+		log_header += " at ";
+		log_header += addr_str_f->second(unit);
+		slog logger = std::make_shared<boruta_logger>(log_header);
+
+		BaseConnection* conn = conn_f->second(unit);
+		conn->Open();
+
+		auto driver = driver_f->second(unit, conn, boruta, logger);
+
+		SerialPortConfiguration conf;
+		if (auto conf_opt = get_serial_conf(unit))
+			conf = *conf_opt;
+		else
+			throw std::runtime_error("Unable to get serial port configuration!");
+
+		conn->SetConfiguration(conf);
+
+		if (driver->configure(unit, read, send, conf)) {
+			throw std::runtime_error("Unable to configure driver!");
 		}
-	for (auto* server_driver : m_drivers)
-		server_driver->starting_new_cycle();
-}
 
-void serial_server_manager::finished_cycle() {
-	for (auto* server_driver : m_drivers)
-		server_driver->finished_cycle();
-}
-
-void serial_server_manager::restart_connection_of_driver(serial_server_driver* driver) {
-	std::vector<serial_server_driver*>::iterator i = std::find(m_drivers.begin(), m_drivers.end(), driver);		
-	ASSERT(i != m_drivers.end());
-	m_connections.at(std::distance(i, m_drivers.end())).close_connection();
-}
-
-void serial_server_manager::connection_read_cb(serial_connection *c) {
-	m_drivers.at(c->conn_no)->data_ready(c->bufev);
-}
-
-void serial_server_manager::connection_error_cb(serial_connection *c) {
-	m_drivers.at(c->conn_no)->connection_error(c->bufev);
-	m_connections.at(c->conn_no).close_connection();
-}
-
-tcp_server_manager::listen_port::listen_port(tcp_server_manager* _manager, int _port, int _serv_no) :
-	manager(_manager), port(_port), fd(-1), serv_no(_serv_no) {}
-
-int tcp_server_manager::start_listening_on_port(int port) {
-	int ret, fd, on = 1;
-	fd = socket(PF_INET, SOCK_STREAM, 0);
-	if (fd == -1) {
-		dolog(1, "socket() failed, errno %d (%s)", errno, strerror(errno));
-		return -1;
+		return driver;
 	}
+} factory; // Global! Do not store any state!
 
-	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
-			&on, sizeof(on));
-	if (ret == -1) {
-		dolog(1, "setsockopt() failed, errno %d (%s)",
-				errno, strerror(errno));
-		close(fd);
-		return -1;
-	}
+int boruta_daemon::configure_ipc(const ArgsManager& args_mgr, DaemonConfigInfo& cfg) {
+	bopt<char*> sub_conn_address = args_mgr.get<char*>("parhub", "sub_conn_addr");
+	bopt<char*> pub_conn_address = args_mgr.get<char*>("parhub", "pub_conn_addr");
 
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	ret = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
-	if (-1 == ret) {
-		dolog(1, "bind() failed, errno %d (%s), will retry",
-			errno, strerror(errno));
-		close(fd);
-		return -1;
-	}
-
-	ret = listen(fd, 1);
-	if (-1 == ret) {
-		dolog(1, "listen() failed, errno %d (%s)",
-				errno, strerror(errno));
-		close(fd);
-		return -1;
-	}
-
-	return fd;
-}
-
-void tcp_server_manager::close_connection(struct bufferevent* bufev) {
-	connection &c = m_connections[bufev];
-	c.fd = -1;
-	m_connections.erase(bufev);
-	bufferevent_free(bufev);
-}
-
-int tcp_server_manager::configure(TUnit *unit, size_t read, size_t send, protocols &_protocols) {
-	tcp_server_driver* driver = _protocols.create_tcp_server_driver(unit);
-	if (driver == NULL)
-		return 1;
-	driver->set_manager(this);
-	driver->set_event_base(m_boruta->get_event_base());
-	driver->set_zmq_handler(m_boruta->get_zmq());
-	if (driver->configure(unit, read, send)) {
-		delete driver;
+	if (!sub_conn_address || !pub_conn_address) {
+		sz_log(0, "Could not get parhub's address from configuration, exiting!");
 		return 1;
 	}
-	int port = unit->getAttribute("extra:tcp-port", -1);
-	if (port < 0)
-		return 1;
-	m_listen_ports.push_back(listen_port(this, port, m_drivers.size()));
-	driver->id() = m_drivers.size();
-	m_drivers.push_back(driver);
-	return 0;
-}
-
-int tcp_server_manager::initialize() {
-	return 0;
-}
-
-void tcp_server_manager::starting_new_cycle() {
-	for (auto& port : m_listen_ports) {
-		if (port.fd >= 0)
-			continue;
-		port.fd = start_listening_on_port(port.port);
-		if (port.fd < 0)
-			continue;
-		event_set(&port._event, port.fd, EV_READ | EV_PERSIST, connection_accepted_cb, &port);
-		event_add(&port._event, NULL);
-		event_base_set(m_boruta->get_event_base(), &port._event);
-	}
-	for (auto* server_driver : m_drivers)
-		server_driver->starting_new_cycle();
-}
-
-void tcp_server_manager::finished_cycle() {
-	for (auto* server_driver : m_drivers)
-		server_driver->finished_cycle();
-}
-
-void tcp_server_manager::connection_read_cb(struct bufferevent *bufev, void* _manager) {
-	tcp_server_manager *m = (tcp_server_manager*) _manager;
-	m->m_drivers.at(m->m_connections[bufev].serv_no)->data_ready(bufev);
-}
-
-void tcp_server_manager::connection_error_cb(struct bufferevent *bufev, short event, void* _manager) {
-	tcp_server_manager *m = (tcp_server_manager*) _manager;
-	connection &c = m->m_connections[bufev];
-	m->m_drivers.at(c.serv_no)->connection_error(bufev);
-	m->close_connection(bufev);
-}
-
-void tcp_server_manager::connection_accepted_cb(int _fd, short event, void* _listen_port) {
-	struct sockaddr_in addr;
-	socklen_t size = sizeof(addr);
-	listen_port* p = (listen_port*) _listen_port;
-	tcp_server_manager *m = p->manager;
-	int fd;
-	do {
-		fd = accept(_fd, (struct sockaddr*) &addr, &size);
-		if (fd != -1) break;
-
-		if (errno == EINTR)
-			continue;
-		else if (errno == EAGAIN || errno == EWOULDBLOCK) 
-			return;
-		else if (errno == ECONNABORTED)
-			return;
-		else {
-			dolog(0, "Accept error(%s), terminating application", strerror(errno));
-			exit(1);
-		}
-	} while (true);
-
-	dolog(5, "Connection from: %s", inet_ntoa(addr.sin_addr));
-	connection c;
-	c.serv_no = p->serv_no;
-	c.fd = fd;
-	c.bufev = bufferevent_socket_new(
-			m->m_boruta->get_event_base(),
-			fd,
-			BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
-	bufferevent_setcb(c.bufev, connection_read_cb, 
-			NULL, connection_error_cb,
-			m);
-	bufferevent_enable(c.bufev, EV_READ | EV_WRITE | EV_PERSIST);
-	m->m_connections[c.bufev] = c;
-	if (m->m_drivers.at(p->serv_no)->connection_accepted(c.bufev, fd, &addr))
-		m->close_connection(c.bufev);
-}
-
-int boruta_daemon::configure_ipc() {
-	char* sub_conn_address = libpar_getpar("parhub", "sub_conn_addr", 1);
-	char* pub_conn_address = libpar_getpar("parhub", "pub_conn_addr", 1);
 
 	try {
-		m_zmq = new zmqhandler(m_cfg, m_zmq_ctx, pub_conn_address, sub_conn_address);
-		dolog(10, "ZMQ initialized successfully");
+		m_zmq = new zmqhandler(&cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
+		sz_log(10, "ZMQ initialized successfully");
 	} catch (zmq::error_t& e) {
-		dolog(1, "ZMQ initialization failed, %s", e.what());
+		free(*sub_conn_address);
+		free(*pub_conn_address);
+
+		sz_log(0, "ZMQ initialization failed, %s", e.what());
 		return 1;
 	}
 
-	free(sub_conn_address);
-	free(pub_conn_address);
-
-	int sock = m_zmq->subsocket();
-	if (sock >= 0) {
-		event_base_set(m_event_base, &m_subsock_event);
-
-		event_set(&m_subsock_event, sock, EV_READ | EV_PERSIST, subscribe_callback, this);
-		event_add(&m_subsock_event, NULL);
-
-		subscribe_callback(sock, EV_READ, this);
-	}
+	free(*sub_conn_address);
+	free(*pub_conn_address);
 
 	return 0;
 }
 
-int boruta_daemon::configure_events() {
-	m_event_base = (struct event_base*) event_init();
-	if (!m_event_base)
-		return 1;
-	m_evdns_base = evdns_base_new(m_event_base, 0);
-	if (!m_evdns_base)
-		return 2;
-	evdns_base_resolv_conf_parse(m_evdns_base, DNS_OPTIONS_ALL, "/etc/resolv.conf");
-	evtimer_set(&m_timer, cycle_timer_callback, this);
-	event_base_set(m_event_base, &m_timer);
-	return 0;
-}
-
-int boruta_daemon::configure_units() {
-	int i, ret;
-	TUnit* u;
+int boruta_daemon::configure_units(const ArgsManager&, DaemonConfigInfo& cfg) {
 	size_t read = 0;
 	size_t send = 0;
-	protocols _protocols;
-	for (i = 0, u = m_cfg->GetDevice()->GetFirstUnit();
-			u;
-			++i, u = u->GetNext()) {
-		std::string mode = u->getAttribute<std::string>("extra:mode", "");
-		bool server;
-		if (mode == "server")
-			server = true;	
-		else if (mode == "client")
-			server = false;	
-		else {
-			dolog(1, "Unknown unit mode: %s, failed to configure daemon", mode.c_str());
+	for (auto unit: cfg.GetUnits()) {
+		auto driver = factory.create(unit, this, read, send);
+		if (!driver)
 			return 1;
-		}
-		std::string medium = u->getAttribute<std::string>("extra:medium", "");
-		if (medium == "tcp") {
-			if (server)
-				ret = m_tcp_server_mgr.configure(u, read, send, _protocols);
-			else
-				ret = m_tcp_client_mgr.configure(u, read, send, _protocols);
-			if (ret)
-				return 1;
-		} else if (medium == "serial") {
-			if (server)
-				ret = m_serial_server_mgr.configure(u, read, send, _protocols);
-			else
-				ret = m_serial_client_mgr.configure(u, read, send, _protocols);
-			if (ret)
-				return 1;
-		} else {
-			dolog(1, "Unknown connection type: %s, failed to configure daemon", medium.c_str());
-			return 1;
-		}
-		read += u->GetParamsCount();
-		send += u->GetSendParamsCount();
+
+		conns.insert(std::unique_ptr<driver_iface>(driver));
+		read += unit->GetParamsCount();
+		send += unit->GetSendParamsCount(true);
 	}
 	return 0;
 }
 
-int boruta_daemon::configure_cycle_freq() {
-	int duration = m_cfg->GetDevice()->getAttribute<int>("extra:cycle_duration", 10000);
-	m_cycle.tv_sec = duration / 1000;
-	m_cycle.tv_usec = (duration % 1000) * 1000;
-
-	return 0;
+void boruta_daemon::configure_timer(const ArgsManager&, DaemonConfigInfo& cfg) {
+	m_timer.set_callback(new FnPtrScheduler([this](){ cycle_timer_callback(); }));
+	int duration = cfg.GetDeviceInfo()->getAttribute<int>("extra:cycle_duration", 10000);
+	m_timer.set_timeout(szarp::ms(duration));
 }
 
-boruta_daemon::boruta_daemon() : m_tcp_client_mgr(this), m_tcp_server_mgr(this), m_serial_client_mgr(this), m_serial_server_mgr(this), m_zmq_ctx(1) {}
+boruta_daemon::boruta_daemon(): m_zmq_ctx(1) {}
 
-struct event_base* boruta_daemon::get_event_base() {
-	return m_event_base;
-}
-
-struct evdns_base* boruta_daemon::get_evdns_base() {
-	return m_evdns_base;
-}
-
-zmqhandler* boruta_daemon::get_zmq() {
+non_owning_ptr<zmqhandler> boruta_daemon::get_zmq() {
 	return m_zmq;
 }
 
 int boruta_daemon::configure(int *argc, char *argv[]) {
-	if (int ret = configure_events())
-		return ret;
+	ArgsManager args_mgr("borutadmn_z");
+	args_mgr.parse(*argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.initLibpar();
 
-	m_cfg = new DaemonConfig("borutadmn");
-	if (m_cfg->Load(argc, argv))
-		return 101;
-	g_debug = m_cfg->GetDiagno() || m_cfg->GetSingle();
+	DaemonConfigInfo* cfg;
 
-	if (configure_ipc())
+	if (args_mgr.has("use-cfgdealer")) {
+		szlog::init(args_mgr, "borutadmn");
+		cfg = new ConfigDealerHandler(args_mgr);
+	} else {
+		auto d_cfg = new DaemonConfig("borutadmn_z");
+		if (d_cfg->Load(args_mgr)) {
+			sz_log(0, "Unable to parse configuration, check previous logs.");
+			return 101;
+		}
+		cfg = d_cfg;
+	}
+
+	if (configure_ipc(args_mgr, *cfg)) {
+		sz_log(0, "Unable to initialize IPC, check previous logs.");
 		return 102;
-	if (configure_units())
+	} if (configure_units(args_mgr, *cfg)) {
+		sz_log(0, "Unable to process units, check previous logs.");
 		return 103;
-	if (configure_cycle_freq())
-		return 104;
+	}
+
+	configure_timer(args_mgr, *cfg);
 	return 0;
 }
 
 void boruta_daemon::go() {
-	if (m_tcp_server_mgr.initialize())
-		return;
-	if (m_serial_server_mgr.initialize())
-		return;
-	if (m_tcp_client_mgr.initialize())
-		return;
-	if (m_serial_client_mgr.initialize())
-		return;
-	cycle_timer_callback(-1, 0, this);
-	event_base_dispatch(m_event_base);
+	cycle_timer_callback();
+	event_base_dispatch(EventBaseHolder::evbase);
 }
 
-void boruta_daemon::cycle_timer_callback(int fd, short event, void* daemon) {
-	boruta_daemon* b = (boruta_daemon*) daemon;
-
-	b->m_tcp_client_mgr.finished_cycle();
-	b->m_serial_client_mgr.finished_cycle();
-	b->m_tcp_server_mgr.finished_cycle();
-	b->m_serial_server_mgr.finished_cycle();
-
-	b->m_zmq->publish();
-
-	b->m_tcp_client_mgr.starting_new_cycle();
-	b->m_tcp_server_mgr.starting_new_cycle();
-	b->m_serial_client_mgr.starting_new_cycle();
-	b->m_serial_server_mgr.starting_new_cycle();
-
-	evtimer_add(&b->m_timer, &b->m_cycle); 
-}
-
-void boruta_daemon::subscribe_callback(int fd, short event, void* daemon) {
-	boruta_daemon* b = (boruta_daemon*)daemon; 
-	b->m_zmq->receive();
+void boruta_daemon::cycle_timer_callback() {
+	m_zmq->receive();
+	m_zmq->publish();
+	m_timer.schedule();
 }
 
 int main(int argc, char *argv[]) {
+	EventBaseHolder::Initialize();
+
 	xmlInitParser();
 	LIBXML_TEST_VERSION
 	xmlLineNumbersDefault(1);
 	boruta_daemon daemon;
-	if (int ret = daemon.configure(&argc, argv)) {
-		sz_log(0, "Error configuring daemon, exiting.");
-		return ret;
+	try {
+		if (int ret = daemon.configure(&argc, argv)) {
+			sz_log(0, "Error configuring daemon, exiting.");
+			return ret;
+		}
+	} catch (const std::exception& e) {
+		sz_log(0, "Error configuring daemon %s, exiting.", e.what());
+		return 1;
 	}
 
 	signal(SIGPIPE, SIG_IGN);
-	dolog(2, "Starting Boruta Daemon");
+	sz_log(2, "Starting Boruta Daemon");
 	daemon.go();
 	return 200;
 }
 
-void dolog(int level, const char * fmt, ...) {
+void boruta_logger::log(int level, const char * fmt, ...) {
 	va_list fmt_args;
+	va_start(fmt_args, fmt);
+	vlog(level, fmt, fmt_args);
+	va_end(fmt_args);
+}
 
-	if (g_debug) {
-		char *l;
-		va_start(fmt_args, fmt);
-		if (vasprintf(&l, fmt, fmt_args) != -1) {
-			std::cout << l << std::endl;
-			sz_log(level, "%s", l);
-			free(l);
-		} else {
-			std::cout << "Logging error " << strerror(errno) << std::endl;
-		}
-		va_end(fmt_args);
-
+void boruta_logger::vlog(int level, const char * fmt, va_list fmt_args) {
+	char *l;
+	if (vasprintf(&l, fmt, fmt_args) != -1) {
+		sz_log(level, "%s: %s", header.c_str(), l);
+		free(l);
 	} else {
-		va_start(fmt_args, fmt);
-		vsz_log(level, fmt, fmt_args);
-		va_end(fmt_args);
+		sz_log(2, "%s: Error in formatting log message", header.c_str());
 	}
-
-} 
+}
 
 namespace ascii {
 
@@ -1393,6 +555,13 @@ int char2value(unsigned char c, unsigned char &o) {
 	return 0;
 }
 
+unsigned char value2char(unsigned char c) {
+	if (c <= 9)
+		return '0' + c;
+	else
+		return 'A' + c - 10;
+}
+
 int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) {
 	c = 0;
 	if (char2value(c1, c))
@@ -1401,13 +570,6 @@ int from_ascii(unsigned char c1, unsigned char c2, unsigned char &c) {
 	if (char2value(c2, c))
 		return 1;
 	return 0;
-}
-
-unsigned char value2char(unsigned char c) {
-	if (c <= 9)
-		return '0' + c;
-	else
-		return 'A' + c - 10;
 }
 
 void to_ascii(unsigned char c, unsigned char& c1, unsigned char &c2) {

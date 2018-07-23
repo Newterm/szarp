@@ -150,14 +150,14 @@ class SaveParam:
 					#specified
 					self.file.seek(-self.param.value_lenght, os.SEEK_END)
 
-				self.file.write(self.param.value_to_binary(self.param.nan()))
+				self.file.write(self.param.value_to_binary(self.param.nan))
 				self.file_size += self.param.value_lenght
 
 				time_blob = self.last.get_time_delta_since_latest_time(time, nanotime)
 				self.file.write(time_blob)
 				self.file_size += len(time_blob)
 
-				self.last.reset(time, nanotime, self.param.nan())
+				self.last.reset(time, nanotime, self.param.nan)
 			else:
 				self.update_last_time_unlocked(time, nanotime)
 		finally:
@@ -183,35 +183,24 @@ class SaveParam:
 			else:
 				self.update_last_time(time, nanotime)
 
-				if value != self.last.value:
+				if value != self.last.value and not (math.isnan(value) and math.isnan(self.last.value)):
 					self.write_value(value, time, nanotime)
 
 		except lastentry.TimeError, e:
 			print "Ignoring value for param %s (with time:%s) as more recent value is present (time:%s)" \
 				% (self.param_path.param_path, e.msg_time, e.current_time)
 
-
-
 	def process_msg(self, msg):
 		self.process_value(self.param.value_from_msg(msg), msg.time, msg.nanotime)
 
 	def process_msg_batch(self, batch):
-		msg = batch[0]
-		val = self.param.value_from_msg(msg)
+		if len(batch) == 0:
+			return 0;
 
-		for nmsg in batch[1:]:
-			nval = self.param.value_from_msg(nmsg)
+		for msg in batch:
+			self.process_msg(msg)
 
-			if nval != val:
-				self.process_value(val, msg.time, msg.nanotime)
-				val = nval
-
-			msg = nmsg
-
-		self.process_value(val, msg.time, msg.nanotime)
-
-		return msg.time
-
+		return batch[-1].time
 
 	def close(self):
 		if self.file:

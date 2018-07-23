@@ -6,8 +6,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "szarp_config.h"
+
 TcpConnection::TcpConnection(struct event_base* base)
-	:BaseConnection(base),
+	:BaseConnection(), m_event_base(base),
 	m_connect_fd(-1), m_bufferevent(NULL), m_connection_open(false)
 {}
 
@@ -148,4 +150,13 @@ void TcpConnection::WriteData(const void* data, size_t size)
 void TcpConnection::SetConfiguration(const SerialPortConfiguration& serial_conf)
 {
 	SetConfigurationFinished();
+}
+
+template <>
+TcpConnection* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
+	std::unique_ptr<TcpConnection> conn(new TcpConnection(base));
+	auto addr = unit->getAttribute<std::string>("extra:tcp-address");
+	auto port = unit->getAttribute<int>("extra:tcp-port");
+	conn->InitTcp(addr, port);
+	return conn.release();
 }

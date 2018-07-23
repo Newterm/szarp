@@ -931,12 +931,6 @@ void ContentHandler::create(HTTPRequest *req, HTTPResponse *res)
 	char *c;
 	
 	res->code = 200;
-	time(&t);
-	res->date = (char *) xmlStrdup(BAD_CAST ctime(&t));
-	res->date[strlen(res->date)-1] = 0;
-	t += pt->getUpdateFreq();
-	res->exp_date = (char *) xmlStrdup(BAD_CAST ctime(&t));
-	res->exp_date[strlen(res->exp_date)-1] = 0;
 	
 	c = req->uri->getOption("output");
 

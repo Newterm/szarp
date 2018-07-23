@@ -88,6 +88,7 @@ presented to user.
 
 #include "conversion.h"
 #include "ipchandler.h"
+#include "ipkcontainer.h"
 #include "liblog.h"
 #include "libpar.h"
 #include "szbase/szbbase.h"
@@ -346,7 +347,7 @@ void SetDaemon::AddParam(const std::wstring& name, double min, double max, doubl
 
 void SetDaemon::ReadVals()
 {
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	Szbase* szb = Szbase::GetObject();
 
@@ -641,7 +642,7 @@ void SetDaemon::SetValue(const std::wstring& name, double val)
 	if (val > p.max) throw ValueToLarge();
 	m_ipc.m_read[p.index] = p.param->ToIPCValue(val);
 	dolog(10, "Setting value to %d", m_ipc.m_read[p.index]);
-	p.current = double(m_ipc.m_read[p.index]) / pow10(p.param->GetPrec());
+	p.current = double(m_ipc.m_read[p.index]) / exp10(p.param->GetPrec());
 
 	std::map<struct bufferevent*, int>::iterator i;
 	for (i = m_connections.begin(); i != m_connections.end(); ++i) {

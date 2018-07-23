@@ -33,7 +33,8 @@
 #include "defcfg.h"
 #include "errfrm.h"
 #include "dbmgr.h"
-#include "../common/parlist.cpp"
+#include "parlist.cpp"
+#include "user_def_ipk.h"
 
 using namespace SC;
 
@@ -120,8 +121,8 @@ wxEvent* ParamDataChangedEvent::Clone() const {
 
 ParamDataChangedEvent::~ParamDataChangedEvent() {}
 
-DatabaseManager::DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager) :
-	query_queue(_query_queue), config_manager(_config_manager), current_inquirer(-1), free_inquirer_id(1)
+DatabaseManager::DatabaseManager(DatabaseQueryQueue *_query_queue, ConfigManager *_config_manager, std::shared_ptr<UserDefinedIPKManager> _ipk_manager) :
+	query_queue(_query_queue), config_manager(_config_manager), ipk_manager(_ipk_manager), current_inquirer(-1), free_inquirer_id(1)
 {
 	ConfigurationFileChangeHandler::database_manager = this;
 }
@@ -133,8 +134,7 @@ void DatabaseManager::OnDatabaseResponse(DatabaseResponse &response) {
 	CheckAndNotifyAboutError(response);
 
 	if (query->type == DatabaseQuery::REMOVE_PARAM) {
-		IPKContainer *ic = IPKContainer::GetObject();
-		ic->RemoveExtraParam(query->defined_param.prefix, query->defined_param.p);
+		ipk_manager->RemoveUserDefined(query->defined_param.prefix, query->defined_param.p);
 		free(query->defined_param.prefix);
 		delete query;
 	} else if (query->type == DatabaseQuery::STARTING_CONFIG_RELOAD) {
@@ -339,8 +339,7 @@ void DatabaseManager::AddParams(const std::vector<DefinedParam*>& ddi) {
 
 		wxLogInfo(_T("Adding param with prefix: %s"), (*i)->GetBasePrefix().c_str());
 
-		IPKContainer *ic = IPKContainer::GetObject();
-		ic->AddExtraParam((*i)->GetBasePrefix().wc_str(), (*i)->GetIPKParam());
+		ipk_manager->AddUserDefined((*i)->GetBasePrefix().wc_str(), (*i)->GetIPKParam());
 
 		DatabaseQuery* query = new DatabaseQuery;
 		query->type = DatabaseQuery::ADD_PARAM;

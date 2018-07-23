@@ -60,6 +60,7 @@
 #include "libpar.h"
 #include "execute.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "tsaveparam.h"
 #include "szbase/szbbase.h"
 
@@ -302,7 +303,7 @@ int main(int argc, char* argv[])
 
 	std::vector<TParam*> params;
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 
 	Szbase::Init(SC::L2S(szarp_data_root), NULL);
 

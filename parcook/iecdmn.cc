@@ -482,7 +482,7 @@ bool IECDaemon::ConfigureUnit(TUnit *unit, xmlNodePtr xunit, int& param_index, x
 		if (_is_msw && !xmlStrcmp(_is_msw, BAD_CAST("msw")))
 			is_msw = true;
 		xmlFree(_is_msw);
-		int prec = pow10(p->GetPrec());
+		int prec = exp10(p->GetPrec());
 		if (dunit.values.find(address) != dunit.values.end()) {
 			Value& value = dunit.values[address];
 			if (selector != -1)  value.selector = selector;

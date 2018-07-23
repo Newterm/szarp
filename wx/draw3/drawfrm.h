@@ -103,9 +103,6 @@ public:
 	 */
 	void OnFind(wxCommandEvent &evt);
 	
-	/** Method show parameter setting widget */
-	void OnSetParams(wxCommandEvent &evt); 
-	
 	/**
 	 * Adding new defined window
 	 */
@@ -227,6 +224,8 @@ public:
 
 	~DrawFrame();
 
+	std::map<std::wstring, std::wstring> tabMap;
+
 protected:
 	wxString m_name;
 
@@ -236,6 +235,8 @@ protected:
 	void OnCloseTab(wxCommandEvent &command);
 
 	wxString GetTitleForPanel(wxString title, int panel_no);
+
+	void UpdateAllBaseTypes();
 
 	/**Closes tab of given index
 	 * @param sel index of tab to remove*/
@@ -304,6 +305,9 @@ protected:
 
 	/**Clears cache.*/
 	void OnClearCache(wxCommandEvent &event);
+
+	/** Displays window showing base types of opened tabs */
+	void OnShowBaseType(wxCommandEvent &event);
 
 	/**Import draw2 windows menu event menu event*/
 	void OnImportDraw2Def(wxCommandEvent &event);

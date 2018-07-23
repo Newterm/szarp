@@ -327,8 +327,8 @@ int fp210_driver::configure(UnitInfo* unit, short* read, short *send, serial_por
 	m_read = read;
 
 	auto fp = unit->GetParams().begin();
-	m_flow_prec = pow10((*fp)->GetPrec());
-	m_sum_prec = pow10((*(++fp))->GetPrec());
+	m_flow_prec = exp10((*fp)->GetPrec());
+	m_sum_prec = exp10((*(++fp))->GetPrec());
 
 	evtimer_set(&m_timer, timeout_cb, this);
 	event_base_set(m_event_base, &m_timer);

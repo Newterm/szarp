@@ -1,10 +1,8 @@
 opt/szarp/bin/parcook
 opt/szarp/bin/sender
 opt/szarp/bin/meaner3
-opt/szarp/bin/sss
 opt/szarp/bin/checker
 opt/szarp/bin/stampd
-opt/szarp/bin/ssconf.py
 opt/szarp/bin/remarks_server.py
 opt/szarp/bin/prober
 opt/szarp/bin/calcdmn
@@ -55,5 +53,4 @@ opt/szarp/lib/libpyszbase.so
 opt/szarp/lib/libpyszbase.so.0
 opt/szarp/lib/libpyszbase.so.0.0.0
 opt/szarp/bin/wlkdmn
-etc/szarp/ssconf.cfg
 opt/szarp/bin/pserver-lite

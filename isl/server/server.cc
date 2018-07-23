@@ -672,8 +672,6 @@ Content-Length: %d\r\n\
 	}
 	snprintf(buffer, RES_BUFFER_SIZE-1, "\
 HTTP/1.%d 200 OK\r\n\
-Date: %s\r\n\
-Expires: %s\r\n\
 Server: ISL HTTP server %s\r\n\
 Content-Length: %d\r\n\
 Content-Type: %s\r\n\
@@ -681,8 +679,6 @@ Content-Type: %s\r\n\
 \r\n\
 ",
 			1,
-			date,
-			exp_date,
 			SERVER_VERSION,
 			content_length, content_type,
 			(content_coding ? "Content-Coding: " : ""),

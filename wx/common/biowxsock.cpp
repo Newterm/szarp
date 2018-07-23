@@ -39,7 +39,11 @@ long SocketControl(BIO *bio, int cmd, long num, void *ptr) {
 			ret = 0;
 			break;
 		case BIO_CTRL_GET_CLOSE:
+#if OPENSSL_VERSION_NUMBER > 0x010100000
+			ret = BIO_get_shutdown(bio);
+#else
 			ret = bio->shutdown;
+#endif
 			break;
 		case BIO_CTRL_SET_CLOSE:
 			ret = 0;
@@ -61,16 +65,32 @@ long SocketControl(BIO *bio, int cmd, long num, void *ptr) {
 }
 
 int SocketNew(BIO* bio) {
+#if OPENSSL_VERSION_NUMBER > 0x010100000
+	BIO_set_init(bio, 1);
+	BIO_set_shutdown(bio, 0);
+	BIO_set_data(bio, nullptr);
+#else
 	bio->init = 1;
 	bio->shutdown = 0;
 	bio->num = 0;
 	bio->ptr = NULL;
 	bio->flags = 0;
+#endif
 	return 1;
 }
 
+#if OPENSSL_VERSION_NUMBER > 0x010100000
+#else
+	void *BIO_get_data(BIO *a) {
+		return a->ptr;
+	}
+	void BIO_set_data(BIO *a, void *ptr) {
+		a->ptr = ptr;
+	}
+#endif
+
 int SocketWrite(BIO* bio, const char *buffer, int len) {
-	wxSocketClient* socket = wxDynamicCast(bio->ptr, wxSocketClient);
+	wxSocketClient* socket = wxDynamicCast(BIO_get_data(bio), wxSocketClient);
 	assert(socket);
 
 	socket->Write(buffer, len);
@@ -85,7 +105,7 @@ int SocketWrite(BIO* bio, const char *buffer, int len) {
 }
 
 static int SocketRead(BIO* bio, char *buffer, int len) {
-	wxSocketClient* socket = wxDynamicCast(bio->ptr, wxSocketClient);
+	wxSocketClient* socket = wxDynamicCast(BIO_get_data(bio), wxSocketClient);
 	assert(socket);
 
 	socket->Read(buffer, len);
@@ -99,8 +119,10 @@ static int SocketRead(BIO* bio, char *buffer, int len) {
 	return socket->LastCount();
 }
 
+#if OPENSSL_VERSION_NUMBER > 0x010100000
+#else
 BIO_METHOD methods_client_socket = {
-	254 /*must be larger than anything defined in bio.h*/ 
+	254 /*must be larger than anything defined in bio.h*/
 		| BIO_TYPE_SOURCE_SINK,
 	"wx_socket_client",
 	SocketWrite,
@@ -112,15 +134,30 @@ BIO_METHOD methods_client_socket = {
 	SocketFree,
 	NULL,
 };
+#endif
 
 }
 
 BIO* BIOSocketClientNew(wxSocketClient *socket) {
+#if OPENSSL_VERSION_NUMBER > 0x010100000
+	static BIO_METHOD *biom = nullptr;
+	if (biom == nullptr) {
+		// type must be larger than anything defined in bio.h
+		biom = BIO_meth_new(254  | BIO_TYPE_SOURCE_SINK, "wx_socket_client");
+		BIO_meth_set_write(biom, SocketWrite);
+		BIO_meth_set_read(biom, SocketRead);
+		BIO_meth_set_ctrl(biom, SocketControl);
+		BIO_meth_set_create(biom, SocketNew);
+		BIO_meth_set_destroy(biom, SocketFree);
+	}
+	BIO *ret = BIO_new(biom);
+#else
 	BIO *ret = BIO_new(&methods_client_socket);
+#endif
 	if (ret == NULL)
 		return NULL;
 
-	ret->ptr = socket;
+	BIO_set_data(ret, socket);
 	return ret;
 }
 

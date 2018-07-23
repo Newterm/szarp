@@ -78,6 +78,7 @@
 #include "liblog.h"
 #include "ipcdefines.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 
 #include "conversion.h"
 #include "custom_assert.h"
@@ -609,17 +610,6 @@ void CleanUp()
 		semctl(SemDes, i, SETVAL, 0);
 }
 
-
-float ChooseFun(float funid, float *parlst)
-{
-	ushort fid;
-
-	fid = (ushort) funid;
-	if (fid >= MAX_FID)
-		return (0.0);
-	return ((*(FunTable[fid])) (parlst));
-}
-
 unsigned char CalculNoData;
 
 short shmGetValue(ushort adr, unsigned char shmdes)
@@ -754,7 +744,7 @@ void Calcul(ushort n)
 					if (sp < parcnt + 1)
 						return;
 					stack[sp - parcnt - 1] =
-						ChooseFun(stack[sp],
+						ChooseFun<float>((int) stack[sp],
 							  &stack[sp - parcnt -
 								 1]);
 					sp -= parcnt;
@@ -1534,7 +1524,14 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 			szarp::ParamValue* param_value = param_values.add_param_values();
 			param_value->set_param_no(i);
 			param_value->set_time(now);
-			int tmp = Probe[i];
+			int16_t tmp = Probe[i];
+
+			if (tmp == SZARP_NO_DATA) {
+				param_value->set_is_nan(true);
+			} else {
+				param_value->set_is_nan(false);
+			}
+
 			param_value->set_int_value(tmp);
 		}
 
@@ -1543,9 +1540,17 @@ void publish_values(short* Probe, zmq::socket_t& socket) {
 			tParamInfo* pi = CombinedParams[i];	
 			param_value->set_param_no(pi->param_no);
 			param_value->set_time(now);
-			param_value->set_int_value(
-				unsigned(Probe[pi->lsw]) << 16
-				| unsigned(Probe[pi->msw]));
+
+			int16_t msw = Probe[pi->msw];
+			int16_t lsw = Probe[pi->lsw];
+
+			if (lsw == SZARP_NO_DATA && msw == SZARP_NO_DATA) {
+				param_value->set_is_nan(true);
+			} else {
+				param_value->set_is_nan(false);
+			}
+
+			param_value->set_int_value(uint32_t(lsw) << 16 | uint32_t(msw));
 		}
 
 		param_values.SerializeToZeroCopyStream(&stream);
@@ -1822,7 +1827,7 @@ int main(int argc, char *argv[])
 	/* end szarp.cfg processing */
 	libpar_done();
 	
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"pl");
 	Szbase::Init(SC::L2S(PREFIX));
 
 	IPKContainer* ic = IPKContainer::GetObject();

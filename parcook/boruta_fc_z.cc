@@ -148,6 +148,8 @@
 #include "borutadmn_z.h"
 #include "sz4/defs.h"
 
+using szarp::ms;
+
 const unsigned char STE = 0x02;	// always 02 HEX
 const unsigned char LGE = 0x0E;	// 14 bytes of telegram
 const unsigned char AK = 0x1;	// AK=1 means read value data
@@ -155,116 +157,32 @@ const unsigned char RESPONSE_SIZE = 16; // 16 bytes of response telegram
 const unsigned char MIN_EXTRA_ID = 1; // min address of inverter
 const unsigned char MAX_EXTRA_ID = 32; // max address of inverter
 
-class fc_proto;
-class fc_register
-{
-private:
-	fc_proto *m_fc_proto;
-	int m_val;
-	sz4::nanosecond_time_t m_mod_time;
-	driver_logger *m_log;
-public:
-	fc_register(fc_proto* daemon, driver_logger *log) :
-		m_fc_proto(daemon),
-		m_val(SZARP_NO_DATA),
-		m_mod_time(sz4::time_trait<sz4::nanosecond_time_t>::invalid_value),
-		m_log(log) {};
-	void set_val(int value, sz4::nanosecond_time_t& time);
-	int get_val(bool& valid, sz4::nanosecond_time_t& time);
-	int get_val() const;
-};
-
+class fc_register;
 using FCRMAP = std::map<unsigned int, fc_register *>;
 
-int fc_register::get_val() const {
-	return m_val;
-}
-
-void fc_register::set_val(int val, sz4::nanosecond_time_t& time) {
-	m_val = val;
-	m_mod_time = time;
-}
-
-class read_fc_val_op
+class fc_proto : public bc_driver, public cycle_callback_handler
 {
-	protected:
-		driver_logger *m_log;
-	public:
-		read_fc_val_op(driver_logger *log) : m_log(log) {};
-		virtual void set_val(zmqhandler *handler, int64_t index) = 0;
-};
+	Scheduler read_timer;
+	CycleScheduler cycle_scheduler;
 
-class ushort_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		ushort_read_fc_val_op(fc_register *reg, driver_logger *log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		void set_val(zmqhandler *handler, int64_t index);
-};
+	non_owning_ptr<zmqhandler> m_zmq;
 
-void ushort_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	unsigned short v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
-
-class uinteger_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		uinteger_read_fc_val_op(fc_register *reg, driver_logger *log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		void set_val(zmqhandler *handler, int64_t index);
-};
-
-void uinteger_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	unsigned int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
-
-class integer_read_fc_val_op : public read_fc_val_op {
-	private:
-		fc_register *m_reg;
-	public:
-		integer_read_fc_val_op(fc_register *reg, driver_logger *log) :
-			read_fc_val_op(log), m_reg(reg) {};
-		virtual void set_val(zmqhandler *handler, int64_t index);
-};
-
-void integer_read_fc_val_op::set_val(zmqhandler *handler, int64_t index) {
-	bool valid;
-	sz4::nanosecond_time_t t;
-	int v = m_reg->get_val(valid, t);
-	handler->set_value(index, t, v);
-}
-
-class fc_proto : public serial_client_driver
-{
-	unsigned char m_id;
 	size_t m_read;
 	size_t m_send;
 	size_t m_read_count;
 	size_t m_send_count;
-	struct bufferevent *m_bufev;
-	struct event m_read_timer;
-	bool m_read_timer_started;
 
 	/* Address of Danfoss Inverter */
 	unsigned char m_extra_id;
 
-	int m_timeout;
-	driver_logger m_log;
+	slog m_log;
 
 	/* Time variables */
 	sz4::nanosecond_time_t m_current_time;
 	long long m_expiration_time;
 
 	/* Serial connection state */
-	enum { IDLE, REQUEST, RESPONSE  } m_state;
+	enum { IDLE, REQUEST, RESPONSE } m_state;
 
 	/* Vector containing telegram */
 	std::vector<unsigned char> m_request_buffer;
@@ -276,65 +194,90 @@ class fc_proto : public serial_client_driver
 	/* Register of parameters under unit */
 	FCRMAP m_registers;
 	FCRMAP::iterator m_registers_iterator;
-	std::vector<read_fc_val_op *> m_read_operators;
 
 	/* Function to create checksum byte (xor of all previous bytes) */
 	const char checksum (const std::vector<unsigned char>& buffer);
 
-	void finished_cycle();
 	void next_request();
 	void send_request();
 	void make_read_request();
 	int parse_frame();
 	void to_parcook();
-	bool read_line(struct bufferevent *bufev);
 
 	/* Parser of PWEhigh and PWElow octal chars, returns full 4 byte value */
 	int parse_pwe(const std::vector<unsigned char>& val);
 
-	void start_read_timer();
-	void stop_read_timer();
-
 protected:
-	void driver_finished_job();
 	void terminate_connection();
-	struct event_base *get_event_base();
 
 public:
-	fc_proto();
-	const char *driver_name() override { return "fc_serial_client"; }
-	zmqhandler* zmq_handler() { return m_zmq; }
-	void starting_new_cycle() override;
-	void data_ready(struct bufferevent *bufev, int fd) override;
+	fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log);
 	bool register_val_expired(const sz4::nanosecond_time_t& time);
-	void connection_error(struct bufferevent *bufev) override;
-	int configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc);
-	void configure_ushort_register (unsigned int pnu);
-	void configure_uinteger_register (unsigned int pnu);
-	void configure_integer_register (unsigned int pnu);
-	void scheduled(struct bufferevent *bufev, int fd) override;
-	void read_timer_event();
-	static void read_timer_callback(int fd, short event, void *fc_proto);
+	int configure(UnitInfo* unit, size_t read, size_t send, const SerialPortConfiguration&) override;
+	void configure_timers(UnitInfo* unit);
+	void configure_register(TAttribHolder* param);
+
+	// cycle_callback_handler impl
+	void start_cycle() override;
+
+	// ConnectionListener impl
+	void OpenFinished(const BaseConnection *conn) override {}
+	void ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) override;
+	void ReadError(const BaseConnection *conn, short int event) override;
+	void SetConfigurationFinished(const BaseConnection *conn) override {}
 
 };
 
-int fc_register::get_val(bool& valid, sz4::nanosecond_time_t& mod_time) {
-	if (sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time)) {
-		valid = m_fc_proto->register_val_expired(m_mod_time);
-		mod_time = m_mod_time;
+using register_iface = register_iface_t<int32_t>;
+class fc_register: public register_iface, public parcook_val_op {
+	non_owning_ptr<fc_proto> m_fc_proto;
+	sz4::nanosecond_time_t m_mod_time = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+
+public:
+	fc_register(fc_proto* daemon): m_fc_proto(daemon) {};
+
+	bool is_valid() const override {
+		return sz4::time_trait<sz4::nanosecond_time_t>::is_valid(m_mod_time) && !(m_fc_proto->register_val_expired(m_mod_time));
 	}
-	else {
-		valid = false;
+
+	sz4::nanosecond_time_t get_mod_time() const override {
+		return m_mod_time;
 	}
-	return m_val;
-}
+
+	void set_mod_time(const sz4::nanosecond_time_t& time) override {
+		m_mod_time = time;
+	}
+};
+
+template <typename value_type>
+class fc_register_impl: public fc_register {
+	value_type m_val = sz4::no_data<value_type>();
+
+public:
+	using fc_register::fc_register;
+
+	// unused in fc (no sends)
+	int32_t get_val() const override {
+		ASSERT(!"This function is unused!");
+		return (int32_t) m_val;
+	}
+
+	void set_val(int val) override {
+		m_val = (value_type) val;
+	}
+
+	void publish_val(zmqhandler& handler, size_t index) override {
+		if (is_valid())
+			handler.set_value(index, get_mod_time(), m_val);
+	}
+};
 
 
-fc_proto::fc_proto() : m_log(this), m_state(IDLE) {}
+fc_proto::fc_proto(BaseConnection* conn, boruta_daemon* boruta, slog log): bc_driver(conn), read_timer(), cycle_scheduler(this), m_zmq(boruta->get_zmq()), m_log(log), m_state(IDLE) {}
 
 const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 {
-	m_log.log(10, "checksum");
+	m_log->log(10, "checksum");
 	char exor = 0x00;
 	/* Checksum used for make_read_request and validate last byte of buffer */
 	for (size_t i = 0; (i < buffer.size()) && (i < RESPONSE_SIZE - 1); ++i)
@@ -342,20 +285,14 @@ const char fc_proto::checksum (const std::vector<unsigned char>& buffer)
 	return exor;
 }
 
-void fc_proto::finished_cycle()
-{
-	to_parcook();
-}
-
 void fc_proto::next_request()
 {
-	m_log.log(10, "next_request");
+	m_log->log(10, "next_request");
 
 	++m_registers_iterator;
 	if (m_registers_iterator == m_registers.end()) {
-		m_log.log(10, "next_request, no more registers to query, driver finished job");
+		m_log->log(10, "next_request, no more registers to query, driver finished job");
 		m_state = IDLE;
-		m_manager->driver_finished_job(this);
 		return;
 	}
 
@@ -364,23 +301,22 @@ void fc_proto::next_request()
 
 void fc_proto::send_request()
 {
-	m_log.log(10, "send_request");
+	m_log->log(10, "send_request");
 	m_buffer.clear();
 	make_read_request();
 	if(m_request_buffer.size() == RESPONSE_SIZE) {
-		bufferevent_write(m_bufev, &m_request_buffer[0], m_request_buffer.size());
+		m_connection->WriteData(&m_request_buffer[0], m_request_buffer.size());
 		m_state = REQUEST;
-		start_read_timer();
-	}
-	else {
-		m_log.log(2, "send_request error - wrong request buffer size, terminating cycle");
+		read_timer.schedule();
+	} else {
+		m_log->log(2, "send_request error - wrong request buffer size, terminating cycle");
 		m_registers_iterator = --m_registers.end();
 	}
 }
 
 void fc_proto::make_read_request()
 {
-	m_log.log(10, "make_read_request");
+	m_log->log(10, "make_read_request");
 	m_request_buffer.clear();
 
 	/* Telegram contains STE - LGE - ADR - PKE - IND - PWE - PCD - BCC */
@@ -404,16 +340,16 @@ void fc_proto::make_read_request()
 int fc_proto::parse_frame()
 {
 	if (m_buffer.size() != RESPONSE_SIZE) {
-		m_log.log(5, "parse_frame error - received message is wrong (misreceived 16 bytes)");
+		m_log->log(5, "parse_frame error - received message is wrong (misreceived 16 bytes)");
 		m_registers_iterator = --m_registers.end();
 		return 1;
 	}
-	m_log.log(10, "parse_frame, length: %zu", m_buffer.size());
+	m_log->log(10, "parse_frame, length: %zu", m_buffer.size());
 
 	/* 16 byte is BCC */
 	/* Checking wheter checksum is the same as received */
 	if (m_buffer.at(15) != m_last_bcc) {
-		m_log.log(2, "parse_frame error - received wrong checksum");
+		m_log->log(2, "parse_frame error - received wrong checksum");
 		m_registers_iterator = --m_registers.end();
 		return 1;
 	}
@@ -425,7 +361,7 @@ int fc_proto::parse_frame()
 		if(i == 3)
 			continue;
 		if(m_buffer.at(i) != m_request_buffer.at(i)) {
-			m_log.log(2, "parse_frame error - received buffer is different from requested buffer at %u byte", i);
+			m_log->log(2, "parse_frame error - received buffer is different from requested buffer at %u byte", i);
 			m_registers_iterator = --m_registers.end();
 			return 1;
 		}
@@ -442,15 +378,17 @@ int fc_proto::parse_frame()
 
 	/* Convert octal char to int and set 4 bytes from PWE to register */
 	int value = parse_pwe(pwe_chars);
-	m_log.log(10, "Setting value: %d", value);
-	m_registers_iterator->second->set_val(value, m_current_time);
+	m_log->log(10, "Setting value: %d", value);
+	m_registers_iterator->second->set_val(value);
+	m_registers_iterator->second->set_mod_time(m_current_time);
+
 
 	/* Next 2 bytes are PCD1 status word */
 	const size_t status_word = 2;
 	for (size_t i = (byte + pwe_byte); i < (byte + pwe_byte + status_word); ++i) {
 		const unsigned char PCD1 = m_buffer.at(i);
 		if (PCD1 != 0)
-			m_log.log(7, "parse_frame warning - status word PCD1 (byte %zu) is %X", i, PCD1);
+			m_log->log(7, "parse_frame warning - status word PCD1 (byte %zu) is %X", i, PCD1);
 	}
 
 	/* Ignoring 15 byte - output frequency */
@@ -470,44 +408,21 @@ int fc_proto::parse_pwe(const std::vector<unsigned char>& pwe)
 
 void fc_proto::to_parcook()
 {
-	m_log.log(10, "to_parcook, m_read_count: %zu", m_read_count);
-	std::vector<read_fc_val_op *>::iterator it = m_read_operators.begin();
-	for (size_t i = 0; i < m_read_count; ++i, ++it) {
-		(*it)->set_val(zmq_handler(), i + m_read);
+	size_t i = 0;
+	m_log->log(10, "to_parcook, m_read_count: %zu", m_read_count);
+	for (auto reg: m_registers) {
+		reg.second->publish_val(*m_zmq, i + m_read);
+		++i;
 	}
-}
-
-void fc_proto::start_read_timer()
-{
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 500000;
-	evtimer_add(&m_read_timer, &tv);
-}
-
-void fc_proto::stop_read_timer()
-{
-	event_del(&m_read_timer);
-}
-
-void fc_proto::driver_finished_job()
-{
-	m_manager->driver_finished_job(this);
 }
 
 void fc_proto::terminate_connection()
 {
-	m_manager->terminate_connection(this);
+	m_connection->Close();
 }
 
-struct event_base *fc_proto::get_event_base()
+int fc_proto::configure(UnitInfo *unit, size_t read, size_t send, const SerialPortConfiguration&)
 {
-	return m_event_base;
-}
-
-int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_configuration& spc)
-{
-	m_id = unit->GetId();
 	m_read_count = unit->GetParamsCount();
 	m_send_count = unit->GetSendParamsCount();
 	m_read = read;
@@ -518,168 +433,127 @@ int fc_proto::configure(TUnit *unit, size_t read, size_t send, serial_port_confi
 
 	auto l = unit->getAttribute<int>("extra:id", -1);
 	if (l < MIN_EXTRA_ID || l > MAX_EXTRA_ID) {
-		m_log.log(1, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
+		m_log->log(1, "Invalid value of extra:id value %d, expected value between 1 and 31 (unit %d)", l, unit->GetUnitNo());
 		return 1;
 	}
 	/* ADR is address + 128 */
 	m_extra_id = l + 128;
-	m_log.log(10, "configure extra:id: %02X", m_extra_id);
+	m_log->log(10, "configure extra:id: %02X", m_extra_id);
 
 	for(auto param: unit->GetParams()) {
 		try {
-			const unsigned int pnu = param->getAttribute<unsigned>("extra:parameter-number");
-			m_log.log(10, "configure extra:parameter-number: %d", pnu);
-
-			std::string val_type = param->getAttribute<std::string>("extra:val_type");
-			if (val_type == "ushort") {
-				configure_ushort_register(pnu);
-			}
-			else if (val_type == "uinteger") {
-				configure_uinteger_register(pnu);
-			}
-			else if (val_type == "integer") {
-				configure_integer_register(pnu);
-			}
-			else {
-				m_log.log(1, "Unsupported value type: %s, for param %ls", val_type.c_str(), param->GetName().c_str());
-				return 1;
-			}
-
+			configure_register(param);
 		} catch(const std::exception& e) {
-			m_log.log(1, "Error while configuring param %ls", param->GetName().c_str());
+			m_log->log(1, "Error while configuring param %ls", param->GetName().c_str());
 			throw;
 		}
 	}
 
-	evtimer_set(&m_read_timer, read_timer_callback, this);
-	event_base_set(get_event_base(), &m_read_timer);
+	configure_timers(unit);
+
 	return 0;
 }
 
-void fc_proto::configure_ushort_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new ushort_read_fc_val_op(m_registers[pnu], &m_log));
+void fc_proto::configure_timers(UnitInfo* unit) {
+	read_timer.set_callback(new FnPtrScheduler([this](){ next_request(); }));
+	read_timer.set_timeout(ms(1500));
+	cycle_scheduler.configure(unit);
 }
 
-void fc_proto::configure_uinteger_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new uinteger_read_fc_val_op(m_registers[pnu], &m_log));
-}
+void fc_proto::start_cycle() {
+	m_log->log(10, "cycle timer callback");
 
-void fc_proto::configure_integer_register(unsigned int pnu) {
-	m_registers[pnu] = new fc_register(this, &m_log);
-	m_read_operators.push_back(new integer_read_fc_val_op(m_registers[pnu], &m_log));
-}
+	m_current_time = szarp::time_now<sz4::nanosecond_time_t>();
+	to_parcook();
 
-void fc_proto::scheduled(struct bufferevent *bufev, int fd)
-{
-	m_bufev = bufev;
-	m_log.log(10, "scheduled");
-	switch (m_state) {
-	case IDLE:
-		m_registers_iterator = m_registers.begin();
-		send_request();
-		break;
-	case REQUEST:
-	case RESPONSE:
-		m_log.log(7, "New cycle before end of querying");
-		break;
+	if (m_state != IDLE) {
+		m_log->log(3, "New cycle before end of querying, dropping");
+		return;
 	}
+
+	read_timer.cancel();
+
+	if (!m_connection->Ready()) {
+		m_connection->Close();
+		m_connection->Open();
+	}
+
+	m_registers_iterator = m_registers.begin();
+	send_request();
+};
+
+namespace {
+
+std::map<std::string, std::function<fc_register*(fc_proto* proto)>> val_map = {
+	{"ushort", [](fc_proto* proto){ return new fc_register_impl<uint16_t>(proto); }},
+	{"uinteger", [](fc_proto* proto){ return new fc_register_impl<uint32_t>(proto); }},
+	{"integer", [](fc_proto* proto){ return new fc_register_impl<int32_t>(proto); }},
+};
+
+} // annon ns
+
+
+void fc_proto::configure_register(TAttribHolder* param) {
+	auto pnu = param->getAttribute<unsigned>("extra:parameter-number");
+
+	m_log->log(10, "configure extra:parameter-number: %d", pnu);
+
+	std::string val_type = param->getAttribute<std::string>("extra:val_type");
+	auto val_f = val_map.find(val_type);
+	if (val_f == val_map.end()) {
+		m_log->log(1, "Unsupported value type: %s", val_type.c_str());
+		throw std::runtime_error("Invalid value type");
+	}
+
+	m_registers[pnu] = val_f->second(this);
 }
 
-void fc_proto::connection_error(struct bufferevent *bufev)
-{
-	m_log.log(10, "connection_error");
+void fc_proto::ReadError(const BaseConnection *conn, short int event) {
+	m_log->log(10, "connection error");
 	m_state = IDLE;
-	m_bufev = nullptr;
 	m_buffer.clear();
-	stop_read_timer();
+	read_timer.cancel();
 }
 
-void fc_proto::starting_new_cycle()
-{
-	m_log.log(10, "starting_new_cycle");
-	struct timespec time;
-	clock_gettime(CLOCK_REALTIME, &time);
-	m_current_time.second = time.tv_sec;
-	m_current_time.nanosecond = time.tv_nsec;
-	stop_read_timer();
-}
-
-void fc_proto::data_ready(struct bufferevent *bufev, int fd)
-{
-	unsigned char c;
-	switch (m_state) {
+void fc_proto::ReadData(const BaseConnection *conn, const std::vector<unsigned char>& data) {
+	for (auto c: data) switch (m_state) {
 		case IDLE:
-			m_log.log(5, "Got unrequested message, ignoring");
-			/* Drain data from bufferevent */
-		   /* m_buffer would be cleared before draining response telegram */
-			while (bufferevent_read(bufev, &c, 1) != 0) {
-				m_log.log(10, "ignored %c", c);
-			}
+			m_log->log(5, "Got unrequested message, ignoring");
+			/* Drain data */
+			m_log->log(10, "ignored %c", c);
 			break;
 		case REQUEST:
-			while (bufferevent_read(bufev, &c, 1) != 0) {
-				/* STE is a starting frame, prepare buffer */
-				if (c == STE) {
-					m_buffer.clear();
-					break;
-				}
-			}
-			m_buffer.push_back(c);
-			stop_read_timer();
-			m_state = RESPONSE;
-		case RESPONSE:
-			if(!read_line(bufev) && m_buffer.size() < RESPONSE_SIZE)
+			/* STE is a starting frame, prepare buffer */
+			if (c != STE)
 				break;
-			parse_frame();
-			next_request();
+
+			m_buffer.clear();
+			read_timer.cancel();
+			m_state = RESPONSE;
+			//[fallthrough]
+		case RESPONSE:
+			m_buffer.push_back(c);
+			if (m_buffer.size() == RESPONSE_SIZE) {
+				m_last_bcc = checksum(m_buffer);
+				parse_frame();
+				next_request();
+			}
+
 			break;
 	}
 }
 
 bool fc_proto::register_val_expired(const sz4::nanosecond_time_t& time) {
 	if (m_expiration_time == 0) {
-		return true;
+		return false;
+	} else {
+		auto t = time;
+		t += m_expiration_time;
+		return t <= m_current_time;
 	}
-	else {
-		return time >= m_current_time + m_expiration_time;
-	}
 }
 
-bool fc_proto::read_line(struct bufferevent *bufev)
-{
-	unsigned char c[RESPONSE_SIZE] = "";
-	size_t ret = 0;
-
-	while ((ret = bufferevent_read(bufev, c, sizeof(c))) > 0) {
-		for (size_t i = 0; i < ret; ++i) {
-			m_buffer.push_back(c[i]);
-			if (m_buffer.size() == RESPONSE_SIZE) {
-				m_last_bcc = checksum(m_buffer);
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-void fc_proto::read_timer_event()
-{
-	m_log.log(7, "read_timer_event, state: %d, reg: %d", m_state, m_registers_iterator->first);
-	next_request();
-}
-
-void fc_proto::read_timer_callback(int fd, short event, void *client)
-{
-	fc_proto *fc = (fc_proto *) client;
-	fc->m_log.log(10, "read_timer_callback");
-	fc->read_timer_event();
-}
-
-serial_client_driver *create_fc_serial_client()
-{
-	return new fc_proto();
+driver_iface* create_fc_serial_client(BaseConnection* conn, boruta_daemon* boruta, slog log) {
+	return new fc_proto(conn, boruta, log);
 }
 

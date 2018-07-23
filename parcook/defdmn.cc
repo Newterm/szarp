@@ -42,6 +42,7 @@
  <device 
       xmlns:exec="http://www.praterm.com.pl/SZARP/ipk-extra"
       daemon="/opt/szarp/bin/defdmn" 
+      data-timeout="0" [default is 1h, 0 disables (never expire)]
       options="--some-option -f some-argument">
       ...
 
@@ -65,6 +66,7 @@
 
 
 #include "sz4/lua_interpreter_templ.h"
+#include "ipkcontainer.h"
 #include <sstream>
 #include <assert.h>
 
@@ -83,6 +85,9 @@
 #include <utility>
 #include <boost/lexical_cast.hpp>
 #include "defdmn.h"
+
+sz4::nanosecond_time_t Defdmn::time_now = sz4::time_trait<sz4::nanosecond_time_t>::invalid_value;
+sz4::second_time_t Defdmn::data_timeout = sz4::time_trait<sz4::second_time_t>::invalid_value;
 
 void configureHubs(sz4::live_cache_config*);
 void registerLuaFunctions();
@@ -104,6 +109,13 @@ int main(int argc, char ** argv)
 Defdmn::Defdmn(): m_ipc(nullptr), m_cfg(nullptr), m_zmq(nullptr), m_base(nullptr), m_event_base(nullptr), param_info() {}
 
 void Defdmn::MainLoop() {
+	// update time
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+	auto duration = now.time_since_epoch();
+	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+	const auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+	Defdmn::time_now = sz4::nanosecond_time_t(seconds, nanoseconds);
+
 	executeScripts();
 	
 	if (!m_cfg->GetSingle()) {
@@ -162,7 +174,7 @@ void Defdmn::cycle_timer_callback(int fd, short event, void* arg) {
 }
 
 void Defdmn::configure(int* argc, char** argv) {
-	IPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
+	ParamCachingIPKContainer::Init(L"/opt/szarp", L"/opt/szarp", L"pl");
 	m_cfg.reset(new DaemonConfig("defdmn"));
 
 	configure_events();
@@ -182,6 +194,7 @@ void Defdmn::configure(int* argc, char** argv) {
 	}
 
 	TDevice * dev = m_cfg->GetDevice();
+	Defdmn::data_timeout = dev->getAttribute("data-timeout", 3600); // default is 1 hour
 	m_cycle = m_cfg->GetDeviceTimeval();
 
 	sz4::live_cache_config* live_config = new sz4::live_cache_config();
@@ -229,24 +242,29 @@ std::wstring makeParamNameGlobal(const char* pname) {
 	return makeParamNameGlobal(std::move(name));
 }
 
-double Defdmn::IPCParamValue(const std::wstring& name) {
+boost::optional<double> Defdmn::IPCParamValue(const std::wstring& name) {
 	std::wstring global_name = makeParamNameGlobal(name);
 
 	return getGlobalParamValue(global_name);
 }
 
-double Defdmn::IPCParamValue(const char* pname) {
+boost::optional<double> Defdmn::IPCParamValue(const char* pname) {
 	std::wstring global_name = makeParamNameGlobal(pname);
 
 	return getGlobalParamValue(global_name);
 }
 
-double Defdmn::getGlobalParamValue(const std::wstring& name) {
+boost::optional<double> Defdmn::getGlobalParamValue(const std::wstring& name) {
 	TParam* param = IPKContainer::GetObject()->GetParam(name);
-	if (!param) return std::numeric_limits<double>::min();
+	if (!param)
+		return boost::none;
 
 	sz4::nanosecond_time_t data_time;
 	Defdmn::getObject().m_base->get_last_time(param, data_time);
+
+	auto valid_till = data_time.second + Defdmn::data_timeout;
+	if (Defdmn::data_timeout != 0 && valid_till < Defdmn::time_now.second)
+		return boost::none;
 
 	return Defdmn::getObject().getParamData(param, data_time);
 }
@@ -264,24 +282,16 @@ void registerLuaFunctions() {
 	lua_register(lua, "szbase", sz4base_value);
 }
 
-float ChooseFun(float funid, float *parlst)
-{
-	ushort fid;
-
-	fid = (ushort) funid;
-	if (fid >= MAX_FID)
-		return (0.0);
-	return ((*(FunTable[fid])) (parlst));
-}
-
 int ipc_value(lua_State *lua) {
 	const char* str = luaL_checkstring(lua, 1);
 	if (str == NULL)
 		return luaL_error(lua, "Invalid param name");
 
-	double result = Defdmn::IPCParamValue(str);
-
-	lua_pushnumber(lua, result);
+	auto result = Defdmn::IPCParamValue(str);
+	if (!result)
+		lua_pushnil(lua);
+	else
+		lua_pushnumber(lua, *result);
 
 	return 1;
 }

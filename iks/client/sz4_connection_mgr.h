@@ -10,6 +10,7 @@
 #include <future>
 
 class TParam;
+class IPKContainer;
 class IksConnection;
 
 namespace boost { namespace asio {

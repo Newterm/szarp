@@ -9,6 +9,7 @@
 
 #include <liblog.h>
 
+#include "locations/common_cmds/cmd_ping.h"
 #include "cmd_set.h"
 #include "cmd_value.h"
 #include "cmd_notify.h"
@@ -30,7 +31,6 @@
 #include "cmd_get_data.h"
 #include "cmd_param_subscribe.h"
 #include "cmd_param_unsubscribe.h"
-#include "cmd_param_add.h"
 #include "cmd_param_remove.h"
 #include "cmd_custom_subscribe.h"
 
@@ -60,16 +60,11 @@ SzbaseProt::SzbaseProt( Vars& vars )
 
 SzbaseProt::~SzbaseProt()
 {
-	for ( auto i : user_params )
-	{
-		try{
-			vars.get_updater().remove_param( i.first.first , i.second );
-		} catch ( szbase_error& ) { } 
-	}
 }
 
 Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 {
+	MAP_CMD_TAG( "ping"              , CmdPingRcv          );
 	MAP_CMD_TAG( "s"                 , SetRcv              );
 	MAP_CMD_TAG( "set"               , SetRcv              );
 	MAP_CMD_TAG( "list_sets"         , ListSetsRcv         );
@@ -91,8 +86,6 @@ Command* SzbaseProt::cmd_from_tag( const std::string& tag )
 	MAP_CMD_TAG( "get_data"          , GetDataRcv          );
 	MAP_CMD_TAG( "param_subscribe"   , ParamSubscribeRcv   );
 	MAP_CMD_TAG( "param_unsubscribe" , ParamUnsubscribeRcv );
-	MAP_CMD_TAG( "add_param"         , ParamAddRcv         );
-	MAP_CMD_TAG( "remove_param"      , ParamRemoveRcv      );
 	MAP_CMD_TAG( "custom_subscribe"   , CustomSubscribeRcv   );
 	return NULL;
 }
@@ -198,19 +191,6 @@ void SzbaseProt::unsubscribe_param( const std::string& name )
 		sub_params.erase( it );
 }
 
-void SzbaseProt::add_param( const std::string& param
-						  , const std::string& base
-						  , const std::string& formula
-						  , const std::string& type
-						  , int prec
-						  , unsigned start_time)
-{
-	std::string internal_name = vars.get_updater().add_param( param , base , formula , def_param_uuid , type , prec , start_time );
-
-	user_params.insert( std::make_pair( std::make_pair( base , param ) , internal_name ) );
-	user_params_inverted.insert( std::make_pair( internal_name , param ) );
-}
-
 const std::string& SzbaseProt::get_client_param_name( const std::string& name ) const 
 {
 	auto i = user_params_inverted.find( name );
@@ -228,17 +208,5 @@ const std::string& SzbaseProt::get_mapped_param_name( const std::string& name ) 
 std::shared_ptr<const Param> SzbaseProt::get_param( const std::string& name ) const
 {
 	return get_param( get_mapped_param_name( name ) );
-}
-
-void SzbaseProt::remove_param(const std::string& base, const std::string& pname)
-{
-	auto i = user_params.find( std::make_pair( base , pname ) );
-	if ( i == user_params.end() )
-		throw szbase_param_not_found_error("param not found");
-
-	vars.get_updater().remove_param( i->first.first, i->second );
-
-	user_params_inverted.erase( i->second );
-	user_params.erase( i );
 }
 

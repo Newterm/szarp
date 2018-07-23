@@ -49,6 +49,7 @@
 #include "szarp_config.h"
 #include "cfgnames.h"
 #include "exception.h"
+#include "user_def_ipk.h"
 
 class DrawParam {
 protected:
@@ -440,7 +441,7 @@ class ConfigManager
 {
     public:
 	/** Default constructor, does nothing. */
-	ConfigManager(wxString szarp_data_dir, IPKContainer *ipk_container, const wxString &prefix = wxEmptyString);
+	ConfigManager(wxString szarp_data_dir, std::shared_ptr<UserDefinedIPKManager> _ipk_manager, const wxString &prefix = wxEmptyString);
 	
 	/** Loads configuration for given base name 
 	 * @param prefix prefix of configration to load
@@ -491,7 +492,7 @@ class ConfigManager
 	wxString GetSzarpDir() const;
 
 	/** @return IPKs */
-	IPKContainer* GetIPKs() const { return m_ipks; }
+	IPKContainer* GetIPKs() const { return ipk_manager->GetIPKContainer(); }
 
 	/** Add object to a list of configrations' observers*/
 	void RegisterConfigObserver(ConfigObserver *obsrver);
@@ -545,10 +546,6 @@ class ConfigManager
 	/**Loads defined draws set from file*/
 	bool SaveDefinedDrawsSets();
 
-	bool IsPSC(wxString prefix);
-
-	void EditPSC(wxString prefix, wxString param = wxString());
-
 	void ImportSet();
 
 	void ExportSet(DefinedDrawSet *set, wxString our_name);
@@ -578,7 +575,7 @@ protected:
 	wxString m_szarp_data_dir;
 	
 	/** Container for a IPKs */
-	IPKContainer *m_ipks;
+	std::shared_ptr<UserDefinedIPKManager> ipk_manager;
 
 	/** Containers mapping configuration prefixes to their names*/
 	ConfigNameHash m_config_names;
@@ -592,8 +589,6 @@ protected:
 	DefinedDrawsSets* m_defined_sets;
 
 	wxCriticalSection m_reload_config_CS;
-
-	DrawPsc *psc;
 
 	//prefix of base given(either default one or given with argument -base)
 	wxString m_base_prefix;

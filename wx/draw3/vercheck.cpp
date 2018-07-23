@@ -36,11 +36,11 @@ BEGIN_EVENT_TABLE(VersionChecker, wxEvtHandler)
 END_EVENT_TABLE()
 	
 
-VersionChecker* VersionChecker::_version_checker = NULL;
-std::vector<DrawToolBar*>* VersionChecker::_toolbars_list = NULL;
+VersionChecker* VersionChecker::_version_checker = nullptr;
+std::vector<DrawToolBar*>* VersionChecker::_toolbars_list = nullptr;
 
 VersionChecker::VersionChecker(wxString draw3_path) :
-		m_draw3_path(draw3_path), m_process(NULL), m_timer(new wxTimer(this, wxID_ANY))
+		m_draw3_path(draw3_path), m_process(nullptr), m_timer(new wxTimer(this, wxID_ANY))
 {
 	m_is_new_version = false;
 
@@ -63,7 +63,7 @@ void VersionChecker::OnTerminate(wxProcessEvent& e) {
 
 	// if version check returned correctly and print sth. 
 	// otherwise there is a bug!
-	if( e.GetExitCode() == 255 && m_process->IsInputAvailable()) {
+	if(m_process->IsInputAvailable()) {
 		wxTextInputStream is(*m_process->GetInputStream());
 		wxString version = is.ReadLine();
 		if (version != SC::A2S(SZARP_VERSION))
@@ -77,7 +77,7 @@ void VersionChecker::OnTerminate(wxProcessEvent& e) {
 	}
 
 	delete m_process;
-	m_process = NULL;
+	m_process = nullptr;
 
 	if (m_is_new_version) {
 		ShowNewVersionMessage();
@@ -98,7 +98,7 @@ void VersionChecker::OnTimer(wxTimerEvent& e) {
 
 	if (wxExecute(m_draw3_path + _T(" -V"), wxEXEC_ASYNC, m_process) == 0) {
 		delete m_process;
-		m_process = NULL;	
+		m_process = nullptr;
 		Start();
 	}
 }

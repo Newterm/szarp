@@ -64,6 +64,7 @@
 #include "libpar.h"
 
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "szbase/szbbase.h"
 #include "conversion.h"
 
@@ -1089,7 +1090,7 @@ int CluaRegister::GetDataFromParam(time_t StartDate, time_t StopDate, char *PNam
 	*PSize = 0;
 	ActualDate = StartDate;
 	
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(IpkConf.dir), 1, IpkConf.ipk);
 
@@ -1133,7 +1134,7 @@ int CluaRegister::GetDataFromParams(time_t StartDate, time_t StopDate, char *PWi
 	for (TParam *ppp = ipk->GetFirstParam();ppp;ppp=ppp->GetNextGlobal()){
 		
 		if (CheckWildCardString((char *)(SC::S2A(ppp->GetName()).c_str()),(char *)PWildCard)==0){	
-			IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+			ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 			Szbase::Init(SC::L2S(PREFIX), NULL);
 			buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, ipk);
 			data = szb_get_avg(buf, ipk->getParamByName(ppp->GetName()), StartDate, StopDate);

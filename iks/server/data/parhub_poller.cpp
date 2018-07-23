@@ -21,6 +21,21 @@ bool ZmqSocketHolder::recv(szarp::ParamsValues& pv) {
 	return false;
 }
 
+ParhubPoller::ParhubPoller(std::unique_ptr<SocketHolder> _socket_holder, ParhubSubscriber& _subscriber): socket_holder(std::move(_socket_holder)), subscriber(_subscriber) {
+	run_poller();
+}
+
+ParhubPoller::ParhubPoller(std::string url, ParhubSubscriber& _subscriber): ParhubPoller(std::unique_ptr<SocketHolder>(new ZmqSocketHolder(url)), _subscriber) {}
+
+ParhubPoller::~ParhubPoller() {
+	should_exit = true;
+	if (poll_cv.valid()) poll_cv.wait();
+}
+
+void ParhubPoller::run_poller() {
+	poll_cv = std::async(std::launch::async, [this](){ this->poll(); });
+}
+
 void ParhubPoller::poll() {
 	// not the best way to do this
 	// TODO: change to select()

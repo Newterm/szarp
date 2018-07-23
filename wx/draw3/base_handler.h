@@ -33,7 +33,10 @@
 #include <tr1/tuple>
 #include <unordered_map>
 
+#include "user_def_ipk.h"
+
 #include "szbase/szbbase.h"
+
 
 class SzbExtractor;
 
@@ -89,8 +92,10 @@ struct DatabaseQuery {
 			double last_val;
 			/**Sum of probes*/
 			double sum;
+			/**Number of valid probes*/
+			int data_count = 0;
 			/**Number of no no-data probes*/
-			int count;
+			int no_data_count;
 			/** False if error ocurred during data retrieval*/
 			bool ok;
 			/** error no*/	
@@ -244,6 +249,8 @@ public:
 
 	virtual void StopSearch() = 0;
 
+	virtual std::wstring GetType() const = 0;
+
 	virtual void RegisterObserver(DatabaseQuery* query);
 
 	virtual ~Draw3Base() {}
@@ -251,6 +258,7 @@ public:
 
 class SzbaseBase : public Draw3Base {
 	Szbase *szbase;
+	IPKContainer* ipk_container;
 
 	boost::mutex m_mutex;
 
@@ -261,7 +269,7 @@ class SzbaseBase : public Draw3Base {
 	void maybeSetCancelHandle(TParam* param);
 	void releaseCancelHandle(TParam* param);
 public:
-	SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
+	SzbaseBase(wxEvtHandler* response_receiver, const std::wstring& data_path, IPKContainer* _ipk_container, void (*conf_changed_cb)(std::wstring, std::wstring), int cache_size);
 
 	~SzbaseBase();	
 
@@ -291,6 +299,8 @@ public:
 	void ClearCache(DatabaseQuery* query);
 	
 	void StopSearch();
+
+	std::wstring GetType() const;
 
 };
 
@@ -328,6 +338,8 @@ public:
 	void ClearCache(DatabaseQuery* query);
 	
 	void StopSearch();
+
+	std::wstring GetType() const;
 
 	virtual void RegisterObserver(DatabaseQuery* query);
 };
@@ -404,6 +416,8 @@ public:
 	
 	void StopSearch();
 
+	std::wstring GetType() const;
+
 	void RegisterObserver(DatabaseQuery* query);
 };
 
@@ -413,13 +427,14 @@ public:
 	virtual void SetCurrentPrefix(const wxString& prefix) = 0;
 	virtual wxString GetCurrentPrefix() const = 0;
 	virtual Draw3Base::ptr GetBaseHandler(const std::wstring& prefix) = 0;
+	virtual std::map<std::wstring, std::wstring> GetBaseHandlers() const = 0;
 	virtual void AddBasePrefix(const wxString&) = 0;
 	virtual ~BaseHandler() {}
 };
 
 class SzbaseHandler : public BaseHandler {
 public:
-	SzbaseHandler(wxEvtHandler *rr) : response_receiver(rr) {}
+	SzbaseHandler(wxEvtHandler *rr, std::shared_ptr<UserDefinedIPKManager> _ipk_manager) : response_receiver(rr), ipk_manager(_ipk_manager) {}
 	void SetupHandlers(const wxString& szarp_dir, const wxString& szarp_data_dir, int cache_size);
 
 	void SetDefaultBaseHandler(Draw3Base::ptr d)
@@ -441,6 +456,8 @@ public:
 	Draw3Base::ptr GetSz3Handler()
 	{ return sz3_base_handler; }
 
+	std::map<std::wstring, std::wstring> GetBaseHandlers() const override;
+
 	void AddBasePrefix(const wxString& prefix) override;
 	void AddBaseHandler(const wxString& prefix, Draw3Base::ptr handler)
 	{ base_handlers[prefix] = handler; }
@@ -460,6 +477,7 @@ private:
 	wxString current_prefix;
 
 	wxEvtHandler *response_receiver{nullptr};
+	std::shared_ptr<UserDefinedIPKManager> ipk_manager;
 	std::map<wxString, Draw3Base::ptr> base_handlers;
 	bool use_iks{false};
 };

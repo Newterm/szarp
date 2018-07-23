@@ -107,12 +107,17 @@ wxDateTime ToWxDateTime(time_t second, time_t nanosecond) {
 
 void* QueryExecutor::Entry() {
 	DatabaseQuery *q = NULL;
+	std::wstring last_prefix;
 	while ((q = queue->GetQuery())) {
 		if(q->type == DatabaseQuery::ADD_BASE_PREFIX) {
 			base_handler->AddBasePrefix(wxString(q->prefix));
 			delete q;
 			continue;
 		}
+		if( q->type == DatabaseQuery::REGISTER_OBSERVER ) {
+			q->prefix = last_prefix;
+		}
+		last_prefix = q->prefix;
 		auto base = base_handler->GetBaseHandler(q->prefix);
 		if(!base) {
 			delete q;

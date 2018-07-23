@@ -2,6 +2,7 @@
 
 #include <typeinfo>
 
+#include "locations/common_cmds/cmd_ping.h"
 #include "cmd_list_remotes.h"
 #include "cmd_update_remotes.h"
 #include "cmd_connect_remote.h"
@@ -30,6 +31,7 @@ WelcomeProt::~WelcomeProt()
 
 Command* WelcomeProt::cmd_from_tag( const std::string& tag )
 {
+	MAP_CMD_TAG( "ping"               , CmdPingRcv          );
 	MAP_CMD_TAG( "connect"            , CmdConnectRemoteRcv );
 	MAP_CMD_TAG( "list_remotes"       , CmdListRemotesRcv   );
 	MAP_CMD_TAG( "get_server_options" , GetServerConfigRcv  );

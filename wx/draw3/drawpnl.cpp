@@ -38,6 +38,7 @@
 #include "database.h"
 #include "drawsctrl.h"
 #include "summwin.h"
+#include "dbtypeswin.h"
 #include "cfgmgr.h"
 #include "disptime.h"
 #include "drawswdg.h"
@@ -48,7 +49,6 @@
 #include "drawtb.h"
 #include "drawdnd.h"
 #include "incsearch.h"
-#include "pscgui.h"
 #include "dbmgr.h"
 #include "drawpick.h"
 #include "defcfg.h"
@@ -221,7 +221,7 @@ bool DrawPanelKeyboardHandler::OnKeyDown(wxKeyEvent & event)
 			panel->OnJumpToDate();
 		break;
 	case 'B':
-		if (event.ControlDown())
+		if (event.ControlDown() && !event.ShiftDown())
 			panel->dw->SwitchCurrentDrawBlock();
 		else
 			return false;
@@ -305,7 +305,7 @@ DrawPanel::DrawPanel(DatabaseManager* _db_mgr, ConfigManager * _cfg, RemarksHand
 	:  wxPanel(parent, id, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS),
 	df(_df), iw(NULL), dw(NULL), dtw(NULL), ssw(NULL), sw(NULL), tw(NULL),
 	dinc(NULL), sinc(NULL), db_mgr(_db_mgr), cfg(_cfg),
-	prefix(_prefix), smw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
+	prefix(_prefix), smw(NULL), dbtw(NULL), rh(_rh), rmf(NULL), dtd(NULL), pw(NULL), realized(false), ee(NULL)
 {
 	//setting current prefix before creating panel, so that database 
 	//queries will go to right base_handler prefix
@@ -538,6 +538,8 @@ DrawPanel::~DrawPanel()
 		dtd->Destroy();
 	if (ee != NULL)
 		ee->Destroy();
+	if (dbtw != NULL)
+		dbtw->Destroy();
 	smw->Destroy();
 	rw->Destroy();
 	pw->Destroy();
@@ -624,6 +626,27 @@ void DrawPanel::ClearCache() {
 	dw->RefreshData(false);
 }
 
+void DrawPanel::BaseTypesWindowUpdate(bool show, std::map<std::wstring, std::wstring> const &tabMap) {
+	if (dbtw == NULL) {
+		dbtw = new DatabaseTypesWindow(this,this);
+	}
+
+	dbtw->MakeLabelsFromMap(tabMap);
+	ShowBaseTypesWindow(show);
+}
+
+void DrawPanel::ShowBaseTypesWindow(bool show) {
+	if (dbtw != NULL) {
+		dbtw->Show(show);
+		if (show) {
+			dbtw->Raise();
+		} else {
+			wxMenuItem *item = menu_bar->FindItem(XRCID("ShowBaseType"));
+			item->Check(show);
+		}
+	}
+}
+
 void DrawPanel::OnFind(wxCommandEvent & evt) {
 	StartDrawSearch();
 }
@@ -695,11 +718,6 @@ void DrawPanel::StartSetSearch() {
 	DrawSet *s = sinc->GetSelectedSet();
 	if (s)
 		dw->SetSet(s);
-}
-
-void DrawPanel::StartPSC()
-{
-	cfg->EditPSC(prefix);
 }
 
 void DrawPanel::ShowSummaryWindow(bool show) {
@@ -1080,11 +1098,6 @@ void DrawPanel::SetActive(bool _active) {
 		menu_bar->Enable(XRCID("DelSet"),  IsUserDefined());
 		menu_bar->Enable(XRCID("ExportSet"),  IsUserDefined());
 
-		if (cfg->IsPSC(prefix))
-			menu_bar->FindItem(XRCID("SetParams"))->Enable(true);
-		else
-			menu_bar->FindItem(XRCID("SetParams"))->Enable(false);
-
 		wxMenuItem *item = menu_bar->FindItem(XRCID("Summary"));
 		item->Check(smw->IsShown());
 
@@ -1100,27 +1113,32 @@ void DrawPanel::SetActive(bool _active) {
 
 		int thickness = wxConfig::Get()->ReadLong(_T("GRAPHS_THICKNESS"), 2);
 
+		wxMenuItem *tmi = nullptr;
 		switch(thickness) {
 			case 1:
-				menu_bar->FindItem(XRCID("Thickness1"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness1"));
 				break;
 			case 2:
-				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness2"));
 				break;
 			case 3:
-				menu_bar->FindItem(XRCID("Thickness3"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness3"));
 				break;
 			case 4:
-				menu_bar->FindItem(XRCID("Thickness4"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness4"));
 				break;
 			case 5:
-				menu_bar->FindItem(XRCID("Thickness5"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness5"));
 				break;
 			default:
 				thickness = 2;
-				menu_bar->FindItem(XRCID("Thickness2"))->Check(true);
+				tmi = menu_bar->FindItem(XRCID("Thickness2"));
 				ASSERT(!"Bad thickness!");
 				break;
+		}
+
+		if (tmi) {
+			tmi->Check(true);
 		}
 
 		dg->SetGraphThickness(thickness);

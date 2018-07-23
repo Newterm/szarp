@@ -2,8 +2,8 @@
 #define __BASECONN_H_
 
 #include "serialportconf.h"
+#include "szarp_config.h"
 #include "exception.h"
-#include <event.h>
 #include <string>
 #include <vector>
 
@@ -43,9 +43,7 @@ class ConnectionException : public SzException {
 class BaseConnection
 {
 public:
-	BaseConnection(struct event_base *base)
-		:m_event_base(base)
-	{}
+	BaseConnection() = default;
 	virtual ~BaseConnection() {}
 
 	/** Open connection (previously initialized).
@@ -79,14 +77,18 @@ protected:
 	virtual void Error(short int event);
 
 protected:
-	struct event_base* const m_event_base;
-
-private:
-	/** Avoid copying */
-	BaseConnection(const BaseConnection&);
-	BaseConnection& operator=(const BaseConnection&);
-
 	std::vector<ConnectionListener*> m_listeners;
+
+public:
+	/** Avoid copying */
+	BaseConnection(const BaseConnection&) = delete;
+	BaseConnection& operator=(const BaseConnection&) = delete;
+};
+
+class BaseConnFactory {
+public:
+	template <typename ConnectionType, typename... Args>
+	static ConnectionType* create_from_unit(Args...);
 };
 
 #endif // __BASECONN_H__

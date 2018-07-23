@@ -56,7 +56,8 @@ ALL_LINGUAS="pl"
 : ${CXXFLAGS=""}
 
 # use AM_FLAGS for default CXXFLAGS
-: ${AM_CXXFLAGS="-O2 -g -Wall"}
+#TODO: switch to C14 macro, when all distributions support it
+: ${AM_CXXFLAGS="-O2 -g -Wall -std=c++14"}
 AC_SUBST([AM_CXXFLAGS])
 
 
@@ -230,9 +231,11 @@ fi
 
 AM_CONDITIONAL(MINGW32_OPT, test "x$with_mingw32" = "xyes")
 
-if test "$with_mingw32" != "yes" ; then
-	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
-fi
+#TODO: unlock if all distributions support this macro
+# ( jessie support is dropped )
+#if test "$with_mingw32" != "yes" ; then
+#	AX_CXX_COMPILE_STDCXX_14([],[mandatory])
+#fi
 
 # posix thread switches
 if test "$with_mingw32" != "yes" ; then
@@ -558,14 +561,19 @@ AC_ARG_WITH([ssl], AC_HELP_STRING([--without-ssl], [do not use OpenSSL library])
 	fi
 ],)
 if test "$no_ssl" != "yes" ; then
-	AC_PATH_SSL( [], [no_ssl=yes] )
-		if test x$no_ssl = xyes ; then
-                AC_MSG_WARN([
+	AC_CHECK_LIB(ssl, SSL_new, [], [no_ssl=yes])
+	AC_CHECK_LIB([crypto], [CRYPTO_get_ex_data], [], [no_ssl=yes])
+	# check for older version, OpenSSL1.0
+	if test x$no_ssl = xyes; then
+		AC_PATH_SSL( [], [no_ssl=yes] )
+	fi
+	if test x$no_ssl = xyes ; then
+		AC_MSG_WARN([
 			OpenSSL library not found on your system, check if
 			libssl development package is installed;
 			configuring without
 		])
-        fi
+	fi
 fi
 
 if test "x$no_ssl" = "xyes" ; then
@@ -1097,17 +1105,6 @@ if test "x$no_lber" != "xyes"; then
 fi
 AC_SUBST(DLMSDMN)
 
-#szarp sync applications
-want_ssc=""
-want_sss=""
-if test x$no_ssl != xyes -a x$no_rsync != xyes ; then
-	if test x$no_wx != xyes  -a x$no_cares != xyes; then
-		want_ssc=yes;
-	fi
-	if test x$with_mingw32 != xyes; then
-		want_sss=yes;
-	fi
-fi
 
 no_cppnit="yes"
 PKG_CHECK_MODULES(CPPUNIT, cppunit, no_cppunit="no", [AC_MSG_RESULT([
@@ -1224,7 +1221,6 @@ AC_OUTPUT( \
 	wx/viszio/Makefile \
 	wx/confedit/Makefile \
 	wx/wxhelp/Makefile \
-	wx/sync/Makefile \
 	wx/szau/Makefile \
 	)
 

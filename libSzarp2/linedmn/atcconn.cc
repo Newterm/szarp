@@ -88,3 +88,13 @@ void AtcConnection::ResetDeviceFinished(const AtcHttpClient* client)
 		TcpConnection::OpenFinished();
 	}
 }
+
+template <>
+AtcConnection* BaseConnFactory::create_from_unit(struct event_base* base, UnitInfo* unit) {
+	std::unique_ptr<AtcConnection> conn(new AtcConnection(base));
+	auto address = unit->getAttribute<std::string>("extra:atc-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", AtcConnection::DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", AtcConnection::DEFAULT_CONTROL_PORT);
+	conn->InitTcp(address, dataport, cmdport);
+	return conn.release();
+}

@@ -15,6 +15,8 @@
 #include "config.h"
 #endif
 
+#include "ipkcontainer.h"
+
 #include "szbdefines.h"
 #include "szbname.h"
 #include "szbdate.h"

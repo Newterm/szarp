@@ -164,7 +164,7 @@ class           PolluMbus {
 	 * @param n
 	 * @return - n power of 10
  	*/
-	unsigned long pow10(int n);
+	unsigned long exp10(int n);
 	/**
 	 * Parses one packet and returns data in decimal value
 	 * @param Packet - Pointer to packet data
@@ -328,7 +328,7 @@ int PolluMbus::GetResponse(int fd, unsigned char *Response)
 }
 
 
-unsigned long PolluMbus::pow10(int n)
+unsigned long PolluMbus::exp10(int n)
 {
 	int i;
 	unsigned long tmp;
@@ -347,7 +347,7 @@ unsigned long PolluMbus::ParseValue(unsigned char *Packet)
  if (Packet[0] - 0x06 <=0) return 0;
  length = Packet[0] - 0x06 ;
  for (i=2;i<length;i++){
-	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*pow10((i-2)*2);
+	 tmpValue += ((Packet[i]/16)*10 + Packet[i] % 16 )*exp10((i-2)*2);
  }
  return tmpValue ;
 }

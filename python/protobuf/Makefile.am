@@ -3,6 +3,8 @@
 
 SUBDIRS = 
 
+all: paramsvalues_pb2.py
+
 paramsvalues_pb2.py:
 	$(PROTOC) --python_out=. -I@srcdir@/../../libSzarp2/protobuf @srcdir@/../../libSzarp2/protobuf/paramsvalues.proto
 

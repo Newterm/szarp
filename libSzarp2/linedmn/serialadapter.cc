@@ -389,3 +389,13 @@ void SerialAdapter::LineControl(bool dtr, bool rts)
 	}
 	WriteCmd(cmd_buffer);
 }
+
+template <>
+SerialAdapter* BaseConnFactory::create_from_unit(struct event_base *base, UnitInfo *unit) {
+	std::unique_ptr<SerialAdapter> conn(new SerialAdapter(base));
+	auto address = unit->getAttribute<std::string>("extra:tcp-ip");
+	auto dataport = unit->getAttribute("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
+	auto cmdport = unit->getAttribute("extra:tcp-cmd-port", SerialAdapter::DEFAULT_CMD_PORT);
+	conn->InitTcp(address, dataport, cmdport);
+	return conn.release();
+}

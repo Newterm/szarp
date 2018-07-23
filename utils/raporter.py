@@ -152,7 +152,7 @@ def read_socket():
 				param = gb.sz4_params.params[gb.sz4_params.indexes[index]]
 				prec = 10**param.prec
 				try:
-					param.value = int(param_value.int_value) + int(param_value.double_value*prec) + int(param_value.float_value*prec)
+					param.value = int(param_value.int_value) + int(param_value.double_value*prec)
 				except Exception as e:
 					param.value = NODATA
 					

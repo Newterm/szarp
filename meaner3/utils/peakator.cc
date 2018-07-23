@@ -48,6 +48,7 @@
 #include "liblog.h"
 #include "libpar.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "szbase/szbbase.h"
 #include "tsaveparam.h"
 #include "conversion.h"
@@ -167,7 +168,7 @@ protected:
 
 PeakEliminator::PeakEliminator(TSzarpConfig* ipk, const char* dir, double delta)
 {
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, ipk);
 	if (buf == NULL) {

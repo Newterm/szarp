@@ -41,7 +41,6 @@
 #include <map>
 
 #include "szapp.h"
-#include "singleinstance.h"
 #include "szhlpctrl.h"
 
 class DrawGLApp : public wxGLApp, private szAppImpl {
@@ -132,18 +131,6 @@ protected:
 	
 	virtual void StopThreads();
 
-	/**Start IPC server that communicates with other m_instances of this application*/
-	void StartInstanceServer(FrameManager *frmmgr, ConfigManager *cfgmgr);
-
-	/**Sends a query to other runnig m_instance of this application
-	 * @param topic topic of converstaion
-	 * @param message contents of actual message*/
-	void SendToRunningInstance(wxString topic, wxString message);
-	/**
-	 * Method is responsible for parsing command line. It sets
-	 * program's geometry and also prints usage info.
-	 * @return 0 if OK, -1 if error occured
-	 */
 	int ParseCommandLine();
 
 	wxLocale locale;
@@ -152,13 +139,8 @@ protected:
 
 	wxString m_url; /**< Draw url, describing base, set, period and time to sart with*/
 
-	bool m_url_open_in_existing;
-
 			/** Addresses of probers servers retrived from szarp.cfg*/
 	std::map<wxString, std::pair<wxString, wxString> > m_probers_from_szarp_cfg;
-
-			/**Server listening for requests from other running m_instances of application*/
-	DrawServer* m_server;
 
 			/**<Object representing thread that executes queries*/
 	QueryExecutor* m_executor;
@@ -198,9 +180,6 @@ protected:
 
 	wxString m_iks_server;
 	wxString m_iks_port;
-
-	/**Object that prevents more than one m_instance of program from running.*/
-	szSingleInstanceChecker *m_instance;
 
 	szHelpController *m_help; /**< Help system. */
 

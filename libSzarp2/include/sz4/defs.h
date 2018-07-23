@@ -79,6 +79,12 @@ bool value_is_no_data(const double& v);
 bool value_is_no_data(const float& v);
 
 
+template<class V, class T>
+bool is_valid(const value_time_pair<V, T>& val) {
+	return value_is_no_data(val.value) == false && time_trait<nanosecond_time_t>::is_valid(val.time);
+}
+
+
 template<class T> struct time_difference { };
 
 template<> struct time_difference<second_time_t> {

@@ -38,7 +38,6 @@ class EncodeDecodeTest(unittest.TestCase):
 
 		year_in_ns = 365 * 24 * 3600 * 10 ** 9
 		for v in range(0, 10 * year_in_ns, year_in_ns / 50):
-			print v
 			encoded = timedelta.encode(v)
 			decoded, _ = timedelta.decode(StringIO.StringIO(encoded))
 

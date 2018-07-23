@@ -11,7 +11,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "parcook_cfg.h"
 #include "line_cfg.h"
 #include "ptt_act.h"

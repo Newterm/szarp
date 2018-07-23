@@ -43,6 +43,7 @@
 #include "liblog.h"
 #include "libpar.h"
 #include "szarp_config.h"
+#include "ipkcontainer.h"
 #include "szbase/szbbase.h"
 
 #include <iostream>
@@ -120,7 +121,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	IPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX), NULL);
 	szb_buffer_t* buf = szb_create_buffer(Szbase::GetObject(), SC::L2S(dir), 1, &ipk);
 

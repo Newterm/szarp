@@ -101,12 +101,13 @@ endif
 configure: 
 	./autogen.sh
 
-debian/config-status-no-cb: configure
+debian/config-status-no-cb:
 	# Add here commands to configure the package.
 	@if [ -e debian/config-status-cb ]; then \
 		$(MAKE) clean; \
 		rm debian/config-status-cb; \
 	fi;
+	./autogen.sh
 	./configure CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" --prefix=/$(PREFIX) \
 		--host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-deb-build $(CFG_ARGS) $(EXTRA_CFG_ARGS)

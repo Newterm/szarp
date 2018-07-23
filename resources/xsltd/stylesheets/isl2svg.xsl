@@ -106,14 +106,14 @@
 				</xsl:variable>
 		
 				<xsl:copy>
-					<xsl:variable name="atr_name"
+					<xsl:variable name="attr_name"
 						select="@isl:target"/>
 					<!-- copy other attributes -->
 					<xsl:for-each select="@*">
 						<xsl:variable name="cur"
 							select="."/>
 						<xsl:if 
-						  test="$cur != $atr_name">
+						  test="$cur != $attr_name">
 							<xsl:copy/>
 						</xsl:if>
 					</xsl:for-each>
@@ -145,7 +145,7 @@
 				          </xsl:choose>
 				        </xsl:variable>
 				        <!-- insert attribute -->
-					<xsl:attribute name="{$atr_name}">
+					<xsl:attribute name="{$attr_name}">
 						<xsl:value-of
 							select="$val2"/>
 					</xsl:attribute> 

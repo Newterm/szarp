@@ -23,6 +23,7 @@ class TParam;
 
 #include "szarp_config.h"
 #include "sz4/defs.h"
+#include "protobuf/paramsvalues.pb.h"
 
 namespace sz4 {
 
@@ -93,6 +94,24 @@ template<class T> T descale_value(const T& v, TParam* p) {
 			assert(false);
 	}
 }
+
+template <typename VT>
+value_time_pair<VT, nanosecond_time_t> cast_param_value(const szarp::ParamValue&, int32_t prec_adj);
+
+template <typename V>
+typename std::enable_if<std::is_integral<V>::value, void>::type
+pv_set_value(szarp::ParamValue& pv, const V& val) {
+	pv.set_int_value(val);
+}
+
+template <typename V>
+typename std::enable_if<std::is_floating_point<V>::value, void>::type
+pv_set_value(szarp::ParamValue& pv, const V& val) {
+	pv.set_double_value(val);
+}
+
+void pv_set_time(szarp::ParamValue& pv, const sz4::second_time_t& t);
+void pv_set_time(szarp::ParamValue& pv, const sz4::nanosecond_time_t& t);
 
 SZARP_PROBE_TYPE get_probe_type_step(SZARP_PROBE_TYPE pt);
 

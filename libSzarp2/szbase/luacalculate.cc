@@ -69,7 +69,7 @@ SZBASE_TYPE szb_lua_get_avg(szb_buffer_t* buffer, TParam *param, time_t start_ti
 		}
 		if (IS_SZB_NODATA(val))
 			continue;
-		val = rint(val * pow10(param->GetPrec())) / pow10(param->GetPrec()); 
+		val = rint(val * exp10(param->GetPrec())) / exp10(param->GetPrec()); 
 		sum += val;
 		data_count++;
 	}

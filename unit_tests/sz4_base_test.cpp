@@ -68,28 +68,28 @@ void Sz4BaseTestCase::setUp() {
 		std::ofstream ofs((path / ls.str() / L"config/params.xml").external_file_string().c_str(), std::ios_base::binary);
 #endif
 		ofs << 
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-"<params xmlns=\"http://www.praterm.com.pl/SZARP/ipk\" version=\"1.0\" read_freq=\"10\" send_freq=\"10\" title=\"Globalmalt Bydgoszcz\" documentation_base_url=\"http://www.szarp.com\">"
-"  <device xmlns:modbus=\"http://www.praterm.com.pl/SZARP/ipk-extra\" daemon=\"/dev/null\">"
-"    <unit id=\"1\" type=\"1\" subtype=\"1\" bufsize=\"1\">"
-"    	<param name=\"a:a:a\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
-"      	</param>"
-"    	<param name=\"b:b:b\" data_type=\"uinteger\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
-"      	</param>"
-"    	<param name=\"c:c:c\" data_type=\"ushort\" short_name=\"-\" unit=\"°C\" prec=\"1\" draw_name=\"\" base_ind=\"auto\">"
-"      	</param>"
-"    </unit>"
-"  </device>"
-"  <drawdefinable>"
-"    <param name=\"z:z:z\" short_name=\"\" draw_name=\"\" unit=\"%\" prec=\"0\" data_type=\"double\">"
-"      <define type=\"LUA\" lua_formula=\"va\" start_date=\"-1\">"
-"        <script><![CDATA["
-"		v = p(\"a:a:a:a\", t, pt) + p(\"a:a:a:a\", t, pt)"
-"	 ]]></script>"
-"      </define>"
-"    </param>"
-"  </drawdefinable>"
-"</params>";
+R"(<?xml version="1.0" encoding="utf-8"?>
+<params xmlns="http://www.praterm.com.pl/SZARP/ipk" version="1.0" read_freq="10" send_freq="10" title="Globalmalt Bydgoszcz" documentation_base_url="http://www.szarp.com">
+  <device xmlns:modbus="http://www.praterm.com.pl/SZARP/ipk-extra" daemon="/dev/null">
+    <unit id="1" type="1" subtype="1" bufsize="1">
+    	<param name="a:a:a" data_type="uinteger" short_name="-" unit="C" prec="1" draw_name="" base_ind="auto">
+      	</param>
+    	<param name="b:b:b" data_type="uinteger" short_name="-" unit="C" prec="1" draw_name="" base_ind="auto">
+      	</param>
+    	<param name="c:c:c" data_type="ushort" short_name="-" unit="C" prec="1" draw_name="" base_ind="auto">
+      	</param>
+    </unit>
+  </device>
+  <drawdefinable>
+    <param name="z:z:z" short_name="" draw_name="" unit="%" prec="0" data_type="double">
+      <define type="LUA" lua_formula="va" start_date="-1">
+        <script><![CDATA[
+		v = p("a:a:a:a", t, pt) + p("a:a:a:a", t, pt)
+	 ]]></script>
+      </define>
+    </param>
+  </drawdefinable>
+</params>)";
 		ofs.close();
 
 		for (wchar_t s = L'a'; s <= L'd'; s++) {
@@ -147,7 +147,7 @@ void Sz4BaseTestCase::setUp() {
 		}
 	}
 
-	IPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
+	ParamCachingIPKContainer::Init(m_base_dir_name, L"/opt/szarp", L"pl");
 
 }
 

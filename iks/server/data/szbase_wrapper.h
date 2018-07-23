@@ -73,16 +73,6 @@ public:
 						  ProbeType pt
 						  ) const;
 
-	std::string add_param( const std::string& param
-						 , const std::string& base
-						 , const std::string& formula
-						 , const std::string& token
-						 , const std::string& type
-						 , int prec
-						 , unsigned start_time);
-
-	void remove_param(const std::string& base , const std::string& param);
-
 	SzbaseObserverToken register_observer( const std::string& param , boost::optional<ProbeType> pt, std::function<void( void )> );
 
 	void deregister_param(const std::string& name);

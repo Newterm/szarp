@@ -465,7 +465,6 @@ protected:
 	int configure_decimal3_register(TAttribHolder* param, int prec, unsigned short addr, bool send, REGISTER_TYPE rt);
 
 	int configure_param(TAttribHolder*, int, bool);
-	int configure_send(SendParamInfo*, IPCParamInfo*);
 
 	const char* error_string(const unsigned char& error);
 
@@ -1105,7 +1104,8 @@ void modbus_register::set_val(unsigned short val, time_t time) {
 }
 
 bool modbus_unit::process_request(unsigned char unit, PDU &pdu) {
-	if (m_id != unit) {
+	static constexpr int BROADCAST_ADDRESS = 0;
+	if (m_id != unit && unit != BROADCAST_ADDRESS) {
 		m_log.log(1, "Received request to unit %d, not such unit in configuration, ignoring", (int) unit);
 		return false;
 	}
@@ -1634,12 +1634,6 @@ int modbus_unit::configure_decimal3_register(TAttribHolder* param, int prec, uns
 	return 0;
 }
 
-int modbus_unit::configure_send(SendParamInfo* send, IPCParamInfo* param) {
-	int prec_e = send->getAttribute("extra:prec", param? param->GetPrec() : 0);
-	int prec = exp10(prec_e);
-	return configure_param(send, prec, true);
-}
-
 int modbus_unit::configure_param(TAttribHolder* param, int prec, bool send) { 
 	unsigned short addr;
 	long l = param->getAttribute<unsigned long>("extra:address", -1);
@@ -1723,7 +1717,8 @@ int modbus_unit::configure_unit(UnitInfo* u) {
 	}
 
 	for (auto p: u->GetSendParams()) {
-		if (configure_send(p, p->GetParamToSend())) {
+		int prec = exp10(p->GetPrec());
+		if (configure_param(p, prec, true)) {
 			m_log.log(1, "Error in send %s", SC::S2L(p->GetParamName()).c_str());
 			return 1;
 		}

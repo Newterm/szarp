@@ -57,14 +57,10 @@ extern "C" {
 #include "aboutdlg.h"
 #include "szframe.h"
 
-extern void InitCommonXmlResource();
-
-
 
 bool szAppImpl::OnInit()
 {
 	wxXmlResource::Get()->InitAllHandlers();
-	InitCommonXmlResource();
 	return true;
 }
 

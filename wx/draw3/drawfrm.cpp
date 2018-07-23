@@ -248,11 +248,6 @@ void DrawFrame::OnFind(wxCommandEvent & event)
 	draw_panel->StartDrawSearch();
 }
 
-void DrawFrame::OnSetParams(wxCommandEvent & evt)
-{
-	draw_panel->StartPSC();
-}
-
 void DrawFrame::OnSave(wxCommandEvent & event)
 {
 	if (config_manager->SaveDefinedDrawsSets())
@@ -491,7 +486,6 @@ void DrawFrame::OnCloseTab(wxCommandEvent & evt)
 		Close();
 	else
 		CloseTab(m_notebook->GetSelection());
-
 }
 
 void DrawFrame::OnSummaryWindowCheck(wxCommandEvent & event)
@@ -747,6 +741,25 @@ void DrawFrame::OnCopyParamName(wxCommandEvent &event) {
 
 void DrawFrame::OnClearCache(wxCommandEvent &event) {
 	draw_panel->ClearCache();
+}
+
+void DrawFrame::OnShowBaseType(wxCommandEvent &event) {
+	UpdateAllBaseTypes();
+	if (event.IsChecked()) {
+		if (ignore_menu_events == false)
+			draw_panel->BaseTypesWindowUpdate(event.IsChecked(), tabMap);
+	} else {
+		if (m_notebook == NULL) {
+			draw_panel->ShowBaseTypesWindow(event.IsChecked());
+		} else {
+			for (unsigned int i = 0; i < m_notebook->GetPageCount(); i++) {
+				DrawPanel *panel = wxDynamicCast(m_notebook->GetPage(i), DrawPanel);
+				if (panel != NULL) {
+					panel->ShowBaseTypesWindow(event.IsChecked());
+				}
+			}
+		}
+	}
 }
 
 void DrawFrame::OnImportDraw2Def(wxCommandEvent &event) {
@@ -1150,6 +1163,12 @@ wxString DrawFrame::GetTitleForPanel(wxString title, int panel_no) {
 	return ret;
 }
 
+void DrawFrame::UpdateAllBaseTypes() {
+
+	auto base_handler_manager = database_manager->GetBaseHandler();
+	tabMap = base_handler_manager->GetBaseHandlers();
+}
+
 void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 	if (m_notebook == NULL)
 		return;
@@ -1159,7 +1178,6 @@ void DrawFrame::UpdatePanelName(DrawPanel *panel) {
 		return;
 
 	m_notebook->SetPageText(i, GetTitleForPanel(panel->GetConfigName(), i));
-
 }
 
 void DrawFrame::OnSortGraph(wxCommandEvent &event) {
@@ -1307,7 +1325,6 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("About"), DrawFrame::OnAbout)
     EVT_MENU(XRCID("Help"), DrawFrame::OnHelp)
     EVT_MENU(XRCID("Find"), DrawFrame::OnFind)
-    EVT_MENU(XRCID("SetParams"), DrawFrame::OnSetParams)
     EVT_MENU(XRCID("ClearCache"), DrawFrame::OnClearCache)
     EVT_MENU(XRCID("EditSet"), DrawFrame::OnEdit)
     EVT_MENU(XRCID("EditAsNew"), DrawFrame::OnEditSetAsNew)
@@ -1327,7 +1344,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Axes"), DrawFrame::OnNumberOfAxes)
     EVT_MENU(XRCID("ExportDataToFile"), DrawFrame::OnExportDataToFile)
     EVT_AUINOTEBOOK_PAGE_CHANGED(wxID_ANY, DrawFrame::OnNotebookSelectionChange)
-    EVT_AUINOTEBOOK_PAGE_CLOSED(wxID_ANY, DrawFrame::OnNotebookPageClose)
+    EVT_AUINOTEBOOK_PAGE_CLOSE(wxID_ANY, DrawFrame::OnNotebookPageClose)
     EVT_MENU(XRCID("Print"), DrawFrame::OnPrint)
     EVT_MENU(XRCID("PrintPrev"), DrawFrame::OnPrintPreview)
     EVT_MENU(XRCID("F0"), DrawFrame::OnFilterChange)
@@ -1363,6 +1380,7 @@ BEGIN_EVENT_TABLE(DrawFrame, wxFrame)
     EVT_MENU(XRCID("Copy"), DrawFrame::OnCopy)
     EVT_MENU(XRCID("Paste"), DrawFrame::OnPaste)
     EVT_MENU(XRCID("OnCopyParamName"), DrawFrame::OnCopyParamName)
+    EVT_MENU(XRCID("ShowBaseType"), DrawFrame::OnShowBaseType)
     EVT_MENU(XRCID("ImportDraw2"), DrawFrame::OnImportDraw2Def)
     EVT_MENU(XRCID("ReloadConfiguration"), DrawFrame::OnReloadConfig)
     EVT_MENU(XRCID("ShowErrorWindow"), DrawFrame::OnErrorFrame)

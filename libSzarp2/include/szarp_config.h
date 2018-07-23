@@ -37,8 +37,6 @@
 #include <vector>
 #include <unordered_map>
 #include <tr1/unordered_map>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <string>
 #include <set>
@@ -50,10 +48,6 @@
 #ifndef NO_LUA
 #include <lua.hpp>
 #endif
-
-#include <boost/filesystem/path.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/any.hpp>
 
 #include "szbase/szbdefines.h"
 #include <libxml/xmlreader.h>
@@ -400,6 +394,8 @@ public:
 
 	/* constant value to be sent instead of real param value */
 	virtual int GetValue() const { return getAttribute<int>("value", SZARP_NO_DATA); }
+	virtual int GetPrec() const { return getAttribute<int>("extra:prec", GetParamToSend()? GetParamToSend()->GetPrec() : 0); }
+
 	virtual const std::wstring& GetParamName() const = 0;
 };
 
@@ -409,7 +405,7 @@ public:
 	virtual ~UnitInfo() {}
 	virtual size_t GetSenderMsgType() const = 0;
 	virtual size_t GetParamsCount() const = 0;
-	virtual size_t GetSendParamsCount() const = 0;
+	virtual size_t GetSendParamsCount(bool ignore_non_ipc = false) const = 0;
 
 	virtual std::vector<IPCParamInfo*> GetParams() const = 0;
 	virtual std::vector<SendParamInfo*> GetSendParams() const = 0;
@@ -435,7 +431,7 @@ public:
 	/** @return number of params in unit */
 	size_t GetParamsCount() const override;
 	/** @return number of send params in unit */
-	size_t GetSendParamsCount() const override;
+	size_t GetSendParamsCount(bool ignore_non_ipc = false) const override;
 	size_t GetSenderMsgType() const override {
 		return send_msg_type;
 	}
@@ -650,8 +646,7 @@ public:
 	    _inbase(0),
 	    _raports(NULL),
 	    _draws(NULL),
-	    _szbase_name(),
-	    _psc(false)
+	    _szbase_name()
 	{ }
 
 	/** Deletes whole list. */
@@ -827,9 +822,6 @@ public:
 	 */
 	TDraw* AddDraw(TDraw* draw);
 
-	bool GetPSC() { return _psc; }
-	void SetPSC(bool psc) { _psc = psc; }
-
 	Sz4ParamType GetSz4Type() const { return _sz4ParamType; }
 
 	void SetSz4Type(Sz4ParamType sz4ParamType) { _sz4ParamType = sz4ParamType; }
@@ -873,8 +865,6 @@ protected:
 	std::wstring _szbase_name;	/**< Name of parameter converted to szbase format.
 				  May be empty - will get converted on next call to
 				  GetSzbaseName(). */
-
-	bool _psc; /**< marks if parameter can be set by psc */
 
 	Sz4ParamType _sz4ParamType{ Sz4ParamType::NONE };
 };
@@ -1401,118 +1391,6 @@ private:
 	/**default season definition used if no season is explicitly given for given year*/
 	Season defs;
 
-};
-
-/**Synchronized IPKs container*/
-class IPKContainer {
-	class UnsignedStringHash {
-		std::hash<std::string> m_hasher;
-		public:
-		size_t operator() (const std::basic_string<unsigned char>& v) const {
-			return m_hasher((const char*) v.c_str());
-		}
-	};
-
-	/** Maps global parameters names encoding in utf-8 to corresponding szb_buffer_t* and TParam* objects. 
-	 UTF-8 encoded param names are used by LUA formulas*/
-	typedef std::unordered_map<std::basic_string<unsigned char>, TParam*, UnsignedStringHash > utf_hash_type;
-	/*Maps global parameters encoded in wchar_t. Intention of having two separate maps 
-	is to avoid frequent conversions between two encodings*/
-	typedef std::unordered_map<std::wstring, TParam* > hash_type;
-
-	hash_type m_params;
-
-	utf_hash_type m_utf_params;
-
-	mutable boost::shared_mutex m_lock;
-
-	/**Szarp data directory*/
-	boost::filesystem::wpath szarp_data_dir;
-
-	typedef std::unordered_map<std::wstring, TSzarpConfig*> CM;
-
-	struct ConfigAux {
-		unsigned _maxParamId;
-		std::set<unsigned> _freeIds;
-		unsigned _configId;
-	};
-
-	typedef std::unordered_map<std::wstring, ConfigAux> CAUXM;
-
-	/**Szarp system directory*/
-	boost::filesystem::wpath szarp_system_dir;
-
-	/**current language*/
-	std::wstring language;
-
-	/**Configs hash table*/
-	CM configs;
-
-	/**Preload configurations*/
-	CM configs_ready_for_load;
-
-	CAUXM config_aux;
-
-	unsigned max_config_id;
-
-	static IPKContainer* _object;
-
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> m_extra_params;
-
-	/**Adds configuration to the the container
-	 * @param prefix configuration prefix
-	 * @param file path to the file with the configuration
-	 */
-	TSzarpConfig* AddConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
-
-	TParam* GetParamFromHash(const std::basic_string<unsigned char>& global_param_name);
-
-	TParam* GetParamFromHash(const std::wstring& global_param_name);
-
-	void AddParamToHash(TParam* p);
-
-	void RemoveParamFromHash(TParam* p);
-
-	void AddExtraParamImpl(const std::wstring& prefix, TParam *n);
-
-	void RemoveExtraParamImpl(const std::wstring& prefix, TParam *p);
-public:
-	IPKContainer(const std::wstring& szarp_data_dir,
-			const std::wstring& szarp_system_dir,
-			const std::wstring& lang);
-			
-
-	~IPKContainer();
-
-	void RemoveExtraParam(const std::wstring& prefix, TParam *param);
-
-	void RemoveExtraParam(const std::wstring& prefix, const std::wstring &name);
-
-	bool ReadyConfigurationForLoad(const std::wstring &prefix);
-
-	template<class T> TParam* GetParam(const std::basic_string<T>& global_param_name, bool add_config_if_not_present = true);
-
-	void AddExtraParam(const std::wstring& prefix, TParam *param);
-
-	/**Retrieves config from the container
-	 * @return configuration object or NULL if given config is not available*/
-	TSzarpConfig *GetConfig(const std::wstring& prefix);
-	
-	TSzarpConfig* GetConfig(const std::basic_string<unsigned char>& prefix);
-	/**Loads config into the container
-	 * @return loaded config object, NULL if error occured during configuration load*/
-	TSzarpConfig *LoadConfig(const std::wstring& prefix, const std::wstring& file = std::wstring());
-
-	std::unordered_map<std::wstring, std::vector<std::shared_ptr<TParam>>> GetExtraParams() const;
-
-	/**@return the container object*/
-	static IPKContainer* GetObject();
-	/**Inits the container
-	 * @param szarp_dir path to main szarp directory*/
-	static void Init(const std::wstring& szarp_data_dir, const std::wstring& szarp_system_dir, const std::wstring& language);
-
-	/**Destroys the container*/
-	static void Destroy();
 };
 
 class TDictionary {

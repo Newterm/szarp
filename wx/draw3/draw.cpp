@@ -245,7 +245,7 @@ DatabaseQuery* Draw::GetDataToFetch(bool fetch_present_no_data) {
 		
 		if (q == nullptr)
 			q = CreateDataQuery(m_draw_info, period, m_draw_no);
-		AddTimeToDataQuery(q, pt.GetTime()).count = v.max_probes;
+		AddTimeToDataQuery(q, pt.GetTime()).no_data_count = v.max_probes;
 	}
 
 	return q;
@@ -672,26 +672,29 @@ void ValuesTable::UpdateStats(int idx) {
 	if (!v.IsData())
 		return;
 
-	const double& val = v.val;
-
 	if (m_count) {
-		m_max = std::max(val, m_max);
-		m_min = std::min(val, m_min);
-		m_sum += val;
-		m_sum2 += val * val;
+		m_max = std::max(v.val, m_max);
+		m_min = std::min(v.val, m_min);
+		m_sum += v.count_probes * v.val;
+		m_sum2 += v.count_probes * v.val * v.val;
 		if (m_draw->GetDrawInfo() != NULL) {
 			m_hsum += v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 		}
 	} else {
-		m_max = m_min = val;
-		m_sum = val;
-		m_sum2 = val * val;
+		m_max = m_min = v.val;
+		m_sum = v.count_probes * v.val;
+		m_sum2 = v.count_probes * v.val * v.val;
 		if (m_draw->GetDrawInfo() != NULL)
 			m_hsum = v.sum / m_draw->GetDrawInfo()->GetSumDivisor();
 	}
+
 	m_count++;
 
-	m_sdev = sqrt(m_sum2 / m_count - m_sum / m_count * m_sum / m_count);
+	/* this is not really standard deviation - just lousy approximation */
+	if (m_data_probes_count > 0)
+		m_sdev = sqrt(m_sum2 / m_data_probes_count - (m_sum / m_data_probes_count) * (m_sum / m_data_probes_count));
+	else
+		m_sdev= nan("");
 }
 
 void ValuesTable::CalculateProbeValue(int index) {
@@ -771,7 +774,8 @@ void ValuesTable::InsertValue(DatabaseQuery::ValueData::V *v, NewValuesInsertSta
 	vi.sum = v->sum;
 	vi.first_val = v->first_val;
 	vi.last_val = v->last_val;
-	vi.count_probes = v->count;
+	vi.max_probes = v->no_data_count + v->data_count;
+	vi.count_probes = v->data_count;
 	vi.m_db_fixed = v->fixed;
 
 	if (!v->fixed)

@@ -67,8 +67,6 @@ class DrawPanel : public wxPanel, public DrawObserver {
 	/**Displays @see IncSearch widget allowing user to switch set*/
 	void StartSetSearch();
 
-	void StartPSC();
-
 	/**Makes given set a current set.
 	 * @param set set to select*/
 	void SelectSet(DrawSet *set);
@@ -87,6 +85,11 @@ class DrawPanel : public wxPanel, public DrawObserver {
 
 	/**Clear cache*/
 	void ClearCache();
+
+	void BaseTypesWindowUpdate(bool show, std::map<std::wstring, std::wstring> const &tabMap);
+
+	/** Show/hides data types window */
+	void ShowBaseTypesWindow(bool show);
 
 	/**Menu event handler, displays @see IncSearch widget*/
 	void OnFind(wxCommandEvent &evt);
@@ -264,6 +267,8 @@ protected:
 	/**Window dispalying summary values, @see SummaryWindow*/
 	SummaryWindow *smw;
 
+	DatabaseTypesWindow *dbtw;
+
 	RemarksHandler *rh;
 
 	RemarksFetcher *rmf;
@@ -272,6 +277,8 @@ protected:
 
 	/**Indicates if summary window shall be shown while panel is activaed*/
 	bool smw_show;
+
+	bool dbtw_show;
 
 	/**Window dispalying @see PieWindow,*/
 	PieWindow *pw;

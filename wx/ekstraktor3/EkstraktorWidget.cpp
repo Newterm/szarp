@@ -27,7 +27,7 @@
 #include "szarp_config.h"
 #include "szbase/szbbase.h"
 #include "ekstraktor3.h"
-#include "szmutex.h"
+#include "ipkcontainer.h"
 
 #include "geometry.h"
 #include "cconv.h"
@@ -44,7 +44,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 {
 	int x, y, width, height;
 
-	IPKContainer::Init(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())),
+	ParamCachingIPKContainer::Init(SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDataDir().mb_str())),
 				SC::W2S(wxString::FromUTF8(wxGetApp().GetSzarpDir().mb_str())),
 			   SC::W2S(wxString::FromUTF8(wxConfig::Get()->Read(_T("LANGUAGE"),
 						 _T("pl")).mb_str())));
@@ -72,7 +72,7 @@ EkstraktorWidget::EkstraktorWidget(std::wstring ipk_prefix, wxString * geometry,
 	prog->Update(0, _("Loading configuration"));
 	prog->Fit();
 
-	IPKContainer::GetObject()->LoadConfig(ipk_prefix,std::wstring());
+	IPKContainer::GetObject()->LoadConfig(ipk_prefix);
 	ipk = IPKContainer::GetObject()->GetConfig(ipk_prefix);
 
 	xml_loaded = ipk != NULL;

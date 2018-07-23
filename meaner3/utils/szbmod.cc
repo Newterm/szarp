@@ -30,6 +30,7 @@
 #include "libpar.h"
 #include "tsaveparam.h"
 #include "szarp_base_common/lua_utils.h"
+#include "ipkcontainer.h"
 
 #include "conversion.h"
 
@@ -307,7 +308,7 @@ int main(int argc, char* argv[])
 
 	libpar_done();
 
-	IPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
+	ParamCachingIPKContainer::Init(SC::L2S(szarp_data_root), SC::L2S(PREFIX), L"");
 
 	Szbase::Init(SC::L2S(szarp_data_root), false); // dont write cache
 

@@ -4,6 +4,7 @@
 #include "sz4/live_cache.h"
 #include "sz4/util.h"
 #include "liblog.h"
+#include "ipkcontainer.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -57,7 +58,7 @@ bool SzbaseWrapper::init( const std::string& _szarp_dir , const CfgSections& loc
 
 	szarp_dir = _szarp_dir;
 
-	IPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
+	ParamCachingIPKContainer::Init( szarp_dir.wstring(), szarp_dir.wstring(), L"pl_PL" );
 	auto ipk = IPKContainer::GetObject();
 
 	sz4::live_cache_config live_cfg;
@@ -437,71 +438,6 @@ bool create_param_name_in_formula( const std::wstring& original_name , const std
 	return true;
 }
 
-}
-
-std::string SzbaseWrapper::add_param( const std::string& param
-									, const std::string& base
-									, const std::string& formula
-									, const std::string& token
-									, const std::string& type
-									, int prec
-									, unsigned start_time)
-{
-	if( !SzbaseWrapper::is_initialized() )
-		throw szbase_init_error("Szbase not initialized");
-
-	std::wstring _param = convert_string( param );
-	std::wstring _token = convert_string( token );
-	std::wstring _formula = convert_string( formula );
-
-	std::wstring new_param_name;
-	if ( !create_param_name( _param , _token , new_param_name ) )
-		throw szbase_invalid_name(param + " in not valid user defined param name");
-
-	std::vector<std::wstring> strings;
-	if( !extract_strings_from_formula( _formula , strings ) )
-		throw szbase_formula_invalid_syntax("formula cannot be parsed");
-
-	for( auto& param : strings )
-	{
-		std::wstring new_name;
-		if ( !create_param_name_in_formula( param , _token , new_name ) )
-				continue;
-
-		auto i = _formula.find( param );
-		assert( i != std::wstring::npos );	
-
-		_formula.replace( i , param.size() , new_name );
-	}
-
-	FormulaType formula_type = FormulaType::NONE;
-	if( type == "av" )
-		formula_type = FormulaType::LUA_AV;
-	else if( type == "va" )
-		formula_type = FormulaType::LUA_VA;
-
-	auto tparam = new TParam(NULL, NULL, L"", formula_type, ParamType::LUA);
-	tparam->SetName(new_param_name);
-	tparam->SetPrec(prec);
-	tparam->SetTimeType(TParam::NANOSECOND); ///XXX:
-	tparam->SetLuaScript(SC::S2U(_formula).c_str());
-	tparam->SetLuaStartDateTime(start_time);
-
-	IPKContainer::GetObject()->AddExtraParam( convert_string ( base ) , tparam );
-
-	return reinterpret_cast<const char*>(SC::S2U(new_param_name).c_str());
-}
-
-void SzbaseWrapper::remove_param(const std::string& base, const std::string& param)
-{
-	if( !SzbaseWrapper::is_initialized() )
-		throw szbase_init_error("Szbase not initialized");
-
-	auto tparam = IPKContainer::GetObject()->GetParam( convert_string( base + ":" + param ), false );
-	if( tparam )
-		this->base->remove_param( tparam );
-
-	IPKContainer::GetObject()->RemoveExtraParam( convert_string ( base ) , convert_string( param ) );
 }
 
 time_t SzbaseWrapper::next( time_t t , ProbeType pt , int num )

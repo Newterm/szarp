@@ -180,9 +180,6 @@ protected:
 	void OnBlockCheck(wxCommandEvent &event);
 
 	void SetChanged(DrawsController *draws_controller);
-	
-	/** sets parameter */
-	void OnPSC(wxCommandEvent &event);
 
 	/**Blocks, unblocks a draw*/
 	void OnDocs(wxCommandEvent &event);

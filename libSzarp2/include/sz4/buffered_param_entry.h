@@ -69,19 +69,20 @@ public:
 		to = std::min(end, to);
 	}
 
-	value_type get_value(calculation_method<types>& ee, const time_type& time, SZARP_PROBE_TYPE pt) {
+	// returns value and whether it is fixed
+	std::pair<value_type, bool> get_value(calculation_method<types>& ee, const time_type& time, SZARP_PROBE_TYPE pt) {
 		bool fixed = true;
 		value_type cached_value;
 		auto cached_data = m_cache[pt].get_value(time, cached_value, fixed);
 		if (!cached_data) {
 			double value;
-			bool fixed;
 			std::tr1::tie(value, fixed) = ee.calculate_value(time, pt);
 			m_cache[pt].store_value(value, time, fixed);
 			cached_value = value_is_no_data(value)? no_data<value_type>() : static_cast<value_type>(value);
+
 		}
 
-		return cached_value;
+		return {cached_value, fixed};
 	}
 
 	void get_weighted_sum_impl(time_type start, time_type end, SZARP_PROBE_TYPE probe_type, weighted_sum<value_type, time_type>& sum)  {
@@ -115,14 +116,15 @@ public:
 		bool first = true;
 		time_type& current(from);
 		while (current < to) {
+			value_type value;
 			bool fixed = true;
 			time_type next = szb_move_time(current, 1, step);
 
-			value_type cached_value = get_value(ee, current, step);
+			std::tie(value, fixed) = get_value(ee, current, step);
 
 			if (current < end) {
-				if (!value_is_no_data(cached_value)) {
-					sum.add(cached_value, next - current);
+				if (!value_is_no_data(value)) {
+					sum.add(value, next - current);
 				} else {
 					sum.add_no_data_weight(next - current);
 				}
@@ -151,7 +153,7 @@ public:
 		time_type current = start;
 
 		while (current < end) {
-			// force cache
+			// force cache for lookup to update from newest
 			(void) get_value(ee, current, probe_type);
 
 			bool data_found;
@@ -178,7 +180,7 @@ public:
 		time_type current = start;
 
 		while (current > end) {
-			// force cache
+			// force cache for lookup to update from newest
 			(void) get_value(ee, current, probe_type);
 
 			bool data_found;

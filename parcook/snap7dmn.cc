@@ -347,7 +347,7 @@ int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* 
 		case s7map_key::FLOAT:
 			pfv = reinterpret_cast<float*>(&data[vkey.address - start]);
 			if (vval.lsw_param)
-				fv = (*pfv) * pow10(vval.lsw_param->GetPrec());
+				fv = (*pfv) * exp10(vval.lsw_param->GetPrec());
 			else {
 				sz_log(1, "ERROR: no param configured for value");
 				return 1;

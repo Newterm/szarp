@@ -42,7 +42,6 @@
 
 
 #include "drawobs.h"
-#include "pscgui.h"
 #include "database.h"
 #include "drawtime.h"
 #include "draw.h"
@@ -141,8 +140,6 @@ SelectDrawValidator::OnMouseRightDown(wxMouseEvent &event) {
 	wxMenu menu;
 
 	DrawParam* dp = di->GetParam();
-	if (di->IsValid() && dp->GetIPKParam()->GetPSC())
-		menu.Append(seldrawID_PSC,_("Set parameter"));
 
 	menu.SetClientData(m_cb);
 
@@ -214,7 +211,6 @@ SelectDrawValidator::~SelectDrawValidator() {
 
 BEGIN_EVENT_TABLE(SelectDrawWidget, wxWindow)
 	EVT_MENU(seldrawID_CTX_BLOCK_MENU, SelectDrawWidget::OnBlockCheck)
-	EVT_MENU(seldrawID_PSC, SelectDrawWidget::OnPSC)
 	EVT_MENU(seldrawID_CTX_DOC_MENU, SelectDrawWidget::OnDocs)
 	EVT_MENU(seldrawID_CTX_COPY_PARAM_NAME_MENU, SelectDrawWidget::OnCopyParamName )
 	EVT_MENU(seldrawID_CTX_AVERAGE_VALUE, SelectDrawWidget::OnAverageValueCalucatedMethodChange)
@@ -311,8 +307,6 @@ void SelectDrawWidget::InsertSomeDraws(size_t start, size_t count) {
 			m_cb_l[i]->SetToolTip(cnm[draw_info->GetBasePrefix()] + _T(":") + draw_info->GetParamName());
 
 			label = wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1) + draw_info->GetName();
-			if (draw_info->GetParam()->GetIPKParam()->GetPSC())
-				label += _T("*");
 			if (draw->GetBlocked())
 				label.Replace(wxString::Format(_T("%d."), draw->GetInitialDrawNo() + 1), wxString::Format(_("%d.[B]"), i + 1), false);
 			m_cb_l[i]->Enable(!draw->GetNoData());
@@ -396,7 +390,7 @@ void SelectDrawWidget::OnTimer(wxTimerEvent&) {
 void
 SelectDrawWidget::SetDrawEnable(int index, bool enable)
 {
-	if (index >= 0 && index < int(m_cb_l.size()));
+	if (index >= 0 && index < int(m_cb_l.size()))
 		m_cb_l[index]->Enable(enable);
 }
 
@@ -451,15 +445,6 @@ SelectDrawWidget::SetBlocked(int idx, bool blocked) {
 	}
 	m_cb_l[idx]->SetLabel(label);
 
-}
-
-void
-SelectDrawWidget::OnPSC(wxCommandEvent &event) {
-	int i = GetClicked(event);
-	if (i == -1)
-		return;
-	DrawInfo* info = m_draws_wdg->GetDrawInfo(i);
-	m_cfg->EditPSC(info->GetBasePrefix(), info->GetParamName());
 }
 
 void SelectDrawWidget::OnEditParam(wxCommandEvent &event) {
@@ -539,27 +524,37 @@ void SelectDrawWidget::GoToWWWDocumentation(DrawInfo *d) {
 	TParam *p = d->GetParam()->GetIPKParam();
 	TSzarpConfig* sc = p->GetSzarpConfig();
 
-	wxString link = sc->getAttribute("documentation_base_url");
+	auto link_to_check = sc->getOptAttribute<std::string>("documentation_base_url");
 
-	if (link.IsEmpty())
-		link = _T("http://www.doc.szarp.org");
+	if (!link_to_check) {
+		wxMessageBox(_("Documentation not configured."), _("Missing doc configuration"), wxOK | wxICON_INFORMATION, this);
+		return;
+	}
 
-	link += _T("/cgi-bin/param_docs.py?");
-	link << _T("prefix=") << d->GetBasePrefix().c_str();
+	std::string link = *link_to_check;
+	link += "/cgi-bin/param_docs.py?";
+	link += "prefix=";
+	link += d->GetBasePrefix().c_str();
 
-	link << _T("&param=") << encode_string(p->GetName().c_str());
+	link += "&param=";
+	link += encode_string(p->GetName().c_str());
 
 	TUnit* u;
 	if ((u = p->GetParentUnit())) {
 		TDevice* dev = u->GetDevice();
-		link << _T("&path=") << encode_string(dev->getAttribute("path").c_str());
+		auto dev_path = dev->getOptAttribute<std::string>("path");
+		if (dev_path) {
+			link += "&path=";
+			link += encode_string(*dev_path);
+		}
 	}
 
 	int validity = 8 * 3600;
 	std::wstringstream tss;
 	tss << (wxDateTime::Now().GetTicks() / validity * validity);
 
-	link << _T("&id=") << sz_md5(tss.str());
+	link += "&id=";
+	link += sz_md5(tss.str());
 
 #if __WXMSW__
 	if (wxLaunchDefaultBrowser(link) == false)

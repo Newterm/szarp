@@ -2,30 +2,37 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "../iks/server/data/parhub_cache.h"
+#include "../iks/server/data/parhub_poller.h"
 #include <queue>
 
+#include "sz4/util.h"
+
 class ParhubSubscriberStub: public ParhubSubscriber {
-	std::function<void(size_t, TParamValue)> cb;
+	std::promise<void> pm;
+	size_t count = 10;
 
 public:
-	void param_value_changed(size_t param_ipc_ind, TParamValue value) override {
-		cb(param_ipc_ind, value);
-	}
+	std::vector<std::pair<size_t, double>> vps;
 
-	void set_callback(std::function<void(size_t, TParamValue)> new_cb) {
-		cb = new_cb;
+public:
+	ParhubSubscriberStub(std::promise<void>&& _pm): pm(std::move(_pm)) {}
+
+	void param_value_changed(size_t param_ipc_ind, const szarp::ParamValue& value) override {
+		auto vp = sz4::cast_param_value<double>(value, 1);
+		double val = vp.value;
+		vps.emplace_back(param_ipc_ind, val);
+		if (--count == 0)
+			pm.set_value();
 	}
 };
 
 class SocketStub: public SocketHolder {
 public:
-	std::queue<std::pair<size_t, TParamValue>> msgs_to_send;
+	std::queue<std::pair<size_t, double>> msgs_to_send;
 
-	SocketStub(std::vector<std::pair<size_t, TParamValue>>& _to_send) {
+	SocketStub(std::vector<std::pair<size_t, double>>& _to_send) {
 		for (auto tp: _to_send) { msgs_to_send.push(tp); }
 	}
-
 	
 	bool recv(szarp::ParamsValues& pvs) override {
 		if (msgs_to_send.size() != 0) {
@@ -34,13 +41,11 @@ public:
 
 			pvs.clear_param_values();
 			auto pv = pvs.add_param_values();
-
+			
 			pv->set_param_no(msg.first);
-			if (msg.second.has<int64_t>()) {
-				pv->set_int_value(msg.second.get<int64_t>());
-			} else if (msg.second.has<double>()) {
-				pv->set_double_value(msg.second.get<double>());
-			}
+			pv->set_time(100);
+			pv->set_is_nan(false);
+			pv->set_double_value(msg.second);
 
 			return true;
 		}
@@ -58,58 +63,33 @@ class ParhubCacheTest: public CPPUNIT_NS::TestFixture {
 	CPPUNIT_TEST_SUITE_END();
 };
 
-
-// workaround for non-moving lambda captures (delete in C++14)
-template <typename T>
-struct Mover {
-	T t;
-	Mover(T&& _t): t(std::forward<T>(_t)) {}
-
-	Mover(const Mover& other): t(std::move(other.t)) {}
-	Mover(Mover&& other): t(std::move(other.t)) {}
-	Mover& operator()(const Mover& other) { t = std::move(other.t); return *this; }
-	Mover& operator()(Mover&& other) { t = std::move(other.t); return *this; }
-
-	T* operator->() { return &t; }
-};
-
 void ParhubCacheTest::test() {
-	ParhubSubscriberStub subscriber;
+	std::promise<void> pm;
+	auto cv = pm.get_future();
 
-	std::promise<void> promise;
-	auto cv = promise.get_future();
-	Mover<std::promise<void>> m(std::move(promise));
+	ParhubSubscriberStub subscriber(std::move(pm));
 
-	size_t count = 10;
-	std::vector<std::pair<size_t, TParamValue>> ret;
-
-	subscriber.set_callback(
-		[&m, &ret, &count] (size_t param_ipc_ind, TParamValue value) {
-			ret.emplace_back(param_ipc_ind, TParamValue(value));
-			if (--count == 0)
-				m->set_value();
-		}
-	);
-
-	std::vector<std::pair<size_t, TParamValue>> to_send = {
-		{0, TParamValue(0.3)},
-		{0, TParamValue(-0.9)},
-		{1, TParamValue(3)},
-		{2, TParamValue(5)},
-		{13, TParamValue(5065)},
-		{32, TParamValue(-4444)},
-		{1, TParamValue(4)},
-		{1, TParamValue(9)},
-		{1, TParamValue(-10)},
-		{2, TParamValue(10)}
+	std::vector<std::pair<size_t, double>> to_send = {
+		{0, 0.3},
+		{0, -0.9},
+		{1, 3},
+		{2, 5},
+		{13, 5065},
+		{32, -4444},
+		{1, 4},
+		{1, 9},
+		{1, -10},
+		{2, 10}
 	};
 
-	auto socket = std::unique_ptr<SocketStub>(new SocketStub(to_send));
-	ParhubListener listener(std::move(socket), subscriber);
+	auto socket = std::make_unique<SocketStub>(to_send);
+	auto listener = new ParhubPoller(std::move(socket), subscriber);
 
+	CPPUNIT_ASSERT(cv.valid());
 	cv.wait();
 
-	CPPUNIT_ASSERT(ret == to_send);
+	CPPUNIT_ASSERT(subscriber.vps == to_send);
+	delete listener;
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( ParhubCacheTest );
