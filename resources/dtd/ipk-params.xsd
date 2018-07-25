@@ -191,6 +191,7 @@
     <xs:attribute ref="ipk-extra:ReceiveTimeout"/>
     <xs:attribute ref="ipk-extra:const_speed"/>
     <xs:attribute ref="ipk-extra:SendDelay"/>
+    <xs:attribute ref="ipk-extra:wait_timeout"/>
     <xs:attribute ref="ipk-extra:proto"/>
     <xs:attribute ref="ipk-extra:optical"/>
     <xs:attribute ref="ipk-extra:mode"/>

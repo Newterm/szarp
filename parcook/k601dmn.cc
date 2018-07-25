@@ -527,8 +527,8 @@ void K601Daemon::Init(int argc, char *argv[])
 			SetRestart();
 			ScheduleNext(RESTART_INTERVAL_MS);
 		}
-	} else if (device->hasAttribute("extra:path")) {
-		m_id = device->getAttribute("extra:path");
+	} else if (device->hasAttribute("path")) {
+		m_id = device->getAttribute("path");
 	
 		/* Setting serial */
 		try {
