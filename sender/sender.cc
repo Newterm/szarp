@@ -99,6 +99,8 @@ unsigned int NumberOfPars;	/* number of parameters to send */
 unsigned int BasePeriod;	/* sending frequency */
 pSterData SterInfo;		/* array with parameters to send */
 
+static std::map<int, bool> full_queue_params;	/* some params can be sent to daemons which do not use IPC at all - flag such potential params */
+
 /* Arguments handling, see 'info argp'
 */
 const char *argp_program_version = "sender" " $Revision: 6711 $";
@@ -232,6 +234,9 @@ void ReadCfgFileFromParamXML(TSzarpConfig * ipk)
 					k++;
 					n++;
 				}
+	for (int i = 0; i < (int)NumberOfPars; i++) {
+		full_queue_params[i] = false;
+	}
 }
 
 /*
@@ -370,11 +375,18 @@ int SendSter(int pass, int log_level)
 			if (!msgsnd(MsgSetDes, &(SterInfo[i].msg), sizeof(tSetParam), IPC_NOWAIT)) {
 				SterInfo[i].status = MSG_CONF;
 			}
-		       	else {
+			else {
+				allsent = 0;
+				if (errno == EAGAIN) {
+					if (full_queue_params.at(i)) {
+						continue;	// avoid excessive logging
+					}
+					sz_log(1, "SendSter: failed msgsnd (with EAGAIN) parameter %d, won't print error message again (non-IPC receiver?).", i);
+					full_queue_params.at(i) = true;
+				}
 				sz_log(1,
 						"SendSter: failed msgsnd(MsgSetDes, msg[type=%ld], size=%lu, IPC_NOWAIT), errno=%d (%s)for parameter %d",
 						SterInfo[i].msg.type, sizeof(tSetParam), errno, strerror(errno), i);
-				allsent = 0;
 			}
 		}
 	}
@@ -580,8 +592,9 @@ int main(int argc, char *argv[])
 	delete ipk;
 	libpar_done();
 
-    if (arguments.no_daemon == 0)
-        go_daemon();
+	if (arguments.no_daemon == 0) {
+		go_daemon();
+	}
 
 	if (log_level >= 3) {
 		ShowCfgTable();
