@@ -59,7 +59,7 @@ Description: Configure SZARP as a server
 Package: szarp-wx
 Section: x11
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, sudo, xdg-utils, sshpass, ttf-freefont
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, xdg-utils, sshpass, ttf-freefont
 Recommends: libwxgtk3.0-0v5 | libwxgtk3.0-0
 Description: SZARP utilities based on wxWidgets library
  SZARP raporter3, reporter4, kontroler3, scc, ekstraktor3, wxhelp, draw3,
