@@ -74,7 +74,8 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-viewer \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
-		-pszarp-filler2
+		-pszarp-filler2	\
+		-pszarp-ipkedit
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 

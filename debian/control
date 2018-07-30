@@ -61,9 +61,16 @@ Section: x11
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-doc-html, zip, xdg-utils, sshpass, ttf-freefont
 Recommends: libwxgtk3.0-0v5 | libwxgtk3.0-0
-Description: SZARP utilities based on wxWidgets library
- SZARP raporter3, reporter4, kontroler3, scc, ekstraktor3, wxhelp, draw3,
- confedit, pipes applications.
+Description: SZARP GUI programs based on wxWidgets library
+ SZARP raporter3, reporter4, kontroler3, scc, ekstraktor3, wxhelp, draw3
+
+Package: szarp-ipkedit
+Section: x11
+Architecture: any
+Conflicts: szarp-wx (<< 3.18.8+9rc)
+Depends: ${shlibs:Depends}, ${misc:Depends}, szarp-base, szarp-utils, szarp-doc-html, zip, xdg-utils, sshpass, ttf-freefont
+Recommends: libwxgtk3.0-0v5 | libwxgtk3.0-0
+Description: SZARP ipkedit
 
 Package: szarp-terminal
 Section: x11
