@@ -36,10 +36,6 @@
 #include "szarp_config.h"
 #include "parcook_cfg.h"
 #include "line_cfg.h"
-#include "ptt_act.h"
-#include "sender_cfg.h"
-#include "raporter.h"
-#include "ekrncor.h"
 #include "liblog.h"
 #include "libpar.h"
 

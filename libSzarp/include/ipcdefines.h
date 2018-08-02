@@ -25,6 +25,8 @@
 
 #include "szdefines.h"
 
+#define NUMBEROFPROBES 15
+
 #define SEM_PARCOOK 1
 
 #define SEM_PROBE 0
