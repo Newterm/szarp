@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 include(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(alphasort HAVE_ALPHASORT)
@@ -13,7 +14,7 @@ find_package(Boost REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(OpenSSL REQUIRED)
-
+find_package(ZeroMQ REQUIRED)
 
 #set(INCLUDE_DIR include)
 

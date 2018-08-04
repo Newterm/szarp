@@ -27,14 +27,12 @@ target_include_directories( paramd
 target_link_libraries( paramd
   Szarp
   Szarp2
+  SzarpLuaParser
   server
   Threads::Threads
   xml2
   luajit-5.1
   pam
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${PROTOBUF_LIBRARY}
   boost_system
   boost_filesystem
   protobuf
@@ -44,4 +42,7 @@ target_link_libraries( paramd
   ssl
   crypto
   systemd
+  curl
+  xslt
+  zip
 )

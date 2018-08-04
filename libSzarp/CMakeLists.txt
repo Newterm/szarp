@@ -1,4 +1,6 @@
 #set(PREFIX libSzarp)
+file(GLOB SOURCES *.cpp *.cc)
+file(GLOB HEADERS *.h)
 
 add_definitions(
   -DHAVE_CONFIG_H
@@ -9,14 +11,9 @@ FLEX_TARGET(libparnt libparnt.lex ${CMAKE_CURRENT_BINARY_DIR}/libparnt.yy.cc)
 
 ## libSzarp
 add_library(Szarp SHARED
-  ${FLEX_libparnt_OUTPUTS} libparnt.cc libparnt.parse.cc
-  liblog.cpp argsmgr.cpp cmdlineparser.cpp
-  loghandlers.cpp date.cc msgerror.cc msgtools.cc
-  daemon.cc execute.cc mbrtu.cc
-  conversion.cc ipctools.cc
+  ${FLEX_libparnt_OUTPUTS}
+  ${SOURCES}
 )
-
-set_property(TARGET Szarp PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(Szarp
   PUBLIC
