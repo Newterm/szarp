@@ -26,6 +26,7 @@ libSzarp_la_SOURCES = \
                       argsmgr.cpp \
                       cmdlineparser.cpp \
                       loghandlers.cpp \
+                      date.cc \
                       msgerror.cc \
                       msgtools.cc \
                       daemon.cc \

@@ -1,15 +1,13 @@
+file(GLOB SOURCES *.cc)
+
 add_definitions(
   -DPREFIX=\"@prefix@\"
 )
 
 link_libraries( ${OPENSSL_LIBRARIRES} )
 
-##### server (static) ###########################
-
 add_library(server SHARED
-  access.cc auth_server.cc base64.cc
-  config_load.cc pam.cc server.cc
-  ssl_server.cc utf8.cc
+  ${SOURCES}
 )
 
 target_include_directories(server
@@ -19,4 +17,8 @@ target_include_directories(server
     ${CMAKE_SOURCE_DIR}/libSzarp/include
     ${CMAKE_SOURCE_DIR}/libSzarp2/include
     /usr/include/libxml2
+)
+
+target_link_libraries(server
+  ${OPENSSL_LIBRARIES}
 )

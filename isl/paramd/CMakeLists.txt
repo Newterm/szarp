@@ -1,16 +1,12 @@
+file(GLOB SOURCES *.cc)
+
 add_definitions(
   -DHAVE_CONFIG_H
   -DPREFIX="/opt/szarp"
 )
 
-
-##### paramd (executable) #######################
-
 add_executable( paramd
-  ipk2xml.cc param_tree.cc
-    param_value_functor.cc
-    tree_processor.cc paramd.cc ptt2xml.cc
-    svg_generator.cc
+  ${SOURCES}
 )
 
 target_include_directories( paramd

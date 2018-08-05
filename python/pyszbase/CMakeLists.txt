@@ -1,26 +1,19 @@
-cmake_minimum_required(VERSION 3.5)
-
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
-)
-
-link_directories(
-  ${TQT_LIBRARY_DIRS}
-)
+file(GLOB SOURCES *.cc)
 
 add_definitions(
   -DPREFIX=\"@prefix@\"
 )
 
+add_library(pyszbase SHARED
+  ${SOURCES}
+)
 
-##### pyszbase (shared) #########################
+target_include_directories(pyszbase
+  PUBLIC
+    ${PYTHON_INCLUDE_DIRS}
+)
 
-add_library( pyszbase SHARED
-  pyszbase.cc
-  VERSION 0.0.0
-  LINK Szarp-shared Szarp2-shared
-  DESTINATION ${LIB_INSTALL_DIR}
+target_link_libraries(pyszbase
+  Szarp
+  Szarp2
 )

@@ -59,9 +59,11 @@ noinst_HEADERS = \
 	@srcdir@/include/dmncfg.h \
 	@srcdir@/include/httpcl.h \
 	@srcdir@/include/ipchandler.h \
+	@srcdir@/include/insort.h \
 	@srcdir@/include/szarp_config.h \
 	@srcdir@/include/tokens.h \
 	@srcdir@/include/convuri.h \
+	@srcdir@/include/ppset.h \
 	@srcdir@/include/xmlutils.h \
 	@srcdir@/include/custom_assert.h \
 	$(INCLUDE_PROTOBUF)
@@ -128,9 +130,11 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/misc/crontime.h \
 	@srcdir@/misc/crontime.cc \
 	@srcdir@/misc/http.cc \
+	@srcdir@/misc/insort.cc \
 	@srcdir@/misc/tokens.cc \
 	@srcdir@/misc/xmlutils.cc \
 	@srcdir@/linedmn/mbus.cc \
+	@srcdir@/linedmn/ppset.cc \
 	$(BASECONN) \
 	@srcdir@/misc/xscale.cc \
 	@srcdir@/szbextr/extractor.cc \

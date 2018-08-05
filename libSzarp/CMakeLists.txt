@@ -1,6 +1,5 @@
 #set(PREFIX libSzarp)
 file(GLOB SOURCES *.cpp *.cc)
-file(GLOB HEADERS *.h)
 
 add_definitions(
   -DHAVE_CONFIG_H

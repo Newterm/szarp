@@ -1,3 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
+# todo install + unittesty
 
-add_subdirectory( unittests )
+add_subdirectory(unittests)
