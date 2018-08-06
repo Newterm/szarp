@@ -47,6 +47,7 @@
 #include "daemonutils.h"
 #include "custom_assert.h"
 #include "cfgdealer_handler.h"
+#include "base_daemon.h"
 
 #ifndef SZARP_NO_DATA
 #define SZARP_NO_DATA -32768
@@ -67,6 +68,8 @@ bool single;
  * (if 'extra:tcp-ip' and optionally 'extra:tcp-data-port' and 'extra:tcp-cmd-port' are declared)
  */
 class kams_daemon: public ConnectionListener {
+	BaseDaemon2& base_dmn;
+
 public:
 	typedef enum {MODE_B300, MODE_B1200_EVEN, MODE_B1200} SerialMode;
 	typedef enum {SET_COMM_WRITE, WRITE, REPEAT_WRITE, SET_COMM_READ, READ, RESTART} CommunicationState;
@@ -78,7 +81,7 @@ public:
 		SZ_INHERIT_CONSTR(NoDataException, KamsDmnException)
 	};
 
-	kams_daemon() : m_daemon_conf(nullptr), m_ipc(nullptr),
+	kams_daemon(BaseDaemon2& _base_dmn): base_dmn(_base_dmn),
 			m_state(SET_COMM_WRITE),
 			m_read_mode(MODE_B1200_EVEN),
 			m_chars_written(0),
@@ -91,24 +94,21 @@ public:
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
 		m_query_command.push_back('1');
-		m_event_base = event_base_new();
+		m_event_base = event_base_new(); // TODO: use scheduler
+		ParseConfig();
+		StartDo();
+		base_dmn.setCycleHandler([this](BaseDaemon2&){ Do(); });
 	}
 
 	~kams_daemon()
 	{
-		if (m_daemon_conf != nullptr) {
-			delete m_daemon_conf;
-		}
-		if (m_ipc != nullptr) {
-			delete m_ipc;
-		}
 		if (m_connection != nullptr) {
 			delete m_connection;
 		}
 	}
 
 	/** Read commandline and params.xml configuration */
-	void ReadConfig(int argc, char **argv);
+	void ParseConfig();
 
 	/** Start event-based state machine */
 	void StartDo();
@@ -128,10 +128,9 @@ protected:
 	{
 		sz_log(10, "%s: SetRestart", m_id.c_str());
 		m_state = RESTART;
-		for (int i = 0; i < m_ipc->m_params_count; i++) {
-			m_ipc->m_read[i] = SZARP_NO_DATA;
+		for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
+			base_dmn.setRead(i, SZARP_NO_DATA);
 		}
-		m_ipc->GoParcook();
 	}
 
 	/** Write single char of query command to device */
@@ -166,7 +165,6 @@ protected:
 	}
 
 protected:
-	DaemonConfigInfo *m_daemon_conf;
 	IPCHandler *m_ipc;
 
 	CommunicationState m_state;	/**< state of communication state machine */
@@ -300,10 +298,9 @@ void kams_daemon::Do()
 				ProcessResponse();
 				wait_ms = m_query_interval_ms;
 				m_state = SET_COMM_WRITE;
-				for (int i = 0; i < m_ipc->m_params_count; i++) {
-					m_ipc->m_read[i] = m_params.at(i);
+				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
+					base_dmn.setRead(i, m_params.at(i));
 				}
-				m_ipc->GoParcook();
 			} catch (NoDataException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -313,10 +310,9 @@ void kams_daemon::Do()
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 1000;
 				m_state = SET_COMM_WRITE;
-				for (int i = 0; i < m_ipc->m_params_count; i++) {
-					m_ipc->m_read[i] = SZARP_NO_DATA;
+				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
+					base_dmn.setRead(i, SZARP_NO_DATA);
 				}
-				m_ipc->GoParcook();
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -331,10 +327,9 @@ void kams_daemon::Do()
 				m_connection->Open();
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: Restart failed: %s", m_id.c_str(), e.what());
-				for (int i = 0; i < m_ipc->m_params_count; i++) {
-					m_ipc->m_read[i] = SZARP_NO_DATA;
+				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
+					base_dmn.setRead(i, SZARP_NO_DATA);
 				}
-				m_ipc->GoParcook();
 				wait_ms = RESTART_INTERVAL_MS;
 				ScheduleNext(wait_ms);
 			}
@@ -386,7 +381,7 @@ void kams_daemon::ReadError(const BaseConnection *conn, short event)
 void kams_daemon::ReadData(const BaseConnection *conn,
 		const std::vector<unsigned char>& data)
 {
-	if (m_daemon_conf->GetSingle()) {
+	if (single) {
 		std::cout << "+";
 	}
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
@@ -414,7 +409,7 @@ void kams_daemon::ProcessResponse()
 
 	if (m_read_buffer.size() == expected_response_size) {
 		m_read_buffer.resize(message_size);
-		if (m_daemon_conf->GetSingle()) {
+		if (single) {
 			std::cout << "Frame received: \"" << m_read_buffer << '"' << std::endl;
 		}
 	} else if (m_read_buffer.size() == 0) {
@@ -506,40 +501,26 @@ void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
 	reinterpret_cast<kams_daemon*>(thisptr)->Do();
 }
 
-void kams_daemon::ReadConfig(int argc, char **argv) {
-	ArgsManager args_mgr("kamsdmn");
-	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
-	args_mgr.initLibpar();
-
-	if (args_mgr.has("use-cfgdealer")) {
-		szlog::init(args_mgr, "kamsdmn");
-		m_daemon_conf = new ConfigDealerHandler(args_mgr);
-	} else {
-		auto d_cfg = new DaemonConfig("kamsdmn");
-		if (d_cfg->Load(args_mgr))
-			throw std::runtime_error("Could not load configuraion");
-		m_daemon_conf = d_cfg;
-	}
-
-	if (m_daemon_conf->GetParamsCount() != NUMBER_OF_VALS) {
+void kams_daemon::ParseConfig() {
+	auto& cfg = base_dmn.getDaemonCfg();
+	if (cfg.GetParamsCount() != NUMBER_OF_VALS) {
 		throw KamsDmnException("Incorrect number of parameters: " +
-				std::to_string(m_daemon_conf->GetParamsCount())
+				std::to_string(cfg.GetParamsCount())
 				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
-	try {
-		m_ipc = new IPCHandler(m_daemon_conf);
-	} catch(const std::exception& e) {
-		throw SzException("ERROR!: Could not initialize IPC, reason was: " + std::string(e.what()));
+	const ArgsManager& args_mgr = base_dmn.args_mgr;
+
+	if (cfg.GetSingle() || args_mgr.get<int>("debug").get_value_or(2) > 8) {
+		single = true;
+		m_query_interval_ms = 3000;
+	} else {
+		single = false;
+		m_query_interval_ms = 280 * 1000;	/* for saving heatmeter battery */
 	}
 
-	if (m_daemon_conf->GetSingle() || args_mgr.get<int>("debug").get_value_or(2) > 8)
-		m_query_interval_ms = 3000;
-	else
-		m_query_interval_ms = 280 * 1000;	/* for saving heatmeter battery */
 
-
-	auto device = m_daemon_conf->GetDeviceInfo();
+	auto device = cfg.GetDeviceInfo();
 	if (device->hasAttribute("extra:tcp-ip")) {
 		m_ip = device->getAttribute("extra:tcp-ip");
 		m_data_port = device->getAttribute<int>("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
@@ -554,35 +535,13 @@ void kams_daemon::ReadConfig(int argc, char **argv) {
 	} else if (device->hasAttribute("path")) {
 		m_path = device->getAttribute("path");
 		m_id = m_path;
-	} else  {
+	} else {
 		throw KamsDmnException("ERROR!: neither IP nor device path has been specified");
 	}
-
-	single = m_daemon_conf->GetSingle() || args_mgr.get<int>("debug") >= 8;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-	kams_daemon daemon;
-
-	try {
-		sz_log(10, "Reading config");
-		daemon.ReadConfig(argc, argv);
-	} catch (kams_daemon::KamsDmnException &e) {
-		sz_log(0, "Exception occured: %s", e.what());
-		exit(1);
-	}
-
-	sz_log(10, "Starting daemon");
-
-	try {
-		daemon.StartDo();
-	} catch (SzException &e) {
-		sz_log(0, "FATAL!: daemon killed by exception: %s", e.what());
-		exit(1);
-	} catch (...) {
-		sz_log(0, "FATAL!: daemon killed by unknown exception");
-		exit(1);
-	}
-	sz_log(0, "FATAL!: abnormal termination of event loop");
+	BaseDaemonFactory::Go<kams_daemon>(argc, argv, "kamsdmn");
+	return 0;
 }

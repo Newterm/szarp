@@ -85,18 +85,23 @@
 #include "conversion.h"
 #include "custom_assert.h"
 
+#include "base_daemon.h"
+
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
-
-const int DEFAULT_EXPIRE = 660;	/* 11 minutes */
-const int DAEMON_INTERVAL = 10;
 
 struct ParamDesc {
-    TParam *param; // target param
+    IPCParamInfo *param; // target param
     std::wstring dbparam; // param to get
     SZARP_PROBE_TYPE probe_type; // type of probe to get
+
+	int16_t toIPCValue(SZBASE_TYPE value)
+	{
+		for (int i = 0; i < param->GetPrec(); i++) {
+			value *= 10;
+		}
+		return (int16_t) nearbyint(value);
+	}
 };
 
 /**
@@ -107,38 +112,26 @@ public :
 	/**
 	 * @param params number of params to read
 	 */
-	DbDaemon(DaemonConfig *cfg);
+	DbDaemon(BaseDaemon2& base_dmn);
 	~DbDaemon();
 
 	/** 
 	 * Parses XML 'device' element.
 	 * @return - 0 on success, 1 on error 
 	 */
-	int ParseConfig(DaemonConfig * cfg);
+	int ParseConfig(const DaemonConfigInfo &dmn);
 
-	/**
-	 * Read data from database.
-	 * @param ipc IPCHandler
-	 * @return 0 on success, 1 on error
-	 */
-	int Read(IPCHandler *ipc);
+	void Read(BaseDaemon2& base_dmn);
 
-	/** Wait for next cycle. */
-	void Wait();
-	
 protected :
-	/** helper function for XML parsing 
-	 * @return 1 on error, 0 otherwise */
-	int XMLCheckExpire(xmlNodePtr device_node);
-
-	SZARP_PROBE_TYPE GetProbeType(TParam * param, xmlNodePtr param_node);
-	struct ParamDesc * ConfigureParam(TParam * param, xmlNodePtr param_node, Szbase * szbase);
+	SZARP_PROBE_TYPE GetProbeType(IPCParamInfo *param);
+	struct ParamDesc* ConfigureParam(IPCParamInfo *param_node, Szbase *szbase);
 	int ConfigureProbers();
 
 	int m_single;		/**< are we in 'single' mode */
 public:
 	int m_params_count;	/**< size of params array */
-	std::vector<struct ParamDesc *> m_dbparams;
+	std::vector<struct ParamDesc*> m_dbparams;
 				/**< names of params to read from db */
 protected:
 	int m_expire;		/**< expire time in seconds */
@@ -146,15 +139,11 @@ protected:
 	std::map<std::string, SZARP_PROBE_TYPE> m_probe_type_map;
 };
 
-/**
- * @param params number of params to read
- * @param sends number of params to send (write)
- */
-DbDaemon::DbDaemon(DaemonConfig* cfg) 
+DbDaemon::DbDaemon(BaseDaemon2& base_dmn)
 {
-	m_single = cfg->GetSingle();
-	m_params_count = cfg->GetDevice()->
-			GetFirstUnit()->GetParamsCount();
+	auto& cfg = base_dmn.getDaemonCfg();
+	m_single = cfg.GetSingle();
+	m_params_count = cfg.GetParamsCount();
 	ASSERT(m_params_count >= 0);
 	m_expire = DEFAULT_EXPIRE;
 	m_last = 0;
@@ -167,6 +156,10 @@ DbDaemon::DbDaemon(DaemonConfig* cfg)
 	m_probe_type_map["PT_WEEK"] = PT_WEEK;
 	m_probe_type_map["PT_MONTH"] = PT_MONTH;
 	m_probe_type_map["PT_YEAR"] = PT_YEAR;
+
+	ParseConfig(base_dmn.getDaemonCfg());
+
+	base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ Read(base_dmn); });
 }
 
 DbDaemon::~DbDaemon() 
@@ -207,178 +200,78 @@ int DbDaemon::ConfigureProbers()
 	return 0;
 }
 
-
-int DbDaemon::XMLCheckExpire(xmlNodePtr device_node)
+SZARP_PROBE_TYPE DbDaemon::GetProbeType(IPCParamInfo *param)
 {
-	xmlChar* c = xmlGetNsProp(device_node, BAD_CAST "expire", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (c == NULL)
-		return 0;
+	auto prop = param->getAttribute<std::string>("extra:probe-type", "PT_MIN10");
 
-	char *e;
-	long l = strtol((char *)c, &e, 0);
-	if ((*c == 0) || (*e != 0)) {
-		sz_log(1, "incorrect value '%s' for db:expire, number expected",
-				(char *)c);
-		xmlFree(c);
-		return 1;
-	}
-	xmlFree(c);
-	if (l < 0) {
-		sz_log(1, "value '%ld' for db:expire must be non-negative", l);
-		return 1;
-	}
-	m_expire = (int)l;
-	sz_log(2, "using expire frequency %d", m_expire);
-	return 0;
-}
-
-SZARP_PROBE_TYPE DbDaemon::GetProbeType(TParam * param, xmlNodePtr param_node)
-{
-	xmlChar* prop = xmlGetNsProp(param_node, BAD_CAST "probe-type", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (NULL == prop) {
-		sz_log(2, "No extra:probe-type attribute for parameter %s, using default PT_MIN10",
-		       	SC::S2U(param->GetName()).c_str());
-		return PT_MIN10;
-	}
-
-	std::string pt;
-	std::stringstream ss((char*)prop);
-	if ((ss >> pt).fail() || !ss.eof()) {
-		sz_log(1, "Invalid value %s for attribute extra:probe-type in line, %ld, using default PT_MIN10",
-		       	(char*)prop,  xmlGetLineNo(param_node));
-		xmlFree(prop);	
-		return PT_MIN10;
-	}
-	xmlFree(prop);
-
-	std::map<std::string, SZARP_PROBE_TYPE>::iterator it = m_probe_type_map.find(pt);
+	std::map<std::string, SZARP_PROBE_TYPE>::iterator it = m_probe_type_map.find(prop);
 	if (it != m_probe_type_map.end())
 		return it->second;
 
-
-	sz_log(2, "Unsupported probe-type value, using default PT_MIN10");
+	sz_log(2, "Unsupported probe-type value in param %s, using default PT_MIN10", SC::S2U(param->GetName()).c_str());
 	return PT_MIN10;
 }
 
-struct ParamDesc * DbDaemon::ConfigureParam(TParam * param, xmlNodePtr param_node, Szbase* szbase)
-{
-	xmlChar* dbparam = xmlGetNsProp(param_node, BAD_CAST "param", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (dbparam == NULL) {
-		sz_log(1, "No extra:param attribute for parameter %s",
-		       	SC::S2U(param->GetName()).c_str());
-		return NULL;
+struct ParamDesc* DbDaemon::ConfigureParam(IPCParamInfo* param, Szbase *szbase) {
+	auto db_param = param->getOptAttribute<std::string>("extra:param");
+	if (!db_param) {
+		sz_log(1, "No extra:param attribute for parameter %s", SC::S2U(param->GetName()).c_str());
+		return nullptr;
 	}
 
 	struct ParamDesc * pd = new ParamDesc();
 	pd->param = param;
-
-	pd->dbparam = SC::U2S(dbparam);
-	xmlFree(dbparam);
+	pd->dbparam = SC::L2S(*db_param);
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	if (!szbase->FindParam(pd->dbparam, bp)) {
 		sz_log(1, "Param with name '%s' not found for parameter %s", 
 			SC::S2U(pd->dbparam).c_str(), SC::S2U(param->GetName()).c_str());
 		delete pd;
-		return NULL;
+		return nullptr;
 	}
 
-	pd->probe_type = GetProbeType(param, param_node);
+	pd->probe_type = GetProbeType(param);
 
 	sz_log(3, "Using database parameter '%s' for parameter %s",
 	       	SC::S2U(pd->dbparam).c_str(), SC::S2U(param->GetName()).c_str());
 	return pd;
 }
 
-int DbDaemon::ParseConfig(DaemonConfig * cfg)
+int DbDaemon::ParseConfig(const DaemonConfigInfo &dmn)
 {
-	xmlDocPtr doc;
-	xmlXPathContextPtr xp_ctx;
-	int ret;
-	
-	/* get config data */
-	ASSERT(cfg != NULL);
-	doc = cfg->GetXMLDoc();
-	ASSERT(doc != NULL);
-
-	/* prepare xpath */
-	xp_ctx = xmlXPathNewContext(doc);
-	ASSERT(xp_ctx != NULL);
-
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk",
-			SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	ASSERT(ret == 0);
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "db",
-			BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	ASSERT(ret == 0);
-	(void)ret;
-
-	xp_ctx->node = cfg->GetXMLDevice();
-
-	if (XMLCheckExpire(xp_ctx->node)) {
-		xmlXPathFreeContext(xp_ctx);
-		sz_log(1, "Configuration error (expire attribute), exiting");
-		return 1;
-	}
+	auto device = dmn.GetDeviceInfo();
+	m_expire = device->getAttribute<int>("extra:expire", 0);
+	if (m_expire < 0)
+		throw std::runtime_error("db:expire cannot be negative");
 
 	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
-	Szbase::Init(SC::L2S(PREFIX), NULL);
+	Szbase::Init(SC::L2S(PREFIX));
 
 	Szbase* szbase = Szbase::GetObject();
 	szbase->NextQuery();
 
+	for (auto unit: dmn.GetUnits()) {
+		for (auto param: unit->GetParams()) {
+			struct ParamDesc * pd = ConfigureParam(param, szbase);
+			if (!pd) {
+				throw std::runtime_error(std::string("Could not configure param ") + SC::S2L(param->GetName()));
+			}
 
-	TParam *p = cfg->GetDevice()->GetFirstUnit()->GetFirstParam();
-	for (int i = 1; NULL != p && i <= m_params_count; i++) {
-		char *expr;
-		const int ret = asprintf(&expr, ".//ipk:unit[position()=1]/ipk:param[position()=%d]", i);
-		(void)ret;
-		ASSERT(expr != NULL);
-
-		xmlNodePtr node = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		ASSERT(node);
-		free(expr);
-
-		struct ParamDesc * pd = ConfigureParam(p, node, szbase);
-		if (NULL == pd) {
-			sz_log(1, "Param configuration error for %s, exiting",
-			    SC::S2U(p->GetName()).c_str());
-			return 1;
+			m_dbparams.push_back(pd);
 		}
-
-		m_dbparams.push_back(pd);
-		p = p->GetNext();
 	}
-
-	xmlXPathFreeContext(xp_ctx);
 
 	ConfigureProbers();
 
 	return 0;
 }
 
-
-void DbDaemon::Wait() 
-{
-	time_t t;
-	t = time(NULL);
-	
-	if (t - m_last < DAEMON_INTERVAL) {
-		int i = DAEMON_INTERVAL - (t - m_last);
-		sz_log(10, "DbDaemon::Wait: sec to wait: %d", i);
-		while (i > 0) {
-			i = sleep(i);
-		}
-	}
-	m_last = time(NULL);
-	return;
-}
-
-int DbDaemon::Read(IPCHandler *ipc)
+void DbDaemon::Read(BaseDaemon2& base_dmn)
 {
 	sz_log(10, "DbDaemon::Read: Setting NO_DATA");
 	for (int i = 0; i < m_params_count; i++) {
-		ipc->m_read[i] = SZARP_NO_DATA;
+		base_dmn.setRead(i, SZARP_NO_DATA);
 	}
 
 	Szbase* szbase = Szbase::GetObject();
@@ -392,7 +285,7 @@ int DbDaemon::Read(IPCHandler *ipc)
 		std::string first_time_str = asctime(localtime(&first_time));
 		std::string last_time_str = asctime(localtime(&m_last));
 		sz_log(10, "Searching for data for parameter (%s) on interval %ld (%s), %ld (%s)",
-			SC::S2U(pd->param->GetName()).c_str(),
+			SC::S2L(pd->dbparam).c_str(),
 			first_time,
 			first_time_str.c_str(),
 			m_last,
@@ -417,85 +310,13 @@ int DbDaemon::Read(IPCHandler *ipc)
 			continue;
 		}
 
-		ipc->m_read[i] = pd->param->ToIPCValue(data);
-		sz_log(10, "Data set to %f , %d", data, ipc->m_read[i]);
+		base_dmn.setRead(i, pd->toIPCValue(data));
 	}
-	
-	return 0;
 }
 
-RETSIGTYPE terminate_handler(int signum)
+int main(int argc, const char *argv[])
 {
-	sz_log(2, "signal %d caught", signum);
-	exit(1);
-}
-
-void init_signals()
-{
-	int ret;
-	struct sigaction sa;
-	sigset_t block_mask;
-
-	sigfillset(&block_mask);
-	sigdelset(&block_mask, SIGKILL);
-	sigdelset(&block_mask, SIGSTOP);
-	sa.sa_flags = SA_RESTART;
-	sa.sa_handler = terminate_handler;
-	sa.sa_mask = block_mask;
-	ret = sigaction(SIGTERM, &sa, NULL);
-	ASSERT(ret == 0);
-	ret = sigaction(SIGINT, &sa, NULL);
-	ASSERT(ret == 0);
-	ret = sigaction(SIGHUP, &sa, NULL);
-	ASSERT(ret == 0);
-	(void)ret;
-}
-
-int main(int argc, char *argv[])
-{
-	DaemonConfig	*cfg;
-	IPCHandler	*ipc;
-	DbDaemon	*dmn;
-
-	xmlInitParser();
-	LIBXML_TEST_VERSION
-	xmlLineNumbersDefault(1);
-
-	cfg = new DaemonConfig("dbdmn");
-	ASSERT(cfg != NULL);
-	
-	if (cfg->Load(&argc, argv, 0)) { // 0 - dont call libpar_done
-		sz_log(0, "Error while loading configuration, exiting.");
-		return 1;
-	}
-	
-	dmn = new DbDaemon(cfg);
-	ASSERT(dmn != NULL);
-	
-	if (dmn->ParseConfig(cfg)) {
-		sz_log(0, "Error while parsing configuration, exiting.");
-		return 1;
-	}
-	libpar_done();
-
-	try {
-		ipc = new IPCHandler(cfg);
-	} catch(...) {
-		sz_log(0, "Error initializing IPC.");
-		return 1;
-	}
-	cfg->CloseXML(1);
-
-	init_signals();
-
-	sz_log(2, "Starting DbDaemon");
-
-	while (true) {
-		dmn->Wait();
-		dmn->Read(ipc);
-		/* send data from parcook segment */
-		ipc->GoParcook();
-	}
+	BaseDaemonFactory::Go<DbDaemon>(argc, argv, "dbdmn");
 	return 0;
 }
 

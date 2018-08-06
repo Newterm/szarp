@@ -39,6 +39,7 @@ DL = -ldl
 
 bin_PROGRAMS = \
 	      aqtdmn \
+	      muksdmn \
 	      calcdmn \
 	      dbdmn \
 	      @DDEDMN@ \
@@ -80,13 +81,14 @@ endif
 EXTRA_PROGRAMS = ddedmn
 
 
-basedmn_SOURCES = base_daemon.cc base_daemon.h
+
+basedmn_SOURCES = base_daemon.cc base_daemon.h utils.cpp
 
 dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
 
-dbdmn_SOURCES = dbdmn.cc
+dbdmn_SOURCES = dbdmn.cc utils.cpp cfgdealer_handler.cpp
 
 dprdmn_SOURCES = dprdmn.cc
 
@@ -94,7 +96,7 @@ execdmn_SOURCES = execdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
-kamsdmn_SOURCES = kamsdmn.cc cfgdealer_handler.cpp
+kamsdmn_SOURCES = kamsdmn.cc utils.cpp cfgdealer_handler.cpp
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
@@ -115,6 +117,8 @@ calcdmn_SOURCES = calcdmn.cc
 ratedmn_SOURCES = ratedmn.cc
 
 aqtdmn_SOURCES = aqtdmn.cc
+
+muksdmn_SOURCES = muksdmn.cc utils.cpp cfgdealer_handler.cpp
 
 rsdmn_SOURCES = nrsdmn.cc
 
@@ -137,7 +141,7 @@ mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIM
 borutadmn_SOURCES = borutadmn.cc borutadmn.h boruta_zet.cc boruta_modbus.cc boruta_fp210.cc boruta_wmtp.cc boruta_lumel.cc boruta_fc.cc  cfgdealer_handler.cpp
 borutadmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
-borutadmn_z_SOURCES = borutadmn_z.cc borutadmn_z.h  boruta_modbus_z.cc boruta_fc_z.cc cfgdealer_handler.cpp
+borutadmn_z_SOURCES = borutadmn_z.cc borutadmn_z.h  boruta_modbus_z.cc boruta_fc_z.cc cfgdealer_handler.cpp utils.cpp
 borutadmn_z_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 sampledmn_SOURCES = sampledmn.cc $(basedmn_SOURCES)

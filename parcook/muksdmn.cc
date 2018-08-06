@@ -42,169 +42,235 @@
 #include "liblog.h"
 #include "conversion.h"
 #include "custom_assert.h"
+#include "base_daemon.h"
 
-#define DAEMON_ERROR 1
+constexpr short DAEMON_ERROR = 1;
 
-#define GENERAL_ERROR -1
-#define TIMEOUT_ERROR -2
-#define PACKET_SIZE_ERROR -1
+constexpr short GENERAL_ERROR = -1;
+constexpr short TIMEOUT_ERROR = -2;
+constexpr short PACKET_SIZE_ERROR = -1;
 
-#define NO_PARITY 0
-#define EVEN 1
-#define ODD 2
+constexpr short NO_PARITY = 0;
+constexpr short EVEN = 1;
+constexpr short ODD = 2;
 
-/* Identyfikatory zapytañ */
-#define P012_ORDER 01 /* CIS W WYLOT /MPa  */
-#define T014_ORDER 02 /* TEM W ZASIL /C  */
-#define P015_ORDER 03 /* CIS W ZASIL /MPa  */
-#define T016_ORDER 04 /* TEM S Z KOTLA /C  */
-#define P018_ORDER 05 /* CIS S PALEN /kPa  */
-#define T019_ORDER 06 /* TEM W WYLOT /C  */
-#define F025_ORDER 07 /* PRZ W WYLOT /m3/s  */
+/* Identyfikator zapytañ */
+constexpr unsigned char P012_ORDER = 1; /* CIS W WYLOT /MPa  */
+constexpr unsigned char T014_ORDER = 2; /* TEM W ZASIL /C  */
+constexpr unsigned char P015_ORDER = 3; /* CIS W ZASIL /MPa  */
+constexpr unsigned char T016_ORDER = 4; /* TEM S Z KOTLA /C  */
+constexpr unsigned char P018_ORDER = 5; /* CIS S PALEN /kPa  */
+constexpr unsigned char T019_ORDER = 6; /* TEM W WYLOT /C  */
+constexpr unsigned char F025_ORDER = 7; /* PRZ W WYLOT /m3/s  */
 
-#define F125_ORDER 33 /* PRZEP W WYL /kg/s  */
-#define U225_ORDER 34 /* MOC /MW  */
-#define U325_ORDER 35 /* ENERGIA /GJ */
-#define U425_ORDER 36 /* MASA /GJ */
+constexpr unsigned char F125_ORDER = 33; /* PRZEP W WYL /kg/s  */
+constexpr unsigned char U225_ORDER = 34; /* MOC /MW  */
+constexpr unsigned char U325_ORDER = 35; /* ENERGIA /GJ */
+constexpr unsigned char U425_ORDER = 36; /* MASA /GJ */
 
-#define HOW_QUERIES 11 /* ILOSC zapytan */
+constexpr short HOW_QUERIES = 11; /* ILOSC zapytan */
 
-#define MAX_RESPONSE 255
+constexpr short MAX_RESPONSE = 255;
 
-#define YES 1
-#define NO 0
+constexpr short YES = 1;
+constexpr short NO = 0;
 
-#define OK 1
-#define FAIL 0
-#define EMPTY -1
+constexpr char OK = 1;
+constexpr char FAIL = 0;
+constexpr char EMPTY = -1;
+
+constexpr unsigned char orders[HOW_QUERIES] = {
+	P012_ORDER,
+	T014_ORDER,
+	P015_ORDER,
+	T016_ORDER,
+	P018_ORDER,
+	T019_ORDER,
+	F025_ORDER,
+
+	F125_ORDER,
+	U225_ORDER,
+	U325_ORDER,
+	U425_ORDER 
+};
+
+constexpr unsigned char orders_str1[][50] = {
+	"P012_ORDER", /* CIS W WYLOT /MPa  */ 
+	"T014_ORDER", /* TEM W ZASIL /C  */ 
+	"P015_ORDER", /* CIS W ZASIL /MPa  */ 
+	"T016_ORDER", /* TEM S Z KOTLA /C  */ 
+	"P018_ORDER", /* CIS S PALEN /kPa  */ 
+	"T019_ORDER", /* TEM W WYLOT /C  */ 
+	"F025_ORDER", /* PRZ W WYLOT /m3/s  */ 
+
+	"F125_ORDER", /* PRZEP W WYL /kg/s  */ 
+	"U225_ORDER", /* MOC /MW  */ 
+	"U325_ORDER", /* ENERGIA /GJ */ 
+	"U425_ORDER" /* MASA /GJ */ 
+};
+
+constexpr unsigned char orders_str2[][50] = {
+	"CIS W WYLOT /MPa", 
+	"TEM W ZASIL /C",  
+	"CIS W ZASIL /MPa",  
+	"TEM S Z KOTLA /C",
+	"CIS S PALEN /kPa",
+	"TEM W WYLOT /C",
+	"PRZ W WYLOT /m3/s",
+
+	"PRZEP W WYL /kg/s",
+	"MOC /MW", 
+	"ENERGIA /GJ",
+	"MASA /GJ",
+};
 
 /**
  * MUKS communication config.
  */
-class           MUKS {
-      public:
-	/** info about single parameter */
-				/**< array of params to read */
-	int             m_params_count;
-				/**< size of params array */
-				  /**< virtual memory map */
-	int             m_sends_count;
-				/**< size of sends array */
+class MUKS {
+	std::string port_path;
+	int port_speed;
+
+public:
+	MUKS(BaseDaemon2& base_dmn);
+
+	void Poll(BaseDaemon2& base_dmn);
+
+	void SetNoData(BaseDaemon2& base_dmn);
 
 	/**
-	 * @param params number of params to read
-	 * @param sends number of params to send (write)
-	 */
-	MUKS(int params, int sends) {
-		ASSERT(params >= 0);
-		ASSERT(sends >= 0);
-
-		m_params_count = params;
-		m_sends_count = sends;
-	}
-
-	~MUKS() {
-	}
-
-
+	* Function oppening serial port special for LECstat E Heat Meter
+	* @param StopBits stop bits 1 od 2
+	* @param Parity parity : NO_PARITY, ODD, EVEN 
+	* @param return file descriptor
+	*/
+	int InitComm(unsigned char DataBits, unsigned char StopBits, unsigned char Parity);
 
 	/**
-	 * Filling m_read structure SZARP_NO_DATA value
-	 */
-	void            SetNoData(IPCHandler * ipc);
-
-	/**
-	 * Function oppening serial port special for LECstat E Heat Meter
-	 * @param Device Path to device np "/dev/ttyS0"
-	 * @param BaudRate baud rate
-	 * @param StopBits stop bits 1 od 2
-	 * @param Parity parity : NO_PARITY, ODD, EVEN 
-	 * @param return file descriptor
-	 */
-
-	int InitComm(const char *Device, long BaudRate, unsigned char DataBits,
-	     unsigned char StopBits, unsigned char Parity);
-
-	/**
-	 * Function gets response from serial port
-	 * @param fd File descriptor
-	 * @param Response  Pointer to buffer
-	 * @param return >0 - how bytes read, <=0 error
-	 */
-
+	* Function gets response from serial port
+	* @param fd File descriptor
+	* @param Response  Pointer to buffer
+	* @param return >0 - how bytes read, <=0 error
+	*/
 	int GetResponse(int fd, char *Response);
 
 	/**
-	 * Creates LEC - Asi Query
-	 * @param order order
-	 * @param net_id net identifier (default 0xff)
-	 * @return pointer to query. User must self frees this pointer !malloc
-	 */
-	 char *CreateQuery(unsigned char order);
+	* Creates LEC - Asi Query
+	* @param order order
+	* @param net_id net identifier (default 0xff)
+	* @return pointer to query. User must self frees this pointer !malloc
+	*/
+	char *CreateQuery(unsigned char order);
+
 	/**
-	 * Sends query
-	 * @param fd file descriptor of comm port
-	 * @param order order type
-	 * @return OK or FAIL
-	 */
+	* Sends query
+	* @param fd file descriptor of comm port
+	* @param order order type
+	*/
 	void SendQuery(int fd,unsigned char order);
 
 	/**
-	 * Calculates query size
-	 * @param order order type
-	 * @return size of query
-	 */
+	* Calculates query size
+	* @param order order type
+	* @return size of query
+	*/
 	short QuerySize(unsigned char order);
 
-	
 	/**
-	 * Scans incomming packet for errors
-	 * @param *Packet incomming packet
-	 * @param order order in query
-	 * @param size size of query
-	 * @param MaxResponse maximum allowed size of incomming packet
-	 * @return OK or FAIL
-	 */
+	* Scans incomming packet for errors
+	* @param *Packet incomming packet
+	* @param order order in query
+	* @param size size of query
+	* @param MaxResponse maximum allowed size of incomming packet
+	* @return OK or FAIL
+	*/
 	char CheckResponse (char *Packet, unsigned char order, unsigned short size, unsigned short MaxResponse);
 
 	/**
-	 * returns index of order in response.
-	 * @param *Packet incomming packet
-	 * @param order order in query
-	 * @param size size of query
-	 * @param MaxResponse maximum allowed size of incomming packet
-	 * @return position or EMPTY
-	 */
+	* returns index of order in response.
+	* @param *Packet incomming packet
+	* @param order order in query
+	* @param size size of query
+	* @param MaxResponse maximum allowed size of incomming packet
+	* @return position or EMPTY
+	*/
 	short FindOrderInResponse(char *Packet, unsigned char order, unsigned short size);
-	
+
 	/**
-	 * Scans incomming packet for errors
-	 * @param *Packet incomming packet
-	 * @param order order in query
-	 * @param size size of query
-	 * @param MaxResponse maximum allowed size of incomming packet
-	 * @param status OK or FAIL
-	 * @return parsed value
-	 */
-	 int ParsePacket (char *Packet, unsigned char order, unsigned short size, unsigned short MaxResponse, char *status) ;
+	* Scans incomming packet for errors
+	* @param *Packet incomming packet
+	* @param order order in query
+	* @param size size of query
+	* @param MaxResponse maximum allowed size of incomming packet
+	* @param status OK or FAIL
+	* @return parsed value
+	*/
+	int ParsePacket (char *Packet, unsigned char order, unsigned short size, unsigned short MaxResponse, char *status) ;
 
-	 
-
-      private:
+private:
 	short my_index(char *str1, char *str2);
+
 };
 
+MUKS::MUKS(BaseDaemon2& base_dmn) {
+	port_path = base_dmn.getDaemonCfg().GetDeviceInfo()->getAttribute<std::string>("path");
+	port_speed = base_dmn.getDaemonCfg().GetDeviceInfo()->getAttribute("speed", 9600);
 
-void MUKS::SetNoData(IPCHandler * ipc)
-{
-	int i;
-
-	for (i = 0; i < ipc->m_params_count; i++)
-		ipc->m_read[i] = SZARP_NO_DATA;
-
+	SetNoData(base_dmn);
+	base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ this->Poll(base_dmn); });
 }
 
-int MUKS::InitComm(const char *Device, long BaudRate, unsigned char DataBits,
+void MUKS::Poll(BaseDaemon2& base_dmn) {
+	char buf[MAX_RESPONSE];
+
+	auto fd = InitComm(8, 2, NO_PARITY);
+
+	if (fd < 0){
+		sz_log(0, "file descriptor <0! crashed");
+		SetNoData(base_dmn);
+		return;
+	}
+	
+	for (auto which_order = 0; which_order < HOW_QUERIES; which_order++) {
+		SendQuery(fd, orders[which_order]);
+
+		usleep(1000*10);
+
+		memset(buf, 0x0, sizeof(buf));
+
+		auto status = OK;
+		auto ResponseStatus = GetResponse(fd, buf);
+
+		if (ResponseStatus <= 0 ) status = FAIL;
+		if (ResponseStatus > MAX_RESPONSE ) status = FAIL;
+		
+		if (status == FAIL) {
+			// or base_dmn.readAt(i).setNoData(); or sth
+			base_dmn.setRead(2* which_order, SZARP_NO_DATA);
+			base_dmn.setRead(2* which_order + 1, SZARP_NO_DATA);
+		} else {
+			auto bfr = ParsePacket(buf, orders[which_order], ResponseStatus, MAX_RESPONSE ,&status);
+
+			sz_log(10, "%s (%s) is %d\n",orders_str1[which_order], orders_str2[which_order],bfr);
+			base_dmn.setRead(2* which_order, (int)(bfr&0xffff));
+			base_dmn.setRead(2* which_order + 1, (int)(bfr>>16));
+		}
+
+		sleep(1);
+	}
+
+	close(fd);
+}
+
+void MUKS::SetNoData(BaseDaemon2& base_dmn)
+{
+	const auto n_params = base_dmn.getDaemonCfg().GetParamsCount();
+	for (unsigned int i = 0; i < n_params; i++) {
+		base_dmn.setRead(i, SZARP_NO_DATA);
+	}
+}
+
+int MUKS::InitComm(unsigned char DataBits,
 	     unsigned char StopBits, unsigned char Parity)
 {
 	int             CommId;
@@ -213,12 +279,12 @@ int MUKS::InitComm(const char *Device, long BaudRate, unsigned char DataBits,
 	long            StopBitsStatus;
 	long            ParityStatus;
 	struct termios  rsconf;
-//	int serial;
-	CommId = open(Device, O_RDWR | O_NDELAY |O_NONBLOCK);
+
+	CommId = open(port_path.c_str(), O_RDWR | O_NDELAY |O_NONBLOCK);
 	if (CommId < 0)
 		return CommId;
 
-	switch (BaudRate) {
+	switch (port_speed) {
 		case 300:
 			BaudRateStatus = B300;
 			break;
@@ -300,299 +366,163 @@ int MUKS::InitComm(const char *Device, long BaudRate, unsigned char DataBits,
 	rsconf.c_cc[VMIN] = 1;
 	rsconf.c_cc[VTIME] = 0;
 	tcsetattr(CommId, TCSANOW, &rsconf);
-//	ioctl(CommId, TIOCMGET, &serial);
-//	serial |= TIOCM_DTR; //DTR is High
-//	serial |= TIOCM_RTS; //RTS is High
-//	ioctl(CommId, TIOCMSET, &serial);
 	return CommId;
 }
 
 int MUKS::GetResponse(int fd, char *Response)
 {
- fd_set rfds;
- struct timeval tv;
- int i,j;
- int retval;
- 
- FD_ZERO(&rfds);
- FD_SET(fd, &rfds);
- tv.tv_sec = 5;
- tv.tv_usec = 0;
- retval = select(fd+1, &rfds, NULL, NULL, &tv);
- if (retval == -1){
- 	perror("select()");
-	return GENERAL_ERROR ;
- }
- else
-     if (retval) {
-	j = 0;
-       	for (i = 0; read(fd, &Response[i], 1) == 1; i++) {
-		usleep(1000);
-		j++ ;
-	}
-	return (j);
-     }
-     else
-     {   return TIMEOUT_ERROR ;
-	    
-     }
+	fd_set rfds;
+	struct timeval tv;
+	int i,j;
+	int retval;
 
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
+	retval = select(fd+1, &rfds, NULL, NULL, &tv);
+	if (retval == -1) {
+		perror("select()");
+		return GENERAL_ERROR;
+	} else if (retval) {
+		j = 0;
+		for (i = 0; read(fd, &Response[i], 1) == 1; i++) {
+			usleep(1000);
+			j++;
+		}
+		return j;
+	} else {
+		return TIMEOUT_ERROR;
+	}
 }
 
 char *MUKS::CreateQuery(unsigned char order)
 {
- char *buffer;
- if (order>100) return NULL ; //Jaki¶ babol
- asprintf(&buffer,"C%02d\r",order);
- return buffer ;
+	if (order > 100)
+		return NULL;
+
+	char *buffer;
+	(void) asprintf(&buffer,"C%02d\r",order);
+	return buffer;
 }
 
 short MUKS::QuerySize(unsigned char order){
-	short len;
-	char *b;
-	b = CreateQuery(order);
-	len = strlen(b);
-	free (b);
-	return (len);
+	char *b = CreateQuery(order);
+	auto len = strlen(b);
+	free(b);
+	return len;
 }
 
 
 void MUKS::SendQuery(int fd,unsigned char order)
 {
- char *buffer;
- buffer = CreateQuery(order);
- write(fd, buffer, sizeof(buffer));
- free (buffer);
+	char *buffer = CreateQuery(order);
+	(void) write(fd, buffer, sizeof(buffer));
+	free(buffer);
 }
 
-
 short MUKS::my_index(char *str1, char *str2){
-	char * str3;
-	short i,max_offset;
-	short index;
-	index = EMPTY;
 	if (!strcmp(str1,str2)) return 0;
 	if (strlen(str1)<=strlen(str2)) return EMPTY;
-	str3=(char *)malloc(sizeof(char)*strlen(str2)+1);
-	max_offset = strlen(str1)-strlen(str2);
-	for (i=0;i<=max_offset;i++){
+
+	short index = EMPTY;
+	char *str3 = (char *)malloc(sizeof(char) * strlen(str2) + 1);
+	auto max_offset = strlen(str1) - strlen(str2);
+	for (unsigned int i = 0; i <= max_offset; i++) {
 		memcpy(str3, (str1+i), strlen(str2));
-		str3[strlen(str2)]=0;
+		str3[strlen(str2)] = 0;
 		if(!strcmp(str3, str2)){
-			index=i;
+			index = i;
 			break;
-                }														        }
-	    free (str3);
-	    return index;
+		}
+	}
+
+	free(str3);
+	return index;
 }
 
 short MUKS::FindOrderInResponse(char *Packet, unsigned char order, unsigned short size){
-	short len;
-	char *buff1;
 	//Protokol wydaje sie miec bledy dlatego sa rozne wyjatki od reul
-	buff1 = CreateQuery(order);
-	buff1[strlen(buff1)]=0;
+	char *buff1 = CreateQuery(order);
+	buff1[strlen(buff1)] = 0;
 	if (size <= strlen(buff1)){
 		free(buff1);
 		return FAIL;
 	}
-	len = my_index(Packet, buff1);
-	if (len<0){ 
+
+	auto len = my_index(Packet, buff1);
+	if (len < 0){ 
 		free (buff1);
 		return FAIL;
 	}
+
 	free(buff1);
 	return len;	
-
 }
 
 char MUKS::CheckResponse (char *Packet, unsigned char order, unsigned short size, unsigned short MaxResponse)
 {
 	if (size == 0) return FAIL;
-	if  (FindOrderInResponse(Packet, order, size) == EMPTY) return FAIL;
-	if ((Packet[size-1]!=0x3E) && (Packet[size-1]!=0x0A)) return FAIL;
-	return OK ;
+	if (FindOrderInResponse(Packet, order, size) == EMPTY) return FAIL;
+	if ((Packet[size-1] != 0x3E) && (Packet[size-1] != 0x0A)) return FAIL;
+	return OK;
 }
 
 /* Parsuje pakiet do postaci liczbowej */
 int MUKS::ParsePacket (char *Packet, unsigned char order, unsigned short size, unsigned short MaxResponse, char *status)
 {
-	char *buffer;
-	char *tmp;
-	 int  b ;
-	short i,j ;
-	short response_offset;
-	char zero_packet; /* Czy mamy do czynienia z pakietem zerowym */
-	char was_here;
-	if (CheckResponse(Packet, order, size, MaxResponse)==FAIL){
+	if (CheckResponse(Packet, order, size, MaxResponse)==FAIL) {
 		*status = FAIL;
 		return 0;
 	}
+
 	*status = OK;
+
 	/* Allokuje tyle pamiêci ile ma pakiet */
-	buffer = (char *)malloc(sizeof(char)*size);
-	memset(buffer,0x0,size);
+	auto buffer = (char *)malloc(sizeof(char) * size);
+	memset(buffer, 0x0, size);
+
 	/* Przepisuje wszystkie warto¶ci pomiêdzy 0xBC które spe³niaj± isdigit  */
-	response_offset = FindOrderInResponse(Packet, order,size);
-	i = QuerySize(order) + response_offset + 1 ;//13/10
-	zero_packet = NO;
-	was_here=NO;
-	if (response_offset > 0) zero_packet = YES;
-	j = 0;
+	auto response_offset = FindOrderInResponse(Packet, order,size);
+	auto i = QuerySize(order) + response_offset + 1 ;//13/10
+	auto zero_packet = NO;
+	auto was_here = NO;
+
+	if (response_offset > 0)
+		zero_packet = YES;
+
+	auto j = 0;
 	/* Jest taki glupi pakiet ktory ma na poczatku 0 a potem ma jakas wartosc albo nie ma nic - wtedy trzeba szukac do pierwszego /13  */
-	while ((i<size)&&(Packet[i]!=0x3E)&&(Packet[i]!=0x0A)&&(Packet[i]!=0x0D)){
-//		fprintf(stderr,"lelo %d %c %x\n", Packet[i],Packet[i],Packet[i]);	
-		if (!isdigit(Packet[i])&&(Packet[i]!='-')&&(Packet[i]!='.')) *status = FAIL;
+	while ((i < size) && (Packet[i] != 0x3E) && (Packet[i] != 0x0A) && (Packet[i] != 0x0D)) {
+		if (!isdigit(Packet[i]) && (Packet[i] != '-') && (Packet[i] != '.')) *status = FAIL;
 		
-		 if (isdigit(Packet[i]) || (Packet[i]=='-')){ /* Pomijamy kropeczki i inne znaki pomiedzy cyferkami  */
-			 was_here = YES;
-			 buffer[j] = Packet[i] ;
-			 j++ ;
+		if (isdigit(Packet[i]) || (Packet[i]=='-')) { /* Pomijamy kropeczki i inne znaki pomiedzy cyferkami  */
+			was_here = YES;
+			buffer[j] = Packet[i];
+			j++;
 		}
-		i++ ;
+
+		i++;
 	}
-	buffer[j] = 0 ;
-//	fprintf(stderr,"lelo %s\n",buffer);
-//	b = (unsigned int)atoi(buffer);
-	b = (int)strtol(buffer, &tmp, 10);
-	if ((zero_packet==YES) && (was_here==NO)){
-		b = 0 ; /* To jest prawdopodobnie przypadek, gdy kociol nie chodzi, ale wartosc moze byc niezerowa! */
+
+	buffer[j] = 0;
+
+	char *tmp;
+	auto b = (int) strtol(buffer, &tmp, 10);
+	if ((zero_packet == YES) && (was_here == NO)){
+		b = 0; /* to jest prawdopodobnie przypadek, gdy kociol nie chodzi, ale wartosc moze byc niezerowa! */
 		free (buffer);
 		return b;
 	}
 	
 	if (tmp[0] != 0) *status = FAIL;
 		
-	free (buffer);
-	return b ;
+	free(buffer);
+	return b;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-
-	DaemonConfig   *cfg;
-	MUKS     *muksinfo;
-	IPCHandler     *ipc;
-	int             fd;
-	int 		ResponseStatus;
-	//int		i;
-	unsigned int	bfr ;
-	char status;
-	char buf[MAX_RESPONSE];
-	unsigned short which_order;
-	unsigned char orders[HOW_QUERIES] ={
-	P012_ORDER, /* CIS W WYLOT /MPa  */ 
-	T014_ORDER, /* TEM W ZASIL /C  */ 
-	P015_ORDER, /* CIS W ZASIL /MPa  */ 
-	T016_ORDER, /* TEM S Z KOTLA /C  */ 
-	P018_ORDER, /* CIS S PALEN /kPa  */ 
-	T019_ORDER, /* TEM W WYLOT /C  */ 
-	F025_ORDER, /* PRZ W WYLOT /m3/s  */ 
-
-	F125_ORDER, /* PRZEP W WYL /kg/s  */ 
-	U225_ORDER, /* MOC /MW  */ 
-	U325_ORDER, /* ENERGIA /GJ */ 
-	U425_ORDER /* MASA /GJ */ 
-	};
-
-	unsigned char orders_str1[][50] ={
-	"P012_ORDER", /* CIS W WYLOT /MPa  */ 
-	"T014_ORDER", /* TEM W ZASIL /C  */ 
-	"P015_ORDER", /* CIS W ZASIL /MPa  */ 
-	"T016_ORDER", /* TEM S Z KOTLA /C  */ 
-	"P018_ORDER", /* CIS S PALEN /kPa  */ 
-	"T019_ORDER", /* TEM W WYLOT /C  */ 
-	"F025_ORDER", /* PRZ W WYLOT /m3/s  */ 
-
-	"F125_ORDER", /* PRZEP W WYL /kg/s  */ 
-	"U225_ORDER", /* MOC /MW  */ 
-	"U325_ORDER", /* ENERGIA /GJ */ 
-	"U425_ORDER" /* MASA /GJ */ 
-	};
-
-	unsigned char orders_str2[][50] ={\
-	  "CIS W WYLOT /MPa", 
-	  "TEM W ZASIL /C",  
-	  "CIS W ZASIL /MPa",  
-	  "TEM S Z KOTLA /C",
-	  "CIS S PALEN /kPa",
-	  "TEM W WYLOT /C",
-	  "PRZ W WYLOT /m3/s",
-
-	  "PRZEP W WYL /kg/s",
-	  "MOC /MW", 
-	  "ENERGIA /GJ",
-	  "MASA /GJ",
-	};
-	
-	cfg = new DaemonConfig("muksdmn");
-
-	if (cfg->Load(&argc, argv)) {
-		sz_log(0, "Error while loading configuration, exiting.");
-		return 1;
-	muksinfo = new MUKS(cfg->GetDevice()->
-				GetFirstUnit()->GetParamsCount(),
-				cfg->GetDevice()->
-				GetFirstUnit()->GetSendParamsCount());
-
-	if (cfg->GetSingle()) {
-		printf("\
-line number: %d\n\
-device: %ls\n\
-params in: %d\n", cfg->GetLineNumber(), cfg->GetDevice()->GetPath().c_str(), muksinfo->m_params_count);
-	}
-	
-	try {
-		ipc = new IPCHandler(m_cfg);
-	} catch(const std::exception& e) {
-		sz_log(0, "Error while initializing IPC: %s, exiting.", e.what());
-		return 1;
-	}
-
-	
-	sz_log(2, "starting main loop");
-	muksinfo->SetNoData(ipc);
-	while (true) {
-		fd = muksinfo->InitComm(SC::S2A(cfg->GetDevice()->GetPath()).c_str(), cfg->GetDevice()->GetSpeed(), 8, 2, NO_PARITY);
-		if (fd<0){
-			sz_log(0, "file descriptor <0! crashed");
-			return 0;
-		}
-		
-		for (which_order=0;which_order<HOW_QUERIES;which_order++){
-			muksinfo->SendQuery(fd, orders[which_order]);
-			if (cfg->GetSingle()){
-				fprintf(stderr,"Sending : %s (%s) Query\n",orders_str1[which_order], orders_str2[which_order]);
-			}
-			usleep(1000*10);
-			memset(buf,0x0,sizeof(buf));
-			ResponseStatus = muksinfo-> GetResponse(fd,buf);
-			if (ResponseStatus <= 0 ) status = FAIL;
-			if (ResponseStatus > MAX_RESPONSE ) status = FAIL;
-			
-			if (status == FAIL){
-				if (cfg->GetSingle()){
-					fprintf(stderr,"FAILED\n");
-				}
-				ipc->m_read[2 * which_order] = SZARP_NO_DATA ;
-				ipc->m_read[2 * which_order + 1] = SZARP_NO_DATA ;
-			}
-			else{
-				bfr = muksinfo->ParsePacket(buf, orders[which_order], ResponseStatus, MAX_RESPONSE,&status);
-				if (cfg->GetSingle()){
-					fprintf(stderr,"%s (%s) is %d\n",orders_str1[which_order], orders_str2[which_order],bfr);
-				}
-				ipc->m_read[2 * which_order]=(int)(bfr&0xffff);
-				ipc->m_read[2 * which_order + 1]=(int)(bfr>>16);
-						      
-			}
-			sleep(1);
-		}
-
-		ipc->GoParcook();
-		sleep(10); //Wait 10s
-		close(fd);
-	}
-//	free (ParsedData);
+	BaseDaemonFactory::Go<MUKS>(argc, argv, "muksdmn");
 	return 0;
 }
