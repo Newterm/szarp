@@ -304,7 +304,8 @@ int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, std::vector<Draw*> dra
 		int ext = wxMax(unitext, wxMax(maxext, minext));
 		ext = wxMax(ext, msn) + line_width;
 
-		d = wxMax(d, ext);
+		int space_around_unit = 20;
+		d = wxMax(d, ext) + space_around_unit;
 
 	} 
 
@@ -328,14 +329,24 @@ int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const
 
 		m_draw = draws[di];
 
-		m_leftmargin += ax_dist;
+		int unitwidth, unitheight, shortwidth;
+		wxString unit = m_draw->GetDrawInfo()->GetUnit();
+		wxString short_name = m_draw->GetDrawInfo()->GetShortName();
+
+		dc->GetTextExtent(unit, &unitwidth, &unitheight);
+		dc->GetTextExtent(short_name, &shortwidth, &unitheight);
+
+		if ( ssi == sd.begin() ) {
+			m_leftmargin = unitwidth + shortwidth;
+		} else {
+			m_leftmargin += ax_dist + unitwidth;
+		}
 
 		SS::iterator next = ssi;
 		next++;
 		if (next == sd.end()) {
 			int w,h;
 			GetSize(&w, &h);
-			w = w - m_leftmargin + ax_dist;
 			SetSize(w, h);
 
 			DrawBackground(dc);
@@ -348,24 +359,30 @@ int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const
 		int x = (int)(arrow_width * 1.2) , y = line_width;
 
 		int textw, texth;
-		DrawUnit(dc, x, y);
 		dc->GetTextExtent(draws[*si]->GetDrawInfo()->GetUnit(), &textw, &texth);
 
 		wxColour pc = dc->GetTextForeground();
 		y = m_topmargin;
+		int half_around_unit = 10;
+		int tmp = m_leftmargin;
 		for (set<int>::reverse_iterator i = (*ssi).rbegin(); i != (*ssi).rend(); i++) {
+			if ( ssi == sd.begin() ) {
+				m_leftmargin = shortwidth + unitwidth;
+			} else {
+				m_leftmargin = tmp;
+			}
+
 			DrawInfo* di = draws[*i]->GetDrawInfo();
 			dc->GetTextExtent(di->GetShortName(), &textw, &texth);
 
 			dc->SetTextForeground(di->GetDrawColor());
 			dc->DrawText(di->GetShortName(), m_leftmargin - 2 * line_width - textw, y - texth - line_width);
 			y -= texth + line_width;
-
+			dc->DrawText(di->GetUnit(), m_leftmargin + half_around_unit, y);
 		}
 		dc->SetTextForeground(pc);
 
 		++ssi;
-		
 	} while (ssi != sd.end());
 
 	return m_leftmargin;
@@ -526,7 +543,7 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 		{
 			if (it->first == r) break;
 			float eps = std::pow(0.1, std::max(r.prec, it->first.prec));
-			if (std::fabs(it->first.min - r.min) < eps && std::fabs(it->first.max - r.max) < eps && it->first.unit == r.unit) // check, if they differ only by precision. If so, change the axis
+			if (std::fabs(it->first.min - r.min) < eps && std::fabs(it->first.max - r.max) < eps) // check, if they differ only by precision. If so, change the axis
 			{
 				if (it->first.prec < r.prec) {
 					r.prec = it->first.prec;
