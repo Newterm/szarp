@@ -4511,11 +4511,6 @@ przegl±daj±cego (<filename>ekrnXXXX.cor</filename> i
 </para></listitem>
 
 <listitem><para>
-<filename>sender_cfg.h</filename> - parser plików konfiguracyjnych programu
-sender (<filename>sender.cfg</filename>.
-</para></listitem>
-
-<listitem><para>
 <filename>ptt_act.h</filename> - parser plików <filename>PTT.act</filename>.
 </para></listitem>
 

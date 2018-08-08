@@ -1,6 +1,5 @@
 opt/szarp/bin/draw3
 opt/szarp/bin/ekstraktor3
-opt/szarp/bin/ipkedit
 opt/szarp/bin/kontroler3
 opt/szarp/bin/raporter3
 opt/szarp/bin/reporter4
@@ -8,7 +7,6 @@ opt/szarp/bin/wxhelp
 opt/szarp/bin/scc
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/common.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/ekstraktor3.mo
-opt/szarp/resources/locales/pl_PL/LC_MESSAGES/ipkedit.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/raporter3.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/draw3.mo
 opt/szarp/resources/locales/pl_PL/LC_MESSAGES/kontroler3.mo
@@ -28,7 +26,6 @@ opt/szarp/resources/wx/icons/back.xpm
 opt/szarp/resources/wx/icons/draw3.ico
 opt/szarp/resources/wx/icons/forward.xpm
 opt/szarp/resources/wx/icons/szarp16.png
-opt/szarp/resources/wx/icons/ssc.ico
 opt/szarp/resources/wx/icons/conf_icon16.xpm
 opt/szarp/resources/wx/icons/dysp_icon16.xpm
 opt/szarp/resources/wx/icons/greenexit.xpm

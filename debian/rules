@@ -74,7 +74,8 @@ NO_CB_PACK_OPTS ?= \
 		-pszarp-viewer \
 		-pszarp-xsltd \
 		-pszarp-dbg-symbols \
-		-pszarp-filler2
+		-pszarp-filler2	\
+		-pszarp-ipkedit
 
 ifneq ($(NO_IKS), 1)
 	NO_CB_PACK_OPTS += -pszarp-iks 
@@ -234,4 +235,4 @@ source: sanity_check clean
 
 all: source binary
 
-.PHONY: build clean binary install-indep source indstall-doc-html install-doc-pdf build-indep binary-arch binary-arch-common binary-no-cb binary-cb all sanity_check create-indep
+.PHONY: build clean binary install-indep source install-doc-html install-doc-pdf build-indep binary-arch binary-arch-common binary-no-cb binary-cb all sanity_check create-indep

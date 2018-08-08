@@ -204,6 +204,34 @@ def check_for_daemons():
 				if "testdmn" not in daemon:
 					check_script(script_path)
 
+		check_daemons_with_base_connection(device, daemon)
+
+def check_daemons_with_base_connection(device, daemon):
+	# check if daemons with base connection got path / extra:tcp-ip / extra:atc-ip
+	daemons_to_check = ("k601dmn", "kamsdmn", "sbusdmn")
+	base_conn_attrs = (add_ns(ns["extra"], "tcp-ip"), add_ns(ns["extra"], "atc-ip"), "path")
+	curr_daemon_attrs = []
+	for single_daemon in daemons_to_check:
+		if os.path.basename(daemon).startswith(single_daemon):
+
+			for attr in base_conn_attrs:
+				if (device.get(attr)):
+					curr_daemon_attrs.append(attr)
+
+			intersec = len(set(base_conn_attrs).intersection(curr_daemon_attrs))
+
+			# throw this code away when sbusdmn has atc-ip handling
+			if os.path.basename(daemon).startswith("sbusdmn"):
+				extra_atc_ip = device.get(add_ns(ns["extra"], "atc-ip"))
+				if extra_atc_ip != None:
+					printerr("sbusdmn can't have extra:atc-ip attribute !")
+
+			if intersec == 0:
+				printerr("%s must have one of attributes: %s ! (line %d)" % (single_daemon, base_conn_attrs, device.sourceline))
+			elif intersec > 1:
+				printerr("%s must have ONLY ONE from: %s ! (line %d)" % (single_daemon, base_conn_attrs, device.sourceline))
+
+
 def check_base(param):
 	param_path = param.get(add_ns(ns['extra'], "param"))
 	if param_path is not None:

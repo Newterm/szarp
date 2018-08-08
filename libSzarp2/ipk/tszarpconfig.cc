@@ -49,107 +49,13 @@
 #include "szarp_config.h"
 #include "parcook_cfg.h"
 #include "line_cfg.h"
-#include "ptt_act.h"
-#include "sender_cfg.h"
-#include "raporter.h"
-#include "ekrncor.h"
 #include "liblog.h"
-#include "insort.h"
 #include "conversion.h"
-#include "definable_parser.h"
 #include "szbbase.h"
 #include "loptcalculate.h"
 
 
 using namespace std;
-
-#define FREE(x)	if (x != NULL) free(x)
-
-/**
- * Swap bit first (from right, from 0) with second in data. */
-void
-swap_bits(unsigned long *data, int first, int second)
-{
-#define GET_BIT(d,i) (((d) & (1UL << (i))) && 1)
-#define SET_BIT1(d,i) (d) |= (1UL << i)
-#define SET_BIT0(d,i) (d) &= ~(1UL << i)
-    int fb, sb;
-    fb = GET_BIT(*data, first);
-    sb = GET_BIT(*data, second);
-    if (fb)
-	SET_BIT1(*data, second);
-    else
-	SET_BIT0(*data, second);
-    if (sb)
-	SET_BIT1(*data, first);
-    else
-	SET_BIT0(*data, first);
-   sz_log(9, "swap_bits(): data 0x%lx first %d (%d) second %d (%d)", *data, first, fb, second, sb);
-#undef GET_BIT
-#undef SET_BIT1
-#undef SET_BIT0
-}
-
-/**
- * Data type for third argument of comp_draws and swap_draws functions.
- * @see comp_draws
- * @see swap_draws
- */
-struct sort_draws_data_str {
-    tDraw *draws;		/**< Table of draws. */
-    unsigned long *id;		/**< Pointer to draws' window identifier. */
-};
-typedef struct sort_draws_data_str sort_draws_data_type;
-
-/**
- * Function used to compare draws, @see insort.
- */
-int
-comp_draws(int a, int b, void *data)
-{
-    tDraw *draws = ((sort_draws_data_type *) data)->draws;
-
-    if (draws[a].data >= 0) {
-	if (draws[b].data >= 0) {
-	    if (draws[a].data < draws[b].data)
-		return -1;
-	    if (draws[a].data > draws[b].data)
-		return 1;
-	    if (a < b)
-		return -1;
-	    if (a > b)
-		return 1;
-	    return 0;
-	} else
-	    return -1;
-    } else if (draws[b].data >= 0)
-	return 1;
-    else {
-	if (a < b)
-	    return -1;
-	if (a < b)
-	    return 1;
-    }
-    return 0;
-}
-
-/**
- * Function used to swap draws, @see insort.
- */
-void
-swap_draws(int a, int b, void *data)
-{
-    tDraw tmp;
-    tDraw *draws = ((sort_draws_data_type *) data)->draws;
-    unsigned long *id = ((sort_draws_data_type *) data)->id;
-
-    memcpy(&tmp, &draws[a], sizeof(tDraw));
-    memcpy(&draws[a], &draws[b], sizeof(tDraw));
-    memcpy(&draws[b], &tmp, sizeof(tDraw));
-
-    swap_bits(id, a, b);
-}
-
 
 TSzarpConfig::TSzarpConfig() :
 	devices(NULL), defined(NULL),

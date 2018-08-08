@@ -27,7 +27,6 @@ libSzarp_la_SOURCES = \
                       argsmgr.cpp \
                       cmdlineparser.cpp \
                       loghandlers.cpp \
-                      date.cc \
                       msgerror.cc \
                       msgtools.cc \
                       daemon.cc \
@@ -45,7 +44,6 @@ noinst_HEADERS = \
                  $(INCLUDE_DIR)/argsmgr.h \
                  $(INCLUDE_DIR)/cmdlineparser.h \
                  $(INCLUDE_DIR)/loghandlers.h \
-                 $(INCLUDE_DIR)/date.h \
                  $(INCLUDE_DIR)/msgerror.h \
                  $(INCLUDE_DIR)/msgtools.h \
                  $(INCLUDE_DIR)/daemon.h \

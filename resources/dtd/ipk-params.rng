@@ -505,6 +505,11 @@
 			</attribute>
 		</optional>
 		<optional>
+			<attribute name="wait_timeout" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
+				<data type="integer" />
+			</attribute>
+		</optional>
+		<optional>
 			<attribute name="proto" ns="http://www.praterm.com.pl/SZARP/ipk-extra">
 				<choice>
 					<value>zet</value>

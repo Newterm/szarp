@@ -26,7 +26,6 @@
 #include "dbmgr.h"
 #include "conversion.h"
 #include "szbextr/extr.h"
-#include "sz4/api.h"
 #include "sz4/util.h"
 #include "sz4/exceptions.h"
 #include "szarp_base_common/lua_utils.h"

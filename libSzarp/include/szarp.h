@@ -23,13 +23,11 @@
 
 #include "szdefines.h"
 
-#include "date.h"
 #include "execute.h"
 #include "libpar.h"
 #include "msgerror.h"
 #include "msgtools.h"
 #include "msgtypes.h"
-#include "names.h"
 
 #endif // __SZARP_H__
 

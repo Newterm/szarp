@@ -139,6 +139,7 @@
   <xs:attribute name="expire" type="xs:integer"/>
   <xs:attribute name="limits"/>
   <xs:attribute name="const_speed" type="xs:integer"/>
+  <xs:attribute name="wait_timeout" type="xs:integer"/>
   <xs:attribute name="proto">
     <xs:simpleType>
       <xs:restriction base="xs:token">

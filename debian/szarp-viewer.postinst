@@ -4,22 +4,11 @@
 
 set -e;
 
-addsudoentry() {
-	cat >> /etc/sudoers << EOF
-#ENTRY ADDED BY SZARP-VIEWER
-#DO NOT MODIFY
-ALL     ALL=(root) NOPASSWD: /opt/szarp/bin/ssc
-#END OF SZARP-VIEWER ENTRY
-EOF
-
-}
-
 configure() {
 	CRON=/etc/cron.d/szarp-viewer
 	UPDATE_METHOD=;
 	SZARP_SCRIPTER="/opt/szarp/bin/szarp_scripter";
 
-	addsudoentry;
 	/opt/szarp/bin/config_deb Konfiguracja /etc/szarp;
 
 	db_get szarp-viewer/update_method;

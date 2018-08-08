@@ -54,6 +54,13 @@ public:
 		sz4::pv_set_value(*param, value);
 	}
 
+	template <class T> void set_no_data(size_t index, const T& t) {
+		szarp::ParamValue* param = m_pubs.add_param_values();
+		param->set_param_no(index + m_pubs_idx);
+		param->set_is_nan(true);
+		sz4::pv_set_time(*param, t);
+	}
+
 	szarp::ParamValue& get_value(size_t i);
 
 	template <class VT> sz4::value_time_pair<VT, sz4::nanosecond_time_t> get_send(size_t i, int32_t prec_adj) {

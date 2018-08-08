@@ -11,10 +11,6 @@ if [ "x$MAN_UPDATE_SCRIPT" != "x" -a -e $MAN_UPDATE_SCRIPT ]; then
 	rm $MAN_UPDATE_SCRIPT;
 fi	
 
-sed -i.szarp-viewer \
-	-e '/#ENTRY ADDED BY SZARP-VIEWER/,/#END OF SZARP-VIEWER ENTRY/d' \
-	/etc/sudoers || true;
-
 #DEBHELPER#
 
 exit 0

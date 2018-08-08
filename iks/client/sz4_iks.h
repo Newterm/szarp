@@ -6,7 +6,6 @@
 #include "sz4_iks_param_info.h"
 
 #include "sz4/defs.h"
-#include "sz4/api.h"
 
 #include "iks_cmd_id.h"
 #include "sz4_connection_mgr.h"
