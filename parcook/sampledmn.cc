@@ -48,11 +48,11 @@
 
 class SampleDaemon {
 public:
-	SampleDaemon(BaseDaemon2& _base_dmn) {
-		_base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ Read(base_dmn); });
+	SampleDaemon(BaseDaemon& _base_dmn) {
+		_base_dmn.setCycleHandler([this](BaseDaemon& base_dmn){ Read(base_dmn); });
 	}
 
-	void Read(BaseDaemon2& base_dmn)
+	void Read(BaseDaemon& base_dmn)
 	{
 		const auto params_count = base_dmn.getDaemonCfg().GetParamsCount();
 		for (unsigned int i=0; i < params_count; ++i)

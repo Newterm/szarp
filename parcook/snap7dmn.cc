@@ -100,7 +100,7 @@ public:
 class s7map_val
 {
 public:
-	s7map_val() : lsw_ind(-1), msw_ind(-1), lsw_param(NULL), msw_param(NULL) {};
+	s7map_val() : lsw_ind(-1), msw_ind(-1), lsw_param(nullptr), msw_param(nullptr) {};
 	
 
 	void set_msw_ind(int ind) { msw_ind = ind; };
@@ -109,33 +109,34 @@ public:
 	int lsw_ind;
 	int msw_ind;
 
-	TParam* lsw_param;
-	TParam* msw_param;
+	IPCParamInfo* lsw_param;
+	IPCParamInfo* msw_param;
 };
 
 
-class Snap7Daemon : public BaseDaemon
+class Snap7Daemon
 {
 public:
 	typedef std::map<s7map_key, s7map_val> s7_db_map;
 	typedef std::pair<s7map_key, s7map_val> s7_db_pair;
 
-	Snap7Daemon() : BaseDaemon("snap7dmn") {
+	Snap7Daemon(BaseDaemon& base_dmn) {
 		s7client = Cli_Create();
+		ParseConfig(base_dmn.getDaemonCfg());
+		base_dmn.setCycleHandler([this](BaseDaemon& base_dmn){ Read(base_dmn); });
 	};
-	virtual ~Snap7Daemon() {};
 
 	/** 
 	 * @brief Reads data from device
 	 */
-	virtual int Read();
+	void Read(BaseDaemon& base_dmn);
 protected:
-	virtual int ParseConfig(DaemonConfig * cfg);
+	void ParseConfig(const DaemonConfigInfo& cfg);
 
-	int ConfigureParam(int param_ind, xmlNodePtr node, TParam* p);
+	void ConfigureParam(int param_ind, IPCParamInfo* p);
 
-	int ReadDB(int db, s7_db_map& ops);
-	int DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* data);
+	int ReadDB(BaseDaemon& base_dmn, int db, s7_db_map& ops);
+	int DBVal(BaseDaemon& base_dmn, const s7map_key& vkey, s7map_val& vval, int start, char* data);
 
 	S7Object s7client;
 	std::string address;
@@ -147,122 +148,31 @@ protected:
 	char buffer[512];
 };
 
-int Snap7Daemon::ParseConfig(DaemonConfig * cfg)
+void Snap7Daemon::ParseConfig(const DaemonConfigInfo& cfg)
 {
-	xmlXPathContextPtr xp_ctx = xmlXPathNewContext(m_cfg->GetXMLDoc());
-	xmlNodePtr node = m_cfg->GetXMLDevice();
-	xp_ctx->node = node;
-
-	int ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "ipk", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-	if (-1 == ret) {
-		sz_log(1, "Cannot register namespace %s", SC::S2U(IPK_NAMESPACE_STRING).c_str());
-		return 1;
-	}
-
-	ret = xmlXPathRegisterNs(xp_ctx, BAD_CAST "extra", BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (-1 == ret) {
-		sz_log(1, "Cannot register namespace %s", IPKEXTRA_NAMESPACE_STRING);
-		return 1;
-	}
-
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (prop == NULL) {
-		sz_log(1, "No attribute address given in line %ld", xmlGetLineNo(node));
-		return 1;
-	}
-	address = (char*)prop;
-	xmlFree(prop);	
-
-	rack = 0;
-	prop = xmlGetNsProp(node, BAD_CAST("rack"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (prop == NULL) {
-		sz_log(2, "No attribute rack given, assuming default %d (line %ld)", rack, xmlGetLineNo(node));
-	}
-	else {
-		rack = boost::lexical_cast<int>(prop);
-		xmlFree(prop);	
-	}
-
-	slot = 2;
-	prop = xmlGetNsProp(node, BAD_CAST("slot"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (prop == NULL) {
-		sz_log(2, "No attribute slot given, assuming default %d (line %ld)", slot, xmlGetLineNo(node));
-	}
-	else {
-		slot = boost::lexical_cast<int>(prop);
-		xmlFree(prop);	
-	}
+	auto device = cfg.GetDeviceInfo();
+	address = device->getAttribute<std::string>("extra:address");
+	rack = device->getAttribute<int>("extra:rack", 0);
+	slot = device->getAttribute<int>("extra:slot", 2);
 
 	sz_log(9, "Configured with address: %s, rack: %d, slot: %d", address.c_str(), rack, slot);
 
-	TUnit* u = cfg->GetDevice()->GetFirstUnit();
-	TParam *p = u->GetFirstParam();
-	for (int i = 1; i <= u->GetParamsCount(); i++) {
-		char *expr;
-		ret = asprintf(&expr, ".//ipk:param[position()=%d]", i);
-		if (-1 == ret) {
-			sz_log(1, "Cannot allocate XPath expression for param number %d", i);
-			return 1;
+	int i = 0;
+	for (auto unit: cfg.GetUnits()) {
+		for (auto param: unit->GetParams()) {
+			ConfigureParam(i++, param);
 		}
-		xmlNodePtr pnode = uxmlXPathGetNode(BAD_CAST expr, xp_ctx, false);
-		ASSERT(pnode);
-		free(expr);
-
-		if (ConfigureParam(i, pnode, p))
-			return 1;
-
-		p = p->GetNext();
 	}
-
-	return 0;
 }
 
-int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TParam* p)
+void Snap7Daemon::ConfigureParam(int ind, IPCParamInfo* p)
 {
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("db"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (NULL == prop) {
-		sz_log(1, "No attribute db given for param: %s in line %ld",
-				SC::S2U(p->GetName()).c_str(),
-			       	xmlGetLineNo(node));
-		return 1;
-	}
-	int db = boost::lexical_cast<int>((char*)prop);
-	xmlFree(prop);
-
+	int db = p->getAttribute<int>("extra:db");
 	s7_db_map& vmap = m_params_map[db];
 
-	prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (NULL == prop) {
-		sz_log(1, "No attribute address given for param: %s in line %ld",
-				SC::S2U(p->GetName()).c_str(),
-			       	xmlGetLineNo(node));
-		return 1;
-	}
-	int address = boost::lexical_cast<int>((char*)prop);
-	xmlFree(prop);	
-
-	prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-	if (NULL == prop) {
-		sz_log(1, "No attribute val_type given for param: %s in line %ld",
-				SC::S2U(p->GetName()).c_str(),
-			       	xmlGetLineNo(node));
-		return 1;
-	}
-	std::string val_type = (char*)prop;
-	xmlFree(prop);
-
-	std::string val_op;
-	if (val_type != "short") {
-		prop = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST IPKEXTRA_NAMESPACE_STRING);
-		if (NULL == prop) {
-			sz_log(1, "No attribute val_op given for param: %s in line %ld",
-					SC::S2U(p->GetName()).c_str(),
-					xmlGetLineNo(node));
-			return 1;
-		}
-		val_op = (char*)prop;
-		xmlFree(prop);
-	}
+	int address = p->getAttribute<int>("extra:address");
+	auto val_type = p->getAttribute<std::string>("extra:val_type");
+	auto val_op = p->getAttribute<std::string>("extra:val_op");
 
 	sz_log(9, "ConfigureParam param %s db: %d, address: %d, val_type: %s",
 		       	SC::S2U(p->GetName()).c_str(),
@@ -277,31 +187,29 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TParam* p)
 			s7map_val& mval = vmap[nkey];
 			mval.set_lsw_ind(ind - 1);
 			mval.lsw_param = p;
+		} else {
+			std::string error_str = "Could not configure param, overlaping mapping for db: ";
+			error_str += std::to_string(db);
+			error_str += ", addr: ";
+			error_str += std::to_string(address);
+			error_str += ", type: ";
+			error_str += val_type;
+			throw std::runtime_error(std::move(error_str));
 		}
-		else {
-			sz_log(1, "Overlaping mapping for db: %d, addr: %d wth: addr: %d type: %d",
-				db, address, it->first.address, it->first.vtype);
-			return 1;
-		}
-	}
-	else {
+	} else {
 		s7map_key::Type vt;
 	       	if (val_type == "integer") {
 			vt = s7map_key::INTEGER;
-		}
-		else if (val_type == "float") {
+		} else if (val_type == "float") {
 			vt = s7map_key::FLOAT;
-		}
-		else {
-			sz_log(1, "Unrecognized val_type");
-			return 1;
+		} else {
+			throw std::runtime_error("Could not configure param (unrecognized val_type)");
 		}
 
 		s7map_key nkey(vt, address);
 		auto iret = vmap.find( nkey );
 		if (iret != vmap.end() && iret->first != nkey) {
-			sz_log(1, "ERROR: overlaping mappings in configuration");
-			return 1;
+			throw std::runtime_error("Could not configure param (overlaping mappings in configuration)");
 		}
 
 		s7map_val& mval = vmap[nkey];
@@ -309,21 +217,16 @@ int Snap7Daemon::ConfigureParam(int ind, xmlNodePtr node, TParam* p)
 		if (val_op == "LSW") {
 			mval.set_lsw_ind(ind - 1);
 			mval.lsw_param = p;
-		}
-		else if (val_op == "MSW" ) {
+		} else if (val_op == "MSW" ) {
 			mval.set_msw_ind(ind - 1);
 			mval.msw_param = p;
-		}
-		else {
-			sz_log(1, "Wrong argument for attributte val_op");
-			return 1;
+		} else {
+			throw std::runtime_error("Could not configure param (wrong argument for attributte val_op)");
 		}
 	}
-
-	return 0;
 }
 
-int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* data)
+int Snap7Daemon::DBVal(BaseDaemon& base_dmn, const s7map_key& vkey, s7map_val& vval, int start, char* data)
 {
 	short* psv;
 	int* piv;
@@ -333,15 +236,15 @@ int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* 
 		case s7map_key::SHORT:
 			psv = reinterpret_cast<short*>(&data[vkey.address - start]);
 			if (vval.lsw_ind != -1)
-				Set(vval.lsw_ind, *psv);
+				base_dmn.setRead(vval.lsw_ind, *psv);
 			return 0;
 		case s7map_key::INTEGER:
 			piv = reinterpret_cast<int*>(&data[vkey.address - start]);
 			if (vval.lsw_ind != -1) {
-				Set(vval.lsw_ind, *piv & 0xFFFF);
+				base_dmn.setRead(vval.lsw_ind, *piv & 0xFFFF);
 			}
 			if (vval.msw_ind != -1) {
-				Set(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
+				base_dmn.setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
 			}
 			return 0;
 		case s7map_key::FLOAT:
@@ -354,10 +257,10 @@ int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* 
 			}
 			piv = reinterpret_cast<int*>(&fv);
 			if (vval.lsw_ind != -1) {
-				Set(vval.lsw_ind, *piv & 0xFFFF);
+				base_dmn.setRead(vval.lsw_ind, *piv & 0xFFFF);
 			}
 			if (vval.msw_ind != -1) {
-				Set(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
+				base_dmn.setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
 			}
 			return 0;
 		default:
@@ -365,7 +268,7 @@ int Snap7Daemon::DBVal(const s7map_key& vkey, s7map_val& vval, int start, char* 
 	}
 }
 
-int Snap7Daemon::ReadDB(int db, s7_db_map& ops)
+int Snap7Daemon::ReadDB(BaseDaemon& base_dmn, int db, s7_db_map& ops)
 {
 	int start_address = -1;
 	int end_address = -1;
@@ -392,7 +295,7 @@ int Snap7Daemon::ReadDB(int db, s7_db_map& ops)
 
 
 	for (auto it = ops.begin(); it != ops.end(); it++) {
-		int r = DBVal(it->first, it->second, start_address, buffer);
+		int r = DBVal(base_dmn, it->first, it->second, start_address, buffer);
 		if (r)
 			return r;
 	}
@@ -401,7 +304,7 @@ int Snap7Daemon::ReadDB(int db, s7_db_map& ops)
 	return 0;
 }
 
-int Snap7Daemon::Read()
+void Snap7Daemon::Read(BaseDaemon& base_dmn)
 {
 	int ret;
 	int connected = 0;
@@ -410,39 +313,22 @@ int Snap7Daemon::Read()
 			ret = Cli_ConnectTo(s7client, address.c_str(), rack, slot);
 			if (ret) {
 				sz_log(2, "Cannot connect to: %s", address.c_str());
-				return 1;
+				return;
 			}
 		}
 
-		ret = ReadDB(it->first, it->second);
+		ret = ReadDB(base_dmn, it->first, it->second);
 		if (ret) {
-			return 1;
+			return;
 		}
 	}
 
 
-	return 0;
+	return;
 }
 
 int main(int argc, const char *argv[])
 {
-	Snap7Daemon dmn;
-
-	sz_log(1, "Starting %s", dmn.Name());
-
-	if( dmn.Init( argc , argv ) ) {
-		sz_log(0,"Cannot start %s daemon", dmn.Name());
-		return 1;
-	}
-
-	sz_log(8, "Initialization done");
-
-	for(;;)
-	{
-		dmn.Read();
-		dmn.Transfer();
-		dmn.Wait();
-	}
-
+	BaseDaemonFactory::Go<Snap7Daemon>(argc, argv, "kamsdmn");
 	return 0;
 }

@@ -111,12 +111,12 @@ public :
 	/**
 	 * @param params number of params to read
 	 */
-	DbDaemon(BaseDaemon2& base_dmn);
+	DbDaemon(BaseDaemon& base_dmn);
 	~DbDaemon();
 
 	void ParseConfig(const DaemonConfigInfo &dmn);
 
-	void Read(BaseDaemon2& base_dmn);
+	void Read(BaseDaemon& base_dmn);
 
 protected :
 	SZARP_PROBE_TYPE GetProbeType(IPCParamInfo *param);
@@ -133,7 +133,7 @@ protected:
 	std::map<std::string, SZARP_PROBE_TYPE> m_probe_type_map;
 };
 
-DbDaemon::DbDaemon(BaseDaemon2& base_dmn)
+DbDaemon::DbDaemon(BaseDaemon& base_dmn)
 {
 	auto& cfg = base_dmn.getDaemonCfg();
 	m_params_count = cfg.GetParamsCount();
@@ -152,7 +152,7 @@ DbDaemon::DbDaemon(BaseDaemon2& base_dmn)
 
 	ParseConfig(base_dmn.getDaemonCfg());
 
-	base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ Read(base_dmn); });
+	base_dmn.setCycleHandler([this](BaseDaemon& base_dmn){ Read(base_dmn); });
 }
 
 DbDaemon::~DbDaemon() 
@@ -255,7 +255,7 @@ void DbDaemon::ParseConfig(const DaemonConfigInfo &dmn)
 	ConfigureProbers();
 }
 
-void DbDaemon::Read(BaseDaemon2& base_dmn)
+void DbDaemon::Read(BaseDaemon& base_dmn)
 {
 	m_last = time(NULL);
 

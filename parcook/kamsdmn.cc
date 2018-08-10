@@ -68,7 +68,7 @@ bool single;
  * (if 'extra:tcp-ip' and optionally 'extra:tcp-data-port' and 'extra:tcp-cmd-port' are declared)
  */
 class kams_daemon: public ConnectionListener {
-	BaseDaemon2& base_dmn;
+	BaseDaemon& base_dmn;
 
 public:
 	typedef enum {MODE_B300, MODE_B1200_EVEN, MODE_B1200} SerialMode;
@@ -81,7 +81,7 @@ public:
 		SZ_INHERIT_CONSTR(NoDataException, KamsDmnException)
 	};
 
-	kams_daemon(BaseDaemon2& _base_dmn): base_dmn(_base_dmn),
+	kams_daemon(BaseDaemon& _base_dmn): base_dmn(_base_dmn),
 			m_state(SET_COMM_WRITE),
 			m_read_mode(MODE_B1200_EVEN),
 			m_chars_written(0),
@@ -97,7 +97,7 @@ public:
 		m_event_base = event_base_new(); // TODO: use scheduler
 		ParseConfig();
 		StartDo();
-		base_dmn.setCycleHandler([this](BaseDaemon2&){ Do(); });
+		base_dmn.setCycleHandler([this](BaseDaemon&){ Do(); });
 	}
 
 	~kams_daemon()

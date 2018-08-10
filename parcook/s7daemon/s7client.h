@@ -39,15 +39,11 @@
 #include <snap7.h>
 #include <string>
 
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include "xmlutils.h"
-
 #include "s7qmap.h"
 
 #include "liblog.h"
 #include "../base_daemon.h"
+#include "szarp_config.h"
 
 class S7Client 
 {
@@ -62,10 +58,10 @@ public:
 	~S7Client()
 	{ Cli_Destroy(&_s7client); }
 
-	bool ConfigureFromXml( xmlNodePtr& node );
-	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
-	bool ConfigureParamFromXml( unsigned long int idx, TSendParam* p, xmlNodePtr& node );
-	S7QueryMap::S7Param ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
+	void Configure(const DaemonConfigInfo&);
+	void ConfigureParam(unsigned long int idx, IPCParamInfo*);
+	void ConfigureSend(unsigned long int idx, SendParamInfo*);
+	S7QueryMap::S7Param ConfigureNode(unsigned long int idx, TAttribHolder*);
 
 	bool Connect();
 	bool Reconnect();

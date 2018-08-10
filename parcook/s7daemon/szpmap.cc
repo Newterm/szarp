@@ -1,111 +1,61 @@
 #include "szpmap.h"
 
-SzParamMap::SzParam SzParamMap::ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node ) 
+SzParamMap::SzParam SzParamMap::ConfigureNode(unsigned long int idx, TAttribHolder *node)
 {	
-	sz_log(10, "SzParamMap::ConfigureParamFromXml");
-
-	/* val_type */
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("val_type"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(1, "No attribute val_type given for param in line %ld",
-			       	xmlGetLineNo(node));
-		return SzParam();
-	}
-	std::string val_type = std::string((char*)prop);
-	xmlFree(prop);
-
-	/* val_op */
-	std::string val_op("");
-	prop = xmlGetNsProp(node, BAD_CAST("val_op"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(2, "No attribute val_op given for param in line %ld",
-			       	xmlGetLineNo(node));
-	} else {
-		val_op = std::string((char*)prop);
-		xmlFree(prop);
-	}
-
-	/* address */
-	prop = xmlGetNsProp(node, BAD_CAST("address"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(1, "No attribute address given for param in line %ld",
-			       	xmlGetLineNo(node));
-		return SzParam();
-	}
-	int address = boost::lexical_cast<int>((char*)prop);
-	xmlFree(prop);
-
+	std::string val_type = node->getAttribute<std::string>("extra:val_type");
+	std::string val_op = node->getAttribute<std::string>("extra:val_op", "");
+	int address = node->getAttribute<int>("extra:address");
 	return SzParam(address, val_type, val_op, 0);
 }
 
-bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xmlNodePtr& node ) 
+void SzParamMap::ConfigureSend(unsigned long int idx, SendParamInfo *s)
 {	
-	sz_log(10, "SzParamMap::ConfigureParamFromXml(TSendParam)");
+	SzParam szp = ConfigureNode(idx, s);
+	if (!szp.isValid())
+		throw std::runtime_error("Could not configure send! Check previous logs!");
 
-	SzParam szp = ConfigureParamFromXml(idx, node);
-	if (!szp.isValid()) return false;
-
-	xmlChar* prop = xmlGetNsProp(node, BAD_CAST("min"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(2, "No attribute min given for param in line %ld",
-			       	xmlGetLineNo(node));
-	} else {
-		szp.setMin(boost::lexical_cast<double>((char*)prop));
+	if (auto min_val = s->getOptAttribute<double>("extra:min")) {
+		szp.setMin(*min_val);
 		szp.setHasMin(true);
-		xmlFree(prop);
 	}
-	
-	prop = xmlGetNsProp(node, BAD_CAST("max"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(2, "No attribute max given for param in line %ld",
-			       	xmlGetLineNo(node));
-	} else {
-		szp.setMax(boost::lexical_cast<double>((char*)prop));
+
+	if (auto max_val = s->getOptAttribute<double>("extra:max")) {
+		szp.setMax(*max_val);
 		szp.setHasMax(true);
-		xmlFree(prop);
 	}
 
 	sz_log(7, "SzParam::min = %f", szp.getMin());
 	sz_log(7, "SzParam::max = %f", szp.getMax());
 
 	if (szp.getMin() > szp.getMax()) {
-		sz_log(1, "Configuration error: min > max");
-		return false;
+		throw std::runtime_error("Configuration error: min > max");
 	}
 
 	/* extra:prec is required for sending floats */
-	prop = xmlGetNsProp(node, BAD_CAST("prec"), BAD_CAST(IPKEXTRA_NAMESPACE_STRING));
-	if (NULL == prop) {
-		sz_log(1, "No attribute prec (required for float) given for param in line %ld",
-			       	xmlGetLineNo(node));
-
-		if (szp.isFloat()) return false;
-
-	} else {
-		szp.setPrec(boost::lexical_cast<int>((char*)prop));
-		xmlFree(prop);
+	if (auto prec = s->getOptAttribute<int>("extra:prec")) {
+		szp.setPrec(*prec);
+	} else if (szp.isFloat()) {
+		throw std::runtime_error("No attribute prec (required for float) given for send");
 	}
 
 	_params[idx] = szp;
 	_send_params[idx] = s;
-
-	return true;
 }
 
-bool SzParamMap::ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node ) 
+void SzParamMap::ConfigureParam(unsigned long int idx, IPCParamInfo *p)
 {	
 	sz_log(10, "SzParamMap::ConfigureParamFromXml(TParam)");
 
-	SzParam szp = ConfigureParamFromXml(idx, node);
-	if (!szp.isValid()) return false;
+	SzParam szp = ConfigureNode(idx, p);
+	if (!szp.isValid())
+		throw std::runtime_error("Could not configure param. Check previous logs.");
 	
 	szp.setPrec(p->GetPrec());
 
 	_params[idx] = szp;
-	return true;
 }
 
-void SzParamMap::AddParam( unsigned long int idx, SzParam param ) 
+void SzParamMap::AddParam(unsigned long int idx, SzParam param) 
 {
 	_params[idx] = param;
 }

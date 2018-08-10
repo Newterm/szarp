@@ -25,9 +25,6 @@
 
 /** 
  * @file s7dmn.h
- * @brief Extends BaseDaemon and lends its database write utility method to
- * lower level modules (S7 client and SZARP param map).
- *
  * Configures both the S7 controller client and SZARP params map. Implements
  * main read/write sequence and loop.
  *
@@ -39,24 +36,28 @@
 #include "s7client.h"
 #include "szpmap.h"
 
-class S7Daemon : public BaseDaemon
+class BaseDaemon;
+
+class S7Daemon
 {
 public:
-	S7Daemon() : BaseDaemon("s7dmn"), _dumpHex(false) {};
+	S7Daemon(BaseDaemon& _base_dmn);
 
-	virtual ~S7Daemon() {};
+	void Read();
+	void Transfer();
 
-	virtual int Read();
-	virtual void Transfer();
-
+	/*
 	void setDumpHex( bool value ) 
 	{ _dumpHex = value; }
 
 	bool isDumpHex()
 	{ return _dumpHex; }
+	*/
 
 protected:
-	virtual int ParseConfig(DaemonConfig * cfg);
+	void ParseConfig(const DaemonConfigInfo &cfg);
+
+	BaseDaemon& base_dmn;
 	
 	bool _dumpHex;
 

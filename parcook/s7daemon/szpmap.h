@@ -34,10 +34,6 @@
  * @date 2015-08-25
  */
 
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-
 #include <map>
 #include <vector>
 #include <string>
@@ -137,9 +133,9 @@ public:
 		bool _has_max;
 	};
 
-	bool ConfigureParamFromXml( unsigned long int idx, TParam* p, xmlNodePtr& node );
-	bool ConfigureParamFromXml( unsigned long int idx, TSendParam* s, xmlNodePtr& node );
-	SzParam ConfigureParamFromXml( unsigned long int idx, xmlNodePtr& node );
+	void ConfigureParam(unsigned long int idx, IPCParamInfo*);
+	void ConfigureSend(unsigned long int idx, SendParamInfo*);
+	SzParam ConfigureNode( unsigned long int idx, TAttribHolder *);
 	
 	/** Used for testing only */
 	void AddParam( unsigned long int idx, SzParam param );
@@ -460,7 +456,7 @@ public:
 private:
 	/** Map param index in params.xml to SzParam */
 	std::map<unsigned long int, SzParam> _params;
-	std::map<unsigned long int, TSendParam*> _send_params;
+	std::map<unsigned long int, SendParamInfo*> _send_params;
 	/** Map param address in params.xml to param index & data pair */ 
 	std::map<int, ParamIndexData> _param_lsws;
 	std::map<int, SendIndexData> _send_lsws;

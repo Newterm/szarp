@@ -132,11 +132,11 @@ class MUKS {
 	int port_speed;
 
 public:
-	MUKS(BaseDaemon2& base_dmn);
+	MUKS(BaseDaemon& base_dmn);
 
-	void Poll(BaseDaemon2& base_dmn);
+	void Poll(BaseDaemon& base_dmn);
 
-	void SetNoData(BaseDaemon2& base_dmn);
+	void SetNoData(BaseDaemon& base_dmn);
 
 	/**
 	* Function oppening serial port special for LECstat E Heat Meter
@@ -212,15 +212,15 @@ private:
 
 };
 
-MUKS::MUKS(BaseDaemon2& base_dmn) {
+MUKS::MUKS(BaseDaemon& base_dmn) {
 	port_path = base_dmn.getDaemonCfg().GetDeviceInfo()->getAttribute<std::string>("path");
 	port_speed = base_dmn.getDaemonCfg().GetDeviceInfo()->getAttribute("speed", 9600);
 
 	SetNoData(base_dmn);
-	base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ this->Poll(base_dmn); });
+	base_dmn.setCycleHandler([this](BaseDaemon& base_dmn){ this->Poll(base_dmn); });
 }
 
-void MUKS::Poll(BaseDaemon2& base_dmn) {
+void MUKS::Poll(BaseDaemon& base_dmn) {
 	char buf[MAX_RESPONSE];
 
 	auto fd = InitComm(8, 2, NO_PARITY);
@@ -264,7 +264,7 @@ void MUKS::Poll(BaseDaemon2& base_dmn) {
 	base_dmn.publish();
 }
 
-void MUKS::SetNoData(BaseDaemon2& base_dmn)
+void MUKS::SetNoData(BaseDaemon& base_dmn)
 {
 	const auto n_params = base_dmn.getDaemonCfg().GetParamsCount();
 	for (unsigned int i = 0; i < n_params; i++) {

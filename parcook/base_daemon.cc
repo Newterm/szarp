@@ -33,138 +33,158 @@
 #include <time.h>
 
 #include <liblog.h>
+#include <sys/prctl.h>
+
+#include "cfgdealer_handler.h"
 
 #include "base_daemon.h"
 #include "custom_assert.h"
 
-BaseDaemon::BaseDaemon( const char* name )
-	: m_cfg(NULL), m_last(0) , name(name) 
-{
+void IPCFacade::InitSz3(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
+	sz3_ipc = std::make_unique<IPCHandler>(&dmn_cfg);
 }
 
-BaseDaemon::~BaseDaemon()
-{
-}
+void IPCFacade::InitSz4(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
+	bopt<char*> sub_conn_address = args_mgr.get<char*>("parhub", "sub_conn_addr");
+	bopt<char*> pub_conn_address = args_mgr.get<char*>("parhub", "pub_conn_addr");
 
-int BaseDaemon::Init(int argc, const char *argv[], int dev_index )
-{
-	return Init(name, argc, argv, dev_index);
-}
-
-int BaseDaemon::Init( const char*name , int argc, const char *argv[], int dev_index )
-{
-	return InitConfig(name,argc,argv,dev_index)
-	    || InitIPC()
-	    || InitSignals();
-}
-
-int BaseDaemon::InitConfig( const char* name , int argc, const char *argv[] , int dev_index )
-{
-	m_cfg = new DaemonConfig(name);
-	ASSERT( m_cfg );
-
-	if( m_cfg->Load(&argc, const_cast<char**>(argv), 1, nullptr, dev_index) ) {
-		sz_log(1,"Cannot load dmn cfg");
-		return 1;
+	if (!sub_conn_address || !pub_conn_address) {
+		throw std::runtime_error("Could not get parhub's address from configuration, exiting!");
 	}
 
-	if( ParseConfig(m_cfg) ) {
-		return 1;
-	}
-
-	return 0;
-}
-
-int BaseDaemon::InitIPC()
-{
 	try {
-		auto _ipc = std::unique_ptr<IPCHandler>(new IPCHandler(m_cfg)); 
-		ipc = _ipc.release();
-	} catch (const std::exception& e) {
-		sz_log(1,"Cannot init ipc %s", e.what());
-		return 1;
+		sz4_ipc = std::make_unique<zmqhandler>(&dmn_cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
+	} catch (zmq::error_t& e) {
+		free(*sub_conn_address);
+		free(*pub_conn_address);
+		throw std::runtime_error(std::string("ZMQ initialization failed: ") + std::string(e.what()));
 	}
 
-	return 0;
+	free(*sub_conn_address);
+	free(*pub_conn_address);
 }
 
-RETSIGTYPE terminate_handler(int signum)
-{
-	sz_log(2, "signal %d caught, exiting", signum);
-	signal(signum, SIG_DFL);
-	raise(signum);
+IPCFacade::IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
+	if (args_mgr.has("single"))
+		return;
+
+	auto ipc_type = args_mgr.get<std::string>("ipc_type").get_value_or("sz3");
+
+	if (ipc_type == "sz3") {
+		InitSz3(args_mgr, dmn_cfg);
+	} else if (ipc_type == "sz4") {
+		InitSz4(args_mgr, dmn_cfg);
+	} else if (ipc_type == "sz3+sz4") {
+		InitSz3(args_mgr, dmn_cfg);
+		InitSz4(args_mgr, dmn_cfg);
+	} else {
+		throw std::runtime_error("Invalid ipc type specified");
+	}
 }
 
-int BaseDaemon::InitSignals()
-{
-	int ret;
-	struct sigaction sa;
-	sigset_t block_mask;
+void IPCFacade::publish() {
+	if (sz3_ipc) {
+		sz3_ipc->GoParcook();
+	}
 
-	sigfillset(&block_mask);
-	sigdelset(&block_mask, SIGKILL);
-	sigdelset(&block_mask, SIGSTOP);
-	sa.sa_flags = SA_RESTART;
-	sa.sa_handler = terminate_handler;
-	ret = sigaction(SIGTERM, &sa, NULL);
-	ASSERT(ret == 0);
-	ret = sigaction(SIGINT, &sa, NULL);
-	ASSERT(ret == 0);
-	ret = sigaction(SIGHUP, &sa, NULL);
-	ASSERT(ret == 0);
-
-	return 0;
+	if (sz4_ipc) {
+		sz4_ipc->publish();
+	}
 }
 
-void BaseDaemon::Wait( time_t interval )
-{
-	time_t t;
-	t = time(NULL);
-	
-	if (t - m_last < interval ) {
-		int i = interval - (t - m_last);
-		while (i > 0) {
-			i = sleep(i);
+void IPCFacade::receive() {
+	if (sz3_ipc) {
+		sz3_ipc->GoSender();
+	}
+
+	if (sz4_ipc) {
+		sz4_ipc->receive();
+	}
+}
+
+void BaseDaemon::new_cycle() {
+	if (daemon_cycle_callback)
+		(*daemon_cycle_callback)(*this);
+	m_scheduler.schedule();
+}
+
+void BaseDaemon::initSignals() {
+	// exit with parent
+	prctl(PR_SET_PDEATHSIG, SIGHUP);
+}
+
+BaseDaemon::BaseDaemon(ArgsManager&& _args_mgr, std::unique_ptr<DaemonConfigInfo> _dmn_cfg, std::unique_ptr<IPCFacade> _ipc): args_mgr(std::move(_args_mgr)), dmn_cfg(std::move(_dmn_cfg)), ipc(std::move(_ipc)) {
+	initSignals();
+
+	m_scheduler.set_callback(new FnPtrScheduler([this](){ new_cycle(); }));
+	int duration = dmn_cfg->GetDeviceInfo()->getAttribute<int>("extra:cycle_duration", 10000);
+	m_scheduler.set_timeout(szarp::ms(duration));
+}
+
+const DaemonConfigInfo& BaseDaemon::getDaemonCfg() const { return *dmn_cfg; }
+
+void BaseDaemon::setCycleHandler(std::function<void(BaseDaemon&)> cb) { daemon_cycle_callback = cb; }
+
+void BaseDaemon::poll_forever() {
+	new_cycle();
+	event_base_dispatch(EventBaseHolder::evbase);
+
+	/* if needed
+	sigset_t mask, oldmask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
+	sigaddset(&mask, SIGHUP);
+
+	sigprocmask (SIG_BLOCK, &mask, &oldmask);
+	sigsuspend (&oldmask);
+	wait();
+	*/
+}
+
+void BaseDaemon::publish() {
+	ipc->publish();
+}
+
+void BaseDaemon::receive() {
+	ipc->receive();
+}
+
+ArgsManager BaseDaemonFactory::InitArgsManager(int argc, const char *argv[], const std::string& daemon_name) {
+	ArgsManager args_mgr(daemon_name);
+	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
+	args_mgr.initLibpar();
+	return args_mgr;
+}
+
+std::unique_ptr<DaemonConfigInfo> BaseDaemonFactory::InitDaemonConfig(ArgsManager& args_mgr) {
+	if (args_mgr.has("use-cfgdealer")) {
+		szlog::init(args_mgr, "borutadmn");
+		return std::make_unique<ConfigDealerHandler>(args_mgr);
+	} else {
+		auto d_cfg = std::make_unique<DaemonConfig>("borutadmn_z");
+		if (d_cfg->Load(args_mgr)) {
+			throw std::runtime_error("Unable to parse configuration, check previous logs.");
 		}
+
+		return d_cfg;
 	}
-	m_last = time(NULL);
-	return;
 }
 
-void BaseDaemon::Transfer()
-{
-	ipc->GoParcook();
-	ipc->GoSender();
+std::unique_ptr<IPCFacade> BaseDaemonFactory::InitIPC(ArgsManager& args_mgr, DaemonConfigInfo& daemon_config) {
+	return std::make_unique<IPCFacade>(args_mgr, daemon_config);
 }
 
-void BaseDaemon::Set( unsigned int i , short val )
-{
-	sz_log(10, "Setting param no %d to value: %d", i, val);
-	ipc->m_read[i] = val;
-}
-
-short BaseDaemon::At( unsigned int i )
-{
-	return ipc->m_read[i];
-}
-
-short BaseDaemon::Send( unsigned int i )
-{
-	return ipc->m_send[i];
-}
-
-void BaseDaemon::Clear()
-{
-	memset(ipc->m_read,0,sizeof(short)*Count());
-}
-
-void BaseDaemon::Clear( short val )
-{
-	for( int i=Count()-1 ; i>=0 ; --i ) ipc->m_read[i] = val;
-}
-
-unsigned int BaseDaemon::Count()
-{
-	return ipc->m_params_count;
+BaseDaemon BaseDaemonFactory::Init(int argc, const char *argv[], const std::string& daemon_name) {
+	try {
+		auto args_mgr = BaseDaemonFactory::InitArgsManager(argc, argv, daemon_name);
+		auto dmn_cfg = BaseDaemonFactory::InitDaemonConfig(args_mgr);
+		auto ipc_handler = BaseDaemonFactory::InitIPC(args_mgr, *dmn_cfg);
+		EventBaseHolder::Initialize();
+		return BaseDaemon(std::move(args_mgr), std::move(dmn_cfg), std::move(ipc_handler));
+	} catch(const std::exception& e) {
+		sz_log(0, "Encountered error during daemon configuration: %s. Daemon will now exit.", e.what());
+		exit(1);
+	}
 }
 
