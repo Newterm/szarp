@@ -82,13 +82,13 @@ EXTRA_PROGRAMS = ddedmn
 
 
 
-basedmn_SOURCES = base_daemon.cc base_daemon.h utils.cpp
+basedmn_SOURCES = base_daemon.cc base_daemon.h utils.cpp cfgdealer_handler.cpp
 
 dpafdmn_SOURCES = dpafdmn.cc
 
 lbdmn_SOURCES = lbdmn.cc
 
-dbdmn_SOURCES = dbdmn.cc utils.cpp cfgdealer_handler.cpp
+dbdmn_SOURCES = dbdmn.cc $(basedmn_SOURCES)
 
 dprdmn_SOURCES = dprdmn.cc
 
@@ -96,14 +96,14 @@ execdmn_SOURCES = execdmn.cc
 
 ipcinfo_SOURCES = ipcinfo.cc
 
-kamsdmn_SOURCES = kamsdmn.cc utils.cpp cfgdealer_handler.cpp
+kamsdmn_SOURCES = kamsdmn.cc $(basedmn_SOURCES)
 kamsdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_DATE_TIME_LIB) $(DL)
 
 kwmsdmn_SOURCES = kwmsdmn.cc
 
 mbrtudmn_SOURCES = mbrtudmn.cc
 
-k601dmn_SOURCES = k601dmn.cc cfgdealer_handler.cpp k601-prop-plugin.h
+k601dmn_SOURCES = k601dmn.cc $(basedmn_SOURCES)
 k601dmn_LDADD = $(LDADD) $(DL)
 
 pafdmn_SOURCES = pafdmn.cc
@@ -118,7 +118,7 @@ ratedmn_SOURCES = ratedmn.cc
 
 aqtdmn_SOURCES = aqtdmn.cc
 
-muksdmn_SOURCES = muksdmn.cc utils.cpp cfgdealer_handler.cpp
+muksdmn_SOURCES = muksdmn.cc $(basedmn_SOURCES)
 
 rsdmn_SOURCES = nrsdmn.cc
 

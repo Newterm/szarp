@@ -131,6 +131,7 @@ protected:
 		for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 			base_dmn.setRead(i, SZARP_NO_DATA);
 		}
+		base_dmn.publish();
 	}
 
 	/** Write single char of query command to device */
@@ -301,6 +302,7 @@ void kams_daemon::Do()
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 					base_dmn.setRead(i, m_params.at(i));
 				}
+				base_dmn.publish();
 			} catch (NoDataException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -313,6 +315,7 @@ void kams_daemon::Do()
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 					base_dmn.setRead(i, SZARP_NO_DATA);
 				}
+				base_dmn.publish();
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -330,6 +333,7 @@ void kams_daemon::Do()
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 					base_dmn.setRead(i, SZARP_NO_DATA);
 				}
+				base_dmn.publish();
 				wait_ms = RESTART_INTERVAL_MS;
 				ScheduleNext(wait_ms);
 			}

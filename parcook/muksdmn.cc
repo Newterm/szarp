@@ -260,6 +260,8 @@ void MUKS::Poll(BaseDaemon2& base_dmn) {
 	}
 
 	close(fd);
+
+	base_dmn.publish();
 }
 
 void MUKS::SetNoData(BaseDaemon2& base_dmn)

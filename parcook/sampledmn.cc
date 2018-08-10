@@ -46,48 +46,24 @@
 
 #include "base_daemon.h"
 
-class SampleDaemon : public BaseDaemon {
+class SampleDaemon {
 public:
-	SampleDaemon() : BaseDaemon("sampledmn")
-	{
+	SampleDaemon(BaseDaemon2& _base_dmn) {
+		_base_dmn.setCycleHandler([this](BaseDaemon2& base_dmn){ Read(base_dmn); });
 	}
 
-	virtual ~SampleDaemon()
+	void Read(BaseDaemon2& base_dmn)
 	{
-	}
-
-	virtual int Read()
-	{
-		for( unsigned int i=0 ; i<Count() ; ++i )
-			Set( i , 1 );
-		return 0;
-	}
-
-protected :
-	virtual int ParseConfig(DaemonConfig * cfg)
-	{
-		return 0;
+		const auto params_count = base_dmn.getDaemonCfg().GetParamsCount();
+		for (unsigned int i=0; i < params_count; ++i)
+			base_dmn.setRead(i, 1);
+		base_dmn.publish();
 	}
 };
 
 int main(int argc, const char *argv[])
 {
-	SampleDaemon dmn;
-
-	if( dmn.Init( argc , argv ) ) {
-		sz_log(1,"Cannot start %s daemon",dmn.Name());
-		return 1;
-	}
-
-	sz_log(2, "Starting %s",dmn.Name());
-
-	for(;;)
-	{
-		dmn.Wait();
-		dmn.Read();
-		dmn.Transfer();
-	}
-
+	BaseDaemonFactory::Go<SampleDaemon>(argc, argv, "kamsdmn");
 	return 0;
 }
 

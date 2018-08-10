@@ -38,9 +38,8 @@
 
  @config_example 
  <device 
-	xmlns:db="http://www.praterm.com.pl/SZARP/ipk-extra"
   	daemon="/opt/szarp/bin/dbdmn" 
-	db:expire="600"
+	extra:expire="600"
 		time (in seconds) of data expiration - if last available data
 		is older than given amount of seconds, NO_DATA is send;
 		set 0 to turn expiration off
@@ -115,20 +114,15 @@ public :
 	DbDaemon(BaseDaemon2& base_dmn);
 	~DbDaemon();
 
-	/** 
-	 * Parses XML 'device' element.
-	 * @return - 0 on success, 1 on error 
-	 */
-	int ParseConfig(const DaemonConfigInfo &dmn);
+	void ParseConfig(const DaemonConfigInfo &dmn);
 
 	void Read(BaseDaemon2& base_dmn);
 
 protected :
 	SZARP_PROBE_TYPE GetProbeType(IPCParamInfo *param);
-	struct ParamDesc* ConfigureParam(IPCParamInfo *param_node, Szbase *szbase);
+	void ConfigureParam(IPCParamInfo *param_node, Szbase *szbase);
 	int ConfigureProbers();
 
-	int m_single;		/**< are we in 'single' mode */
 public:
 	int m_params_count;	/**< size of params array */
 	std::vector<struct ParamDesc*> m_dbparams;
@@ -142,7 +136,6 @@ protected:
 DbDaemon::DbDaemon(BaseDaemon2& base_dmn)
 {
 	auto& cfg = base_dmn.getDaemonCfg();
-	m_single = cfg.GetSingle();
 	m_params_count = cfg.GetParamsCount();
 	ASSERT(m_params_count >= 0);
 	m_expire = DEFAULT_EXPIRE;
@@ -212,11 +205,11 @@ SZARP_PROBE_TYPE DbDaemon::GetProbeType(IPCParamInfo *param)
 	return PT_MIN10;
 }
 
-struct ParamDesc* DbDaemon::ConfigureParam(IPCParamInfo* param, Szbase *szbase) {
+void DbDaemon::ConfigureParam(IPCParamInfo* param, Szbase *szbase) {
 	auto db_param = param->getOptAttribute<std::string>("extra:param");
 	if (!db_param) {
 		sz_log(1, "No extra:param attribute for parameter %s", SC::S2U(param->GetName()).c_str());
-		return nullptr;
+		return;
 	}
 
 	struct ParamDesc * pd = new ParamDesc();
@@ -225,25 +218,27 @@ struct ParamDesc* DbDaemon::ConfigureParam(IPCParamInfo* param, Szbase *szbase) 
 
 	std::pair<szb_buffer_t*, TParam*> bp;
 	if (!szbase->FindParam(pd->dbparam, bp)) {
-		sz_log(1, "Param with name '%s' not found for parameter %s", 
-			SC::S2U(pd->dbparam).c_str(), SC::S2U(param->GetName()).c_str());
-		delete pd;
-		return nullptr;
+		std::string err_string = "Could not configure param ";
+		err_string += SC::S2L(param->GetName());
+		err_string += ": extra:param ";
+		err_string += SC::S2L(pd->dbparam);
+		err_string += " not found in base";
+		throw std::runtime_error(err_string);
 	}
 
 	pd->probe_type = GetProbeType(param);
 
 	sz_log(3, "Using database parameter '%s' for parameter %s",
 	       	SC::S2U(pd->dbparam).c_str(), SC::S2U(param->GetName()).c_str());
-	return pd;
+	m_dbparams.push_back(pd);
 }
 
-int DbDaemon::ParseConfig(const DaemonConfigInfo &dmn)
+void DbDaemon::ParseConfig(const DaemonConfigInfo &dmn)
 {
 	auto device = dmn.GetDeviceInfo();
 	m_expire = device->getAttribute<int>("extra:expire", 0);
 	if (m_expire < 0)
-		throw std::runtime_error("db:expire cannot be negative");
+		throw std::runtime_error("extra:expire cannot be negative");
 
 	ParamCachingIPKContainer::Init(SC::L2S(PREFIX), SC::L2S(PREFIX), L"");
 	Szbase::Init(SC::L2S(PREFIX));
@@ -253,22 +248,17 @@ int DbDaemon::ParseConfig(const DaemonConfigInfo &dmn)
 
 	for (auto unit: dmn.GetUnits()) {
 		for (auto param: unit->GetParams()) {
-			struct ParamDesc * pd = ConfigureParam(param, szbase);
-			if (!pd) {
-				throw std::runtime_error(std::string("Could not configure param ") + SC::S2L(param->GetName()));
-			}
-
-			m_dbparams.push_back(pd);
+			ConfigureParam(param, szbase);
 		}
 	}
 
 	ConfigureProbers();
-
-	return 0;
 }
 
 void DbDaemon::Read(BaseDaemon2& base_dmn)
 {
+	m_last = time(NULL);
+
 	sz_log(10, "DbDaemon::Read: Setting NO_DATA");
 	for (int i = 0; i < m_params_count; i++) {
 		base_dmn.setRead(i, SZARP_NO_DATA);
@@ -312,6 +302,8 @@ void DbDaemon::Read(BaseDaemon2& base_dmn)
 
 		base_dmn.setRead(i, pd->toIPCValue(data));
 	}
+
+	base_dmn.publish();
 }
 
 int main(int argc, const char *argv[])
