@@ -10,14 +10,14 @@ add_executable( paramd
 )
 
 target_include_directories( paramd
-    PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        ${CMAKE_SOURCE_DIR}/libSzarp/include
-        ${CMAKE_SOURCE_DIR}/libSzarp2/include
-        ${CMAKE_SOURCE_DIR}/isl/server/include
-        /usr/include/libxml2
-        /usr/include/lua5.1
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${CMAKE_SOURCE_DIR}/isl/server/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries( paramd

@@ -1,24 +1,35 @@
-cmake_minimum_required(VERSION 3.5)
-
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
-)
-
-link_directories(
-  ${TQT_LIBRARY_DIRS}
-)
+file(GLOB SOURCES *.cc)
 
 add_definitions(
-  -DPREFIX=\"@prefix@\"
+  -DHAVE_CONFIG_H
+  -DPREFIX="/opt/szarp"
 )
 
+add_executable(sender
+  ${SOURCES}
+)
 
-##### sender (executable) #######################
+target_include_directories(sender
+  PUBLIC
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
 
-add_executable( sender
-  sender.cc sender.h
-  DESTINATION ${BIN_INSTALL_DIR}
+target_link_libraries(sender
+  Szarp
+  Szarp2
+  SzarpLuaParser
+  xml2
+  luajit-5.1
+  boost_system
+  boost_filesystem
+  protobuf
+  boost_date_time
+  boost_thread
+  boost_locale
+  curl
+  xslt
+  zip
 )
