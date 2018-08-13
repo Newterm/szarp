@@ -148,37 +148,20 @@ target_link_libraries(pythondmn
   Szarp
   Szarp2
   SzarpLuaParser
-  #server
-  #Threads::Threads
-  xml2
-  luajit-5.1
-  #pam
   ${Boost_LIBRARIES}
   ${PYTHON_LIBRARIES}
-  boost_python3
-  protobuf
-  #ssl
-  #crypto
-  #systemd
-  curl
-  xslt
-  zip
+  ${CURL_LIBRARIES}
+  ${LIBXML2_LIBRARIES}
+  ${LUA_LIBRARIES}
+  ${PROTOBUF_LIBRARIES}
+  ${Zip_LIBRARIES}
+  ${LIBXSLT_LIBRARIES}
+  python2.7
 )
 
 #add_executable(defdmn
 #  defdmn.cc defdmn.tpp funtable.cc
 #)
 #
-#add_executable(s7dmn
-#  snap7dmn.cc ${BASEDMN_SOURCES}
-#)
-#
-#target_include_directories(s7dmn
-#  PUBLIC
-#  #${CMAKE_SOURCE_DIR}/libSzarp/include
-#  #  ${CMAKE_SOURCE_DIR}/libSzarp2/include
-#  #  ${CMAKE_SOURCE_DIR}/isl/server/include
-#    ${LIBXML2_INCLUDE_DIR}
-#    #    ${PYTHON_INCLUDE_DIRS}
-#    # ${LUA_INCLUDE_DIR}
-#)
+
+add_subdirectory(s7daemon)
