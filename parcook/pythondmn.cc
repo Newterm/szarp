@@ -25,6 +25,27 @@
 #include "argsmgr.h"
 #include "cfgdealer_handler.h"
 
+/*
+ @description_start
+
+ @class 4
+
+ @devices Daemon handling python scripts
+ @devices.pl Demon obsługuje skrypty w pythonie
+
+ @config_example
+ <device
+	daemon="/opt/szarp/bin/pythondmn"
+	data-timeout="600"
+		time (in seconds) of data expiration - if last available send
+		is older than given amount of seconds, NO_DATA is assumed,
+		set 0 to turn expiration off
+	... unit and parameters ...
+ </device>
+ @description_end
+
+*/
+
 namespace py = boost::python;
 
 namespace szarp {
@@ -40,15 +61,24 @@ public:
 	int get_line_number();
 	const std::string& get_ipk_path();
 
-	bool check_for_no_data(size_t index, py::object & val);
+	bool has_no_data(py::object & val);
+	void set_no_data(size_t index);
+
+	template <typename T> void set_read_sz4(size_t index, py::object & val);
 	void set_read(size_t index, py::object & val);
-	void set_read_sz4_double(size_t index, py::object & val);
-	void set_read_sz4_float(size_t index, py::object & val);
-	void set_read_sz4_int(size_t index, py::object & val);
 	void set_read_sz4_short(size_t index, py::object & val);
-	template <typename T> void set_read_sz4(size_t index, T val);
-	void set_no_data(size_t index) ;
-	int get_send(size_t index) ;
+	void set_read_sz4_int(size_t index, py::object & val);
+	void set_read_sz4_long(size_t index, py::object & val);
+	void set_read_sz4_float(size_t index, py::object & val);
+	void set_read_sz4_double(size_t index, py::object & val);
+
+	template <typename T> T get_send_sz4(size_t index);
+	int get_send(size_t index);
+	int16_t get_send_sz4_short(size_t index);
+	int32_t get_send_sz4_int(size_t index);
+	int64_t get_send_sz4_long(size_t index);
+	float get_send_sz4_float(size_t index);
+	double get_send_sz4_double(size_t index);
 
 	void go_parcook() ;
 	void go_sender() ;
@@ -84,6 +114,8 @@ protected:
 
 	struct event m_timer;
 	struct timeval m_cycle;
+
+	int64_t m_data_timeout;
 };
 
 void ipc::release_sz3(py::object & period) {
@@ -135,6 +167,8 @@ int ipc::configure(DaemonConfigInfo* cfg, const ArgsManager& args_mgr) {
 	if (!m_event_base)
 		return 0;
 
+	m_data_timeout = cfg->GetDeviceInfo()->getAttribute<int64_t>("data-timeout", 0);
+
 	m_cycle = cfg->GetDeviceTimeval();
 
 	try {
@@ -171,7 +205,7 @@ const std::string& ipc::get_ipk_path() {
 
 void ipc::set_read(size_t index, py::object & val) {
 	if (m_force_sz4) { 
-		set_read_sz4_int(index, val);
+		set_read_sz4_short(index, val);
 	}
 
 	if (index >= m_read_count) {
@@ -179,7 +213,7 @@ void ipc::set_read(size_t index, py::object & val) {
 		return;
 	}
 
-	if (Py_None == val.ptr()) {
+	if (has_no_data(val)) {
 		sz_log(9, "ipc::set_read got None, setting %zu to NO_DATA", index);
 		if (m_read != nullptr)
 			m_read[index] = SZARP_NO_DATA;
@@ -199,85 +233,37 @@ void ipc::set_read(size_t index, py::object & val) {
 	}
 }
 
-bool ipc::check_for_no_data(size_t index, py::object & val) {
-	if (Py_None == val.ptr()) {
-		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int got NONE at %zu", index);
-		if (m_zmq)
-			m_zmq->set_value(index, timev, SZARP_NO_DATA);
-
-		if (m_read != nullptr) 
-			m_read[index] = SZARP_NO_DATA;
-
-		if (m_sz4_auto) go_sz4();
-		return true;
-	}
-
-	return false;
+bool ipc::has_no_data(py::object & val) {
+	return Py_None == val.ptr();
 }
 
 
-void ipc::set_read_sz4_int(size_t index, py::object & val) {
-	if (check_for_no_data(index, val)) return;
+void ipc::set_read_sz4_short(size_t index, py::object & val) {
+	set_read_sz4<int16_t>(index, val);
+}
 
-	try {
-		auto got = (int)py::extract<int>(val);
-		set_read_sz4<int>(index, got);
-	} catch (py::error_already_set const &) {
-		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_int extract error, setting %zu to NO_DATA", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		if (m_sz4_auto) go_sz4();
-		PyErr_Clear();
-	}
+void ipc::set_read_sz4_int(size_t index, py::object & val) {
+	set_read_sz4<int32_t>(index, val);
+}
+
+void ipc::set_read_sz4_long(size_t index, py::object & val) {
+	set_read_sz4<int64_t>(index, val);
 }
 
 void ipc::set_read_sz4_float(size_t index, py::object & val) {
-	if (check_for_no_data(index, val)) return;
-
-	try {
-		auto got = (float)py::extract<float>(val);
-		set_read_sz4<float>(index, got);
-	} catch (py::error_already_set const &) {
-		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_float extract error, setting %zu to NO_DATA", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		if (m_sz4_auto) go_sz4();
-		PyErr_Clear();
-	}
+	set_read_sz4<float>(index, val);
 }
 
 void ipc::set_read_sz4_double(size_t index, py::object & val) {
-	if (check_for_no_data(index, val)) return;
-
-	try {
-		auto got = (double)py::extract<double>(val);
-		set_read_sz4<double>(index, got);
-	} catch (py::error_already_set const &) {
-		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_double extract error, setting %zu to NO_DATA", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		if (m_sz4_auto) go_sz4();
-		PyErr_Clear();
-	}
+	set_read_sz4<double>(index, val);
 }
 
-void ipc::set_read_sz4_short(size_t index, py::object & val) {
-	if (check_for_no_data(index, val)) return;
-
-	try {
-		auto got = (short)py::extract<short>(val);
-		set_read_sz4<short>(index, got);
-	} catch (py::error_already_set const &) {
-		time_t timev = time(NULL);
-		sz_log(9, "Pythondmn sz4_short extract error, setting %zu to NO_DATA", index);
-		if (m_zmq) m_zmq->set_value(index, timev, SZARP_NO_DATA);
-		if (m_sz4_auto) go_sz4();
-		PyErr_Clear();
+template <typename T> void ipc::set_read_sz4(size_t index, py::object & val) {
+	if (!m_zmq) {
+		sz_log(7, "Pythondmn received value but there is no zmq");
+		return;
 	}
-}
 
-template <typename T> void ipc::set_read_sz4(size_t index, T val) {
 	if (index >= m_read_count) {
 		sz_log(7, "Pythondmn ERROR index (%zu) greater than params count (%zu)", index, m_read_count);
 		return;
@@ -285,14 +271,24 @@ template <typename T> void ipc::set_read_sz4(size_t index, T val) {
 
 	time_t timev = time(NULL);
 
-	if (m_zmq) m_zmq->set_value(index, timev, val);
-	if (m_sz4_auto) go_sz4();
-}
+	if (has_no_data(val)) {
+		m_zmq->set_no_data(index, timev);
+		if (m_sz4_auto) go_sz4();
+		return;
+	}
 
-template void ipc::set_read_sz4<>(size_t index, short val);
-template void ipc::set_read_sz4<>(size_t index, int val);
-template void ipc::set_read_sz4<>(size_t index, float val);
-template void ipc::set_read_sz4<>(size_t index, double val);
+	try {
+		auto got = (T) py::extract<T>(val);
+		m_zmq->set_value(index, timev, got);
+		if (m_sz4_auto) go_sz4();
+	} catch (py::error_already_set const &) {
+		sz_log(9, "Pythondmn extract error, setting %zu to NO_DATA", index);
+
+		m_zmq->set_no_data(index, timev);
+		if (m_sz4_auto) go_sz4();
+		PyErr_Clear();
+	}
+}
 
 void ipc::set_no_data(size_t index) {
 	if (index >= m_read_count) {
@@ -303,8 +299,11 @@ void ipc::set_no_data(size_t index) {
 	if (m_read != nullptr)
 		m_read[index] = SZARP_NO_DATA;
 
-	time_t timev = time(NULL);
-	if (m_zmq) m_zmq->set_no_data(index, timev);
+	if (m_zmq) {
+		time_t timev = time(NULL);
+		m_zmq->set_no_data(index, timev);
+		if (m_sz4_auto) go_sz4();
+	}
 }
 
 int ipc::get_send(size_t index) {
@@ -319,6 +318,43 @@ int ipc::get_send(size_t index) {
 	}
 
 	return SZARP_NO_DATA;
+}
+
+int16_t ipc::get_send_sz4_short(size_t index) {
+	return get_send_sz4<int16_t>(index);
+}
+
+int32_t ipc::get_send_sz4_int(size_t index) {
+	return get_send_sz4<int32_t>(index);
+}
+
+int64_t ipc::get_send_sz4_long(size_t index) {
+	return get_send_sz4<int64_t>(index);
+}
+
+float ipc::get_send_sz4_float(size_t index) {
+	return get_send_sz4<float>(index);
+}
+
+double ipc::get_send_sz4_double(size_t index) {
+	return get_send_sz4<double>(index);
+}
+
+template <typename T>
+T ipc::get_send_sz4(size_t index) {
+	if (!m_zmq)
+		return sz4::no_data<T>();
+
+	auto pv = m_zmq->get_send<T>(index, 1); // ignore precision (python will handle it)
+
+	if (m_data_timeout != 0) {
+		auto time_now = time(NULL);
+		auto valid_till = pv.time.second + m_data_timeout;
+		if (valid_till < time_now)
+			return sz4::no_data<T>();
+	}
+
+	return pv.value;
 }
 
 void ipc::go_parcook() {
@@ -546,10 +582,17 @@ int main( int argc, char ** argv )
 			.def("set_read_sz4", &szarp::ipc::set_read_sz4_int)
 			.def("set_read_sz4_short", &szarp::ipc::set_read_sz4_short)
 			.def("set_read_sz4_int", &szarp::ipc::set_read_sz4_int)
+			.def("set_read_sz4_long", &szarp::ipc::set_read_sz4_long)
 			.def("set_read_sz4_float", &szarp::ipc::set_read_sz4_float)
 			.def("set_read_sz4_double", &szarp::ipc::set_read_sz4_double)
 			.def("set_no_data", &szarp::ipc::set_no_data)
 			.def("get_send", &szarp::ipc::get_send)
+			.def("get_send_sz4", &szarp::ipc::get_send_sz4_long)
+			.def("get_send_sz4_short", &szarp::ipc::get_send_sz4_short)
+			.def("get_send_sz4_int", &szarp::ipc::get_send_sz4_int)
+			.def("get_send_sz4_long", &szarp::ipc::get_send_sz4_long)
+			.def("get_send_sz4_float", &szarp::ipc::get_send_sz4_float)
+			.def("get_send_sz4_double", &szarp::ipc::get_send_sz4_double)
 			.def("go_sender", &szarp::ipc::go_sender)
 			.def("go_parcook", &szarp::ipc::go_parcook)
 			.def("get_conf_str", &szarp::ipc::get_conf_str);
