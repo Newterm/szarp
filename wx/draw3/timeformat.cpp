@@ -45,22 +45,22 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 #else
 			time.Format(_T(" %V, "));
 #endif
-		ret += time.Format(_T("%B")) + wxString::Format(_T(" %d - "), time.GetDay());
+		ret += time.Format(_T("%b")) + wxString::Format(_T(" %d - "), time.GetDay());
 		if (end.GetMonth() != time.GetMonth())
-			ret += end.Format(_T("%B "));
+			ret += end.Format(_T("%b "));
 		ret += wxString::Format(_T("%d"), end.GetDay());
 	} else if (period == PERIOD_T_WEEK) {
 		wxDateTime end = time + wxTimeSpan::Minutes( 7 * 60 + 50);
 
-		ret = time.Format(_T(" %Y, %B, "));
+		ret = time.Format(_T(" %Y, %b, "));
 #ifdef MINGW32
 		ret += time.Format(_T("%d, "));
-		ret += _("week") + time.Format(_T(" %W, %A, "));
-		ret += _("hour") + time.Format(_(" %H:%M")) + end.Format(_T("-%H:%M"));
+		ret += _("week") + time.Format(_T(" %W, %a, "));
+		ret += time.Format(_("%H:%M")) + end.Format(_T("-%H:%M"));
 #else
 		ret += time.Format(_T("%e, "));
-		ret += _("week") + time.Format(_T(" %V, %A, "));
-		ret += _("hour") + time.Format(_(" %R")) + end.Format(_T("-%R"));
+		ret += _("week") + time.Format(_T(" %V, %a,"));
+		ret += time.Format(_(" %R")) + end.Format(_T("-%R"));
 #endif
 	} else {
 		int minute = time.GetMinute();
@@ -83,24 +83,24 @@ wxString FormatTime(const wxDateTime &time, PeriodType period) {
 				ret = wxString::Format(_T(":%02d"), second) + ret;
 			case PERIOD_T_DAY:
 			case PERIOD_T_OTHER :
-				ret = wxString(_T(", ")) + _("hour") + time.Format(_T(" %H:")) + 
+				ret = wxString(_T(",")) + time.Format(_T(" %H:")) +
 					wxString::Format(_T("%02d"), minute) + ret;
 			case PERIOD_T_MONTH :
-				ret = wxString(_T(", ")) 
+				ret = wxString(_T(", "))
 #ifdef MINGW32
-					+ time.Format(_T("%d, ")) 
+					+ time.Format(_T("%d, "))
 #else
-					+ time.Format(_T("%e, ")) 
+					+ time.Format(_T("%e, "))
 #endif
-					+ _("week") 
+					+ _("week")
 #ifdef MINGW32
-					+ time.Format(_T(" %W, %A")) 
+					+ time.Format(_T(" %W, %a"))
 #else
-					+ time.Format(_T(" %V, %A")) 
+					+ time.Format(_T(" %V, %a"))
 #endif
 					+ ret;
 			case PERIOD_T_YEAR :
-				ret = _T(" ") + time.Format(_T("%Y, %B")) + ret;
+				ret = _T(" ") + time.Format(_T("%Y, %b")) + ret;
 				break;
 			case PERIOD_T_DECADE :
 				ret = _T(" ") + time.Format(_T("%Y")) + ret;
