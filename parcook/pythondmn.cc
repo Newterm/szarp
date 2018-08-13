@@ -31,7 +31,7 @@
  @class 4
 
  @devices Daemon handling python scripts
- @devices.pl Demon obsługuje skrypty w pythonie
+ @devices.pl Demon obsluguje skrypty w pythonie
 
  @config_example
  <device
