@@ -54,6 +54,9 @@ struct IPCFacade {
 	std::unique_ptr<IPCHandler> sz3_ipc;
 	std::unique_ptr<zmqhandler> sz4_ipc;
 
+	size_t read_count;
+	size_t send_count;
+
 	IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg);
 
 	void InitSz3(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg);
@@ -62,8 +65,16 @@ struct IPCFacade {
 	void publish();
 	void receive();
 
+	void parse_precs(const DaemonConfigInfo& dmn);
+	std::vector<size_t> send_prec_adjs;
+
 	template <typename VT>
 	void setRead(size_t ind, VT value) {
+		if (ind > read_count || ind < 0) {
+			szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
+			return;
+		}
+
 		szlog::log() << szlog::debug << "Setting param no " << ind << " to " << value << szlog::endl;
 		if (sz3_ipc) {
 			sz3_ipc->m_read[ind] = value;
@@ -77,6 +88,11 @@ struct IPCFacade {
 	}
 
 	void setNoData(size_t ind) {
+		if (ind > read_count || ind < 0) {
+			szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
+			return;
+		}
+
 		szlog::log() << szlog::debug << "Setting param no " << ind << " to nodata" << szlog::endl;
 		if (sz3_ipc) {
 			sz3_ipc->m_read[ind] = SZARP_NO_DATA;
@@ -90,11 +106,16 @@ struct IPCFacade {
 
 	template <typename VT>
 	VT getSend(size_t ind) {
+		if (ind > send_count || ind < 0) {
+			szlog::log() << szlog::warning << "Got invalid send index " << ind << szlog::endl;
+			return sz4::no_data<VT>();
+		}
+
 		if (sz4_ipc) {
-			auto value = sz4_ipc->get_send<VT>(ind, 1).value;
+			auto prec_adj = send_prec_adjs[ind];
+			auto value = sz4_ipc->get_send<VT>(ind, prec_adj).value;
 			szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
 			return value;
-			// TODO: We have to add checking precision and data timeouts either here or in daemons
 		}
 
 		if (sz3_ipc) {
@@ -102,6 +123,8 @@ struct IPCFacade {
 			szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
 			return sz3_ipc->m_send[ind];
 		}
+
+		return sz4::no_data<VT>();
 	}
 };
 
@@ -132,7 +155,7 @@ struct BaseDaemon {
 	}
 
 	void setNoData(size_t ind) {
-		ipc->setNoData(ind, value);
+		ipc->setNoData(ind);
 	}
 
 	template <typename VT>

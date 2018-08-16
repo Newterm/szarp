@@ -68,6 +68,9 @@ IPCFacade::IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
 	if (args_mgr.has("single"))
 		return;
 
+	send_count = dmn_cfg.GetSendsCount();
+	read_count = dmn_cfg.GetParamsCount();
+
 	auto ipc_type = args_mgr.get<std::string>("ipc_type").get_value_or("sz3");
 
 	if (ipc_type == "sz3") {
@@ -79,6 +82,19 @@ IPCFacade::IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
 		InitSz4(args_mgr, dmn_cfg);
 	} else {
 		throw std::runtime_error("Invalid ipc type specified");
+	}
+
+	parse_precs(dmn_cfg);
+}
+
+void IPCFacade::parse_precs(const DaemonConfigInfo& dmn) {
+	send_prec_adjs.reserve(send_count);
+
+	size_t ind = 0;
+	for (auto unit: dmn.GetUnits()) {
+		for (auto send: unit->GetSendParams()) {
+			send_prec_adjs[ind++] = exp10(send->GetPrec());
+		}
 	}
 }
 
