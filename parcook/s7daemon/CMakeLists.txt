@@ -1,3 +1,5 @@
+#todo: test do ogarnięcia
+
 file(GLOB SOURCES *.cc)
 
 add_definitions(
@@ -5,7 +7,7 @@ add_definitions(
   -DPREFIX="/opt/szarp"
 )
 add_executable(s7dmn
-  ${SOURCES} #../${BASEDMN_SOURCES}
+  ${SOURCES} ../base_daemon.cc
 )
 
 target_include_directories(s7dmn
@@ -30,5 +32,7 @@ target_link_libraries(s7dmn
   ${Zip_LIBRARIES}
   ${LIBXSLT_LIBRARIES}
   python2.7
+  ${SNAP_LIBRARIES}
+  ${CPPUNIT_LIBRARIES}
 )
 

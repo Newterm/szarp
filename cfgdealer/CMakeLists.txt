@@ -1,31 +1,27 @@
-cmake_minimum_required(VERSION 3.5)
+#todo test!
 
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
-)
-
-link_directories(
-  ${TQT_LIBRARY_DIRS}
-)
-
-add_definitions(
-)
-
-
-##### cfgdealer (executable) ####################
-
-add_executable( cfgdealer
+add_executable(cfgdealer
   cfgdealer.cpp
-  DESTINATION ${BIN_INSTALL_DIR}
 )
 
+target_include_directories(cfgdealer
+  PUBLIC
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
 
-##### cfgdealer_test (executable) ###############
-
-add_executable( cfgdealer_test
-  cfgdealer_test.cpp
-  DESTINATION ${BIN_INSTALL_DIR}
+target_link_libraries(cfgdealer
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
 )
