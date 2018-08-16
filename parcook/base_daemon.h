@@ -49,14 +49,8 @@ const int DAEMON_INTERVAL = 10;
 template <typename V>
 using bopt = boost::optional<V>;
 
-struct IPCFacade {
-	zmq::context_t m_zmq_ctx{1};
-	std::unique_ptr<IPCHandler> sz3_ipc;
-	std::unique_ptr<zmqhandler> sz4_ipc;
-
-	size_t read_count;
-	size_t send_count;
-
+class IPCFacade {
+public:
 	IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg);
 
 	void InitSz3(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg);
@@ -65,70 +59,39 @@ struct IPCFacade {
 	void publish();
 	void receive();
 
-	void parse_precs(const DaemonConfigInfo& dmn);
+	template <typename VT>
+	void setRead(size_t ind, VT value);
+
+	void setNoData(size_t ind);
+
+	template <typename VT>
+	VT getSend(size_t ind);
+
+private:
+	zmq::context_t m_zmq_ctx{1};
+	std::unique_ptr<IPCHandler> sz3_ipc;
+	std::unique_ptr<zmqhandler> sz4_ipc;
+
+	size_t read_count;
+	size_t send_count;
+
 	std::vector<size_t> send_prec_adjs;
+	void parse_precs(const DaemonConfigInfo& dmn);
 
-	template <typename VT>
-	void setRead(size_t ind, VT value) {
-		if (ind > read_count || ind < 0) {
-			szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
-			return;
-		}
-
-		szlog::log() << szlog::debug << "Setting param no " << ind << " to " << value << szlog::endl;
-		if (sz3_ipc) {
-			sz3_ipc->m_read[ind] = value;
-		}
-
-		if (sz4_ipc) {
-			// auto now = szarp::time_now<sz4::nanosecond_time_t>();
-			auto now = time(NULL);
-			sz4_ipc->set_value(ind, now, value);
-		}
-	}
-
-	void setNoData(size_t ind) {
-		if (ind > read_count || ind < 0) {
-			szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
-			return;
-		}
-
-		szlog::log() << szlog::debug << "Setting param no " << ind << " to nodata" << szlog::endl;
-		if (sz3_ipc) {
-			sz3_ipc->m_read[ind] = SZARP_NO_DATA;
-		}
-
-		if (sz4_ipc) {
-			auto now = time(NULL);
-			sz4_ipc->set_no_data(ind, now);
-		}
-	}
-
-	template <typename VT>
-	VT getSend(size_t ind) {
-		if (ind > send_count || ind < 0) {
-			szlog::log() << szlog::warning << "Got invalid send index " << ind << szlog::endl;
-			return sz4::no_data<VT>();
-		}
-
-		if (sz4_ipc) {
-			auto prec_adj = send_prec_adjs[ind];
-			auto value = sz4_ipc->get_send<VT>(ind, prec_adj).value;
-			szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
-			return value;
-		}
-
-		if (sz3_ipc) {
-			auto value = sz3_ipc->m_send[ind];
-			szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
-			return sz3_ipc->m_send[ind];
-		}
-
-		return sz4::no_data<VT>();
-	}
 };
 
-struct BaseDaemon {
+class BaseDaemon {
+public:
+	BaseDaemon(ArgsManager&&, std::unique_ptr<DaemonConfigInfo>, std::unique_ptr<IPCFacade>);
+
+	void setCycleHandler(std::function<void(BaseDaemon&)> cb);
+	void poll_forever();
+
+	const DaemonConfigInfo& getDaemonCfg() const { return *dmn_cfg; }
+	const ArgsManager& getArgsMgr() const { return args_mgr; }
+	IPCFacade& getIpc() const {return *ipc; }
+
+private:
 	ArgsManager args_mgr;
 	std::unique_ptr<DaemonConfigInfo> dmn_cfg;
 	std::unique_ptr<IPCFacade> ipc;
@@ -136,32 +99,10 @@ struct BaseDaemon {
 	Scheduler m_scheduler;
 	bopt<std::function<void(BaseDaemon&)>> daemon_cycle_callback = boost::none;
 
-	BaseDaemon(ArgsManager&&, std::unique_ptr<DaemonConfigInfo>, std::unique_ptr<IPCFacade>);
-
 	void initSignals();
-	void setCycleHandler(std::function<void(BaseDaemon&)> cb);
 
 	void new_cycle();
-	void poll_forever();
 
-	void publish();
-	void receive();
-
-	const DaemonConfigInfo& getDaemonCfg() const;
-
-	template <typename VT>
-	void setRead(size_t ind, VT value) {
-		ipc->setRead(ind, value);
-	}
-
-	void setNoData(size_t ind) {
-		ipc->setNoData(ind);
-	}
-
-	template <typename VT>
-	VT getSend(size_t ind) {
-		return ipc->getSend<VT>(ind);
-	}
 };
 
 struct BaseDaemonFactory {

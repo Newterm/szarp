@@ -129,9 +129,9 @@ protected:
 		sz_log(10, "%s: SetRestart", m_id.c_str());
 		m_state = RESTART;
 		for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
-			base_dmn.setRead(i, SZARP_NO_DATA);
+			base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
 		}
-		base_dmn.publish();
+		base_dmn.getIpc().publish();
 	}
 
 	/** Write single char of query command to device */
@@ -300,9 +300,9 @@ void kams_daemon::Do()
 				wait_ms = m_query_interval_ms;
 				m_state = SET_COMM_WRITE;
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
-					base_dmn.setRead(i, m_params.at(i));
+					base_dmn.getIpc().setRead<int16_t>(i, m_params.at(i));
 				}
-				base_dmn.publish();
+				base_dmn.getIpc().publish();
 			} catch (NoDataException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -313,9 +313,9 @@ void kams_daemon::Do()
 				wait_ms = 1000;
 				m_state = SET_COMM_WRITE;
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
-					base_dmn.setRead(i, SZARP_NO_DATA);
+					base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
 				}
-				base_dmn.publish();
+				base_dmn.getIpc().publish();
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
 				wait_ms = 0;
@@ -331,9 +331,9 @@ void kams_daemon::Do()
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: Restart failed: %s", m_id.c_str(), e.what());
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
-					base_dmn.setRead(i, SZARP_NO_DATA);
+					base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
 				}
-				base_dmn.publish();
+				base_dmn.getIpc().publish();
 				wait_ms = RESTART_INTERVAL_MS;
 				ScheduleNext(wait_ms);
 			}
@@ -513,7 +513,7 @@ void kams_daemon::ParseConfig() {
 				+ ", must be " + std::to_string(NUMBER_OF_VALS));
 	}
 
-	const ArgsManager& args_mgr = base_dmn.args_mgr;
+	const ArgsManager& args_mgr = base_dmn.getArgsMgr();
 
 	if (cfg.GetSingle() || args_mgr.get<int>("debug").get_value_or(2) > 8) {
 		single = true;

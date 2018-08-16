@@ -118,6 +118,77 @@ void IPCFacade::receive() {
 	}
 }
 
+template <typename VT>
+void IPCFacade::setRead(size_t ind, VT value) {
+	if (ind > read_count || ind < 0) {
+		szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
+		return;
+	}
+
+	szlog::log() << szlog::debug << "Setting param no " << ind << " to " << value << szlog::endl;
+	if (sz3_ipc) {
+		sz3_ipc->m_read[ind] = value;
+	}
+
+	if (sz4_ipc) {
+		// auto now = szarp::time_now<sz4::nanosecond_time_t>();
+		auto now = time(NULL);
+		sz4_ipc->set_value(ind, now, value);
+	}
+}
+
+template void IPCFacade::setRead<int16_t>(size_t, int16_t);
+template void IPCFacade::setRead<int32_t>(size_t, int32_t);
+template void IPCFacade::setRead<int64_t>(size_t, int64_t);
+template void IPCFacade::setRead<float>(size_t, float);
+template void IPCFacade::setRead<double>(size_t, double);
+
+void IPCFacade::setNoData(size_t ind) {
+	if (ind > read_count || ind < 0) {
+		szlog::log() << szlog::warning << "Got invalid read index " << ind << szlog::endl;
+		return;
+	}
+
+	szlog::log() << szlog::debug << "Setting param no " << ind << " to nodata" << szlog::endl;
+	if (sz3_ipc) {
+		sz3_ipc->m_read[ind] = SZARP_NO_DATA;
+	}
+
+	if (sz4_ipc) {
+		auto now = time(NULL);
+		sz4_ipc->set_no_data(ind, now);
+	}
+}
+
+template <typename VT>
+VT IPCFacade::getSend(size_t ind) {
+	if (ind > send_count || ind < 0) {
+		szlog::log() << szlog::warning << "Got invalid send index " << ind << szlog::endl;
+		return sz4::no_data<VT>();
+	}
+
+	if (sz4_ipc) {
+		auto prec_adj = send_prec_adjs[ind];
+		auto value = sz4_ipc->get_send<VT>(ind, prec_adj).value;
+		szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
+		return value;
+	}
+
+	if (sz3_ipc) {
+		auto value = sz3_ipc->m_send[ind];
+		szlog::log() << szlog::debug << "Got send at " << ind << " with " << value << szlog::endl;
+		return sz3_ipc->m_send[ind];
+	}
+
+	return sz4::no_data<VT>();
+}
+
+template int16_t IPCFacade::getSend<int16_t>(size_t);
+template int32_t IPCFacade::getSend<int32_t>(size_t);
+template int64_t IPCFacade::getSend<int64_t>(size_t);
+template float IPCFacade::getSend<float>(size_t);
+template double IPCFacade::getSend<double>(size_t);
+
 void BaseDaemon::new_cycle() {
 	if (daemon_cycle_callback)
 		(*daemon_cycle_callback)(*this);
@@ -137,8 +208,6 @@ BaseDaemon::BaseDaemon(ArgsManager&& _args_mgr, std::unique_ptr<DaemonConfigInfo
 	m_scheduler.set_timeout(szarp::ms(duration));
 }
 
-const DaemonConfigInfo& BaseDaemon::getDaemonCfg() const { return *dmn_cfg; }
-
 void BaseDaemon::setCycleHandler(std::function<void(BaseDaemon&)> cb) { daemon_cycle_callback = cb; }
 
 void BaseDaemon::poll_forever() {
@@ -156,14 +225,6 @@ void BaseDaemon::poll_forever() {
 	sigsuspend (&oldmask);
 	wait();
 	*/
-}
-
-void BaseDaemon::publish() {
-	ipc->publish();
-}
-
-void BaseDaemon::receive() {
-	ipc->receive();
 }
 
 ArgsManager BaseDaemonFactory::InitArgsManager(int argc, const char *argv[], const std::string& daemon_name) {

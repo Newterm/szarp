@@ -236,15 +236,15 @@ int Snap7Daemon::DBVal(BaseDaemon& base_dmn, const s7map_key& vkey, s7map_val& v
 		case s7map_key::SHORT:
 			psv = reinterpret_cast<short*>(&data[vkey.address - start]);
 			if (vval.lsw_ind != -1)
-				base_dmn.setRead(vval.lsw_ind, *psv);
+				base_dmn.getIpc().setRead(vval.lsw_ind, *psv);
 			return 0;
 		case s7map_key::INTEGER:
 			piv = reinterpret_cast<int*>(&data[vkey.address - start]);
 			if (vval.lsw_ind != -1) {
-				base_dmn.setRead(vval.lsw_ind, *piv & 0xFFFF);
+				base_dmn.getIpc().setRead(vval.lsw_ind, *piv & 0xFFFF);
 			}
 			if (vval.msw_ind != -1) {
-				base_dmn.setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
+				base_dmn.getIpc().setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
 			}
 			return 0;
 		case s7map_key::FLOAT:
@@ -257,10 +257,10 @@ int Snap7Daemon::DBVal(BaseDaemon& base_dmn, const s7map_key& vkey, s7map_val& v
 			}
 			piv = reinterpret_cast<int*>(&fv);
 			if (vval.lsw_ind != -1) {
-				base_dmn.setRead(vval.lsw_ind, *piv & 0xFFFF);
+				base_dmn.getIpc().setRead(vval.lsw_ind, *piv & 0xFFFF);
 			}
 			if (vval.msw_ind != -1) {
-				base_dmn.setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
+				base_dmn.getIpc().setRead(vval.lsw_ind, ((*piv) >> 16) & 0xFFFF);
 			}
 			return 0;
 		default:

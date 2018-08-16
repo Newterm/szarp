@@ -261,7 +261,7 @@ void DbDaemon::Read(BaseDaemon& base_dmn)
 
 	sz_log(10, "DbDaemon::Read: Setting NO_DATA");
 	for (int i = 0; i < m_params_count; i++) {
-		base_dmn.setRead(i, SZARP_NO_DATA);
+		base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
 	}
 
 	Szbase* szbase = Szbase::GetObject();
@@ -300,10 +300,10 @@ void DbDaemon::Read(BaseDaemon& base_dmn)
 			continue;
 		}
 
-		base_dmn.setRead(i, pd->toIPCValue(data));
+		base_dmn.getIpc().setRead<int16_t>(i, pd->toIPCValue(data));
 	}
 
-	base_dmn.publish();
+	base_dmn.getIpc().publish();
 }
 
 int main(int argc, const char *argv[])

@@ -16,7 +16,7 @@
 #include "datatypes.h"
 
 S7Daemon::S7Daemon(BaseDaemon& _base_dmn): base_dmn(_base_dmn) {
-	_dumpHex = base_dmn.args_mgr.has("dumphex");
+	_dumpHex = base_dmn.getArgsMgr().has("dumphex");
 	ParseConfig(base_dmn.getDaemonCfg());
 
 	base_dmn.setCycleHandler([this](BaseDaemon&){
@@ -63,15 +63,15 @@ void S7Daemon::Read()
 void S7Daemon::Transfer()
 {
 	sz_log(5, "S7Dmn::Transfer");
-	base_dmn.receive();
+	base_dmn.getIpc().receive();
 
 	/** Write SZARP DB with values from read queries */ 
 	_pmap.clearWriteBuffer();
 	_client.ProcessResponse([&](unsigned long int idx, DataBuffer data, bool no_data) {
-		if(no_data) { base_dmn.setRead(idx, SZARP_NO_DATA); return; }
+		if(no_data) { base_dmn.getIpc().setRead(idx, SZARP_NO_DATA); return; }
 
 		_pmap.WriteData(idx, data, [&](unsigned long int pid, int16_t value) {
-			base_dmn.setRead(pid, value);
+			base_dmn.getIpc().setRead(pid, value);
 		});
 	});	
 	
@@ -86,7 +86,7 @@ void S7Daemon::Transfer()
 	_client.AccessData([&](unsigned long int idx, DataDescriptor desc) {
 		SzInteger send_value = SZARP_NO_DATA;
 		return _pmap.ReadData(idx, desc, [&](unsigned long int pid) {
-			send_value = base_dmn.getSend<int16_t>(pid - base_dmn.getDaemonCfg().GetParamsCount());
+			send_value = base_dmn.getIpc().getSend<int16_t>(pid - base_dmn.getDaemonCfg().GetParamsCount());
 			return send_value;
 		});
 	});
@@ -96,12 +96,12 @@ void S7Daemon::Transfer()
 
 	if(_dumpHex) _client.DumpAll();
 
-	base_dmn.publish();
+	base_dmn.getIpc().publish();
 }
 
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<S7Daemon>(argc, argv, "kamsdmn");
+	BaseDaemonFactory::Go<S7Daemon>(argc, argv, "s7dmn");
 	return 0;
 }

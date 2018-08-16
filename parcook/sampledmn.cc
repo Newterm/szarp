@@ -56,8 +56,8 @@ public:
 	{
 		const auto params_count = base_dmn.getDaemonCfg().GetParamsCount();
 		for (unsigned int i=0; i < params_count; ++i)
-			base_dmn.setRead(i, 1);
-		base_dmn.publish();
+			base_dmn.getIpc().setRead(i, 1);
+		base_dmn.getIpc().publish();
 	}
 };
 

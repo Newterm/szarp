@@ -246,14 +246,14 @@ void MUKS::Poll(BaseDaemon& base_dmn) {
 		
 		if (status == FAIL) {
 			// or base_dmn.readAt(i).setNoData(); or sth
-			base_dmn.setRead(2* which_order, SZARP_NO_DATA);
-			base_dmn.setRead(2* which_order + 1, SZARP_NO_DATA);
+			base_dmn.getIpc().setRead<int16_t>(2* which_order, SZARP_NO_DATA);
+			base_dmn.getIpc().setRead<int16_t>(2* which_order + 1, SZARP_NO_DATA);
 		} else {
 			auto bfr = ParsePacket(buf, orders[which_order], ResponseStatus, MAX_RESPONSE ,&status);
 
 			sz_log(10, "%s (%s) is %d\n",orders_str1[which_order], orders_str2[which_order],bfr);
-			base_dmn.setRead(2* which_order, (int)(bfr&0xffff));
-			base_dmn.setRead(2* which_order + 1, (int)(bfr>>16));
+			base_dmn.getIpc().setRead<int16_t>(2* which_order, (int)(bfr&0xffff));
+			base_dmn.getIpc().setRead<int16_t>(2* which_order + 1, (int)(bfr>>16));
 		}
 
 		sleep(1);
@@ -261,14 +261,14 @@ void MUKS::Poll(BaseDaemon& base_dmn) {
 
 	close(fd);
 
-	base_dmn.publish();
+	base_dmn.getIpc().publish();
 }
 
 void MUKS::SetNoData(BaseDaemon& base_dmn)
 {
 	const auto n_params = base_dmn.getDaemonCfg().GetParamsCount();
 	for (unsigned int i = 0; i < n_params; i++) {
-		base_dmn.setRead(i, SZARP_NO_DATA);
+		base_dmn.getIpc().setRead(i, SZARP_NO_DATA);
 	}
 }
 
