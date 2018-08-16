@@ -329,6 +329,6 @@ void Snap7Daemon::Read(BaseDaemon& base_dmn)
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<Snap7Daemon>(argc, argv, "kamsdmn");
+	BaseDaemonFactory::Go<Snap7Daemon>(argc, argv, "snap7dmn");
 	return 0;
 }

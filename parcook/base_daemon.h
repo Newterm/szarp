@@ -108,7 +108,7 @@ private:
 struct BaseDaemonFactory {
 	static ArgsManager InitArgsManager(int argc, const char *argv[], const std::string& daemon_name);
 
-	static std::unique_ptr<DaemonConfigInfo> InitDaemonConfig(ArgsManager& args_mgr);
+	static std::unique_ptr<DaemonConfigInfo> InitDaemonConfig(ArgsManager& args_mgr, const std::string& daemon_name);
 
 	static std::unique_ptr<IPCFacade> InitIPC(ArgsManager& args_mgr, DaemonConfigInfo& daemon_config);
 

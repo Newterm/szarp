@@ -45,23 +45,18 @@ void IPCFacade::InitSz3(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
 }
 
 void IPCFacade::InitSz4(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
-	bopt<char*> sub_conn_address = args_mgr.get<char*>("parhub", "sub_conn_addr");
-	bopt<char*> pub_conn_address = args_mgr.get<char*>("parhub", "pub_conn_addr");
+	bopt<std::string> sub_conn_address = args_mgr.get<std::string>("parhub", "sub_conn_addr");
+	bopt<std::string> pub_conn_address = args_mgr.get<std::string>("parhub", "pub_conn_addr");
 
 	if (!sub_conn_address || !pub_conn_address) {
 		throw std::runtime_error("Could not get parhub's address from configuration, exiting!");
 	}
 
 	try {
-		sz4_ipc = std::make_unique<zmqhandler>(&dmn_cfg, m_zmq_ctx, *pub_conn_address, *sub_conn_address);
+		sz4_ipc = std::make_unique<zmqhandler>(&dmn_cfg, m_zmq_ctx, pub_conn_address->c_str(), sub_conn_address->c_str());
 	} catch (zmq::error_t& e) {
-		free(*sub_conn_address);
-		free(*pub_conn_address);
 		throw std::runtime_error(std::string("ZMQ initialization failed: ") + std::string(e.what()));
 	}
-
-	free(*sub_conn_address);
-	free(*pub_conn_address);
 }
 
 IPCFacade::IPCFacade(ArgsManager& args_mgr, DaemonConfigInfo& dmn_cfg) {
@@ -234,12 +229,12 @@ ArgsManager BaseDaemonFactory::InitArgsManager(int argc, const char *argv[], con
 	return args_mgr;
 }
 
-std::unique_ptr<DaemonConfigInfo> BaseDaemonFactory::InitDaemonConfig(ArgsManager& args_mgr) {
+std::unique_ptr<DaemonConfigInfo> BaseDaemonFactory::InitDaemonConfig(ArgsManager& args_mgr, const std::string& daemon_name) {
 	if (args_mgr.has("use-cfgdealer")) {
-		szlog::init(args_mgr, "borutadmn");
+		szlog::init(args_mgr, daemon_name);
 		return std::make_unique<ConfigDealerHandler>(args_mgr);
 	} else {
-		auto d_cfg = std::make_unique<DaemonConfig>("borutadmn_z");
+		auto d_cfg = std::make_unique<DaemonConfig>(daemon_name.c_str());
 		if (d_cfg->Load(args_mgr)) {
 			throw std::runtime_error("Unable to parse configuration, check previous logs.");
 		}
@@ -255,7 +250,7 @@ std::unique_ptr<IPCFacade> BaseDaemonFactory::InitIPC(ArgsManager& args_mgr, Dae
 BaseDaemon BaseDaemonFactory::Init(int argc, const char *argv[], const std::string& daemon_name) {
 	try {
 		auto args_mgr = BaseDaemonFactory::InitArgsManager(argc, argv, daemon_name);
-		auto dmn_cfg = BaseDaemonFactory::InitDaemonConfig(args_mgr);
+		auto dmn_cfg = BaseDaemonFactory::InitDaemonConfig(args_mgr, daemon_name);
 		auto ipc_handler = BaseDaemonFactory::InitIPC(args_mgr, *dmn_cfg);
 		EventBaseHolder::Initialize();
 		return BaseDaemon(std::move(args_mgr), std::move(dmn_cfg), std::move(ipc_handler));

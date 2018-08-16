@@ -45,6 +45,15 @@ struct _ms {
 	}
 };
 
+struct _s {
+	static struct timeval get_timeval(int64_t m_t) {
+		struct timeval tv;
+		tv.tv_sec = m_t;
+		tv.tv_usec = 0;
+		return tv;
+	}
+};
+
 } // ns util
 
 template <typename ts>
@@ -69,6 +78,7 @@ struct time_spec {
 	}
 };
 
+using sec = time_spec<util::_s>;
 using ms = time_spec<util::_ms>;
 using us = time_spec<util::_us>;
 

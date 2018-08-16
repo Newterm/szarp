@@ -4,6 +4,7 @@ struct event_base* EventBaseHolder::evbase = nullptr;
 
 namespace szarp {
 
+template class time_spec<util::_s>;
 template class time_spec<util::_ms>;
 template class time_spec<util::_us>;
 
@@ -21,6 +22,7 @@ time_spec<ts> operator-(const time_spec<ts>& ms1, const time_spec<ts>& ms2) {
 	return m;
 }
 
+template time_spec<util::_s> operator-(const time_spec<util::_s>&, const time_spec<util::_s>&);
 template time_spec<util::_ms> operator-(const time_spec<util::_ms>&, const time_spec<util::_ms>&);
 template time_spec<util::_us> operator-(const time_spec<util::_us>&, const time_spec<util::_us>&);
 
