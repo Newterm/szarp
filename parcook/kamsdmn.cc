@@ -58,7 +58,7 @@
 
 #define RESPONSE_SIZE 82
 
-#define RESTART_INTERVAL_MS 15000
+szarp::sec restart_interval(15);
 
 bool single;
 
@@ -85,7 +85,8 @@ public:
 			m_state(SET_COMM_WRITE),
 			m_read_mode(MODE_B1200_EVEN),
 			m_chars_written(0),
-			m_wait_for_data_ms(6000),
+			m_query_interval(280000),
+			m_wait_for_data(6000),
 			m_path(""),
 			m_ip(""),
 			m_use_atc(false),
@@ -94,10 +95,9 @@ public:
 		m_query_command.push_back('/');
 		m_query_command.push_back('#');
 		m_query_command.push_back('1');
-		m_event_base = event_base_new(); // TODO: use scheduler
 		ParseConfig();
+
 		StartDo();
-		base_dmn.setCycleHandler([this](BaseDaemon&){ Do(); });
 	}
 
 	~kams_daemon()
@@ -114,11 +114,7 @@ public:
 	void StartDo();
 
 protected:
-	/** Schedule next state machine step */
-	void ScheduleNext(unsigned int wait_ms=0);
-
-	/** Callback for next step of timed state machine. */
-	static void TimerCallback(int fd, short event, void* thisptr);
+	Scheduler query_scheduler;
 
 	/** One step of state machine */
 	void Do();
@@ -176,9 +172,8 @@ protected:
 	std::vector<unsigned char> m_query_command;
 					/**< commmand used for communication with device */
 	unsigned int m_chars_written;	/**< counter of number of chars written to device */
-	unsigned int m_query_interval_ms;
-					/**< interval between single queries */
-	unsigned int m_wait_for_data_ms;/**< time for which daemon waits for data from Kamstrup meter */
+	szarp::ms m_query_interval; /**< interval between single queries */
+	szarp::ms m_wait_for_data; /**< time for which daemon waits for data from Kamstrup meter */
 
 	std::string m_read_buffer;	/**< buffer for data received from Kamstrup meter */
 	std::vector<unsigned int> m_params;
@@ -194,26 +189,25 @@ protected:
 	bool m_use_atc;
 
 	BaseConnection *m_connection;
-	struct event_base *m_event_base;
 };
 
 void kams_daemon::StartDo() {
-	evtimer_set(&m_ev_timer, TimerCallback, this);
-	event_base_set(m_event_base, &m_ev_timer);
+	query_scheduler.set_callback(new FnPtrScheduler([this](){ Do();}));
+
 	sz_log(10, "%s: Creating connection...", m_id.c_str());
 	try {
 		if (m_ip.compare("") != 0) {
 			if (m_use_atc) {
-				AtcConnection *client = new AtcConnection(m_event_base);
+				AtcConnection *client = new AtcConnection(EventBaseHolder::evbase);
 				client->InitTcp(m_ip, m_data_port, m_cmd_port);
 				m_connection = client;
 			} else {
-				SerialAdapter *client = new SerialAdapter(m_event_base);
+				SerialAdapter *client = new SerialAdapter(EventBaseHolder::evbase);
 				client->InitTcp(m_ip, m_data_port, m_cmd_port);
 				m_connection = client;
 			}
 		} else {
-			SerialPort *port = new SerialPort(m_event_base);
+			SerialPort *port = new SerialPort(EventBaseHolder::evbase);
 			m_connection = port;
 			port->Init(m_path);
 		}
@@ -223,9 +217,10 @@ void kams_daemon::StartDo() {
 	} catch (SerialPortException &e) {
 		sz_log(1, "%s: Open port resulted in: %s", m_id.c_str(), e.what());
 		SetRestart();
-		ScheduleNext(RESTART_INTERVAL_MS);
+		query_scheduler.schedule(restart_interval);
 	}
-	event_base_dispatch(m_event_base);
+
+	base_dmn.poll_forever();
 }
 
 void kams_daemon::OpenFinished(const BaseConnection* conn)
@@ -233,7 +228,7 @@ void kams_daemon::OpenFinished(const BaseConnection* conn)
 	std::string info = m_id + ": connection established.";
 	sz_log(2, "%s: %s", m_id.c_str(), info.c_str());
 	m_state = SET_COMM_WRITE;
-	ScheduleNext();
+	query_scheduler.schedule(szarp::ms(0));
 }
 
 void kams_daemon::SetConfigurationFinished(const BaseConnection *conn)
@@ -241,12 +236,13 @@ void kams_daemon::SetConfigurationFinished(const BaseConnection *conn)
 	// do nothing
 	// 1) WRITE: according to previous implementation we should wait 2s nevertheless
 	//    (commit: d6b08af2f8d184088ac237c20a9125df25fadb53)
-	// 2) READ: ScheduleNext will be triggered by ReadData
+	// 2) READ: schedule will be triggered by ReadData
 }
 
 void kams_daemon::Do()
 {
-	unsigned int wait_ms = 0;
+	sz_log(10, "Main loop callback");
+	szarp::ms wait_time(0);
 	switch (m_state) {
 		case SET_COMM_WRITE:
 			sz_log(10, "%s: SET_COMM_WRITE", m_id.c_str());
@@ -254,7 +250,7 @@ void kams_daemon::Do()
 			m_read_buffer.clear();
 			m_chars_written = 0;
 			m_state = WRITE;
-			wait_ms = 2000;
+			wait_time = szarp::ms(2000);
 			break;
 		case WRITE:
 			sz_log(10, "%s: WRITE", m_id.c_str());
@@ -268,7 +264,7 @@ void kams_daemon::Do()
 				m_chars_written = 0;
 				m_state = REPEAT_WRITE;
 			}
-			wait_ms = 50;
+			wait_time = szarp::ms(50);
 			break;
 		case REPEAT_WRITE:
 			sz_log(10, "%s: REPEAT_WRITE", m_id.c_str());
@@ -279,25 +275,25 @@ void kams_daemon::Do()
 				SetRestart();
 			}
 			if (m_chars_written < 3) {
-				wait_ms = 50;
+				wait_time = szarp::ms(50);
 			} else {
 				m_state = SET_COMM_READ;
-				wait_ms = 10;
+				wait_time = szarp::ms(10);
 			}
 			break;
 		case SET_COMM_READ:
 			sz_log(10, "%s: SET_COMM_READ", m_id.c_str());
 			SelectSerialMode(m_read_mode);
 			m_state = READ;
-			wait_ms = m_wait_for_data_ms;
-			sz_log(10, "%s: waiting for data, wait time = %dms", m_id.c_str(),
-				m_wait_for_data_ms);
+			wait_time = m_wait_for_data;
+			sz_log(10, "%s: waiting for data, wait time = %ldms", m_id.c_str(),
+				m_wait_for_data.m_t);
 			break;
 		case READ:
 			sz_log(10, "%s: READ", m_id.c_str());
 			try {
 				ProcessResponse();
-				wait_ms = m_query_interval_ms;
+				wait_time = m_query_interval;
 				m_state = SET_COMM_WRITE;
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 					base_dmn.getIpc().setRead<int16_t>(i, m_params.at(i));
@@ -305,12 +301,12 @@ void kams_daemon::Do()
 				base_dmn.getIpc().publish();
 			} catch (NoDataException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
-				wait_ms = 0;
+				wait_time = szarp::ms(0);
 				IncreaseWaitForDataTime();
 				SetRestart();
 			} catch (KamsDmnException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
-				wait_ms = 1000;
+				wait_time = szarp::ms(1000);
 				m_state = SET_COMM_WRITE;
 				for (size_t i = 0; i < base_dmn.getDaemonCfg().GetParamsCount(); i++) {
 					base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
@@ -318,7 +314,7 @@ void kams_daemon::Do()
 				base_dmn.getIpc().publish();
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: %s", m_id.c_str(), e.what());
-				wait_ms = 0;
+				wait_time = szarp::ms(0);
 				IncreaseWaitForDataTime();
 				SetRestart();
 			}
@@ -334,15 +330,14 @@ void kams_daemon::Do()
 					base_dmn.getIpc().setRead<int16_t>(i, SZARP_NO_DATA);
 				}
 				base_dmn.getIpc().publish();
-				wait_ms = RESTART_INTERVAL_MS;
-				ScheduleNext(wait_ms);
+				query_scheduler.schedule(restart_interval);
 			}
 			// in the case of restart we should either
 			// get OpenFinished event or ReadError
-			// which should ScheduleNext on themselves
+			// which should schedule on themselves
 			return;
 	}
-	ScheduleNext(wait_ms);
+	query_scheduler.schedule(wait_time);
 }
 
 void kams_daemon::SelectSerialMode(SerialMode mode)
@@ -379,7 +374,7 @@ void kams_daemon::ReadError(const BaseConnection *conn, short event)
 	sz_log(1, "%s: ReadError, closing connection..", m_id.c_str());
 	m_connection->Close();
 	SetRestart();
-	ScheduleNext(RESTART_INTERVAL_MS);
+	query_scheduler.schedule(restart_interval);
 }
 
 void kams_daemon::ReadData(const BaseConnection *conn,
@@ -391,16 +386,16 @@ void kams_daemon::ReadData(const BaseConnection *conn,
 	m_read_buffer.insert(m_read_buffer.end(), data.begin(), data.end());
 	unsigned int expected_response_size = RESPONSE_SIZE - 1;	// LF isn't read by bufferevent
 	if (m_read_buffer.size() == expected_response_size) {
-		ScheduleNext();
+		query_scheduler.schedule(szarp::ms(0));
 	}
 }
 
 void kams_daemon::IncreaseWaitForDataTime()
 {
-	unsigned int max_ms = 30 * 1000;
-	unsigned int step_ms = 6 * 1000;
-	if (m_wait_for_data_ms < max_ms)
-		m_wait_for_data_ms += step_ms;
+	szarp::ms max = 30 * 1000;
+	szarp::ms step = 6 * 1000;
+	if (m_wait_for_data < max)
+		m_wait_for_data += step;
 }
 
 void kams_daemon::ProcessResponse()
@@ -493,18 +488,6 @@ std::vector<std::string> kams_daemon::SplitMessage()
 	return tokens;
 }
 
-void kams_daemon::ScheduleNext(unsigned int wait_ms)
-{
-	const struct timeval tv = ms2timeval(wait_ms);
-	evtimer_add(&m_ev_timer, &tv);
-	sz_log(10, "%s: ScheduleNext in %dms", m_id.c_str(), wait_ms);
-}
-
-void kams_daemon::TimerCallback(int fd, short event, void* thisptr)
-{
-	reinterpret_cast<kams_daemon*>(thisptr)->Do();
-}
-
 void kams_daemon::ParseConfig() {
 	auto& cfg = base_dmn.getDaemonCfg();
 	if (cfg.GetParamsCount() != NUMBER_OF_VALS) {
@@ -517,10 +500,10 @@ void kams_daemon::ParseConfig() {
 
 	if (cfg.GetSingle() || args_mgr.get<int>("debug").get_value_or(2) > 8) {
 		single = true;
-		m_query_interval_ms = 3000;
+		m_query_interval = szarp::ms(3000);
 	} else {
 		single = false;
-		m_query_interval_ms = 280 * 1000;	/* for saving heatmeter battery */
+		m_query_interval = szarp::ms(3000);//280 * 1000);	/* for saving heatmeter battery */
 	}
 
 
