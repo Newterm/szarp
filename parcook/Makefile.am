@@ -50,7 +50,6 @@ bin_PROGRAMS = \
 	      k601dmn \
 	      kamsdmn \
 	      kwmsdmn \
-	      lbdmn \
 	      mbdmn \
 	      borutadmn \
 	      borutadmn_z \
@@ -61,15 +60,12 @@ bin_PROGRAMS = \
 	      pafdmnr \
 	      parcook \
 	      polludmn \
-	      ratedmn \
 	      rsdmn \
 	      sampledmn \
 	      sbusdmn \
 	      iecdmn \
-	      prodmn \
 	      tcpdmn \
 	      testdmn \
-	      wlkdmn \
 	      pythondmn \
 	      defdmn
 
@@ -85,8 +81,6 @@ EXTRA_PROGRAMS = ddedmn
 basedmn_SOURCES = base_daemon.cc base_daemon.h utils.cpp cfgdealer_handler.cpp
 
 dpafdmn_SOURCES = dpafdmn.cc
-
-lbdmn_SOURCES = lbdmn.cc
 
 dbdmn_SOURCES = dbdmn.cc $(basedmn_SOURCES)
 
@@ -114,8 +108,6 @@ polludmn_SOURCES = polludmn.cc
 
 calcdmn_SOURCES = calcdmn.cc
 
-ratedmn_SOURCES = ratedmn.cc
-
 aqtdmn_SOURCES = aqtdmn.cc
 
 muksdmn_SOURCES = muksdmn.cc $(basedmn_SOURCES)
@@ -131,9 +123,6 @@ testdmn_SOURCES = testdmn.cc
 parcook_SOURCES = parcook.cc funtable.cc funtable.h
 
 mbusdmn_SOURCES = mbusdmn.cc
-
-wlkdmn_SOURCES = wlkdmn.cc
-wlkdmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_REGEX_LIB)
 
 mbdmn_SOURCES = mbdmn.cc
 mbdmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
@@ -153,9 +142,6 @@ ddedmn_LDADD = $(LDADD) $(BOOST_LDFLAGS) $(XMLRPC_EPI_LIBS) $(CURL_LIBS) -lstdc+
 
 iecdmn_SOURCES = iecdmn.cc
 iecdmn_LDADD = $(LDADD)
-
-prodmn_SOURCES = prodmn.cc
-prodmn_LDADD = $(LDADD) @EVENT_LIBS@ @XML_LIBS@ @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB)
 
 pythondmn_SOURCES = pythondmn.cc cfgdealer_handler.cpp
 pythondmn_LDADD = -l$(BOOST_PYTHON_LIB) @PTHREAD_CFLAGS@ $(BOOST_DATE_TIME_LIB) $(BOOST_FILESYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_PYTHON_MODULE) $(PYTHON_LDFLAGS) $(LDADD)
