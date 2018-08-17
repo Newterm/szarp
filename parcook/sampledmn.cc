@@ -63,7 +63,7 @@ public:
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<SampleDaemon>(argc, argv, "sampledmn");
+	BaseDaemonFactory::Go<SampleDaemon>("sampledmn", argc, argv);
 	return 0;
 }
 

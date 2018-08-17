@@ -86,7 +86,7 @@ dbdmn_SOURCES = dbdmn.cc $(basedmn_SOURCES)
 
 dprdmn_SOURCES = dprdmn.cc
 
-execdmn_SOURCES = execdmn.cc
+execdmn_SOURCES = execdmn.cc $(basedmn_SOURCES)
 
 ipcinfo_SOURCES = ipcinfo.cc
 

@@ -157,7 +157,7 @@ void IPCFacade::setNoData(size_t ind) {
 
 template <typename VT>
 VT IPCFacade::getSend(size_t ind) {
-	if (ind > send_count || ind < 0) {
+	if (ind >= send_count || ind < 0) {
 		szlog::log() << szlog::warning << "Got invalid send index " << ind << szlog::endl;
 		return sz4::no_data<VT>();
 	}
@@ -203,7 +203,13 @@ BaseDaemon::BaseDaemon(ArgsManager&& _args_mgr, std::unique_ptr<DaemonConfigInfo
 	m_scheduler.set_timeout(szarp::ms(duration));
 }
 
-void BaseDaemon::setCycleHandler(std::function<void(BaseDaemon&)> cb) { daemon_cycle_callback = cb; }
+void BaseDaemon::setCycleHandler(std::function<void(BaseDaemon&)> cb) {
+	daemon_cycle_callback = cb;
+}
+
+void BaseDaemon::setCyclePeriod(szarp::sec period) {
+	m_scheduler.set_timeout(period);
+}
 
 void BaseDaemon::poll_forever() {
 	new_cycle();
@@ -247,9 +253,18 @@ std::unique_ptr<IPCFacade> BaseDaemonFactory::InitIPC(ArgsManager& args_mgr, Dae
 	return std::make_unique<IPCFacade>(args_mgr, daemon_config);
 }
 
-BaseDaemon BaseDaemonFactory::Init(int argc, const char *argv[], const std::string& daemon_name) {
+BaseDaemon BaseDaemonFactory::Init(const std::string& daemon_name, int argc, const char *argv[]) {
 	try {
 		auto args_mgr = BaseDaemonFactory::InitArgsManager(argc, argv, daemon_name);
+		return BaseDaemonFactory::Init(daemon_name, std::move(args_mgr));
+	} catch(const std::exception& e) {
+		sz_log(0, "Encountered error during daemon configuration: %s. Daemon will now exit.", e.what());
+		exit(1);
+	}
+}
+
+BaseDaemon BaseDaemonFactory::Init(const std::string& daemon_name, ArgsManager&& args_mgr) {
+	try {
 		auto dmn_cfg = BaseDaemonFactory::InitDaemonConfig(args_mgr, daemon_name);
 		auto ipc_handler = BaseDaemonFactory::InitIPC(args_mgr, *dmn_cfg);
 		EventBaseHolder::Initialize();
@@ -259,4 +274,3 @@ BaseDaemon BaseDaemonFactory::Init(int argc, const char *argv[], const std::stri
 		exit(1);
 	}
 }
-

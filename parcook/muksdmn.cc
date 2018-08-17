@@ -525,6 +525,6 @@ int MUKS::ParsePacket (char *Packet, unsigned char order, unsigned short size, u
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<MUKS>(argc, argv, "muksdmn");
+	BaseDaemonFactory::Go<MUKS>("muksdmn", argc, argv);
 	return 0;
 }

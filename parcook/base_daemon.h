@@ -85,6 +85,7 @@ public:
 	BaseDaemon(ArgsManager&&, std::unique_ptr<DaemonConfigInfo>, std::unique_ptr<IPCFacade>);
 
 	void setCycleHandler(std::function<void(BaseDaemon&)> cb);
+	void setCyclePeriod(szarp::sec);
 	void poll_forever();
 
 	const DaemonConfigInfo& getDaemonCfg() const { return *dmn_cfg; }
@@ -112,12 +113,13 @@ struct BaseDaemonFactory {
 
 	static std::unique_ptr<IPCFacade> InitIPC(ArgsManager& args_mgr, DaemonConfigInfo& daemon_config);
 
-	static BaseDaemon Init(int argc, const char *argv[], const std::string& daemon_name);
+	static BaseDaemon Init(const std::string& daemon_name, int argc, const char *argv[]);
+	static BaseDaemon Init(const std::string& daemon_name, ArgsManager&& args_mgr);
 
 	/* this can be overloaded to fit daemon's needs */
-	template <typename DaemonType>
-	static void Go(int argc, const char *argv[], const std::string& daemon_name) {
-		auto base_dmn = BaseDaemonFactory::Init(argc, argv, daemon_name);
+	template <typename DaemonType, typename... InitArgs>
+	static void Go(InitArgs&&... args) {
+		auto base_dmn = BaseDaemonFactory::Init(std::forward<InitArgs>(args)...);
 		DaemonType daemon(base_dmn);
 		base_dmn.poll_forever();
 	}

@@ -308,7 +308,7 @@ void DbDaemon::Read(BaseDaemon& base_dmn)
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<DbDaemon>(argc, argv, "dbdmn");
+	BaseDaemonFactory::Go<DbDaemon>("dbdmn", argc, argv);
 	return 0;
 }
 

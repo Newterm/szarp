@@ -102,6 +102,6 @@ void S7Daemon::Transfer()
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<S7Daemon>(argc, argv, "s7dmn");
+	BaseDaemonFactory::Go<S7Daemon>("s7dmn", argc, argv);
 	return 0;
 }

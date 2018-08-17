@@ -529,6 +529,6 @@ void kams_daemon::ParseConfig() {
 
 int main(int argc, const char *argv[])
 {
-	BaseDaemonFactory::Go<kams_daemon>(argc, argv, "kamsdmn");
+	BaseDaemonFactory::Go<kams_daemon>("kamsdmn", argc, argv);
 	return 0;
 }
