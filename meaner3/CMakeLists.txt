@@ -1,110 +1,317 @@
-cmake_minimum_required(VERSION 3.5)
-
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
-)
-
-link_directories(
-  ${TQT_LIBRARY_DIRS}
-)
-
 add_definitions(
-  -DPREFIX=\"@prefix@\"
+  -DHAVE_CONFIG_H
+  -DPREFIX="/opt/szarp"
 )
 
-
-##### meaner3 (executable) ######################
-
-add_executable( meaner3
-  meaner3.cc meaner3.h tmeaner.cc tmeaner.h tparcook.cc tparcook.h
-    tsaveparam.cc tsaveparam.h texecute.cc texecute.h texecsect.cc texecsect.h
-    texecalarm.cc texecalarm.h tstatus.cc tstatus.h twriter.cc twriter.h
-    classes.h
-  DESTINATION ${BIN_INSTALL_DIR}
+add_executable(meaner3
+  meaner3.cc tmeaner.cc tparcook.cc tsaveparam.cc
+  texecute.cc texecsect.cc texecalarm.cc tstatus.cc
+  twriter.cc
 )
 
-
-##### peakator (executable) #####################
-
-add_executable( peakator
-  utils/peakator.cc tsaveparam.cc tsaveparam.h tstatus.cc tstatus.h
-  DESTINATION ${BIN_INSTALL_DIR}
+target_include_directories(meaner3
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
 )
 
-
-##### prober (executable) #######################
-
-add_executable( prober
-  fileremover.cc tparcook.cc tsaveparam.cc twriter.cc tprober.cc tstatus.cc
-    prober.cc
-  DESTINATION ${BIN_INSTALL_DIR}
+target_link_libraries(meaner3
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
 )
 
+add_executable(peakator
+  utils/peakator.cc tsaveparam.cc tstatus.cc
+)
 
-##### szbedit (executable) ####################
+target_include_directories(peakator
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
 
-add_executable( szbedit
+target_link_libraries(peakator
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
+
+add_executable(prober
+  fileremover.cc tparcook.cc tsaveparam.cc twriter.cc
+  tprober.cc tstatus.cc prober.cc
+)
+
+target_include_directories(prober
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(prober
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
+
+add_executable(szbedit
   utils/szbedit.cc
-  DESTINATION ${BIN_INSTALL_DIR}
 )
 
-
-##### extrszb (executable) ####################
-
-add_executable( extrszb
-  utils/extraszb.cc
-  DESTINATION ${BIN_INSTALL_DIR}
+target_include_directories(szbedit
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
 )
 
+target_link_libraries(szbedit
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+   newt
+)
 
-##### szbindex (executable) #####################
+add_executable(extrszb
+  utils/extrszb.cc
+)
 
-add_executable( szbindex
+target_include_directories(extrszb
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(extrszb
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
+
+add_executable(szbindex
   utils/szbindex.cc
-  DESTINATION ${BIN_INSTALL_DIR}
 )
 
+target_include_directories(szbindex
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
 
-##### szbreader (executable) ####################
+target_link_libraries(szbindex
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
 
-add_executable( szbreader
+add_executable(szbreader
   utils/szbreader.cc
-  DESTINATION ${BIN_INSTALL_DIR}
 )
 
-
-##### szbwriter (executable) ####################
-
-add_executable( szbwriter
-  utils/szbwriter.cc utils/szbwriter_cache.cc utils/szbwriter_cache.h
-    utils/tmmapparam.cc utils/tmmapparam.h tsaveparam.h tsaveparam.cc tstatus.h
-    tstatus.cc
-  DESTINATION ${BIN_INSTALL_DIR}
+target_include_directories(szbreader
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
 )
 
-
-##### szbndremover (executable) #################
-
-add_executable( szbndremover
-  utils/szbndremover.cc tsaveparam.cc tsaveparam.h tstatus.cc tstatus.h
-  DESTINATION ${BIN_INSTALL_DIR}
+target_link_libraries(szbreader
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
 )
 
-
-##### szbmod (executable) #######################
-
-add_executable( szbmod
-  utils/szbmod.cc tsaveparam.cc tsaveparam.h tstatus.cc tstatus.h
-  DESTINATION ${BIN_INSTALL_DIR}
+add_executable(szbwriter
+  utils/szbwriter.cc utils/szbwriter_cache.cc utils/tmmapparam.cc
+  tsaveparam.cc tstatus.cc
 )
 
+target_include_directories(szbwriter
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
 
-##### szbnull (executable) ######################
+target_link_libraries(szbwriter
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
 
-add_executable( szbnull
+add_executable(szbndremover
+  utils/szbndremover.cc tsaveparam.cc tstatus.cc
+)
+
+target_include_directories(szbndremover
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(szbndremover
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
+
+add_executable(szbmod
+  utils/szbmod.cc tsaveparam.cc tstatus.cc
+)
+
+target_include_directories(szbmod
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(szbmod
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
+)
+
+add_executable(szbnull
   utils/szbnull.cc
-  DESTINATION ${BIN_INSTALL_DIR}
+)
+
+target_include_directories(szbnull
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${LIBXML2_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(szbnull
+   Szarp
+   Szarp2
+   SzarpLuaParser
+   ${Boost_LIBRARIES}
+   ${CURL_LIBRARIES}
+   ${LIBXML2_LIBRARIES}
+   ${LUA_LIBRARIES}
+   ${PROTOBUF_LIBRARIES}
+   ${Zip_LIBRARIES}
+   ${LIBXSLT_LIBRARIES}
+   python2.7
 )
