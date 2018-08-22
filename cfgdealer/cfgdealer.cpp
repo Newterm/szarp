@@ -32,8 +32,21 @@ CfgDealer::CfgDealer(const ArgsManager& args_mgr) {
 
 void CfgDealer::configure_socket(const ArgsManager& args_mgr) {
 	const auto sub_addr = *args_mgr.get<std::string>("cfgdealer-address");
-	socket.reset(new zmq::socket_t(context, ZMQ_REP));
-	socket->bind(sub_addr.c_str());
+
+	try {
+		socket.reset(new zmq::socket_t(context, ZMQ_REP));
+		socket->bind(sub_addr.c_str());
+	} catch(const zmq::error_t& e) {
+		/* make the error as verbose as possible - this is critical */
+		sz_log(0, "Error: could not bind to %s: %s, is another instance running? Cfgdealer will now exit.", sub_addr.c_str(), e.what());
+		std::cout << "Encountered error, check previous logs" << std::endl;
+		exit(1);
+	} catch(const std::exception& e) {
+		/* make the error as verbose as possible - this is critical */
+		sz_log(0, "Could not initialize cfgdealer, error was %s", e.what());
+		std::cout << "Encountered error, check previous logs" << std::endl;
+		exit(1);
+	}
 }
 
 void CfgDealer::prepare_config(const ArgsManager& args_mgr) {
@@ -190,9 +203,9 @@ void CfgDealer::output_device_config(const ptree& device_config) {
 }
 
 void CfgDealer::send_reply(const std::string& str) {
-	zmq::message_t reply (str.size());
-	memcpy (reply.data(), str.c_str(), str.size());
-	socket->send (reply);
+	zmq::message_t reply(str.size());
+	memcpy(reply.data(), str.c_str(), str.size());
+	socket->send(reply);
 }
 
 int main (int argc, char ** argv) {
