@@ -69,8 +69,9 @@ def start_element(name, attrs):
 	searchChangeToExtra = ["param", "send"]
 	if name in searchChangeToExtra:
 		tag = "<" + name + " "
-		if ( name == "param"):
+		if (name == "param"):
 			debug = []
+			# Sorting known attributes
 			for element in orderOfAttributes:
 				i = 0
 				for option,value in zip(attrs[0::2], attrs[1::2]):
@@ -87,6 +88,27 @@ def start_element(name, attrs):
 							tag = tag + option + "=\"" + value + "\" "
 							debug.append(option)
 							debug.append(value)
+
+			# Adding unknown attributes at the end of tag
+			for option,value in zip(attrs[0::2], attrs[1::2]):
+				if any(toChange in option for toChange in attrsToChange):
+					prefix,attrib = option.split(":")
+					toCheck = "extra:" + attrib
+					if toCheck not in tag:
+						tag = tag + "extra:" + attrib + "=\"" + value + "\" "
+						debug.append(option)
+						debug.append(value)
+						print('Unknown attribute: ' + option + '=\"' + value + '\"')
+						print('Adding at the end of tag')
+				else:
+					if option not in tag:
+						tag = tag + option + "=\"" + value + "\" "
+						debug.append(option)
+						debug.append(value)
+						print('Unknown attribute: ' + option + '=\"' + value + '\"')
+						print('Adding at the end of tag')
+
+			# Check if amount of output attrs is same as input attrs
 			if(len(debug) != i):
 				print("Something went wrong, some attributes are missing")
 				print(tag)
