@@ -417,9 +417,9 @@ void DrawsWidget::Print(bool preview) {
 		draws.push_back(m_draws_controller->GetDraw(i));
 
 	if (preview)
-		Print::DoPrintPreviev(draws, draws.size());
+		Print::DoPrintPreviev(m_draws_controller, draws, draws.size());
 	else
-		Print::DoPrint(m_parent, draws, draws.size());
+		Print::DoPrint(m_parent, m_draws_controller, draws, draws.size());
 
 	m_parent->SetFocus();
 }

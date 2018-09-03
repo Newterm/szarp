@@ -36,11 +36,12 @@ void FileloggerTest::test() {
 	szlog::log() << szlog::flush;
 
 	std::ifstream logfile(LOGFILE);
-	std::string date, hour, level, msg;
-	logfile >> date >> hour >> level >> msg;
+	std::string date, hour, pid, msg;
+	logfile >> date >> hour >> pid >> msg;
+	CPPUNIT_ASSERT_EQUAL(pid, "["+std::to_string(::getpid())+"]:");
 	CPPUNIT_ASSERT_EQUAL(msg, std::string("0"));
 
-	logfile >> date >> hour >> level >> msg;
+	logfile >> date >> hour >> pid >> msg;
 	CPPUNIT_ASSERT(msg == std::string("1"));
 
 	CPPUNIT_ASSERT_EQUAL(remove("/tmp/test.log"), 0);

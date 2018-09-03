@@ -420,9 +420,15 @@ public:
 
 	void update_val(zmqhandler& handler, size_t index) override {
 		auto vt_pair = handler.get_send<value_type>(index, this->m_prec);
-		if (!sz4::is_valid(vt_pair)) {
-			m_log->log(10, "Sent value for index %zu was invalid", index);
-			return; // do not overwrite, wait for data timeout instead
+
+		if (!sz4::time_trait<sz4::nanosecond_time_t>::is_valid(vt_pair.time)) {
+			m_log->log(6, "Sent value for index %zu was invalid", index);
+			return; // waiting for timeout or nodata
+		}
+
+		if (sz4::value_is_no_data(vt_pair.value)) {
+			m_log->log(6, "Sent value for index %zu was no data", index);
+			vt_pair.value = m_nodata_value;
 		}
 
 		szlog::log() << szlog::debug << m_log->header << ": setting sent value " << vt_pair.value << " for index " << index << szlog::endl;

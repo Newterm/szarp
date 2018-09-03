@@ -1,5 +1,6 @@
 #include "loghandlers.h"
 #include "liblog.h"
+#include <unistd.h>
 
 namespace szlog {
 
@@ -38,9 +39,10 @@ void FileLogger::log(const char* msg, szlog::priority p) const {
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 	auto localtime_t = std::localtime(&in_time_t);
+	auto pid = ::getpid();
 
 	*logfile << format_date(localtime_t);
-	*logfile << ": ";
+	*logfile << "[" << pid << "]: ";
 	*logfile << msg;
 	*logfile << std::endl;
 }
