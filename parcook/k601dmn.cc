@@ -86,17 +86,17 @@
 #include "szarp.h"
 #include "conversion.h"
 
-#include "ipchandler.h"
 #include "liblog.h"
 
+#include <vector>
 #include "k601-prop-plugin.h"
+
 #include "serialport.h"
 #include "serialadapter.h"
 #include "atcconn.h"
 #include "daemonutils.h"
-#include "xmlutils.h"
 #include "custom_assert.h"
-#include "cfgdealer_handler.h"
+#include "base_daemon.h"
 
 #define REGISTER_NOT_FOUND -1
 
@@ -167,7 +167,7 @@ public:
 		free(unique_registers);
 	}
 
-	void parseXML(DaemonConfigInfo * cfg);
+	void parseXML(const DaemonConfigInfo &cfg);
 
 	void parseDevice(DeviceInfo*);
 
@@ -204,19 +204,19 @@ void KamstrupInfo::parseParam(IPCParamInfo* param, size_t param_no)
 	}
 }
 
-void KamstrupInfo::parseXML(DaemonConfigInfo * cfg)
+void KamstrupInfo::parseXML(const DaemonConfigInfo &cfg)
 {
 	sz_log(10, "KamstrupInfo:parseXML");
 
 	try {
-		parseDevice(cfg->GetDeviceInfo());
+		parseDevice(cfg.GetDeviceInfo());
 	} catch (const std::exception& e) {
 		throw SzException("Error configuring device. Reason was "+std::string(e.what()));
 	}
 
 	size_t param_no = 0;
 
-	const auto& units = cfg->GetUnits();
+	const auto& units = cfg.GetUnits();
 	if (units.size() != 1) {
 		throw SzException("Bad number of units. Should be one, is "+std::to_string(units.size()));
 	}
@@ -345,7 +345,8 @@ class K601Daemon: public ConnectionListener {
 public:
 	typedef enum {RESTART, SEND, READ, PROCESS, FINALIZE} CommunicationState;
 
-	K601Daemon() :
+	K601Daemon(BaseDaemon&& _base_daemon) :
+			base_daemon(std::move(_base_daemon)),
 			m_state(SEND),
 			m_id(""),
 			m_curr_register(0),
@@ -371,7 +372,7 @@ public:
 		}
 	}
 
-	void Init(int argc, char *argv[]);
+	void Init(char *daemon_cmd);
 
 	/** Start event-based state machine */
 	void StartDo();
@@ -401,10 +402,11 @@ protected:
 	{
 		m_state = RESTART;
 		SetNoData();
-		ipc->GoParcook();
+		base_daemon.getIpc().publish();
 	}
 
 protected:
+	BaseDaemon base_daemon;
 	CommunicationState m_state;	/**< state of communication state machine */
 	struct event m_ev_timer;
 					/**< event timer for calling QueryTimerCallback */
@@ -427,7 +429,6 @@ protected:
 	void *plugin;
 	DaemonConfigInfo *cfg;
 	KamstrupInfo *kamsinfo;
-	IPCHandler *ipc;
 	KMPSendInterface *MyKMPSendClass;
 	KMPReceiveInterface *MyKMPReceiveClass;
 	char e_c;
@@ -465,33 +466,19 @@ void K601Daemon::ReadData(const BaseConnection *conn,
 	ScheduleNext();
 }
 
-void K601Daemon::Init(int argc, char *argv[])
+void K601Daemon::Init(char *daemon_cmd)
 {
-	ArgsManager args_mgr("k601dmn");
-	args_mgr.parse(argc, argv, DefaultArgs(), DaemonArgs());
-	args_mgr.initLibpar();
-
-	if (args_mgr.has("use-cfgdealer")) {
-		szlog::init(args_mgr, "k601dmn");
-		cfg = new ConfigDealerHandler(args_mgr);
-	} else {
-		auto d_cfg = new DaemonConfig("k601dmn");
-		if (d_cfg->Load(args_mgr))
-			throw SzException("Could not load configuraion");
-		cfg = d_cfg;
-	}
-
-	kamsinfo = new KamstrupInfo(cfg->GetParamsCount());
+	auto& cfg = base_daemon.getDaemonCfg();
+	kamsinfo = new KamstrupInfo(cfg.GetParamsCount());
 
 	try {
 		kamsinfo->parseXML(cfg);
 	} catch (const std::exception& e) {
 		delete kamsinfo;
-		if (cfg) delete cfg;
 		throw;
 	}
 
-	auto device = cfg->GetDeviceInfo();
+	auto device = cfg.GetDeviceInfo();
 	if (device->hasAttribute("extra:tcp-ip")) {
 		auto ip = device->getAttribute("extra:tcp-ip");
 		auto data_port = device->getAttribute<int>("extra:tcp-data-port", SerialAdapter::DEFAULT_DATA_PORT);
@@ -546,9 +533,9 @@ void K601Daemon::Init(int argc, char *argv[])
 
 	sz_log(2, "Connection address %s", m_id.c_str());
 
-	single = cfg->GetSingle();
+	single = cfg.GetSingle();
 
-	if (cfg->GetSingle()) {
+	if (cfg.GetSingle()) {
 		printf("\
 line number: %d\n\
 device: %s\n\
@@ -556,7 +543,7 @@ id: %s\n\
 params in: %d\n\
 Delay between requests [s]: %d\n\
 Unique registers (read params): %d\n\
-", cfg->GetLineNumber(), device->getAttribute("path").c_str(), m_id.c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
+", cfg.GetLineNumber(), device->getAttribute("path").c_str(), m_id.c_str(), kamsinfo->m_params_count, kamsinfo->delay_between_requests_ms / 1000, kamsinfo->unique_registers_count);
 
 		for (int i = 0; i < kamsinfo->m_params_count; i++)
 			printf("  IN:  reg %04d multiplier %ld type %s\n",
@@ -573,16 +560,10 @@ Unique registers (read params): %d\n\
 
 	}
 
-	try {
-		ipc = new IPCHandler(cfg);
-	} catch (const std::exception& e) {
-		throw std::runtime_error("ERROR!: IPC init failed");
-	}
-
 	sz_log(2, "starting main loop");
 
 	char *plugin_path;
-	auto ret = asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(argv[0]));
+	auto ret = asprintf(&plugin_path, "%s/szarp-prop-plugins.so", dirname(daemon_cmd));
 	if (ret == -1) throw SzException("Error getting dl path");
 
 	plugin = dlopen(plugin_path, RTLD_LAZY);
@@ -692,7 +673,7 @@ void K601Daemon::Do()
 			break;
 		case FINALIZE:
 			sz_log(10, "FINALIZE");
-			ipc->GoParcook();
+			base_daemon.getIpc().publish();
 			destroyReceive(MyKMPReceiveClass);
 			if (cfg->GetSingle())
 				printf("\n");
@@ -722,7 +703,7 @@ void K601Daemon::Do()
 			} catch (SerialPortException &e) {
 				sz_log(1, "%s: Restart failed: %s", m_id.c_str(), e.what());
 				SetNoData();
-				ipc->GoParcook();
+				base_daemon.getIpc().publish();
 				wait_ms = RESTART_INTERVAL_MS;
 				sz_log(10, "Schedule next (restart) in %dms", wait_ms);
 				ScheduleNext(wait_ms);
@@ -738,8 +719,8 @@ void K601Daemon::Do()
 
 void K601Daemon::SetNoData()
 {
-	for (int i = 0; i < ipc->m_params_count; i++) {
-		ipc->m_read[i] = SZARP_NO_DATA;
+	for (unsigned int i = 0; i < base_daemon.getDaemonCfg().GetParamsCount(); i++) {
+		base_daemon.getIpc().setNoData(i);
 	}
 }
 
@@ -747,20 +728,11 @@ void K601Daemon::SetCurrRegisterNoData()
 {
 	switch (register_type) {
 	case RT_LSBMSB:
-		ipc->m_read[kamsinfo->
-				FindRegisterIndex
-				(actual_register, T_LSB)] =
-			SZARP_NO_DATA;
-		ipc->m_read[kamsinfo->
-				FindRegisterIndex
-				(actual_register, T_MSB)] =
-			SZARP_NO_DATA;
+		base_daemon.getIpc().setNoData(kamsinfo->FindRegisterIndex(actual_register, T_LSB));
+		base_daemon.getIpc().setNoData(kamsinfo->FindRegisterIndex(actual_register, T_MSB));
 		break;
 	case RT_SINGLE:
-		ipc->m_read[kamsinfo->
-				FindRegisterIndex
-				(actual_register,
-				 T_SINGLE)] = SZARP_NO_DATA;
+		base_daemon.getIpc().setNoData(kamsinfo->FindRegisterIndex(actual_register, T_SINGLE));
 		break;
 	case RT_ERROR:
 		break;
@@ -783,59 +755,35 @@ void K601Daemon::ProcessResponse()
 			  DetermineRegisterMultiplier
 			  (actual_register));
 
+		auto& ipc = base_daemon.getIpc();
+
 		if (e_c ==
 			MyKMPReceiveClass->GetCONVERT_OK()) {
 
 			switch (register_type) {
 			case RT_LSBMSB:
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_LSB)] =
-					tmp_int_value &
-					0xffff;
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_MSB)] =
-					tmp_int_value >> 16;
-
+				ipc.setRead(kamsinfo->FindRegisterIndex(actual_register, T_LSB), tmp_int_value & 0xffff);
+				ipc.setRead(kamsinfo->FindRegisterIndex(actual_register, T_MSB), tmp_int_value >> 16);
 				break;
 			case RT_SINGLE:
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_SINGLE)]
-					= tmp_int_value;
+				ipc.setRead(kamsinfo->FindRegisterIndex(actual_register, T_SINGLE), tmp_int_value);
 				break;
 			case RT_ERROR:
 				break;
 			}
+
 			if (cfg->GetSingle())
 				printf("Value[%d]: %d\n",
 					   m_curr_register,tmp_int_value);
 		} else {
 			switch (register_type) {
 			case RT_LSBMSB:
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_LSB)] =
-					SZARP_NO_DATA;
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_MSB)] =
-					SZARP_NO_DATA;
+				ipc.setNoData(kamsinfo->FindRegisterIndex (actual_register, T_LSB));
+				ipc.setNoData(kamsinfo->FindRegisterIndex (actual_register, T_MSB));
 				break;
 			case RT_SINGLE:
-				ipc->m_read[kamsinfo->
-						FindRegisterIndex
-						(actual_register,
-						 T_SINGLE)]
-					= SZARP_NO_DATA;
+				ipc.setNoData(kamsinfo->FindRegisterIndex (actual_register, T_SINGLE));
 				break;
-
 			case RT_ERROR:
 				break;
 			}
@@ -858,12 +806,13 @@ void K601Daemon::TimerCallback(int fd, short event, void* thisptr)
 	reinterpret_cast<K601Daemon*>(thisptr)->Do();
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-	K601Daemon daemon;
+	BaseDaemon base_dmn = BaseDaemonFactory::Init("k601dmn", argc, argv);
+	K601Daemon daemon(std::move(base_dmn));
 
 	try {
-		daemon.Init(argc, argv);
+		daemon.Init(const_cast<char*>(argv[0]));
 	} catch (const std::exception& e) {
 		sz_log(0, "Error while initializing daemon: %s, exiting.", e.what());
 		exit(1);
