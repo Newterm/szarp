@@ -8,11 +8,11 @@
  * <pawel@praterm.com.pl>
  */
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 #include <vector>
-#include <time.h>
+#include <ctime>
 
 #ifdef MINGW32
 #undef GetObject
@@ -30,6 +30,7 @@
 #include "conversion.h"
 #include "proberconnection.h"
 #include "szarp_base_common/lua_utils.h"
+#include "integrator.h"
 
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
@@ -547,6 +548,74 @@ int lua_szbase(lua_State *lua) {
 	
 	}
 
+static Integrator::Cache integrator_cache_10s;
+static Integrator::Cache integrator_cache_10m;
+
+int lua_szbase_hoursum(lua_State *lua) {
+	Szbase* szbase = Szbase::GetObject();
+
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	time_t start_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	time_t end_time = static_cast<time_t>(lua_tonumber(lua, 3));
+	const SZARP_PROBE_TYPE query_probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 4));
+	const int custom_length = lua_tointeger(lua, 5);
+
+	bool param_found = false;
+	const time_t last_time = szbase->SearchLast(param, param_found);
+	if (!param_found) {
+		luaL_where(lua, 1);
+		lua_pushfstring(lua, "Integrated param not found: '%s'", param);
+		lua_concat(lua, 2);
+		return lua_error(lua);
+	}
+	if (end_time > last_time) {
+		end_time = last_time;
+	}
+	start_time = szb_round_time(start_time, query_probe_type, custom_length);
+	end_time = szb_round_time(end_time, query_probe_type, custom_length);
+
+	Integrator::Cache& cache = query_probe_type < PT_MIN10 ? integrator_cache_10s : integrator_cache_10m;
+
+	// time is already rounded, cache selected, and we don't want to operate on
+	// types different than the ones corresponding to data in the database
+	const SZARP_PROBE_TYPE db_probe_type =
+		query_probe_type < PT_MIN10 ? PT_SEC10 : PT_MIN10;
+
+	bool fixed = true;
+	bool ok = true;
+	std::wstring error;
+
+	auto data_provider = [&fixed, &ok, &error, &szbase, &custom_length, &db_probe_type](const std::string& param, time_t probe_time) -> double {
+		return szbase->GetValue((const unsigned char*)param.c_str(), probe_time, db_probe_type, custom_length, &fixed, ok, error);
+	};
+	auto time_mover = [&db_probe_type](time_t start_time, int steps) -> time_t {
+		// here db_probe_type must point to final type (as used by integrator)
+		return szb_move_time(start_time, steps, db_probe_type);
+	};
+	auto is_no_data = [](double value) -> bool {
+		return IS_SZB_NODATA(value);
+	};
+
+	// create integrator with external static cache every time, as data_provider uses local variables
+	Integrator integrator(data_provider, time_mover, is_no_data, SZB_NODATA, cache);
+	const double integral = integrator.GetIntegral((const char*)param, start_time, end_time);
+	const double integral_1h = integral / 3600;	// s -> h
+
+	assert(Lua::fixed.size() > 0);
+	Lua::fixed.top() = Lua::fixed.top() && fixed;
+
+	if (ok) {
+		lua_pushnumber(lua, integral_1h);
+		return 1;
+	} else {
+		luaL_where(lua, 1);
+		lua_pushfstring(lua, "%s", SC::S2U(error).c_str());
+		lua_concat(lua, 2);
+		return lua_error(lua);
+	}
+
+}
+
 	int lua_szbase_move_time(lua_State* lua) {
 		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
 		int count = lua_tointeger(lua, 2);
@@ -630,6 +699,7 @@ int lua_szbase_nan(lua_State* lua) {
 static int RegisterSzbaseFuncs(lua_State *lua) {
 	const struct luaL_reg SzbaseLibFun[] = {
 		{ "szbase", lua_szbase },
+		{ "szbase_hoursum", lua_szbase_hoursum },
 		{ "szb_move_time", lua_szbase_move_time },
 		{ "szb_round_time", lua_szbase_round_time },
 		{ "szb_search_first", lua_szbase_search_first },

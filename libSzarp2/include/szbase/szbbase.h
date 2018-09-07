@@ -185,6 +185,9 @@ public:
 	static lua_State* GetInterpreter();
 	static std::stack<bool> fixed;
 };
+
+int lua_szbase_hoursum(lua_State *lua);
+
 #endif
 
 #endif

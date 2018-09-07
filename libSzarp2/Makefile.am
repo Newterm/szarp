@@ -170,6 +170,7 @@ libSzarp2_la_SOURCES = \
 	@srcdir@/include/szbase/szbcancelhandle.h \
 	@srcdir@/szbase/loptdatablock.cc \
 	@srcdir@/szbase/loptdatablock.h \
+	@srcdir@/szarp_base_common/integrator.cc \
 	@srcdir@/szarp_base_common/lua_param_optimizer.cc \
 	@srcdir@/include/szarp_base_common/lua_param_optimizer.h \
 	@srcdir@/include/szarp_base_common/lua_param_optimizer_templ.h \

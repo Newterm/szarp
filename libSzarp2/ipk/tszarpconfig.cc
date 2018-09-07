@@ -208,7 +208,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				try {
 					td->parseXML(reader);
 				} catch(const std::exception& e) {
-					sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+					sz_log(0, "XML error in device no %zd: %s", device_no, e.what());
 					return 1;
 				}
 			}
@@ -290,7 +290,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 		try {
 			td->parseXML(ch);
 		} catch(const std::exception& e) {
-			sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+			sz_log(0, "XML error in device no %zd: %s", device_no, e.what());
 			return 1;
 		}
 	}
@@ -538,6 +538,7 @@ bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const 
 	paramfunction <<
 	"return function ()"	<< endl <<
 	"	local p = szbase"	<< endl <<
+	"	local hs = szbase_hoursum"	<< endl <<
 	"	local PT_MIN10 = ProbeType.PT_MIN10" << endl <<
 	"	local PT_HOUR = ProbeType.PT_HOUR" << endl <<
 	"	local PT_HOUR8 = ProbeType.PT_HOUR8" << endl <<

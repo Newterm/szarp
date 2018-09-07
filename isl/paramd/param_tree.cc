@@ -927,7 +927,6 @@ void ContentHandler::handle_request_for_svg_graph(HTTPRequest *req, HTTPResponse
  */
 void ContentHandler::create(HTTPRequest *req, HTTPResponse *res)
 {
-	time_t t;
 	char *c;
 	
 	res->code = 200;
