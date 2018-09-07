@@ -457,6 +457,7 @@ bool compile_script(TParam *p) {
 	paramfunction					<< 
 	"return function ()"				<< std::endl <<
 	"	local p = szbase"			<< std::endl <<
+	"	local s = szbase_integral"	<< std::endl <<
 	"	local PT_MIN10 = ProbeType.PT_MIN10"	<< std::endl <<
 	"	local PT_HOUR = ProbeType.PT_HOUR"	<< std::endl <<
 	"	local PT_HOUR8 = ProbeType.PT_HOUR8"	<< std::endl <<
@@ -525,6 +526,7 @@ bool compile_scripts(TSzarpConfig *sc, std::vector<LuaParamInfo*>& param_info) {
 void register_lua_functions(lua_State *lua) {
 	const struct luaL_reg ParseScriptLibFun[] = {
 		{ "ipc_value", lua_ipc_value},
+		{ "szbase_integral", lua_szbase_integral},
 		{ NULL, NULL }
 	};
 
@@ -1777,7 +1779,7 @@ int main(int argc, char *argv[])
 
 	int i;
 	char *logfile;
-	int log_level;
+	int log_level{};
 
 	struct arguments arguments;
 	char* linedmnpat;	/**< path for ftok */

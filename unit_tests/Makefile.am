@@ -27,6 +27,7 @@ unit_tests_SOURCES = \
 	sz4_block_unit_test.cpp \
 	parhublistener_test.cpp \
 	conversion_test.cpp \
+	integrator.cpp \
 	szb_param_monitor_unit_test.cpp \
 	sz4_file_search.cpp \
 	sz4_buffer_unit_test.cpp \
