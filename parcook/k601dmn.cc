@@ -34,15 +34,15 @@
  komunikacyjnego, wobec czego sterownik ten wymaga zamkniêtej wtyczki, dostêpnej w bibliotece
  szarp-prop-plugins.so.
  
- @config Example of params.xml configuration, attributes from 'm601' namespace are mandatory.
- @config.pl Przyk³adowa konfiguracja w pliku params.xml, atrybuty z przetrzenie nazw 'm601' 
+ @config Example of params.xml configuration, attributes from 'k601' namespace are mandatory.
+ @config.pl Przyk³adowa konfiguracja w pliku params.xml, atrybuty z przetrzenie nazw 'k601' 
  s± obowi±zkowe.
  @config_example
  <device 
-      xmlns:m601="http://www.praterm.com.pl/SZARP/ipk-extra"
+      xmlns:k601="http://www.praterm.com.pl/SZARP/ipk-extra"
       daemon="/opt/szarp/bin/k601dmn" 
       path="/dev/ttyA11"
-      m601:delay_between_requests="10">
+      k601:delay_between_requests="10">
       <unit id="1">
               <param
                       name="..."
