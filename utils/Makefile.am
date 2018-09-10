@@ -7,7 +7,7 @@ else
 INCLUDE_SUBDIRS = nagios pserver-lite
 endif
 
-SUBDIRS = $(INCLUDE_SUBDIRS)
+SUBDIRS = $(INCLUDE_SUBDIRS) monitoring
 
 # Source directory
 SOURCE_DIR=@srcdir@
