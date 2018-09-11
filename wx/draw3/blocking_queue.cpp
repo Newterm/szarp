@@ -1,5 +1,7 @@
 #include "blocking_queue.h"
 
+#include <functional>
+
 template <class T>
 void BlockingQueue<T>::push(const T& item)
 {
