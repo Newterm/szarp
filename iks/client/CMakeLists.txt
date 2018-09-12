@@ -15,4 +15,6 @@ target_include_directories(iks-client
     ${LUA_INCLUDE_DIR}
 )
 
-#target_link_library(iks-client)
+target_link_libraries(iks-client
+  iks-common
+)

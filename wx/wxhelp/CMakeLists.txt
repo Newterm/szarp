@@ -1,24 +1,45 @@
-cmake_minimum_required(VERSION 3.5)
+file(GLOB SOURCES *.cpp)
 
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
+foreach(def ${wxWidgets_DEFINITIONS})
+ add_definitions(
+	 -D${def}
+ )
+endforeach()
+
+add_executable(wxhelp
+  ${SOURCES}
 )
 
-link_directories(
-  ${TQT_LIBRARY_DIRS}
+target_include_directories(wxhelp
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/wx/common
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${wxWidgets_INCLUDE_DIRS}
 )
 
-add_definitions(
-  -DPREFIX=\"@prefix@\"
-)
-
-
-##### wxhelp (executable) #######################
-
-add_executable( wxhelp
-  whapp.cpp whapp.h wxhelp.cpp
-  DESTINATION ${BIN_INSTALL_DIR}
+target_link_libraries(wxhelp
+  PRIVATE
+    Szarp
+    Szarp2
+    SzarpLuaParser
+    wxcommon
+    #wxscintilla
+    #iks-client
+    #${Boost_LIBRARIES}
+    #${PYTHON_LIBRARIES}
+    #${CURL_LIBRARIES}
+    #${LIBXML2_LIBRARIES}
+    #${LUA_LIBRARIES}
+    #${PROTOBUF_LIBRARIES}
+    #${Zip_LIBRARIES}
+    #${LIBXSLT_LIBRARIES}
+    #python2.7
+    #${wxWidgets_LIBRARIES}
+    #${GTK2_LIBRARIES}
+    #${OPENGL_LIBRARIES}
+    #${SQLITE3_LIBRARIES}
+    #${OPENSSL_LIBRARIES}
+    #${CARES_LIBRARIES}
+    #${XMLRPCEPI_LIBRARIES}
+    #${FTGL_LIBRARIES}
 )

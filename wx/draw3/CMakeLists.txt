@@ -1,44 +1,55 @@
-cmake_minimum_required(VERSION 3.5)
+file(GLOB_RECURSE SOURCES *.cpp)
 
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${TQT_INCLUDE_DIRS}
-)
-
-link_directories(
-  ${TQT_LIBRARY_DIRS}
-)
-
+foreach(def ${wxWidgets_DEFINITIONS})
+ add_definitions(
+	 -D${def}
+ )
+endforeach()
 add_definitions(
-  -DPREFIX=\"@prefix@\"
+ -DSCI_LEXER -DLINK_LEXERS -DPREFIX=\"/opt/szarp/\"
 )
 
+WXWIDGETS_ADD_RESOURCES(SOURCES GUI/resources.xrc OPTIONS -c -o GUI/resource.cpp)
 
-##### draw3 (executable) ########################
+add_executable(draw3
+  ${SOURCES}
+)
 
-add_executable( draw3
-  classes.h draw3.cpp dbmgr.cpp dbmgr.h database.h database.cpp base_handler.h
-    base_handler.cpp disptime.cpp disptime.h drawpnl.cpp drawpnl.h drawswdg.cpp
-    drawswdg.h drawsctrl.h drawsctrl.cpp drawapp.cpp drawapp.h draw.cpp draw.h
-    coobs.h coobs.cpp cfgmgr.cpp cfgmgr.h ids.h infowdg.cpp infowdg.h
-    drawview.h drawview.cpp seldraw.cpp seldraw.h selset.cpp selset.h
-    timewdg.cpp timewdg.h drawtb.cpp drawtb.h incsearch.cpp incsearch.h
-    drawobs.h drawobs.cpp summwin.h summwin.cpp drawfrm.h drawfrm.cpp frmmgr.h
-    frmmgr.cpp timeformat.h timeformat.cpp defcfg.h defcfg.cpp drawpick.h
-    drawpick.cpp drawprint.h drawprint.cpp piewin.cpp piewin.h relwin.cpp
-    relwin.h xydiag.cpp xydiag.h xygraph.cpp xygraph.h dbinquirer.cpp
-    dbinquirer.h statdiag.h statdiag.cpp drawdnd.h drawdnd.cpp progfrm.h
-    progfrm.cpp remarks.h remarks.cpp remarksdialog.h remarksdialog.cpp
-    remarksfetcher.h remarksfetcher.cpp splashscreen.cpp splashscreen.h
-    drawipc.cpp drawipc.h drawurl.cpp drawurl.h errfrm.h errfrm.cpp
-    paramslist.cpp paramslist.h paredit.cpp paredit.h codeeditor.cpp
-    codeeditor.h drawpsc.h drawpsc.cpp wxgraphs.h wxgraphs.cpp glgraphs.h
-    glgraphs.cpp gcdcgraphs.h gcdcgraphs.cpp graphsutils.h graphsutils.cpp
-    drawtime.h drawtime.cpp vercheck.h vercheck.cpp xyzgraph.h xyzgraph.cpp
-    triangulation.h triangulation.cpp probadddiag.h probadddiag.cpp
-    drawtreedialog.h drawtreedialog.cpp delqitem.h delqitem.cpp seteditctrl.h
-    parameditctrl.h ikssetup.h ikssetup.cpp GUI/resource.cpp
-  DESTINATION ${BIN_INSTALL_DIR}
+target_include_directories(draw3
+  PUBLIC
+    ${CMAKE_SOURCE_DIR}/wx/common
+    ${CMAKE_SOURCE_DIR}/libSzarp/include
+    ${CMAKE_SOURCE_DIR}/libSzarp2/include
+    ${CMAKE_SOURCE_DIR}/iks/client/include
+    ${CMAKE_SOURCE_DIR}/extern/wxscintilla/include
+    ${wxWidgets_INCLUDE_DIRS}
+    ${GTK2_INCLUDE_DIRS}
+		${LIBXML2_INCLUDE_DIR}
+		${LUA_INCLUDE_DIR}
+)
+
+target_link_libraries(draw3
+  Szarp
+  Szarp2
+	SzarpLuaParser
+  wxscintilla
+  iks-client
+  wxcommon
+	${Boost_LIBRARIES}
+	${PYTHON_LIBRARIES}
+	${CURL_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${LUA_LIBRARIES}
+	${PROTOBUF_LIBRARIES}
+	${Zip_LIBRARIES}
+	${LIBXSLT_LIBRARIES}
+	python2.7
+	${wxWidgets_LIBRARIES}
+  ${GTK2_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  ${SQLITE3_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
+  ${CARES_LIBRARIES}
+  ${XMLRPCEPI_LIBRARIES}
+  ${FTGL_LIBRARIES}
 )

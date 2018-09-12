@@ -1,7 +1,3 @@
-add_definitions(
-  -DHAVE_CONFIG_H
-)
-
 add_library(pysz4 SHARED
   pysz4.cc
 )

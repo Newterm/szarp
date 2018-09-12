@@ -1,7 +1,6 @@
 set(BASEDMN_SOURCES base_daemon.cc)
 
 add_definitions(
-  -DHAVE_CONFIG_H
   -DPREFIX="/opt/szarp"
 )
 

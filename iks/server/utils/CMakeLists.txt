@@ -1,9 +1,5 @@
 file(GLOB SOURCES *.cpp)
 
-add_definitions(
-  -DHAVE_CONFIG_H
-)
-
 add_library(iks-server-utils SHARED
   ${SOURCES}
 )

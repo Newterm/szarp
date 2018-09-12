@@ -1,7 +1,6 @@
 file(GLOB SOURCES *.cc)
 
 add_definitions(
-  -DHAVE_CONFIG_H
   -DPREFIX="/opt/szarp"
 )
 
