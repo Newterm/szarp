@@ -89,7 +89,7 @@ void IntegratorTestFixture::simpleTest() {
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2 + 1.5 + 4 + 3 * 4, get_integral("first", 0, 11), delta);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(6, get_integral("second", 2, 3), delta);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, get_integral("first", 2, 3), delta);
-	CPPUNIT_ASSERT_EQUAL(21007199254740992L, (long)get_integral("second", 12, 14));
+	CPPUNIT_ASSERT_EQUAL((long long)21007199254740992L, (long long)get_integral("second", 12, 14));
 
 	fetch_count = 0;
 	Integrator::Cache cache;
