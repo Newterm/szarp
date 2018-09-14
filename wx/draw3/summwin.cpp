@@ -39,8 +39,7 @@
 #include <wx/statline.h>
 
 
-//BEGIN_EVENT_TABLE(SummaryWindow, wxFrame)
-BEGIN_EVENT_TABLE(SummaryWindow, wxDialog)
+BEGIN_EVENT_TABLE(SummaryWindow, wxFrame)
     EVT_IDLE(SummaryWindow::OnIdle)
     EVT_BUTTON(wxID_HELP, SummaryWindow::OnHelpButton)
     EVT_CLOSE(SummaryWindow::OnClose)
@@ -121,8 +120,8 @@ SummaryWindow::ObservedDraw::ObservedDraw(Draw *_draw) : draw(_draw),
 {}
 
 SummaryWindow::SummaryWindow(DrawPanel *draw_panel, wxWindow *parent) : 
-	wxDialog(NULL, drawID_SUMMWIN, _("Summary values"), wxDefaultPosition, wxSize(100, 100), 
-			wxDEFAULT_DIALOG_STYLE | wxDIALOG_NO_PARENT | wxSTAY_ON_TOP),
+	wxFrame(NULL, drawID_SUMMWIN, _("Summary values"), wxDefaultPosition, wxSize(100, 100), 
+			wxDEFAULT_DIALOG_STYLE | wxDIALOG_NO_PARENT ),
 	m_summary_draws_count(0),
 	m_update(false),
 	m_active(false),
@@ -496,11 +495,7 @@ bool SummaryWindow::Show(bool show) {
 	else
 		Deactivate();
 
-#if 0
 	bool ret = wxFrame::Show(show);
-#else
-	bool ret = wxDialog::Show(show);
-#endif
 	if (ret)
 		Resize();
 

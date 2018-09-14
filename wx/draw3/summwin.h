@@ -57,7 +57,7 @@ public:
 
 
 /**Display summary values of currently displayed draws*/
-class SummaryWindow : public wxDialog, public DrawObserver {
+class SummaryWindow : public wxFrame, public DrawObserver {
 	/**This structure holds values of displayed draws*/
 	struct ObservedDraw {
 		ObservedDraw(Draw *_draw);
