@@ -104,7 +104,7 @@ class TestIPC:
 		for unit in dmn_dev.findall('./{http://www.praterm.com.pl/SZARP/ipk}unit'):
 			self.param_list += self.fetch_param_list(unit)
 			self.send_list += self.fetch_send_list(unit)
-		print "param:",self.param_list, self.send_list
+		print "param:",self.param_list
 		print "send: ", self.send_list
 
 		# remove all elements from <params>
@@ -126,7 +126,7 @@ class TestIPC:
 			par_name = par.get('draw_name')
 			if par_name == None:
 				par_name = par.get('name').split(':')[-1]
-			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), str(par.get('{http://www.praterm.com.pl/SZARP/ipk-extra}val_type'))))
+			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), par.get('{http://www.praterm.com.pl/SZARP/ipk-extra}val_type')))
 
 		return llist
 
