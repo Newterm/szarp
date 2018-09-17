@@ -54,7 +54,7 @@ class TestIPC:
 		'double' : 'float'
 		}
 
-	def int_n(self,x,n):
+	def convert_to_int_n_bits(self,x,n):
 		x=int(x)
 		assert -2**(n-1)<=x<=2**(n-1)-1, "Value %s dosn't fit int%s " % (x, n)
 		return int(x)
@@ -69,11 +69,11 @@ class TestIPC:
 
 		self.TestFun = {
 			None : (lambda x : 'NO_DATA'),
-			'sz3':(lambda x : self.int_n(x,16)),
-			'sz4':(lambda x : self.int_n(x,32)),
-			'int':(lambda x : self.int_n(x,32)),
-			'short':(lambda x : self.int_n(x,16)),
-			'long':(lambda x : self.int_n(x,32)),
+			'sz3':(lambda x : self.convert_to_int_n_bits(x,16)),
+			'sz4':(lambda x : self.convert_to_int_n_bits(x,32)),
+			'int':(lambda x : self.convert_to_int_n_bits(x,32)),
+			'short':(lambda x : self.convert_to_int_n_bits(x,16)),
+			'long':(lambda x : self.convert_to_int_n_bits(x,32)),
 			'float':(lambda x : float(x)),
 			'double':(lambda x : float(x))
 			}
@@ -105,7 +105,7 @@ class TestIPC:
 			self.param_list += self.fetch_param_list(unit)
 			self.send_list += self.fetch_send_list(unit)
 		print "param:",self.param_list
-		print "send: ", self.send_list
+		print "send:",self.send_list
 
 		# remove all elements from <params>
 		for i in range(len(root)):
@@ -189,10 +189,6 @@ class TestIPC:
 		""" Write NO_DATA to parcook. """
 		self.set_read_(idx, 'NO_DATA', None)
 
-	def set_read_sz4(self, idx, val):
-		#self.read_buffer.append(TestIPC.BufInfo(idx, val))
-		self.set_read_(idx, val, 'sz4')
-
 	def set_read_sz4_short(self, idx, val):
 		return self.set_read_(idx, val, 'short')
 
@@ -216,9 +212,6 @@ class TestIPC:
 
 	def get_send(self,idx):
 		return self.get_send_(idx,'sz3')
-
-	def get_send_sz4(self,idx):
-		return self.get_send_(idx,'sz4')
 
 	def get_send_sz4_short(self,idx):
 		return self.get_send_(idx,'short')
