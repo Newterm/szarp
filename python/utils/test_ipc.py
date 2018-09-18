@@ -35,6 +35,7 @@ __email__     = "coders AT newterm.pl"
 import sys
 from lxml import etree
 from collections import namedtuple
+import numpy
 
 class TestIPC:
 	""" This is a class for testing pythondmn's scripts communication with
@@ -46,7 +47,6 @@ class TestIPC:
 
 	FunType2Params = {
 		'sz3' : 'integer',
-		'sz4' : 'integer',
 		'int' : 'integer',
 		'short' : 'integer',
 		'long' : 'integer',
@@ -54,10 +54,16 @@ class TestIPC:
 		'double' : 'float'
 		}
 
-	def convert_to_int_n_bits(self,x,n):
-		x=int(x)
-		assert -2**(n-1)<=x<=2**(n-1)-1, "Value %s dosn't fit int%s " % (x, n)
-		return int(x)
+	#https://www.numpy.org/devdocs/user/basics.types.html
+	TestFun = {
+		None : (lambda x : 'NO_DATA'),
+		'sz3':(lambda x : numpy.int16(x)),
+		'int':(lambda x : numpy.intc(x)),
+		'short':(lambda x : numpy.short(x)),
+		'long':(lambda x : numpy.int_(x)),
+		'float':(lambda x : numpy.single(x)),
+		'double':(lambda x : numpy.double(x))
+		}
 
 	def __init__(self, prefix, script_path):
 		""" Construct IPC object.
@@ -66,17 +72,6 @@ class TestIPC:
 			prefix      - database prefix.
 			script_path - full path to your script.
 		"""
-
-		self.TestFun = {
-			None : (lambda x : 'NO_DATA'),
-			'sz3':(lambda x : self.convert_to_int_n_bits(x,16)),
-			'sz4':(lambda x : self.convert_to_int_n_bits(x,32)),
-			'int':(lambda x : self.convert_to_int_n_bits(x,32)),
-			'short':(lambda x : self.convert_to_int_n_bits(x,16)),
-			'long':(lambda x : self.convert_to_int_n_bits(x,32)),
-			'float':(lambda x : float(x)),
-			'double':(lambda x : float(x))
-			}
 
 		self.read_buffer = []
 		self.param_list = []
@@ -177,7 +172,7 @@ class TestIPC:
 		""" Write value to parcook. Used only by this script."""
 		params_val_type = self.param_list[idx].val_type
 		assert val_type==None or params_val_type==None or self.FunType2Params[val_type]==params_val_type, "Data type mismatch between params.xml(%s) and function call(%s)" % (params_val_type, val_type)
-		val = self.TestFun[val_type](val) # checks if data fits data type
+		assert val_type=='float' or val_type=='double' or val == (type(val))(self.TestFun[val_type](val)), "Data conversion from %s to %s failed" % (str(type(val)),val_type)
 		self.read_buffer.append(TestIPC.BufInfo(idx, val, val_type))
 		return None
 
