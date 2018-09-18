@@ -62,7 +62,7 @@ if [ "x$1" = "x--version" -o "x$1" = "x-V" ]; then
 szb2filler $VERSION
 
 Copyright (C) 2015 Newterm
-License GPLv2: GNU General Public License, version 2
+License GPLv3: GNU General Public License, version 3
 <http://www.gnu.org/licenses/>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
