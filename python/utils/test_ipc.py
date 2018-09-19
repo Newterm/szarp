@@ -37,6 +37,20 @@ from lxml import etree
 from collections import namedtuple
 import numpy
 
+def xmlns(f,ns=None):
+	def wrapper(element):
+		ns2uri = { None : 'http://www.praterm.com.pl/SZARP/ipk',
+			'extra':'http://www.praterm.com.pl/SZARP/ipk-extra',
+			'exec':'http://www.praterm.com.pl/SZARP/ipk-extra',
+			'modbus':'http://www.praterm.com.pl/SZARP/ipk-extra',
+			'checker':'http://www.praterm.com.pl/SZARP/ipk-checker',
+			'icinga':'http://www.praterm.com.pl/SZARP/ipk-icinga'
+			}
+		uri = '{'+ns2uri[ns]+'}'+element
+		#print str(ns)+':'+element+' ===  '+uri
+		return f(uri)
+	return wrapper
+
 class TestIPC:
 	""" This is a class for testing pythondmn's scripts communication with
 	parcook through IPC.
@@ -85,7 +99,7 @@ class TestIPC:
 
 		# search root element for <device> with pythondmn and given script
 		dmn_dev = None
-		for dev in root.findall('./{http://www.praterm.com.pl/SZARP/ipk}device'):
+		for dev in xmlns(root.findall)('device'):
 			if dev.get('daemon') == pythondmn_path and dev.get('path') == script_path:
 				dmn_dev = dev	# save element
 				break
@@ -95,7 +109,7 @@ class TestIPC:
 			sys.exit(1)
 
 		# fetch parameter list (units are merged)
-		for unit in dmn_dev.findall('./{http://www.praterm.com.pl/SZARP/ipk}unit'):
+		for unit in xmlns(dmn_dev.findall)('unit'):
 			self.param_list += self.fetch_param_list(unit)
 			self.send_list += self.fetch_send_list(unit)
 		print "param:",self.param_list
@@ -116,11 +130,11 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in unit.findall('./{http://www.praterm.com.pl/SZARP/ipk}param'):
+		for par in xmlns(unit.findall)('param'):
 			par_name = par.get('draw_name')
 			if par_name == None:
 				par_name = par.get('name').split(':')[-1]
-			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), par.get('{http://www.praterm.com.pl/SZARP/ipk-extra}val_type')))
+			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), xmlns(par.get,'extra')('val_type')))
 
 		return llist
 
@@ -131,7 +145,7 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in unit.findall('./{http://www.praterm.com.pl/SZARP/ipk}send'):
+		for par in xmlns(unit.findall)('send'):
 			llist.append(par.get('param'))
 
 		return llist
