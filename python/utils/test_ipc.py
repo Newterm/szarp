@@ -55,14 +55,13 @@ class TestIPC:
 		}
 
 	#https://www.numpy.org/devdocs/user/basics.types.html
-	TestFun = {
-		None : (lambda x : 'NO_DATA'),
-		'sz3':(lambda x : numpy.int16(x)),
-		'int':(lambda x : numpy.intc(x)),
-		'short':(lambda x : numpy.short(x)),
-		'long':(lambda x : numpy.int_(x)),
-		'float':(lambda x : numpy.single(x)),
-		'double':(lambda x : numpy.double(x))
+	FunType2numpy = {
+		'sz3':numpy.int16,
+		'int':numpy.intc,
+		'short':numpy.short,
+		'long':numpy.int_,
+		'float':numpy.single,
+		'double':numpy.double
 		}
 
 	def __init__(self, prefix, script_path):
@@ -168,60 +167,61 @@ class TestIPC:
 	def force_sz4(self):
 		return None
 
-	def set_read_(self, idx, val, val_type):
+	def _set_read(self, idx, val, val_type):
 		""" Write value to parcook. Used only by this script."""
 		params_val_type = self.param_list[idx].val_type
-		assert val_type==None or params_val_type==None or self.FunType2Params[val_type]==params_val_type, "Data type mismatch between params.xml(%s) and function call(%s)" % (params_val_type, val_type)
-		assert val_type=='float' or val_type=='double' or val == (type(val))(self.TestFun[val_type](val)), "Data conversion from %s to %s failed" % (str(type(val)),val_type)
+
+		assert (val_type==None or params_val_type==None or self.FunType2Params[val_type]==params_val_type), "Data type mismatch between params.xml(%s) and function call(%s)" % (params_val_type, val_type)
+		assert (val_type=='float' or val_type=='double' or val == type(val)(self.FunType2numpy[val_type](val))), "Conversion of %s from %s to %s failed" % (str(val),str(type(val)),val_type)
 		self.read_buffer.append(TestIPC.BufInfo(idx, val, val_type))
 		return None
 
 	def set_read(self, idx, val):
 		""" Write value to parcook. For sz3 """
-		self.set_read_(idx, val, 'sz3')
+		self._set_read(idx, val, 'sz3')
 
 	def set_no_data(self, idx):
 		""" Write NO_DATA to parcook. """
-		self.set_read_(idx, 'NO_DATA', None)
+		self._set_read(idx, 'NO_DATA', None)
 
 	def set_read_sz4_short(self, idx, val):
-		return self.set_read_(idx, val, 'short')
+		return self._set_read(idx, val, 'short')
 
 	def set_read_sz4_int(self, idx, val):
-		return self.set_read_(idx, val, 'int')
+		return self._set_read(idx, val, 'int')
 
 	def set_read_sz4_long(self, idx, val):
-		return self.set_read_(idx, val, 'long')
+		return self._set_read(idx, val, 'long')
 
 	def set_read_sz4_float(self, idx, val):
-		return self.set_read_(idx, val, 'float')
+		return self._set_read(idx, val, 'float')
 
 	def set_read_sz4_double(self, idx, val):
 		return self.set_read_sz4_(idx, val, 'double')
 
 
-	def get_send_(self,idx, val_type):
+	def _get_send(self,idx, val_type):
 		print "--> %s (%s) =" % (self.send_list[idx],val_type),
-		val = self.TestFun[val_type](input())
+		val = self.FunType2numpy[val_type](input())
 		return val
 
 	def get_send(self,idx):
-		return self.get_send_(idx,'sz3')
+		return self._get_send(idx,'sz3')
 
 	def get_send_sz4_short(self,idx):
-		return self.get_send_(idx,'short')
+		return self._get_send(idx,'short')
 
 	def get_send_sz4_int(self,idx):
-		return self.get_send_(idx,'int')
+		return self._get_send(idx,'int')
 
 	def get_send_sz4_long(self,idx):
-		return self.get_send_(idx,'long')
+		return self._get_send(idx,'long')
 
 	def get_send_sz4_float(self,idx):
-		return self.get_send_(idx,'float')
+		return self._get_send(idx,'float')
 
 	def get_send_sz4_double(self,idx):
-		return self.get_send_(idx,'double')
+		return self._get_send(idx,'double')
 
 
 # end of class TestIPC
