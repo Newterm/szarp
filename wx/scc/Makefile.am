@@ -117,19 +117,6 @@ install-data-local: $(scc_LOCALES)
 	$(INSTALL) $(scc_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
 
-winsetup: ${WIN_APP_NAME}Setup.exe
-
-${WIN_APP_NAME}Setup.exe: scc$(EXEEXT) $(scc_LOCALES)
-	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} scc$(EXEEXT) \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		$(scc_LOCALES) \
-		-d resources/wx/anim \
-		@srcdir@/../../resources/wx/anim/*png \
-		-d resources/documentation/new/scc/html \
-		@srcdir@/../../resources/documentation/new/scc/html/*.h* \
-		-d resources/documentation/new/scc/html \
-		@srcdir@/../../resources/documentation/new/scc/html/*.map 
-        
 update-po:
 	@XGETTEXT@ -o $(scc_LOCALES_TMP) -L C++ --keyword=_ $(scc_SOURCES)
 	@MSGMERGE@ -U $(scc_LOCALES_SRC) $(scc_LOCALES_TMP)

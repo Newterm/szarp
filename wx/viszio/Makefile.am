@@ -84,20 +84,3 @@ update-po:
 	@MSGMERGE@ -U $(viszio_LOCALES_SRC) $(viszio_LOCALES_TMP)
 	rm -f $(viszio_LOCALES_TMP)
 
-# Target for creating Windows version zip-package.
-windist: viszio$(EXEEXT) $(viszio_LOCALES)
-	@srcdir@/../../script/windist.sh viszio @srcdir@ 
-	
-winsetup: ${WIN_APP_NAME}Setup.exe
-
-${WIN_APP_NAME}Setup.exe: viszio$(EXEEXT) $(viszio_LOCALES)
-	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} viszio$(EXEEXT) \
-		-d resources/documentation/new/viszio/html \
-		@srcdir@/../../resources/documentation/new/viszio/html/*.h* \
-		-d resources/documentation/new/viszio/html/pics \
-		@srcdir@/../../resources/documentation/new/viszio/html/*.* \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		$(viszio_LOCALES) 
-	@echo Make sure docs are generated!!!
-		
-

@@ -164,14 +164,4 @@ update-po:
 	rm -f $(draw3_LOCALES_TMP)
 	rm @srcdir@/$(TMP_GETTEXT).h
 
-winsetup: ${WIN_APP_NAME}Setup.exe
-
-${WIN_APP_NAME}Setup.exe: draw3$(EXEEXT) pl/draw3.mo fr/draw3.mo de/draw3.mo
-	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} draw3$(EXEEXT) \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		pl/draw3.mo \
-		-d resources/locales/fr_FR/LC_MESSAGES \
-		fr/draw3.mo \
-		-d resources/locales/de_DE/LC_MESSAGES \
-		de/draw3.mo
 

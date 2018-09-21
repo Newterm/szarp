@@ -100,31 +100,8 @@ update-po:
 	@MSGMERGE@ -U de/common.po $(common_LOCALES_TMP)
 	rm -f $(common_LOCALES_TMP)
 
-winsetup: ${WIN_APP_NAME}Setup.exe
-
 @srcdir@/version.h: @top_srcdir@/debian/changelog Makefile.am
 	echo -n "#define SZARP_VERSION \"" > @srcdir@/version.h
 	@ @top_srcdir@/script/version-info -v @top_srcdir@/debian/changelog >> @srcdir@/version.h;
 	echo "\"" >> @srcdir@/version.h
-
-${WIN_APP_NAME}Setup.exe: $(common_LOCALES) $(wx_LOCALES)
-	@srcdir@/../../script/nsis/winsetup.sh -c \
-	-d resources \
-	-f szarp.cfg @srcdir@/../../resources/SZARP_CFG_TEMPLATE \
-	-f szarp_in.cfg @srcdir@/../../resources/SZARP_IN_CFG_TEMPLATE \
-	-d resources/dtd \
-	@srcdir@/../../resources/dtd/params-list.rng \
-	-d resources/locales/pl_PL/LC_MESSAGES \
-	pl/wx.mo \
-	pl/common.mo \
-	-d resources/locales/fr_FR/LC_MESSAGES \
-	fr/wx.mo \
-	fr/common.mo \
-	-d resources/locales/de_DE/LC_MESSAGES \
-	de/wx.mo \
-	de/common.mo \
-	-d resources/wx/icons \
-	@srcdir@/../../resources/wx/icons/*.xpm \
-	-d resources/wx/images \
-	@srcdir@/../../resources/wx/images/*.png
 
