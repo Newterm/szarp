@@ -120,9 +120,9 @@ class SzCache::SzCacheFile {
 		{
 			_records.clear();
 
-			off_t pg_off = (offset * sizeof(int16_t)) & ~(sysconf(_SC_PAGE_SIZE) - 1);
-			size_t pg_len = (length + offset) * sizeof(int16_t) - pg_off;
-			int fd = open(path.c_str(), O_RDONLY | O_NOATIME);	// TODO RAII
+			const off_t pg_off = (offset * sizeof(int16_t)) & ~(sysconf(_SC_PAGE_SIZE) - 1);
+			const size_t pg_len = (length + offset) * sizeof(int16_t) - pg_off;
+			const int fd = open(path.c_str(), O_RDONLY | O_NOATIME);
 			if (fd == -1) {
 				if (errno == ENOENT) {
 					// file doesn't exist - fill with nodata and don't try to access shm (TODO: unit test it for corner cases)
@@ -138,11 +138,11 @@ class SzCache::SzCacheFile {
 				throw std::runtime_error("SzCacheFile: failed to mmap: " + path + ", errno: " + std::to_string(errno));
 			}
 
-			short* data = (short*)(((char *)mdata) + (offset * sizeof(int16_t) - pg_off));
+			const short* data = (short*)(((char *)mdata) + (offset * sizeof(int16_t) - pg_off));
 			_records.assign(data, data + length);
 
 			close(fd);
-			munmap(mdata, length);
+			munmap(mdata, pg_len);
 
 			logMsg(9, "SzCache::cacheMap: file: " + path + " loaded probes: " + std::to_string(_records.size()));
 
@@ -626,15 +626,10 @@ int SzCache::toReadFromShm(SzPath path)
 		return 0;
 	}
 
-	// Hack - remove the additional .szc after getPathIndex call
-	//szpi_now.first = szpi_now.first.substr(0, szpi_now.first.rfind("/"));
-	//logMsg(5, "path: " + path + " now: " + szpi_now.first);
-
 	int expected = path_index_now.second;
 	logMsg(9, "SzCache::toReadFromShm: Expecting " + std::to_string(expected) + " probes in file");
 
 	if (expected < 0) return 0;
-		//throw std::runtime_error("SzCache::toReadFromShm: expected < 0");
 	
 	int in_file = std::floor(getFileSize(path) / sizeof(int16_t));
 	logMsg(9, "SzCache::toReadFromShm: " + path + " = " + std::to_string(in_file) + " probes");
@@ -642,7 +637,6 @@ int SzCache::toReadFromShm(SzPath path)
 	int probes_diff = expected - in_file;
 	
 	if (probes_diff < 0) return 0;
-		//throw std::runtime_error("SzCache::toReadFromShm: probes_diff < 0");
 			
 	logMsg(9, "SzCache::toReadFromShm: To be loaded frm SHM: " + std::to_string(probes_diff));
 	
