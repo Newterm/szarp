@@ -93,9 +93,9 @@ IncSearch::ListCtrl::ListCtrl(ItemsArray * array, wxWindow * parent, int id,
 
 wxString IncSearch::ListCtrl::OnGetItemText(long item, long column) const
 {
-	if ((long)m_cur_items->GetCount() <= item)
+	if (item > (long)m_cur_items->GetCount())
 		return wxEmptyString;
-	//assert(m_cur_items->GetCount() > (size_t) item);
+
 	return (*m_cur_items)[item]->GetName();
 }
 
@@ -243,7 +243,11 @@ void IncSearch::Search() {
 #ifndef __MINGW32__
 	try {
 
-		std::wregex re = std::wregex(match.wc_str(), std::regex_constants::icase);
+		std::wstring match_wstring = match.wc_str();
+		if( match_wstring.front() == wchar_t('*') ) {
+			match_wstring.insert(0, 1, '\\');
+		}
+		std::wregex re = std::wregex(match_wstring, std::regex_constants::icase);
 
 		for (size_t i = 0; i < items_array.GetCount(); ++i) {
 			const std::wstring& name = items_array[i]->GetStdWName();
