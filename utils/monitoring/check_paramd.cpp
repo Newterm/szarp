@@ -15,12 +15,12 @@ public:
 		desc.add_options()
 		("help,h", "Print this help messages")
 		("version,V", "Output version")
-		("nothresholds,n", "Run without thresholds")		
+		("nothresholds,n", "Run without thresholds")
 		("thresholds,t", po::value<std::string>(), "THRESHOLDS, default 0,0,0")
 		("param,p", po::value<std::string>(), "Full parameter name")
 		("override,D", po::value<std::vector<std::string>>()->multitoken(), "Override default arguments (-Dparam=val)");
 		return desc;
-	}																	
+	}
 };
 
 auto getLocalPort() {
