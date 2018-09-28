@@ -19,7 +19,6 @@ public:
 		
 		return desc;
 	}
-	
 };
 
 std::string getProgNameFromPath(std::string path) {
@@ -57,10 +56,10 @@ std::vector<TParam*> getSelectedParams(TDevice* device) {
 		std::string device_daemon = device->getAttribute("daemon");
 		
 		/* check if daemon is not fake */
-		if (device_daemon.find("dummy") != std::string::npos 
-		|| device_daemon.find("fake") != std::string::npos 
+		if (device_daemon.find("dummy") != std::string::npos
+		|| device_daemon.find("fake") != std::string::npos
 		|| device_daemon.find("false") != std::string::npos
-		|| device_daemon.find("test") != std::string::npos) { 
+		|| device_daemon.find("test") != std::string::npos) {
 			continue;
 		}
 
