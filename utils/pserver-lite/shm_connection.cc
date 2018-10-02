@@ -45,8 +45,8 @@ _registered(false),
 _configured(false), 
 _connected(false),
 _szarp_config(new TSzarpConfig()),
-_shm_desc(0), 
-_sem_desc(0), 
+_shm_desc(-1),
+_sem_desc(-1),
 _values_count(0)
 {
 }
@@ -202,6 +202,11 @@ void ShmConnection::shm_close(struct sembuf* semaphores)
 
 int16_t* ShmConnection::attach() 
 {
+	if (_shm_desc == -1) {
+		sz_log(1, "ShmConnection:update_segment(): cannot attach segment, segment descriptor uninitialized.");
+		return (int16_t*)SHMAT_ERROR;
+	}
+
 	int16_t* segment = nullptr;
 	do { 
 		segment = (int16_t*)shmat(_shm_desc, nullptr, SHM_RDONLY); 
