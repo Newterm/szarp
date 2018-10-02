@@ -16,6 +16,7 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION( IntegratorTestFixture );
 
 void IntegratorTestFixture::setUp() {
+	Integrator::setMaxEntriesPerParam(2);
 }
 
 void IntegratorTestFixture::simpleTest() {
@@ -62,14 +63,29 @@ void IntegratorTestFixture::simpleTest() {
 	CPPUNIT_ASSERT_EQUAL(2, fetch_count);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(nodata_value, get_integral("first", 1, 1), delta);
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(nodata_value, get_integral("first", 1, 1), delta);
+	CPPUNIT_ASSERT_EQUAL(1, fetch_count);	//TODO : this could be 0!
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(0, get_integral("first", 2, 2), delta);
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(1, get_integral("first", 2, 3), delta);
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 2, 4), delta);
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
+
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(nodata_value, get_integral("first", 1, 1), delta);
+	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 2, 4), delta);
+	CPPUNIT_ASSERT_EQUAL(0, fetch_count);
+
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 0, 4), delta);
 	CPPUNIT_ASSERT_EQUAL(5, fetch_count);
+
+	// test multiple entries cache
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 0, 4), delta);
+	CPPUNIT_ASSERT_EQUAL(0, fetch_count);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 2, 4), delta);
+	CPPUNIT_ASSERT_EQUAL(0, fetch_count);
+
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(4, get_integral("first", 5, 7), delta);
 	CPPUNIT_ASSERT_EQUAL(3, fetch_count);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(4, get_integral("first", 5, 8), delta);
@@ -82,6 +98,15 @@ void IntegratorTestFixture::simpleTest() {
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(4 + 4 * 3 + 4, get_integral("first", 5, 12), delta);
 	CPPUNIT_ASSERT_EQUAL(1, fetch_count);
+
+	// test multiple entries cache and purging oldest entries
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 2, 4), delta);
+	CPPUNIT_ASSERT_EQUAL(0, fetch_count);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(4 + 4 * 3 + 4, get_integral("first", 5, 12), delta);
+	CPPUNIT_ASSERT_EQUAL(0, fetch_count);
+	CPPUNIT_ASSERT_DOUBLES_EQUAL(2, get_integral("first", 0, 4), delta);	// this entry has oldest last-use time, so it should be absent already
+	CPPUNIT_ASSERT_EQUAL(5, fetch_count);
+
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(8, get_integral("first", 10, 14), delta);
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(12, get_integral("first", 7, 11), delta);	// interpolate between two valid points
 	CPPUNIT_ASSERT_DOUBLES_EQUAL(2 + 1.5 + 4 + 3 * 4, get_integral("first", 0, 11), delta);

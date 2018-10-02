@@ -1,5 +1,68 @@
 #include "integrator.h"
 #include <cassert>
+#include <limits>
+
+void Integrator::CacheEntry::decreasePriority() {
+	if (priority > std::numeric_limits<decltype(priority)>::lowest()) {
+		priority--;
+	}
+}
+
+void Integrator::CacheEntry::increasePriority() {
+	if (priority < 0) {
+		priority++;
+	}
+}
+
+unsigned int Integrator::ParamCache::MAX_ENTRIES_PER_PARAM = 5;
+
+void Integrator::ParamCache::setMaxEntriesPerParam(const int entries) {
+	MAX_ENTRIES_PER_PARAM = entries;
+}
+
+void Integrator::setMaxEntriesPerParam(const int entries) {
+	ParamCache::setMaxEntriesPerParam(entries);
+}
+
+bool Integrator::ParamCache::hasEntry(time_t start_time) {
+	return entries.find(start_time) != entries.end();
+}
+
+Integrator::CacheEntry Integrator::ParamCache::getEntry(time_t start_time) {
+	for (auto& time_entry: entries) {
+		time_entry.second.decreasePriority();
+	}
+	CacheEntry& entry = entries.at(start_time);
+	entry.increasePriority();
+	return entry;
+}
+
+void Integrator::ParamCache::addEntry(Integrator::CacheEntry&& entry) {
+	// case (1): entry exists - update
+	auto existing_entry = entries.find(entry.start_time);
+	if (existing_entry != entries.end()) {
+		existing_entry->second = entry;
+		return;
+	}
+
+	// case (2): max entries was not reached - append
+	if (entries.size() < MAX_ENTRIES_PER_PARAM) {
+		entries[entry.start_time] = entry;
+		return;
+	}
+
+	// case (3): remove least important entry, then add
+	int min_priority = std::numeric_limits<decltype(entry.priority)>::max();
+	time_t entry_to_remove{};
+	for (const auto& time_entry : entries) {
+		if (time_entry.second.priority < min_priority) {
+			min_priority = time_entry.second.priority;
+			entry_to_remove = time_entry.first;
+		}
+	}
+	entries.erase(entry_to_remove);
+	entries[entry.start_time] = entry;
+}
 
 Integrator::Integrator(DataProvider get_value, TimeMover move_time, IsNoData is_no_data, const double no_data)
 : get_value(get_value), move_time(move_time), is_no_data(is_no_data), m_no_data(no_data), m_cache(m_internal_cache)
@@ -22,10 +85,10 @@ double Integrator::GetIntegral(const std::string& param_name, const time_t start
 	bool basing_on_cache = false;
 
 	{
-		auto cache_it = m_cache.find(param_name);
-		if (cache_it != m_cache.end()) {
-			const auto& entry = cache_it->second;
-			if (entry.start_time == start_time) {
+		auto param_cache = m_cache.find(param_name);
+		if (param_cache != m_cache.end()) {
+			if (param_cache->second.hasEntry(start_time)) {
+				const auto& entry = param_cache->second.getEntry(start_time);
 				if (entry.end_time == end_time) {
 					return entry.result;
 				}
@@ -69,7 +132,7 @@ double Integrator::GetIntegral(const std::string& param_name, const time_t start
 		last_data_time = curr_time;
 	}
 
-	m_cache[param_name] = CacheEntry{start_time, end_time, result, curr_value, last_data_time};
+	m_cache[param_name].addEntry(CacheEntry{start_time, end_time, result, curr_value, last_data_time});
 	return result;
 }
 

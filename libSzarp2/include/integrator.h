@@ -18,13 +18,33 @@ private:
 		double result;
 		double last_value;
 		time_t last_data_time;	// <= end_time
+		int priority{};
+
+		void decreasePriority();
+		void increasePriority();
+	};
+
+	class ParamCache {
+	public:
+		static void setMaxEntriesPerParam(const int entries);
+
+		bool hasEntry(time_t start_time);
+		CacheEntry getEntry(time_t start_time);
+		void addEntry(CacheEntry&& entry);
+
+	private:
+		static unsigned int MAX_ENTRIES_PER_PARAM;
+		std::map<time_t, CacheEntry> entries;
 	};
 
 public:
-	using Cache = std::map<std::string, CacheEntry>;
+
+	using Cache = std::map<std::string, ParamCache>;
 	using DataProvider = std::function<double(const std::string& param_name, time_t probe_time)>;
 	using TimeMover = std::function<time_t(time_t start_time, int steps)>;
 	using IsNoData = std::function<bool(double value)>;
+
+	static void setMaxEntriesPerParam(const int entries);
 
 	Integrator(DataProvider get_value, TimeMover move_time, IsNoData is_no_data, const double no_data);
 	Integrator(DataProvider get_value, TimeMover move_time, IsNoData is_no_data, const double no_data, Cache& cache);
