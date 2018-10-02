@@ -39,14 +39,6 @@ resolver = HttpResolver()
 parser = etree.XMLParser()
 parser.resolvers.add(resolver)
 
-# load XSLT only once - at module initialization; cannot create
-# stylesheet objects because of some threading issues
-svg_stylesheet = etree.parse(
-                    '/opt/szarp/resources/xsltd/stylesheets/isl2svg.xsl',
-                    parser)
-defs_stylesheet = etree.parse(
-                    '/opt/szarp/resources/xsltd/stylesheets/isl2defs.xsl',
-                    parser)
 
 class XsltHandler:
 	"""
@@ -92,8 +84,13 @@ class XsltHandler:
 		"""
 		Create response
 		"""
-		global svg_stylesheet
-		global defs_stylesheet
+		# load XSLT each time, as with new apache, global variables are broken
+		svg_stylesheet = etree.parse(
+				    '/opt/szarp/resources/xsltd/stylesheets/isl2svg.xsl',
+				    parser)
+		defs_stylesheet = etree.parse(
+				    '/opt/szarp/resources/xsltd/stylesheets/isl2defs.xsl',
+				    parser)
 
                 ns = etree.FunctionNamespace("http://www.praterm.com.pl/ISL/pxslt")
                 ns.prefix = 'pxslt'
@@ -122,7 +119,7 @@ class XsltHandler:
                     self.req.log_error('content: stylesheet failed %s' % str(e), apache.APLOG_ERR)
                     r = stylesheet.error_log
 
-		self.req.content_type= 'image/svg+xml'
+                self.req.content_type= 'image/svg+xml'
 		self.req.send_http_header()
 		self.req.write(str(r))
 
