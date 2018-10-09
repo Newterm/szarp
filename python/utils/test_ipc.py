@@ -19,6 +19,8 @@ TestIPC is a module for testing pythondmn's scripts in SZARP.
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
+
+# Not implemented yet:
 # get_ipk_path
 # autoupdate_sz3
 # go_sz4
@@ -33,23 +35,11 @@ __email__     = "coders AT newterm.pl"
 
 # imports
 import sys
+sys.path.append("/opt/szarp/lib/python/")
+from xmlns import add_xmlns
 from lxml import etree
 from collections import namedtuple
 import numpy
-
-def xmlns(f,ns=None):
-	def wrapper(element):
-		ns2uri = { None : 'http://www.praterm.com.pl/SZARP/ipk',
-			'extra':'http://www.praterm.com.pl/SZARP/ipk-extra',
-			'exec':'http://www.praterm.com.pl/SZARP/ipk-extra',
-			'modbus':'http://www.praterm.com.pl/SZARP/ipk-extra',
-			'checker':'http://www.praterm.com.pl/SZARP/ipk-checker',
-			'icinga':'http://www.praterm.com.pl/SZARP/ipk-icinga'
-			}
-		uri = '{'+ns2uri[ns]+'}'+element
-		#print str(ns)+':'+element+' ===  '+uri
-		return f(uri)
-	return wrapper
 
 class TestIPC:
 	""" This is a class for testing pythondmn's scripts communication with
@@ -99,7 +89,7 @@ class TestIPC:
 
 		# search root element for <device> with pythondmn and given script
 		dmn_dev = None
-		for dev in xmlns(root.findall)('device'):
+		for dev in add_xmlns(root.findall)('device'):
 			if dev.get('daemon') == pythondmn_path and dev.get('path') == script_path:
 				dmn_dev = dev	# save element
 				break
@@ -109,7 +99,7 @@ class TestIPC:
 			sys.exit(1)
 
 		# fetch parameter list (units are merged)
-		for unit in xmlns(dmn_dev.findall)('unit'):
+		for unit in add_xmlns(dmn_dev.findall)('unit'):
 			self.param_list += self.fetch_param_list(unit)
 			self.send_list += self.fetch_send_list(unit)
 		print "param:",self.param_list
@@ -130,11 +120,11 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in xmlns(unit.findall)('param'):
+		for par in add_xmlns(unit.findall)('param'):
 			par_name = par.get('draw_name')
 			if par_name == None:
 				par_name = par.get('name').split(':')[-1]
-			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), xmlns(par.get,'extra')('val_type')))
+			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), add_xmlns(par.get,'extra')('val_type')))
 
 		return llist
 
@@ -145,7 +135,7 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in xmlns(unit.findall)('send'):
+		for par in add_xmlns(unit.findall)('send'):
 			llist.append(par.get('param'))
 
 		return llist
@@ -215,7 +205,7 @@ class TestIPC:
 
 
 	def _get_send(self,idx, val_type):
-		print "--> %s (%s) =" % (self.send_list[idx],val_type),
+		print "--> input %s (%s) =" % (self.send_list[idx],val_type),
 		val = self.FunType2numpy[val_type](input())
 		return val
 
