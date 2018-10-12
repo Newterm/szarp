@@ -481,6 +481,7 @@ public:
 	time_t GetModificationTime() const;
 
 	void SetModificationTime(time_t modification_time);
+
 protected:
 	/**Object this sets belongs to*/
 	DefinedDrawsSets *m_ds;

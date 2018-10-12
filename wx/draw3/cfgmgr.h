@@ -211,7 +211,7 @@ public:
 
 
 /** Array of draws from one set. */
-typedef std::vector<DrawInfo*> DrawInfoArray;
+using DrawInfoArray = std::vector<DrawInfo*>;
 
 /** Draw Set (window in draw2) */
 class DrawSet
@@ -264,6 +264,9 @@ class DrawSet
 	/** Add draw to DrawSet */
 	void Add(DrawInfo* drawInfo);
 
+	DrawInfoArray::iterator Delete(DrawInfoArray::iterator drawInfo)
+	{ delete *drawInfo; return m_draws->erase(drawInfo); }
+
 	/** Sort Draws */
 	void SortDraws();
 
@@ -290,6 +293,9 @@ class DrawSet
 
 	/** initializes all NULL colors in set */
 	void InitNullColors();
+
+	bool IsEmpty() const
+	{ return m_draws->empty(); }
 
 	static const double unassigned_prior_value;
 

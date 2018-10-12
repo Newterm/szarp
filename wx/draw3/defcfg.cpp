@@ -1453,6 +1453,7 @@ void DefinedDrawSet::SyncWithPrefix(wxString prefix) {
 void DefinedDrawSet::SyncWithPrefix(wxString prefix, const std::vector<DefinedParam*>& defined_params) {
 	IPKConfig *bc = dynamic_cast<IPKConfig*>(m_ds->GetParentManager()->GetConfigByPrefix(prefix));
 
+	std::vector<std::pair<DefinedDrawInfo*,int>> invalid_params;
 	for (size_t j = 0; j < m_draws->size(); ++j) {
 		DefinedDrawInfo* dw = dynamic_cast<DefinedDrawInfo*>(m_draws->at(j));
 
@@ -1488,12 +1489,20 @@ void DefinedDrawSet::SyncWithPrefix(wxString prefix, const std::vector<DefinedPa
 		}
 
 		if (!dw->IsValid()){
-			wxString msg = _("Param \"")+dw->GetBaseParam()+_("\" is not present in draw set \"")+dw->GetBaseDraw()+wxT("\".\n")+_("Please remove it from your defined set.");
-			wxMessageBox(msg, _("Operation failed."), wxOK | wxICON_ERROR, wxGetApp().GetTopWindow());
+			invalid_params.push_back(std::make_pair(dw, j));
 		}
 
 	}
 
+	for( const auto& p : invalid_params )
+	{
+			wxString msg = _("Param \"") + p.first->GetBaseParam()
+				+ _("\" is not present in draw set \"") + p.first->GetBaseDraw() + wxT("\".\n")
+				+ _("Do you want to remove it from your set?");
+			if( wxMessageBox(msg, _("Operation failed."),
+						wxYES_NO | wxICON_ERROR, wxGetApp().GetTopWindow()) == wxYES )
+				m_draws->erase(m_draws->begin() + p.second);
+	}
 }
 
 DefinedDrawsSets::DefinedDrawsSets(ConfigManager *cfg) : DrawsSets(cfg), m_prior(DrawSet::defined_draws_prior_start - 1), m_modified(false), m_params_attached(false) {
@@ -1563,7 +1572,7 @@ template <class DType = DefinedParam>
 void parse(const xmlChar *xpath_expr, std::function<DType*()> new_dp,
            std::vector<DType*>& ret_vec, std::vector<DType*>& err_vec,
            std::vector<DefinedParam*>& def_params,
-           const DefinedVerifier& verify, xmlXPathContextPtr xpath_ctx)
+           DefinedVerifier& verify, xmlXPathContextPtr xpath_ctx)
 {
 	auto node_set = uxmlXPathGetNodes(xpath_expr, xpath_ctx);
 	if (node_set == NULL) return;
@@ -1671,6 +1680,8 @@ void DefinedDrawsSets::AddDrawsToConfig(wxString prefix, std::set<wxString> *con
 		missing_prefixes.insert(ur.begin(), ur.end());
 
 		df->SyncWithPrefix(prefix, definedParams);
+		if( df->IsEmpty() )
+			drawsSets.erase(i);
 	}
 
 	if (configs_to_load)
