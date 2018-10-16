@@ -454,26 +454,26 @@ bool compile_script(TParam *p) {
 
 	std::ostringstream paramfunction;
 
-	paramfunction					<< 
-	"return function ()"				<< std::endl <<
-	"	local p = szbase"			<< std::endl <<
-	"	local hs = szbase_hoursum"	<< std::endl <<
-	"	local PT_MIN10 = ProbeType.PT_MIN10"	<< std::endl <<
-	"	local PT_HOUR = ProbeType.PT_HOUR"	<< std::endl <<
-	"	local PT_HOUR8 = ProbeType.PT_HOUR8"	<< std::endl <<
-	"	local PT_DAY = ProbeType.PT_DAY"	<< std::endl <<
-	"	local PT_WEEK = ProbeType.PT_WEEK"	<< std::endl <<
-	"	local PT_MONTH = ProbeType.PT_MONTH"	<< std::endl <<
-	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< std::endl <<
-	"	local szb_move_time = szb_move_time"	<< std::endl <<
-	"	local i = ipc_value"			<< std::endl <<
-	"	local state = {}"			<< std::endl <<
-	"	return function (param)"		<< std::endl <<
-	"		local v = nil"			<< std::endl <<
-	p->GetLuaScript()				<< std::endl <<
-	"		return v"			<< std::endl <<
-	"	end"					<< std::endl <<
-	"end"						<< std::endl;
+	paramfunction <<
+	"return function () " <<
+	"	local p = szbase " <<
+	"	local hs = szbase_hoursum " <<
+	"	local PT_MIN10 = ProbeType.PT_MIN10 " <<
+	"	local PT_HOUR = ProbeType.PT_HOUR " <<
+	"	local PT_HOUR8 = ProbeType.PT_HOUR8 " <<
+	"	local PT_DAY = ProbeType.PT_DAY " <<
+	"	local PT_WEEK = ProbeType.PT_WEEK " <<
+	"	local PT_MONTH = ProbeType.PT_MONTH " <<
+	"	local PT_CUSTOM = ProbeType.PT_CUSTOM " <<
+	"	local szb_move_time = szb_move_time " <<
+	"	local i = ipc_value " <<
+	"	local state = {} " <<
+	"	return function (param) " <<
+	"		local v = nil " <<
+	p->GetLuaScript() <<
+	"		return v " <<
+	"	end " <<
+	"end" << std::endl;
 
 	std::string str = paramfunction.str();
 

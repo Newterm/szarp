@@ -81,39 +81,37 @@ bool compile_lua_formula(lua_State *lua, const char *formula, const char *formul
 
 	std::ostringstream paramfunction;
 
-	using std::endl;
+	paramfunction <<
+	"return function () " <<
+	"	local p = szbase " <<
+	"	local hs = szbase_hoursum " <<
+	"	local PT_SEC = ProbeType.PT_SEC " <<
+	"	local PT_SEC10 = ProbeType.PT_SEC10 " <<
+	"	local PT_MIN10 = ProbeType.PT_MIN10 " <<
+	"	local PT_HOUR = ProbeType.PT_HOUR " <<
+	"	local PT_HOUR8 = ProbeType.PT_HOUR8 " <<
+	"	local PT_DAY = ProbeType.PT_DAY " <<
+	"	local PT_WEEK = ProbeType.PT_WEEK " <<
+	"	local PT_MONTH = ProbeType.PT_MONTH " <<
+	"	local PT_YEAR = ProbeType.PT_YEAR " <<
+	"	local PT_CUSTOM = ProbeType.PT_CUSTOM " <<
+	"	local szb_move_time = szb_move_time " <<
+	"	local state = {} " <<
+	"	return function (t,pt) ";
 
-	paramfunction					<< 
-	"return function ()"				<< endl <<
-	"	local p = szbase"			<< endl <<
-	"	local hs = szbase_hoursum"	<< endl <<
-	"	local PT_SEC = ProbeType.PT_SEC"	<< endl <<
-	"	local PT_SEC10 = ProbeType.PT_SEC10"	<< endl <<
-	"	local PT_MIN10 = ProbeType.PT_MIN10"	<< endl <<
-	"	local PT_HOUR = ProbeType.PT_HOUR"	<< endl <<
-	"	local PT_HOUR8 = ProbeType.PT_HOUR8"	<< endl <<
-	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
-	"	local PT_WEEK = ProbeType.PT_WEEK"	<< endl <<
-	"	local PT_MONTH = ProbeType.PT_MONTH"	<< endl <<
-	"	local PT_YEAR = ProbeType.PT_YEAR"	<< endl <<
-	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
-	"	local szb_move_time = szb_move_time"	<< endl <<
-	"	local state = {}"			<< endl <<
-	"	return function (t,pt)"			<< endl;
+	if (ret_v_val) {
+		paramfunction << "	local v = nil ";
+	}
 
-	if (ret_v_val)
-		paramfunction <<
-		"		local v = nil"		<< endl;
+	paramfunction << formula;
 
-	paramfunction << formula			<< endl;
-
-	if (ret_v_val)
-		paramfunction << 
-		"		return v"		<< endl;
+	if (ret_v_val) {
+		paramfunction << "	return v ";
+	}
 
 	paramfunction <<
-	"	end"					<< endl <<
-	"end"						<< endl;
+	"	end " <<
+	"end" << std::endl;
 
 	std::string str = paramfunction.str();
 
