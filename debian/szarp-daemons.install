@@ -42,6 +42,9 @@ opt/szarp/lib/python/parhub.py
 opt/szarp/lib/python/test_ipc.py
 opt/szarp/lib/python/test_ipc.pyc
 opt/szarp/lib/python/test_ipc.pyo
+opt/szarp/lib/python/xmlns.py
+opt/szarp/lib/python/xmlns.pyc
+opt/szarp/lib/python/xmlns.pyo
 opt/szarp/lib/libpysz4.a
 opt/szarp/lib/libpysz4.la
 opt/szarp/lib/libpysz4.so
