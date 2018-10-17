@@ -4,11 +4,14 @@ After=parhub.service
 BindsTo=parhub.service
 PartOf=szarp-server.target
 ConditionPathExists=/etc/szarp/units-enabled/iks-server
+StartLimitIntervalSec=0
 [Service]
 LimitNOFILE=49152
 Type=simple
 ExecStart=/opt/szarp/bin/iks-server --no_daemon
 StandardOutput=journal
 StandardError=journal
+Restart=always
+RestartSec=3
 [Install]
 WantedBy=szarp-server.target
