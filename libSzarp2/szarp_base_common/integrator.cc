@@ -2,6 +2,14 @@
 #include <cassert>
 #include <limits>
 
+Integrator::CacheEntry::CacheEntry()
+: start_time(0), end_time(0), result(0), last_value(0), last_data_time(0)
+{}
+
+Integrator::CacheEntry::CacheEntry(const time_t start_time, const time_t end_time, const double result, const double last_value, const time_t last_data_time)
+: start_time(start_time), end_time(end_time), result(result), last_value(last_value), last_data_time(last_data_time)
+{}
+
 void Integrator::CacheEntry::decreasePriority() {
 	if (priority > std::numeric_limits<decltype(priority)>::lowest()) {
 		priority--;

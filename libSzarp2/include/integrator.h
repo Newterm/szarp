@@ -13,6 +13,10 @@
 class Integrator {
 private:
 	struct CacheEntry {
+		// TODO : remove all constructors, when g++4.9 support is no longer needed
+		CacheEntry();
+		CacheEntry(const time_t start_time, const time_t end_time, const double result, const double last_value, const time_t last_data_time);
+
 		time_t start_time;
 		time_t end_time;
 		double result;
