@@ -29,6 +29,10 @@
 #define luaL_reg luaL_Reg
 #endif
 
+#ifndef lua_open
+#define lua_open  luaL_newstate
+#endif
+
 
 namespace sz4 {
 

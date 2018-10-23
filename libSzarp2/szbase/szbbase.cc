@@ -39,6 +39,9 @@
 #ifndef luaL_reg
 #define luaL_reg luaL_Reg
 #endif
+#ifndef lua_open
+#define lua_open  luaL_newstate
+#endif
 #endif
 
 #ifdef MINGW32
