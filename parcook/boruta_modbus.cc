@@ -214,6 +214,9 @@
 			kolejno¶æ s³ów dla warto¶ci zajmuj±cych 2 rejestry (typu "long" lub "float"), domy¶lna
 			to "msblsb" (najpierw bardziej znacz±ce s³owo), inna mo¿liwo¶æ to "lsbmsb" (najpierw
 			mniej znacz±ce s³owo); mo¿e byæ nadpisana dla konkretnego parametru
+		extra:DoubleOrder="msdlsd"
+			kolejno¶æ podwójnych s³ów dla warto¶ci zajmuj±cych 4 rejestry, domy¶lna warto¶æ to "msdlsd",
+			inna mo¿liwo¶æ to "lsdmsd"; mo¿e byæ nadpisana dla konkretnego parametru
 		extra:nodata-timeout="60"
 			czas w sekundach po którym wygasa warto¶æ parametru w przypadku braku komunikacji, domy¶lnie
 			to 0 (brak wygasania)
@@ -238,6 +241,8 @@
 			dwa kolejne rejestry
 		extra:FloatOrder="lsbmsb"
 			nadpisuje warto¶æ atrybutu FloatOrder jednostki dla konkretnego parametru
+		extra:DoubleOrder="msdlsd"
+			nadpisuje warto¶æ atrybutu DoubleOrder jednostki dla konkretnego parametru
 		extra:val_op="MSW"
 			opcjonalny operator pozwalaj±cy na konwersjê warto¶ci typu float i long na warto¶ci 
 			parametrów SZARP; domy¶lnie warto¶æi te zamieniane s± na 16-bitow± reprezentacjê warto¶æi
