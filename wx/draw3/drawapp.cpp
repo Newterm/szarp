@@ -72,6 +72,7 @@
 #include "geometry.h"
 #include "cfgmgr.h"
 #include "frmmgr.h"
+#include "sys.h"
 
 #include "szapp.h"
 #include "szbase/szbbase.h"
@@ -252,6 +253,7 @@ bool DrawApp::OnInit() {
 	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
 
+	SetMaxCoreDumpLimit();
 	InitGL();
 
 	SplashScreen *splash = NULL;
