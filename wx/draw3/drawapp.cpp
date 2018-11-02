@@ -515,7 +515,9 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 		sz_loginit((int) debug, "draw3", SZ_LIBLOG_FACILITY_APP);
 	else
 		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
-
+	
+	szlog::log().set_logger<szlog::COutLogger>();
+	sz_log(8, "set logger to cout");
 
 	if (parser.Found(_T("i"))) {
 		m_base_type = IKS_BASE;
