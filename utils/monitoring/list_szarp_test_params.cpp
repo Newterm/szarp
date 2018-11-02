@@ -21,17 +21,6 @@ public:
 	}
 };
 
-std::string getProgNameFromPath(std::string path) {
-	int last_slash_at(0);
-	for (unsigned int i = 0; i < path.length(); i++) {
-		if (path[i] == '/') {
-			last_slash_at = i;
-		}
-	}
-	std::string prog_name = path.substr(last_slash_at + 1, path.length() - last_slash_at +1);
-	return prog_name;
-}
-
 TParam* selectParam(TDevice* device) {
 	TParam* selParam = nullptr;
 
@@ -77,7 +66,7 @@ int main(int argc, char* argv[]){
 	args_mgr.initLibpar();
 
 	boost::optional<std::string> base;
-    if ((base = args_mgr.get<std::string>("base")) == boost::none) {
+	if (!(base = args_mgr.get<std::string>("base"))) {
 	        throw std::runtime_error("base is required!");
 	}
 
