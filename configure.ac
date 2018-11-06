@@ -1202,6 +1202,7 @@ AC_OUTPUT( \
 	utils/szarpinfo \
 	utils/Makefile \
 	utils/nagios/Makefile \
+	utils/monitoring/Makefile \
 	utils/pserver-lite/Makefile \
 	utils/pserver-lite/unit_tests/Makefile \
 	unit_tests/Makefile \
