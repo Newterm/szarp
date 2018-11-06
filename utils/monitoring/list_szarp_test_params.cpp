@@ -80,6 +80,6 @@ int main(int argc, char* argv[]){
 
 	/* print selected params */
 	for (unsigned int i = 0; i < selectedParams.size(); i++) {
-		std::cout<<selectedParams.at(i)->getAttribute<std::string>("name")<<std::endl;
+		std::cout << selectedParams.at(i)->getAttribute<std::string>("name") << std::endl;
 	}
 }
