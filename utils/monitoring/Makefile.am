@@ -1,4 +1,4 @@
-# Makefile.am for list_szarp_test_params program.
+# Makefile.am for list_szarp_test_params and check_szarp_daemons programs.
 
 # No subdirectories
 SUBDIRS =
@@ -15,7 +15,8 @@ AM_CPPFLAGS = @XML_CFLAGS@ @LUA_CFLAGS@ \
 	-I$(SOURCE_DIR)/../../libSzarp2/include \
 	-I$(SOURCE_DIR)/../../libSzarp/include
 
-bin_PROGRAMS = list_szarp_test_params
+bin_PROGRAMS = list_szarp_test_params \
+		check_szarp_daemons
 
 LIBSZARP2 = ../../libSzarp2/libSzarp2.la
 LIBSZARP = ../../libSzarp/libSzarp.la
@@ -25,3 +26,6 @@ LDADD = $(LIBSZARP2) $(LIBSZARP) @PTHREAD_CFLAGS@ @XML_LIBS@ @LUA_LIBS@ $(BOOST_
 
 list_szarp_test_params_SOURCES = list_szarp_test_params.cpp
 list_szarp_test_params_LDADD = $(LDADD)
+
+check_szarp_daemons_SOURCES = check_szarp_daemons.cpp
+check_szarp_daemons_LDADD = $(LDADD)
