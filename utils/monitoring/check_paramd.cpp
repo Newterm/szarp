@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <array>
 #include "config_info.h"
 #include "httpcl.h"
 
 constexpr char localHost[] = "127.0.0.1";
-constexpr char pref[] = "xmlns=\"http://www.praterm.com.pl/ISL/params\"><attribute name=\"value\">";
-constexpr char filePath[] = "/opt/szarp/resources/szarp_in.cfg";
+constexpr char szarpInPath[] = "/opt/szarp/resources/szarp_in.cfg";
+constexpr int errorStatus = 2;
 
 class CheckDaemonArgs: public DefaultArgs {
 public:
@@ -23,11 +24,11 @@ public:
 	}
 };
 
-auto getLocalPort() {
-	std::string port;
+std::string getLocalPort() {
+	std::string port{"8081"};
 
 	std::ifstream file;
-	file.open(filePath);
+	file.open(szarpInPath);
 	
 	bool correctSegment = false;
 	for (std::string line; getline(file, line);) {
@@ -42,19 +43,17 @@ auto getLocalPort() {
 	file.close();
 	return port;
 }
-auto getParamFromHTML(const std::string htmlSource) {
-	std::string spref(pref);
+std::string getParamFromHTML(const std::string htmlSource) {
+	constexpr char prefValue[] = "xmlns=\"http://www.praterm.com.pl/ISL/params\"><attribute name=\"value\">";
+	std::string spref(prefValue);
 	int i = htmlSource.find(spref) + spref.size();
 	std::string val = htmlSource.substr(i);
 	val = val.substr(0, val.find('<'));
 	return val;
 }
-auto checkParam(std::string param) {
-	for (unsigned int i = 0; i < param.size(); i++) {
-		if ( param[i] == ':') {
-			param[i] = '/';
-		}
-	}
+
+std::string checkParam(std::string param) {
+	std::replace(param.begin(), param.end(), ':', '/');
 
 	std::string url = std::string("http://").append(localHost).append(std::string(":")).append(getLocalPort()).append("/").append(param).append("@value");
 	
@@ -73,15 +72,15 @@ struct thresholds_t {
 	int timeout;
 };
 
-auto readThresholds(std::string sqzdThresholds) {
+struct thresholds_t readThresholds(const std::string& unitedThresholds) {
 	thresholds_t thresholds{-1,-1,-1};
-	int p = sqzdThresholds.find(',');
-	thresholds.min = stoi(sqzdThresholds.substr(0, p));
+	int p = unitedThresholds.find(',');
+	thresholds.min = stoi(unitedThresholds.substr(0, p));
 
-	int d = sqzdThresholds.rfind(',');
-	thresholds.max = stoi(sqzdThresholds.substr(p+1, d));
+	int d = unitedThresholds.rfind(',');
+	thresholds.max = stoi(unitedThresholds.substr(p+1, d));
 
-	thresholds.timeout = stoi(sqzdThresholds.substr(d+1));
+	thresholds.timeout = stoi(unitedThresholds.substr(d+1));
 	return thresholds;
 }
 
@@ -96,24 +95,26 @@ int main(int argc, char* argv[]) {
 	}
 
 	thresholds_t thresholds = {-1, -1, -1};
-	boost::optional<std::string> sqzdThresholds;
-	bool hasNoThresholds = args_mgr.has("nothresholds"); 
-	if ((sqzdThresholds = args_mgr.get<std::string>("thresholds")) == boost::none && !hasNoThresholds) {
-		throw std::runtime_error("Set thresholds");
-	} else if (!hasNoThresholds) {
-		thresholds = readThresholds(*sqzdThresholds);
-	}
-	std::string svalue = checkParam(*param);
+	boost::optional<std::string> unitedThresholds;
 	
-	int exitCode(0);
-	if (svalue == "unknown") {
-		exitCode = 2;
-	} else {
-		double value = stod(svalue);
-		if ((value >= thresholds.min && value <= thresholds.max) || hasNoThresholds) {
-			exitCode = 0;
+	bool hasNoThresholds = args_mgr.has("nothresholds"); 
+	if (!hasNoThresholds) {
+		unitedThresholds = args_mgr.get<std::string>("thresholds");
+		if (!unitedThresholds){ 
+			throw std::runtime_error("Set thresholds");
 		} else {
-			exitCode = 2;
+			thresholds = readThresholds(*unitedThresholds);
+		}
+	}
+	const std::string svalue = checkParam(*param);
+	
+	int exitCode{0};
+	if (svalue == "unknown") {
+		exitCode = errorStatus;
+	} else {
+		double value = boost::lexical_cast<double>(svalue);
+		if (value < thresholds.min || value > thresholds.max || hasNoThresholds) {
+			exitCode = errorStatus;
 		}
 	}
 	std::cout << "value = " << svalue << std::endl;
