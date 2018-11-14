@@ -1,13 +1,10 @@
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <array>
+#include <regex>
 #include "config_info.h"
 #include "httpcl.h"
 
-constexpr char localHost[] = "127.0.0.1";
-constexpr char szarpInPath[] = "/opt/szarp/resources/szarp_in.cfg";
-constexpr int errorStatus = 2;
+constexpr int errorExitCode = 2;
 
 class CheckDaemonArgs: public DefaultArgs {
 public:
@@ -23,31 +20,24 @@ public:
 		return desc;
 	}
 };
-
-std::string getLocalPort() {
-	std::string port{"8081"};
-
-	std::ifstream file;
-	file.open(szarpInPath);
-	
-	bool correctSegment = false;
-	for (std::string line; getline(file, line);) {
-		if (!correctSegment && line.find(":local_paramd") != std::string::npos) {
-			correctSegment = true;
-		} else if (correctSegment && line.find("port") != std::string::npos) {
-				int i = line.find('=');
-				port = line.substr(++i);
-				break;
-		}
-	}
-	file.close();
-	return port;
+void printErrorAndClose(const std::string message) {
+	std::cout << "Error: " << message << std::endl;
+	exit(errorExitCode);
 }
+
 std::string getParamFromHTML(const std::string htmlSource) {
-	constexpr char prefValue[] = "xmlns=\"http://www.praterm.com.pl/ISL/params\"><attribute name=\"value\">";
-	std::string spref(prefValue);
-	int i = htmlSource.find(spref) + spref.size();
-	std::string val = htmlSource.substr(i);
+	const std::string prefValue = "<attribute name=\"value\">";
+	
+	std::string regc(prefValue);
+	regc.append(".*</attribute>");
+	std::regex reg(regc.c_str());
+	std::smatch ret;
+	if (!regex_search(htmlSource, ret, reg)) {
+		printErrorAndClose("unable get value from html");
+	}
+
+	int startPoint = htmlSource.find(prefValue) + prefValue.size();
+	std::string val = htmlSource.substr(startPoint);
 	val = val.substr(0, val.find('<'));
 	return val;
 }
@@ -55,14 +45,15 @@ std::string getParamFromHTML(const std::string htmlSource) {
 std::string checkParam(std::string param) {
 	std::replace(param.begin(), param.end(), ':', '/');
 
-	std::string url = std::string("http://").append(localHost).append(std::string(":")).append(getLocalPort()).append("/").append(param).append("@value");
-	
+	std::string localPort = libpar_getpar("local_paramd", "port", 1);
+	std::string localHost = libpar_getpar("local_paramd", "allowed_ip", 1);
+	std::string url = std::string("http://").append(localHost).append(std::string(":")).append(localPort).append("/").append(param).append("@value");
 	szHTTPCurlClient szHTTPCC;
-	char* uri = (char*)url.c_str();
-	size_t size;
-	char* htmlSource = szHTTPCC.Get(uri, &size, NULL, -1);
+	char* htmlSource;
+	if ((htmlSource = szHTTPCC.Get(url.c_str(), NULL) ) == NULL) {
+		printErrorAndClose("unable to get html source - check if paramd is running");
+	}
 	std::string val = getParamFromHTML(std::string(htmlSource));
-
 	return val;
 }
 
@@ -74,13 +65,18 @@ struct thresholds_t {
 
 struct thresholds_t readThresholds(const std::string& unitedThresholds) {
 	thresholds_t thresholds{-1,-1,-1};
-	int p = unitedThresholds.find(',');
-	thresholds.min = stoi(unitedThresholds.substr(0, p));
+	std::regex reg("\\d*,\\d*,\\d*");
+	std::smatch ret;
+	if (!regex_search(unitedThresholds, ret, reg)) {
+		throw std::runtime_error("incorrect thresholds");
+	}
+	int firstComma = unitedThresholds.find(',');
+	thresholds.min = stoi(unitedThresholds.substr(0,firstComma));
 
-	int d = unitedThresholds.rfind(',');
-	thresholds.max = stoi(unitedThresholds.substr(p+1, d));
+	int secondComma = unitedThresholds.rfind(',');
+	thresholds.max = stoi(unitedThresholds.substr(firstComma + 1, secondComma));
 
-	thresholds.timeout = stoi(unitedThresholds.substr(d+1));
+	thresholds.timeout = stoi(unitedThresholds.substr(secondComma + 1));
 	return thresholds;
 }
 
@@ -110,11 +106,11 @@ int main(int argc, char* argv[]) {
 	
 	int exitCode{0};
 	if (svalue == "unknown") {
-		exitCode = errorStatus;
+		exitCode = errorExitCode;
 	} else {
 		double value = boost::lexical_cast<double>(svalue);
 		if (value < thresholds.min || value > thresholds.max || hasNoThresholds) {
-			exitCode = errorStatus;
+			exitCode = errorExitCode;
 		}
 	}
 	std::cout << "value = " << svalue << std::endl;
