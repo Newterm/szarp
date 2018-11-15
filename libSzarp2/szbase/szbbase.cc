@@ -619,6 +619,50 @@ int lua_szbase_hoursum(lua_State *lua) {
 
 }
 
+template<typename... Args> int lua_fail_with_error(lua_State* lua, const char* format_string, Args... args) {
+	luaL_where(lua, 1);
+	lua_pushfstring(lua, format_string, args...);
+	lua_concat(lua, 2);
+	return lua_error(lua);
+}
+
+int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param, const time_t reference_time, const time_t limit_time, const int direction);
+
+int lua_szbase_search_left(lua_State *lua) {
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	bool param_found = false;
+	const time_t first_time = Szbase::GetObject()->SearchFirst(param, param_found);
+	if (!param_found) {
+		return lua_fail_with_error(lua, "Search left param not found: '%s'", param);
+	}
+	time_t end_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	return lua_szbase_search_from_reference(lua, param, end_time, first_time, -1);
+}
+
+int lua_szbase_search_right(lua_State *lua) {
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	bool param_found = false;
+	const time_t last_time = Szbase::GetObject()->SearchLast(param, param_found);
+	if (!param_found) {
+		return lua_fail_with_error(lua, "Search right param not found: '%s'", param);
+	}
+	time_t start_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	return lua_szbase_search_from_reference(lua, param, start_time, last_time, 1);
+}
+
+int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param, const time_t reference_time, const time_t limit_time, const int direction) {
+	const SZARP_PROBE_TYPE query_probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+	bool probe_time_found = false;
+	std::wstring search_error{};
+	// we delegate timestamp validation to Search(), basing on r_t, l_t and direction
+	const time_t probe_time = Szbase::GetObject()->Search(SC::U2S(param), reference_time, limit_time, direction, query_probe_type, probe_time_found, search_error);
+	if (!probe_time_found) {
+		return lua_fail_with_error(lua, "Search from reference failed on param: '%s', error: '%s'", param, search_error);
+	}
+	lua_pushnumber(lua, probe_time);
+	return 1;
+}
+
 int lua_szbase_move_time(lua_State* lua) {
 	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
 	int count = lua_tointeger(lua, 2);

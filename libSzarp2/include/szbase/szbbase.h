@@ -108,6 +108,7 @@ public:
 	time_t SearchFirst(const std::basic_string<unsigned char> & param, bool &ok);
 	time_t SearchLast(const std::wstring& param, bool &ok);
 	time_t SearchLast(const std::basic_string<unsigned char>& param, bool &ok);
+	/** Look out! If direction = -1 (go back in time), then it must be satisfied that: start > end */
 	time_t Search(const std::wstring& param, time_t start, time_t end, int direction, SZARP_PROBE_TYPE probe, bool &ok, std::wstring& error);
 	/**Add user defined param to object*/
 	void AddExtraParam(const std::wstring& prefix, TParam *param);
@@ -187,6 +188,8 @@ public:
 };
 
 int lua_szbase_hoursum(lua_State *lua);
+int lua_szbase_search_left(lua_State *lua);
+int lua_szbase_search_right(lua_State *lua);
 
 #endif
 

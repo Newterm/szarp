@@ -527,6 +527,8 @@ void register_lua_functions(lua_State *lua) {
 	const struct luaL_reg ParseScriptLibFun[] = {
 		{ "ipc_value", lua_ipc_value},
 		{ "szbase_hoursum", lua_szbase_hoursum},
+		{ "szb_search_left", lua_szbase_search_left},
+		{ "szb_search_right", lua_szbase_search_right},
 		{ NULL, NULL }
 	};
 
