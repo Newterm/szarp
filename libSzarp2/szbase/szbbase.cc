@@ -619,34 +619,34 @@ int lua_szbase_hoursum(lua_State *lua) {
 
 }
 
-	int lua_szbase_move_time(lua_State* lua) {
-		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-		int count = lua_tointeger(lua, 2);
-		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
-		int custom_lenght = lua_tointeger(lua, 4);
+int lua_szbase_move_time(lua_State* lua) {
+	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+	int count = lua_tointeger(lua, 2);
+	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+	int custom_lenght = lua_tointeger(lua, 4);
 
-		time_t result = szb_move_time(time , count, probe_type, custom_lenght);
-		lua_pushnumber(lua, result);
+	time_t result = szb_move_time(time , count, probe_type, custom_lenght);
+	lua_pushnumber(lua, result);
 
-		return 1;
-	}
+	return 1;
+}
 
-	int lua_szbase_round_time(lua_State* lua) {
-		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
-		int custom_length = lua_tointeger(lua, 3);
+int lua_szbase_round_time(lua_State* lua) {
+	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
+	int custom_length = lua_tointeger(lua, 3);
 
-		time_t result = szb_round_time(time , probe_type, custom_length);
-		lua_pushnumber(lua, result);
+	time_t result = szb_round_time(time , probe_type, custom_length);
+	lua_pushnumber(lua, result);
 
-		return 1;
-	}
+	return 1;
+}
 
-	int lua_szbase_isnan(lua_State* lua) {
-		double v = lua_tonumber(lua, 1);
-		lua_pushboolean(lua, std::isnan(v));
-		return 1;
-	}
+int lua_szbase_isnan(lua_State* lua) {
+	double v = lua_tonumber(lua, 1);
+	lua_pushboolean(lua, std::isnan(v));
+	return 1;
+}
 
 int lua_szbase_search_first(lua_State *lua) {
 	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
