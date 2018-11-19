@@ -544,7 +544,6 @@ int main(int argc, char* argv[])
 	} else {
 		Szbase::Init(SC::L2S(szarp_data_root), NULL);
 		if (arguments.prober_address) {
-			sz_log(1, "Prober address: %s", arguments.prober_address);
 			Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
 				SC::L2S(arguments.prober_address),
 				arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");
