@@ -79,11 +79,13 @@ def unicode_to_ascii(string):
 		return unicodedata.normalize('NFKD', string).replace(u'ł', 'l').replace(u'Ł', 'L').encode('ascii', 'ignore')
 	except TypeError:
 		return string
-#truncates long lines for debug prints
-def trunc(s,width=80):
+
+# truncates long lines for debug prints
+def trunc(s, width=80):
+	long_line_suffix = '...'
 	if len(s)>width:
-		if width>4:
-			return s[0:width-3]+'...'
+		if width>len(long_line_suffix):
+			return s[0:width-len(long_line_suffix)] + long_line_suffix
 		else:
 			return s[0:width]
 	return s
@@ -308,7 +310,7 @@ def validate_parameter_name(param):
 	valid = True
 	if not len(components) in range(0,4):
 		printerr("Was looking for 1 or 2 separators in param name, found " +
-				str(len(components) - 1) + " (line " + str(param.sourceline) + ")") 
+				str(len(components) - 1) + " (line " + str(param.sourceline) + ")")
 		valid = False
 	for component in components:
 		if not component.strip():
@@ -317,7 +319,7 @@ def validate_parameter_name(param):
 			valid = False
 		elif any(char in invalid_chars for char in component):
 			printerr("Parameter name contains invalid character (line "
-					+ str(param.sourceline) + ")") 
+					+ str(param.sourceline) + ")")
 			valid = False
 
 	return valid
@@ -519,148 +521,152 @@ def run_ipk2szarp(input_file):
 			printerr("ipk2szarp: " + error)
 
 def get_szarp_cfg_path():
-	# libpar szuka plikow konfiguracyjnych w nastepujacej kolejnosci:
+	# libpar searches for files in this order:
 	#	./szarp.cfg
 	#	$HOME/szarp.cfg
 	#	/etc/szarp/szarp.cfg
 	#	/etc/szarp.cfg
-	f=args.szarp_cfg_file
-	if f<> None and os.path.exists(f): return f
-
-	f="szarp.cfg"
-	if os.path.exists(f): return f
-
-	f='szarp.cfg'
-	if os.path.exists(f): return f
-
-	f = os.path.expanduser('~')+'/szarp.cfg'
-	if os.path.exists(f): return f
-
-	f = os.path.realpath("/etc/szarp/szarp.cfg")
-	if os.path.exists(f): return f
-
-	f = os.path.realpath("/etc/szarp.cfg")
-	if os.path.exists(f): return f
+	for f in [
+		args.szarp_cfg_file,
+		"szarp.cfg",
+		os.path.expanduser('~') + '/szarp.cfg',
+		os.path.realpath("/etc/szarp/szarp.cfg"),
+		os.path.realpath("/etc/szarp.cfg")
+		]:
+		if f != None and os.path.exists(f): return f
 
 	return None
 
+def put_breaked_lines_together_the_way_libpar_does(ss):
+	ignoring_hash = False
+	ss = ss.split('\n')
+	val = ss[0]
+	for s in ss[1:]:
+		s = s.strip()
+		if val[-1] == '\\':
+			if s[0] != '#':
+				ignoring_hash = True
+				val = val[:-1] + s
+			else:
+				val = val[:-1] + s[1:].strip()
+		else:
+			val += '\n' + s
+	val += '\n'
+	if ignoring_hash and not quiet: add_note("Beware using line wrapping ('\\' char) in commented lines in szarp.cfg. It leads to  s t r a n g e  behaviour!")
+	return val
+
+# to be used, when libpar will be replaced
 def put_breaked_lines_together(ss):
 	ss = ss.split('\n')
-	[ s.strip() for s in ss ]
-	val=ss[0]
-	if len(val)==0:
-		printnote("No menu data at all in szarp.cfg")
-		return ''
+	val = ss[0]
 
-	for idx,s in enumerate(ss[1:]):
-		if val[-1]=='\\':
+	for idx, s in enumerate(ss[1:]):
+		s = s.strip()
+		if val[-1] == '\\':
 			val = val[:-1] + s
-		elif idx<>len(ss[1:]):
+		elif idx+1 != len(ss[1:]):
 			printnote("Some lines in szarp.cfg were not parsed. It means there are uncommented lines after 'menu=' but not concatenated with '\\'.")
+			if verbose: print "Not read lines:\n", "\n".join(ss[idx:])
 			return val
 	return val
 
 def get_item(ss):
-	match = re.search('(MENU|EXEC)[(]',ss)
+	match = re.search('(MENU|EXEC)[(]', ss)
 	if match is None:
 		#print "No items any more"
-		return None,ss
+		return None, ss
 
 	start = match.start()
-	b=0	# start wskazuje na poczatek nazwy funkcji, więc zliczy pierwszy nawias
-	bracket_idxs = [x.start() for x in re.finditer('(\(|\))',ss[start:]) ]
+	brackets = 0	# points to function name first char, so first opening bracket counts
+	bracket_idxs = [ x.start() for x in re.finditer('(\(|\))', ss[start:]) ]
 	for idx in bracket_idxs:
-		if ss[start+idx]=='(':
-			b+=1
-			#print "+",start+idx,b
-		elif ss[start+idx]==')':
-			b-=1
-			#print "-",start+idx,b
-		if b==0:
-			end = start+idx+1
-			#print (start,end)	# start and end idxs of item
-			return ss[start:end],ss[0:start]+ss[end:]
-	if b <> 0:
+		if ss[start + idx] == '(':
+			brackets += 1
+		elif ss[start + idx] == ')':
+			brackets -= 1
+		if brackets == 0:
+			end = start + idx + 1
+			return ss[start:end], ss[0:start] + ss[end:]
+	if brackets != 0:
 		 printerr("Can't find matching ')' for '%s'" % trunc(ss[start:]))
-	return None,ss
+	return None, ss
 
 def get_item_params(ss):
-	return re.findall('\"([^"]*)\"',ss)
+	return re.findall('\"([^"]*)\"', ss)
 
 def exec_item(i):
 	p = get_item_params(i)
-	if len(p)<>2:
+	if len(p) != 2:
 		printerr("ERROR: wrong number of EXEC parameters (%s) for '%s'" % (len(p), trunc(i)))
 		return False
 	name = p[0]
 	comm = p[1].split(' ')[0] # doesn't handle whitespaces in path
-	#print "EXEC: %s \t\t %s" % (name,comm)
-	if verbo: print nesting_lvl*'\t'+"Checking for %s ..." % comm,
-	if which(comm)==None:
-		if verbo: print 'no'
-		printerr("Couldn't find '%s' added from %s" % (comm,trunc(i)))
+	#print "EXEC: %s \t\t %s" % (name, comm)
+	if verbose: print nesting_lvl * '\t' + "Checking for %s ..." % comm,
+	if which(comm) == None:
+		if verbose: print 'no'
+		printerr("Couldn't find '%s' added from %s" % (comm, trunc(i)))
 	else:
-		if verbo: print 'yes'
+		if verbose: print 'yes'
 
 def menu_item(menu):
-	status_ok=True
+	status_ok = True
 	global nesting_lvl
-	if verbo: print nesting_lvl*'\t'+"Entering '%s'" % trunc(menu)
-	nesting_lvl+=1
-	if menu[0:4]=='MENU':
-		match = re.findall('^MENU\(\"[^"]*\"(.*)\)',menu)
-		if len(match)>0:
-			#print "MENU INTERNALS:",match[0]
-			assert len(match)==1
-			menu=match[0]
+	if verbose: print nesting_lvl*'\t' + "Entering '%s'" % trunc(menu)
+	nesting_lvl += 1
+	if menu[0:4] == 'MENU':
+		match = re.findall('^MENU\(\"[^"]*\"(.*)\)', menu)
+		if len(match) > 0:
+			#print "MENU INTERNALS:", match[0]
+			assert len(match) == 1
+			menu = match[0]
 
-	item,menu = get_item(menu)
-	while item<>None:
-		if item[0:4]=="EXEC":
-			if not exec_item(item): status_ok=False
+	item, menu = get_item(menu)
+	while item != None:
+		if item[0:4] == "EXEC":
+			if not exec_item(item): status_ok = False
 			pass
-		elif item[0:4]=="MENU":
-			if not menu_item(item): status_ok=False
+		elif item[0:4] == "MENU":
+			if not menu_item(item): status_ok = False
 		else:
-			assert False, 'NONAME:'+item
-		item,menu = get_item(menu)
-	nesting_lvl-=1
+			assert False, 'NONAME:' + item
+		item, menu = get_item(menu)
+	nesting_lvl -= 1
 	return status_ok
-
 
 def check_szarp_cfg():
 	szarp_cfg_path = get_szarp_cfg_path()
-	if szarp_cfg_path==None:
+	if szarp_cfg_path == None:
 		printerr("Cant find szarp.cfg file")
 	with open(szarp_cfg_path) as szarp_cfg_file:
-		if verbo: print "Reading config from '%s'" % os.path.realpath(szarp_cfg_path)
+		if verbose: print "Reading config from '%s'" % os.path.realpath(szarp_cfg_path)
 		data = szarp_cfg_file.read()
+		data = put_breaked_lines_together_the_way_libpar_does(data)
 	data = ':DUMMY_FIRST_HEADER\n' + data
-	data = re.sub('^[:](.*)$','[\\1]',data,flags=re.MULTILINE)
+	data = re.sub('^[:](.*)$', '[\\1]', data, flags=re.MULTILINE)
 	parser = ConfigParser.RawConfigParser(allow_no_value=True)
 	try:
 		parser.readfp(io.BytesIO(data))
 		# w Pythonie3 parser.read_string(data)
 	except ConfigParser.ParsingError as e:
-		printnote("File parsing errors - probably caused by uncommented lines - for more info use -v option, but it may work in szarp...")
-		if verbo: print e
+		printnote("File parsing errors - for more info use -v option")
+		if verbose: print e
 
 	try:
-		menu = parser.get('scc','menu')
+		menu = parser.get('scc', 'menu')
 	except ConfigParser.NoOptionError as e:
-		printnote("%s in '%s'" % (str(e),szarp_cfg_path))
+		printnote("%s in '%s'" % (str(e), szarp_cfg_path))
 		return None
 
-	#depending on parsing errors parser returns list or string
-	if type(menu)==list:
-		menu="\n".join(menu)
+	# depending on parsing errors parser returns list or string
+	if type(menu) == list:
+		menu = "\n".join(menu)
 
-	if verbo: print 'Read menu value:\n%s' % menu
-	menu = put_breaked_lines_together(menu)
+	#menu = put_breaked_lines_together(menu)
+	if verbose: print 'Read menu value:\n%s' % menu
 
-	status_ok=menu_item(menu)
+	status_ok = menu_item(menu)
 	if not status_ok: add_note("Errors in '%s' found" % szarp_cfg_path)
-	if not quiet: add_note("Beware using line wrapping ('\\' char) in commented lines in szarp.cfg. It leads to  u n d e f i n e d  behaviour!")
 
 
 # checks if program exists
@@ -675,8 +681,8 @@ def which(program):
 	else:
 		for path in os.environ["PATH"].split(os.pathsep):
 			exe_file = os.path.join(path, program)
-		if is_exe(exe_file):
-			return exe_file
+			if is_exe(exe_file):
+				return exe_file
 	return None
 
 parser = argparse.ArgumentParser(description='Parses params.xml, szarp.cfg and checks for errors.')
@@ -696,13 +702,12 @@ args = parser.parse_args()
 run_ipk2szarp(args.input_file)
 
 quiet = args.quiet
-verbo = args.verbose
-if verbo and not quiet:
-	printnote("Verbose mode on")
+verbose = args.verbose
+if verbose and not quiet:
+	printnote("verbose mode on")
 
-nesting_lvl=0
-if not quiet:
-	add_note("if configuration has changed run: systemctl restart szarp-server.target")
+nesting_lvl = 0
+if not quiet: add_note("if configuration has changed run: systemctl restart szarp-server.target")
 szarp_path, params_path = get_szarp_path()
 params = get_params_scheme()
 params_root, elements = parse_config_file()
