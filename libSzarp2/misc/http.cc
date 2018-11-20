@@ -92,7 +92,7 @@ const char* szHTTPCurlClient::GetErrorStr()
 	}
 }
 
-char* szHTTPCurlClient::Get(char *uri, size_t* ret_len, char *userpwd, int timeout)
+char* szHTTPCurlClient::Get(const char *uri, size_t* ret_len, char *userpwd, int timeout)
 {
 	assert (uri);
 	m_buf_used = 0;
@@ -153,7 +153,7 @@ char* szHTTPCurlClient::Get(char *uri, size_t* ret_len, char *userpwd, int timeo
 	return ret;
 }
 
-char* szHTTPCurlClient::Post(char *uri, char *buff, size_t len, int timeout, char *userpwd, size_t* ret_len)
+char* szHTTPCurlClient::Post(const char *uri, char *buff, size_t len, int timeout, char *userpwd, size_t* ret_len)
 {
 	assert (uri);
 	m_buf_used = 0;
@@ -265,7 +265,7 @@ size_t szHTTPCurlClient::ReadCallback(char* data, size_t size)
 	return len;
 }
 
-xmlDocPtr szHTTPCurlClient::GetXML(char* uri, char *userpwd, int timeout)
+xmlDocPtr szHTTPCurlClient::GetXML(const char* uri, char *userpwd, int timeout)
 {
 	size_t l;
 	char* buf = Get(uri, &l, userpwd, timeout);
@@ -288,7 +288,7 @@ xmlDocPtr szHTTPCurlClient::GetXML(char* uri, char *userpwd, int timeout)
 	return doc;
 }
 
-char* szHTTPCurlClient::Put(char *uri, char *buffer, size_t len, char *userpwd, size_t* ret_len)
+char* szHTTPCurlClient::Put(const char *uri, char *buffer, size_t len, char *userpwd, size_t* ret_len)
 {
 	assert (uri);
 	m_buf_used = 0;
@@ -355,7 +355,7 @@ char* szHTTPCurlClient::Put(char *uri, char *buffer, size_t len, char *userpwd, 
 	return ret;
 }
 
-char* szHTTPCurlClient::PostXML(char *uri, xmlDocPtr doc, char *userpwd, size_t* ret_len)
+char* szHTTPCurlClient::PostXML(const char *uri, xmlDocPtr doc, char *userpwd, size_t* ret_len)
 {
 	assert (uri);
 	assert (doc);
@@ -373,7 +373,7 @@ char* szHTTPCurlClient::PostXML(char *uri, xmlDocPtr doc, char *userpwd, size_t*
 }
 
 
-char* szHTTPCurlClient::PutXML(char *uri, xmlDocPtr doc, char* userpw, size_t* ret_len)
+char* szHTTPCurlClient::PutXML(const char *uri, xmlDocPtr doc, char* userpw, size_t* ret_len)
 {
 	assert (uri);
 	assert (doc);
