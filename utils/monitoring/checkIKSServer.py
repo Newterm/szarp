@@ -41,7 +41,7 @@ def getValueFromIKS(sock, base, param):
 	if connect2Base(sock, base) == ERROR_EXIT_CODE:
 		print base, "base not found"
 		sys.exit(ERROR_EXIT_CODE)
-	
+
 	# get time last param
 	sock.send("get_latest 1 " + param + " 10s\n")
 	receive = sock.recv(BUFFER_SIZE)
@@ -52,18 +52,18 @@ def getValueFromIKS(sock, base, param):
 	timestampStartEnd = str(int(timestampStart))
 	timestampStart = str(int(timestampStart) - 10)
 	sock.send("get_history 2 "+ param + " 10s " + timestampStart + " " + timestampStartEnd + "\n")
-	
+
 	# get value of last param
 	data = sock.recv(BUFFER_SIZE).split('"data":"')[1].split('"')[0]
 
 	# add missing padding ( required to decode base64 )
 	missing_padding = len(data) % 4
 	if missing_padding != 0:
-        	data += b'='* (4 - missing_padding)
+		data += b'='* (4 - missing_padding)
 
 	# decode base64 to binary
 	data = data.decode('base64')
-	
+
 	# read data as float and cast to int32
 	data = int((struct.unpack('f', data)[0]))
 	return data
@@ -84,20 +84,20 @@ def checkParam(sock, param, thresholds):
 
 	# check if value is required
 	if value == "unknown":
-		return ERROR_EXIT_CODE 	
+		return ERROR_EXIT_CODE
 	elif thresholds is not None:
 		if int(value) < tmin or int(value) < tmax:
 			return ERROR_EXIT_CODE
-	return CORRECT_EXIT_CODE 	
+	return CORRECT_EXIT_CODE
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
 	description="The script check if IKS Server is running and if current params are not None")
-	
+
 	group = parser.add_mutually_exclusive_group(required=True)
 	group.add_argument('-p', '--param', help="Full name param")
 	group.add_argument('-r', '--remotes', nargs="*", help="List of SZARP bases")
-	
+
 	parser.add_argument('-t', '--thresholds', help='Ex. min,max,timeout', required=False)
 	args = parser.parse_args()
 
