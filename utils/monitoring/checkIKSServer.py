@@ -48,18 +48,23 @@ def getValueFromIKS(sock, base, param):
 	if receive[0] == 'e':
 		print "ERROR: error from iks:", receive[:-1]
 		sys.exit(ERROR_EXIT_CODE)
-	timestampStart = receive.split(" ")[2].split("\n")[0]
-	timestampStartEnd = str(int(timestampStart))
-	timestampStart = str(int(timestampStart) - 10)
-	sock.send("get_history 2 "+ param + " 10s " + timestampStart + " " + timestampStartEnd + "\n")
+	start_timestamp = receive.split(" ")[2].strip()
+	end_timestamp = str(int(start_timestamp) + 1)
+	start_timestamp = str(int(start_timestamp) - 9)
 
 	# get value of last param
+	sock.send("get_history 2 "+ param + " 10s " + start_timestamp + " " + end_timestamp + "\n")
 	data = sock.recv(BUFFER_SIZE).split('"data":"')[1].split('"')[0]
+
+	# check if there is any data
+	if data == "":
+		print "no data"
+		sys.exit(ERROR_EXIT_CODE)
 
 	# add missing padding ( required to decode base64 )
 	missing_padding = len(data) % 4
 	if missing_padding != 0:
-		data += b'='* (4 - missing_padding)
+		data += b'=' * (4 - missing_padding)
 
 	# decode base64 to binary
 	data = data.decode('base64')
