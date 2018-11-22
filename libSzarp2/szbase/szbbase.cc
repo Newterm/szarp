@@ -520,6 +520,13 @@ static void lua_printstack(const char* a, lua_State *lua) {
 }
 #endif
 
+template<typename... Args> int lua_fail_with_error(lua_State* lua, const char* format_string, Args... args) {
+	luaL_where(lua, 1);
+	lua_pushfstring(lua, format_string, args...);
+	lua_concat(lua, 2);
+	return lua_error(lua);
+}
+
 int lua_szbase(lua_State *lua) {
 		Szbase* szbase = Szbase::GetObject();
 
@@ -543,10 +550,7 @@ int lua_szbase(lua_State *lua) {
 			lua_pushnumber(lua, result);
 			return 1;
 		} else {
-			luaL_where(lua, 1);
-			lua_pushfstring(lua, "%s", SC::S2U(error).c_str());
-			lua_concat(lua, 2);
-			return lua_error(lua);
+			return lua_fail_with_error(lua, "%s", SC::S2U(error).c_str());
 		}
 	
 	}
@@ -566,10 +570,7 @@ int lua_szbase_hoursum(lua_State *lua) {
 	bool param_found = false;
 	const time_t last_time = szbase->SearchLast(param, param_found);
 	if (!param_found) {
-		luaL_where(lua, 1);
-		lua_pushfstring(lua, "Integrated param not found: '%s'", param);
-		lua_concat(lua, 2);
-		return lua_error(lua);
+		return lua_fail_with_error(lua, "Integrated param not found: '%s'", param);
 	}
 	if (end_time > last_time) {
 		end_time = last_time;
@@ -611,19 +612,9 @@ int lua_szbase_hoursum(lua_State *lua) {
 		lua_pushnumber(lua, integral_1h);
 		return 1;
 	} else {
-		luaL_where(lua, 1);
-		lua_pushfstring(lua, "%s", SC::S2U(error).c_str());
-		lua_concat(lua, 2);
-		return lua_error(lua);
+		return lua_fail_with_error(lua, "%s", SC::S2U(error).c_str());
 	}
 
-}
-
-template<typename... Args> int lua_fail_with_error(lua_State* lua, const char* format_string, Args... args) {
-	luaL_where(lua, 1);
-	lua_pushfstring(lua, format_string, args...);
-	lua_concat(lua, 2);
-	return lua_error(lua);
 }
 
 int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param, const time_t reference_time, const time_t limit_time, const int direction);
