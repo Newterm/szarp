@@ -2498,11 +2498,13 @@ int serial_rtu_parser::configure(UnitInfo* unit, serial_port_configuration &spc)
 	int chars_per_sec = spc.speed / bits_per_char;
 	/*according to protocol specification, intra-character
 	 * delay cannot exceed 1.5 * (time of transmittion of one character) */
-	if (chars_per_sec)
-		m_timeout_1_5_c = 1000000 / chars_per_sec * (15 / 10);
-	else
-		m_timeout_1_5_c = 100000;
-
+	m_timeout_1_5_c = unit->getAttribute("extra:intra-char-timeout", -1);
+	if (m_timeout_1_5_c == -1) {
+		if (chars_per_sec)
+			m_timeout_1_5_c = 1000000 / chars_per_sec * (15 / 10);
+		else
+			m_timeout_1_5_c = 100000;
+	}
 	m_log->log(8, "Setting 1.5Tc timer to %d us",  m_timeout_1_5_c);
 
 	m_timeout_3_5_c = unit->getAttribute("extra:read-timeout", 0);;
