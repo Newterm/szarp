@@ -675,10 +675,8 @@ wxString DrawsPrintout::GetPrintoutConfigTitle() {
 		if (prefix != m_draws[i]->GetDrawInfo()->GetBasePrefix())
 			break;
 	}
-	if (i == m_draws_count)
-		return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles()[prefix];
-	else
-		return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetID();
+
+	return m_draws[0]->GetDrawInfo()->GetDrawsSets()->GetParentManager()->GetConfigTitles()[prefix];
 }
 
 void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int rightmargin, int bottommargin) {
