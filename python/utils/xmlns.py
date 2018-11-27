@@ -25,9 +25,10 @@ __author__    = "Adam Brodacki <abrodacki AT newterm.pl>"
 __copyright__ = "Copyright (C) 2018 Newterm"
 
 
-def add_xmlns(f,ns=None):
+def add_xmlns(ns=None, f=lambda x: x):
 	def wrapper(element):
 		ns2uri = { None : 'http://www.praterm.com.pl/SZARP/ipk',
+			'ipk':'http://www.praterm.com.pl/SZARP/ipk',
 			'extra':'http://www.praterm.com.pl/SZARP/ipk-extra',
 			'exec':'http://www.praterm.com.pl/SZARP/ipk-extra',
 			'modbus':'http://www.praterm.com.pl/SZARP/ipk-extra',
@@ -35,7 +36,6 @@ def add_xmlns(f,ns=None):
 			'icinga':'http://www.praterm.com.pl/SZARP/ipk-icinga'
 			}
 		uri = '{'+ns2uri[ns]+'}'+element
-		#print str(ns)+':'+element+' ===  '+uri
 		return f(uri)
 	return wrapper
 

@@ -89,7 +89,7 @@ class TestIPC:
 
 		# search root element for <device> with pythondmn and given script
 		dmn_dev = None
-		for dev in add_xmlns(root.findall)('device'):
+		for dev in add_xmlns(None, root.findall)('device'):
 			if dev.get('daemon') == pythondmn_path and dev.get('path') == script_path:
 				dmn_dev = dev	# save element
 				break
@@ -99,7 +99,7 @@ class TestIPC:
 			sys.exit(1)
 
 		# fetch parameter list (units are merged)
-		for unit in add_xmlns(dmn_dev.findall)('unit'):
+		for unit in add_xmlns(None, dmn_dev.findall)('unit'):
 			self.param_list += self.fetch_param_list(unit)
 			self.send_list += self.fetch_send_list(unit)
 		print "param:",self.param_list
@@ -120,11 +120,11 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in add_xmlns(unit.findall)('param'):
+		for par in add_xmlns(None, unit.findall)('param'):
 			par_name = par.get('draw_name')
 			if par_name == None:
 				par_name = par.get('name').split(':')[-1]
-			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), add_xmlns(par.get,'extra')('val_type')))
+			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), add_xmlns('extra', par.get)('val_type')))
 
 		return llist
 
@@ -135,7 +135,7 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in add_xmlns(unit.findall)('send'):
+		for par in add_xmlns(None, unit.findall)('send'):
 			llist.append(par.get('param'))
 
 		return llist

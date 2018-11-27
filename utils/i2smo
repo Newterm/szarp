@@ -28,6 +28,8 @@ import subprocess
 from subprocess import Popen, PIPE
 import pysvn
 import sys
+sys.path.append("/opt/szarp/lib/python/")
+from xmlns import add_xmlns
 import os
 from clint.textui import puts, indent, colored
 from clint.textui.core import STDOUT, STDERR
@@ -38,8 +40,6 @@ import glob
 import unicodedata
 import ConfigParser	# TODO dependences
 import io
-ns = { "ipk" : "http://www.praterm.com.pl/SZARP/ipk",
-		"extra" : "http://www.praterm.com.pl/SZARP/ipk-extra"}
 
 error_count = 0
 quiet = False
@@ -59,10 +59,6 @@ def printnote(msg, prefix="NOTE: "):
 note_list = []
 def add_note(msg):
 	note_list.append(msg)
-
-# TODO change to xmlns.py ?
-def add_ns(ns, param):
-	return "{" + ns + "}" + param
 
 def print_notes():
 	for note in note_list:
@@ -182,7 +178,7 @@ def check_for_daemons():
 
 	ignore_daemon = ['/bin/true', '/dev/null', '/bin/false']
 	daemons_list = []
-	for device in params_root.iter(add_ns(ns['ipk'], "device")):
+	for device in add_xmlns('ipk', params_root.iter)("device"):
 		daemon = device.get("daemon")
 		if daemon in ignore_daemon:
 			continue
@@ -221,7 +217,7 @@ def check_for_daemons():
 def check_daemons_with_base_connection(device, daemon):
 	# check if daemons with base connection got path / extra:tcp-ip / extra:atc-ip
 	daemons_to_check = ("k601dmn", "kamsdmn", "sbusdmn")
-	base_conn_attrs = (add_ns(ns["extra"], "tcp-ip"), add_ns(ns["extra"], "atc-ip"), "path")
+	base_conn_attrs = (add_xmlns("extra")("tcp-ip"), add_xmlns("extra")("atc-ip"), "path")
 	curr_daemon_attrs = []
 	for single_daemon in daemons_to_check:
 		if os.path.basename(daemon).startswith(single_daemon):
@@ -234,7 +230,7 @@ def check_daemons_with_base_connection(device, daemon):
 
 			# throw this code away when sbusdmn has atc-ip handling
 			if os.path.basename(daemon).startswith("sbusdmn"):
-				extra_atc_ip = device.get(add_ns(ns["extra"], "atc-ip"))
+				extra_atc_ip = add_xmlns('extra', device.get)("atc-ip")
 				if extra_atc_ip != None:
 					printerr("sbusdmn can't have extra:atc-ip attribute !")
 
@@ -245,7 +241,7 @@ def check_daemons_with_base_connection(device, daemon):
 
 
 def check_base(param):
-	param_path = param.get(add_ns(ns['extra'], "param"))
+	param_path = add_xmlns('extra', param.get)("param")
 	if param_path is not None:
 		base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
 		base_path = "/opt/szarp/" + base
@@ -327,25 +323,25 @@ def validate_parameter_name(param):
 param_device = []
 send_device = []
 def get_parameters_from_device():
-	for device in params_root.iter(add_ns(ns['ipk'], "device")):
-		for unit in device.iter(add_ns(ns['ipk'], "unit")):
-			for param in unit.iter(add_ns(ns['ipk'], "param")):
+	for device in add_xmlns('ipk', params_root.iter)("device"):
+		for unit in add_xmlns('ipk', device.iter)("unit"):
+			for param in add_xmlns('ipk', unit.iter)("param"):
 				if validate_parameter_name(param):
 					param_device.append(param)
-			for send in unit.iter(add_ns(ns['ipk'], "send")):
+			for send in add_xmlns('ipk', unit.iter)("send"):
 				send_device.append(send)
 
 param_defined = []
 def get_parameters_from_defined():
-	for defined in params_root.iter(add_ns(ns['ipk'], "defined")):
-		for param in defined.iter(add_ns(ns['ipk'], "param")):
+	for defined in add_xmlns('ipk', params_root.iter)("defined"):
+		for param in add_xmlns('ipk', defined.iter)("param"):
 			if validate_parameter_name(param):
 				param_defined.append(param)
 
 param_drawdefinable = []
 def get_parameters_from_drawdefinable():
-	for drawdefinable in params_root.iter(add_ns(ns['ipk'], "drawdefinable")):
-		for param in drawdefinable.iter(add_ns(ns['ipk'], "param")):
+	for drawdefinable in add_xmlns('ipk', params_root.iter)("drawdefinable"):
+		for param in add_xmlns('ipk', drawdefinable.iter)("param"):
 			if validate_parameter_name(param):
 				param_drawdefinable.append(param)
 
@@ -381,7 +377,7 @@ def check_under_defined_elements():
 		lua_formula as forbidden attribute in defined parameter
 	"""
 	for param in param_defined:
-		define = param.find(add_ns(ns['ipk'], "define"))
+		define = add_xmlns('ipk', param.find)("define")
 		if define is None:
 			continue
 		for attr, value in define.items():
@@ -399,7 +395,7 @@ def check_under_device_elements():
 	"""
 	for param in param_device:
 
-		draw = param.find(add_ns(ns['ipk'], "draw"))
+		draw = add_xmlns('ipk',param.find)("draw")
 		if draw is None:
 			continue
 		min_value = 0
@@ -555,25 +551,9 @@ def put_breaked_lines_together_the_way_libpar_does(ss):
 	if ignoring_hash and not quiet: add_note("Beware using line wrapping ('\\' char) in commented lines in szarp.cfg. It leads to  s t r a n g e  behaviour!")
 	return val
 
-# to be used, when libpar will be replaced
-def put_breaked_lines_together(ss):
-	ss = ss.split('\n')
-	val = ss[0]
-
-	for idx, s in enumerate(ss[1:]):
-		s = s.strip()
-		if val[-1] == '\\':
-			val = val[:-1] + s
-		elif idx+1 != len(ss[1:]):
-			printnote("Some lines in szarp.cfg were not parsed. It means there are uncommented lines after 'menu=' but not concatenated with '\\'.")
-			if verbose: print "Not read lines:\n", "\n".join(ss[idx:])
-			return val
-	return val
-
 def get_item(ss):
 	match = re.search('(MENU|EXEC)[(]', ss)
 	if match is None:
-		#print "No items any more"
 		return None, ss
 
 	start = match.start()
@@ -601,13 +581,14 @@ def exec_item(i):
 		return False
 	name = p[0]
 	comm = p[1].split(' ')[0] # doesn't handle whitespaces in path
-	#print "EXEC: %s \t\t %s" % (name, comm)
 	if verbose: print nesting_lvl * '\t' + "Checking for %s ..." % comm,
 	if which(comm) == None:
 		if verbose: print 'no'
 		printerr("Couldn't find '%s' added from %s" % (comm, trunc(i)))
+		return False
 	else:
 		if verbose: print 'yes'
+		return True
 
 def menu_item(menu):
 	status_ok = True
@@ -617,7 +598,6 @@ def menu_item(menu):
 	if menu[0:4] == 'MENU':
 		match = re.findall('^MENU\(\"[^"]*\"(.*)\)', menu)
 		if len(match) > 0:
-			#print "MENU INTERNALS:", match[0]
 			assert len(match) == 1
 			menu = match[0]
 
@@ -647,7 +627,7 @@ def check_szarp_cfg():
 	parser = ConfigParser.RawConfigParser(allow_no_value=True)
 	try:
 		parser.readfp(io.BytesIO(data))
-		# w Pythonie3 parser.read_string(data)
+		# Python3: parser.read_string(data)
 	except ConfigParser.ParsingError as e:
 		printnote("File parsing errors - for more info use -v option")
 		if verbose: print e
@@ -662,7 +642,6 @@ def check_szarp_cfg():
 	if type(menu) == list:
 		menu = "\n".join(menu)
 
-	#menu = put_breaked_lines_together(menu)
 	if verbose: print 'Read menu value:\n%s' % menu
 
 	status_ok = menu_item(menu)
