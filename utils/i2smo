@@ -38,7 +38,7 @@ import hashlib
 import re
 import glob
 import unicodedata
-import ConfigParser	# TODO dependences
+import ConfigParser
 import io
 
 error_count = 0
@@ -595,7 +595,7 @@ def menu_item(menu):
 	global nesting_lvl
 	if verbose: print nesting_lvl*'\t' + "Entering '%s'" % trunc(menu)
 	nesting_lvl += 1
-	if menu[0:4] == 'MENU':
+	if menu.startswidth('MENU'):
 		match = re.findall('^MENU\(\"[^"]*\"(.*)\)', menu)
 		if len(match) > 0:
 			assert len(match) == 1
@@ -603,10 +603,10 @@ def menu_item(menu):
 
 	item, menu = get_item(menu)
 	while item != None:
-		if item[0:4] == "EXEC":
+		if item.startswidth("EXEC"):
 			if not exec_item(item): status_ok = False
 			pass
-		elif item[0:4] == "MENU":
+		elif item.startswidth("MENU"):
 			if not menu_item(item): status_ok = False
 		else:
 			assert False, 'NONAME:' + item
