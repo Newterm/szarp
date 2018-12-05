@@ -1374,7 +1374,7 @@ void SzbaseHandler::ConfigLibpar(const wxString& prefix)
 #ifdef __WXGTK__
 	std::string config_path = std::string(wxString(base_path + prefix + '/').mb_str());
 	libpar_done();
-	libpar_init_from_folder(config_path);
+	libpar_reinit_from_folder(config_path);
 #endif
 }
 

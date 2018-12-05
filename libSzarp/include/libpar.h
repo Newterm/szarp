@@ -50,6 +50,7 @@
 int libpar_init_with_filename(const char *filename, int exit_on_error);
 void libpar_init();
 void libpar_init_from_folder(std::string folder_path);
+void libpar_reinit_from_folder(const std::string& folder_path);
 
 /**Ponowna inicjalizacja - wczytanie pliku konfiguracyjnego jeszcze raz
  * adresy zwrocone przez libpar_getkey staja sie niewazne*/
