@@ -2,6 +2,7 @@ Template: szarp/prefix
 Type: string
 _Description: Configuration prefix
  Enter configuration prefix.
+Default: local
 
 Template: szarp-terminal/addserveraddr
 Type: boolean
