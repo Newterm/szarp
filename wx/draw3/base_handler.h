@@ -348,10 +348,6 @@ namespace sz4 {
 	class connection_mgr;
 }
 
-namespace boost { namespace asio {
-	class io_service;
-}}
-
 class Sz4ApiBase : public Draw3Base {
 private:
 	class ObserverWrapper : public sz4::param_observer_ {
