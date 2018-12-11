@@ -60,15 +60,13 @@ ALL_LINGUAS="pl"
 : ${AM_CXXFLAGS="-O2 -g -Wall -std=c++14"}
 AC_SUBST([AM_CXXFLAGS])
 
-
-# C compiler (sets CC)
-AC_PROG_CC([gcc3 gcc-3 gcc cc])
-AC_PROG_CC_C_O
-# C preprocesor (sets CPP)
-AC_PROG_CPP
-
-# C++ compiler (sets CXX)
-AC_PROG_CXX([g++3 g++-3 g++])
+AC_CHECK_PROG([CCACHE],[ccache],[ccache],[])
+AC_PROG_CC
+AC_PROG_CXX
+if test "x${CCACHE}" = "xccache" ;then
+	CC="$CCACHE $CC"
+	CXX="$CCACHE $CXX"
+fi
 
 # C++ preprocesor (sets CXXCPP)
 AC_PROG_CXXCPP
