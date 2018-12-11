@@ -648,7 +648,7 @@ int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param,
 	// we delegate timestamp validation to Search(), basing on r_t, l_t and direction
 	const time_t probe_time = Szbase::GetObject()->Search(SC::U2S(param), reference_time, limit_time, direction, query_probe_type, probe_time_found, search_error);
 	if (!probe_time_found) {
-		return lua_fail_with_error(lua, "Search from reference failed on param: '%s', error: '%s'", param, search_error);
+		return lua_fail_with_error(lua, "Search from reference failed on param: '%s', error: '%s'", param, search_error.c_str());
 	}
 	lua_pushnumber(lua, probe_time);
 	return 1;
