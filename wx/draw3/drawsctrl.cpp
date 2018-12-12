@@ -992,6 +992,9 @@ std::pair<time_t, time_t> DrawsController::GetStatsInterval() {
 
 	time_t start = m_draws[m_selected_draw]->GetTimeOfIndex(bounds.second).GetTime().GetTicks();
 	time_t end = m_draws[m_selected_draw]->GetTimeOfIndex(bounds.first).GetTime().GetTicks();
+	if (start > end) {
+		std::swap(start, end);
+	}
 
 	return std::make_pair(start, end);
 }
