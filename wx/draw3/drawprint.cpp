@@ -49,6 +49,7 @@
 #include "xydiag.h"
 #include "xygraph.h"
 #include "drawprint.h"
+#include "drawsctrl.h"
 
 using std::map;
 using std::set;
@@ -64,6 +65,7 @@ const int tick_len = 24;
 
 /**Class represeting daws printout*/
 class DrawsPrintout : public wxPrintout {
+	DrawsController *m_draws_ctrl;
 	/**Array of draws to print*/
 	std::vector<Draw*> m_draws;
 
@@ -81,7 +83,7 @@ class DrawsPrintout : public wxPrintout {
 	/**@return draws choosen for printing, draws having the same values range are grouped together*/
 	std::set<std::set<int> > ChooseDraws();
 	public:
-	DrawsPrintout(std::vector<Draw*> draws, int count);
+	DrawsPrintout(DrawsController *draws_ctrl, std::vector<Draw*> draws, int count);
 	/**prints page
 	 * @param page number to print
 	 * @return true if page has been successfully printed*/
@@ -302,7 +304,8 @@ int BackgroundPrinter::FindVerticalAxesDistance(wxDC *dc, std::vector<Draw*> dra
 		int ext = wxMax(unitext, wxMax(maxext, minext));
 		ext = wxMax(ext, msn) + line_width;
 
-		d = wxMax(d, ext);
+		int space_around_unit = 20;
+		d = wxMax(d, ext) + space_around_unit;
 
 	} 
 
@@ -326,14 +329,24 @@ int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const
 
 		m_draw = draws[di];
 
-		m_leftmargin += ax_dist;
+		int unitwidth, unitheight, shortwidth;
+		wxString unit = m_draw->GetDrawInfo()->GetUnit();
+		wxString short_name = m_draw->GetDrawInfo()->GetShortName();
+
+		dc->GetTextExtent(unit, &unitwidth, &unitheight);
+		dc->GetTextExtent(short_name, &shortwidth, &unitheight);
+
+		if ( ssi == sd.begin() ) {
+			m_leftmargin = unitwidth + shortwidth;
+		} else {
+			m_leftmargin += ax_dist + unitwidth;
+		}
 
 		SS::iterator next = ssi;
 		next++;
 		if (next == sd.end()) {
 			int w,h;
 			GetSize(&w, &h);
-			w = w - m_leftmargin + ax_dist;
 			SetSize(w, h);
 
 			DrawBackground(dc);
@@ -346,24 +359,30 @@ int BackgroundPrinter::PrintBackground(wxDC *dc, std::vector<Draw*> draws, const
 		int x = (int)(arrow_width * 1.2) , y = line_width;
 
 		int textw, texth;
-		DrawUnit(dc, x, y);
 		dc->GetTextExtent(draws[*si]->GetDrawInfo()->GetUnit(), &textw, &texth);
 
 		wxColour pc = dc->GetTextForeground();
 		y = m_topmargin;
+		int half_around_unit = 10;
+		int tmp = m_leftmargin;
 		for (set<int>::reverse_iterator i = (*ssi).rbegin(); i != (*ssi).rend(); i++) {
+			if ( ssi == sd.begin() ) {
+				m_leftmargin = shortwidth + unitwidth;
+			} else {
+				m_leftmargin = tmp;
+			}
+
 			DrawInfo* di = draws[*i]->GetDrawInfo();
 			dc->GetTextExtent(di->GetShortName(), &textw, &texth);
 
 			dc->SetTextForeground(di->GetDrawColor());
 			dc->DrawText(di->GetShortName(), m_leftmargin - 2 * line_width - textw, y - texth - line_width);
 			y -= texth + line_width;
-
+			dc->DrawText(di->GetUnit(), m_leftmargin + half_around_unit, y);
 		}
 		dc->SetTextForeground(pc);
 
 		++ssi;
-		
 	} while (ssi != sd.end());
 
 	return m_leftmargin;
@@ -496,7 +515,7 @@ bool GraphPrinter::AlternateColor(int idx) {
 	return false;
 }
 
-DrawsPrintout::DrawsPrintout(std::vector<Draw*> draws, int count) : m_draws(draws), m_draws_count(count) 
+DrawsPrintout::DrawsPrintout(DrawsController *draws_ctrl, std::vector<Draw*> draws, int count) : m_draws_ctrl(draws_ctrl), m_draws(draws), m_draws_count(count)
 {}
 
 std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
@@ -524,7 +543,7 @@ std::set<std::set<int> > DrawsPrintout::ChooseDraws() {
 		{
 			if (it->first == r) break;
 			float eps = std::pow(0.1, std::max(r.prec, it->first.prec));
-			if (std::fabs(it->first.min - r.min) < eps && std::fabs(it->first.max - r.max) < eps && it->first.unit == r.unit) // check, if they differ only by precision. If so, change the axis
+			if (std::fabs(it->first.min - r.min) < eps && std::fabs(it->first.max - r.max) < eps) // check, if they differ only by precision. If so, change the axis
 			{
 				if (it->first.prec < r.prec) {
 					r.prec = it->first.prec;
@@ -743,9 +762,9 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 	bool painted = false;
 	do {
 		wxString time;
-		time += _("From: ");
+		time += _("Data from:");
 		time += FormatTime(fd->GetTimeOfIndex(0), pt);
-		time += _(" to: ");
+		time += _(" to:");
 		time += FormatTime(fd->GetTimeOfIndex(fd->GetValuesTable().size() - 1), pt);
 
 		dc->GetTextExtent(time, &tw, &th);
@@ -758,6 +777,24 @@ void DrawsPrintout::PrintDrawsInfo(wxDC *dc, int leftmargin, int topmargin, int 
 			painted = true;
 		}
 	} while (!painted);
+
+	if (m_draws_ctrl->GetDoubleCursor()) {
+		/* statistics info */
+		Draw *selected_draw = m_draws_ctrl->GetDraw(m_draws_ctrl->GetSelectedDrawNo());
+		std::pair<int, int> stats_bounds = m_draws_ctrl->GetStatsBoundaries();
+		if (stats_bounds.first != -1 && stats_bounds.second != -1) {
+			wxString stat_time;
+			stat_time += _("Statistics from:");
+			stat_time += FormatTime(selected_draw->GetTimeOfIndex(stats_bounds.first), pt);
+			stat_time += _(" to:");
+			stat_time += FormatTime(selected_draw->GetTimeOfIndex(stats_bounds.second), pt);
+
+			dc->GetTextExtent(stat_time, &tw, &th);
+			dc->DrawText(stat_time, hw - tw / 2, maxy);
+
+			maxy += int(1.4 * th);
+		}
+	}
 
 	f.SetPointSize(point_size) ;
 	dc->SetFont(f);
@@ -1096,7 +1133,7 @@ bool XYGraphPrintout::OnBeginDocument(int start, int end) {
 	return wxPrintout::OnBeginDocument(start, end);
 }
 
-void Print::DoPrint(wxWindow *parent, std::vector<Draw*> draws, int count) {
+void Print::DoPrint(wxWindow *parent, DrawsController *draws_ctrl, std::vector<Draw*> draws, int count) {
 	while (parent && parent->IsTopLevel() == false)
 		parent = parent->GetParent();
 
@@ -1105,18 +1142,18 @@ void Print::DoPrint(wxWindow *parent, std::vector<Draw*> draws, int count) {
 	wxPrintDialogData print_dialog(*print_data);
 	wxPrinter printer(&print_dialog);
 
-	DrawsPrintout printout(draws, count);
+	DrawsPrintout printout(draws_ctrl, draws, count);
 
 	printer.Print(parent, &printout, true);
 }
 
-void Print::DoPrintPreviev(std::vector<Draw*> draws, int count) {
+void Print::DoPrintPreviev(DrawsController *draws_ctrl, std::vector<Draw*> draws, int count) {
 	InitData();
 
 	wxPrintDialogData print_dialog_data(*print_data);
 
-	wxPrintPreview *preview = new wxPrintPreview(new DrawsPrintout(draws, count), 
-							new DrawsPrintout(draws, count), 
+	wxPrintPreview *preview = new wxPrintPreview(new DrawsPrintout(draws_ctrl, draws, count),
+							new DrawsPrintout(draws_ctrl, draws, count),
 							&print_dialog_data);
 	if (!preview->Ok()) {
 		delete preview;
