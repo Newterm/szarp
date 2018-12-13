@@ -4,11 +4,16 @@ After=parcook.service
 BindsTo=parcook.service
 PartOf=szarp-server.target parcook.service
 ConditionPathExists=/etc/szarp/units-enabled/sender
+StartLimitIntervalSec=0
+
 [Service]
 Type=simple
 ExecStart=/opt/szarp/bin/sender --no-daemon
 SuccessExitStatus=0
 StandardOutput=journal
 StandardError=journal
+Restart=always
+RestartSec=3
+
 [Install]
 WantedBy=szarp-server.target

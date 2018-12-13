@@ -13,10 +13,6 @@ class TParam;
 class IPKContainer;
 class IksConnection;
 
-namespace boost { namespace asio {
-class io_service;
-}}
-
 namespace sz4 {
 
 class location_connection;

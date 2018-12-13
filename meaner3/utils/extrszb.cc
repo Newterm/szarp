@@ -121,6 +121,7 @@ static struct argp_option options[] = {
 	{"probes-server", 'A', "ADDRESS", 0,
 		"Address of probes server to fetch data from", 7},
 	{"probes-server-port", 'L', "PORT", 0, "Port probes server listens on", 7},
+	{"base", 'b', "BASE_PREFIX", 0, "Set base prefix", 7},
 	{0}
 };
 
@@ -156,6 +157,7 @@ struct arguments {
 	int sum;
 	char * prober_address;
 	char * prober_port;
+	char * base;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -353,6 +355,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 'P':
 			arguments->progress = 1;
 			break;
+		case 'b':
+			arguments->base = strdup(arg);
+			break;
 		case ARGP_KEY_ARG:
 			sz_log(3, "Adding parameter '%s'", arg);
 			
@@ -479,6 +484,7 @@ int main(int argc, char* argv[])
 	arguments.sz4 = 0;
 	arguments.prober_address = NULL;
 	arguments.prober_port = NULL;
+	arguments.base = NULL;
 
 	setbuf(stdout, 0);
 	
@@ -508,7 +514,13 @@ int main(int argc, char* argv[])
 	libpar_init();
 	szarp_data_root = libpar_getpar("", "szarp_data_root", 1);
 	assert(szarp_data_root != NULL);
-	ipk_prefix = libpar_getpar("", "config_prefix", 1);
+	
+	if (arguments.base == NULL) {
+		ipk_prefix = libpar_getpar("", "config_prefix", 1);
+	} else {
+		ipk_prefix = arguments.base;
+	}
+
 	assert (ipk_prefix != NULL);
 	libpar_done();
 
@@ -532,7 +544,6 @@ int main(int argc, char* argv[])
 	} else {
 		Szbase::Init(SC::L2S(szarp_data_root), NULL);
 		if (arguments.prober_address) {
-			sz_log(1, "Prober address: %s", arguments.prober_address);
 			Szbase::GetObject()->SetProberAddress(SC::L2S(ipk_prefix),
 				SC::L2S(arguments.prober_address),
 				arguments.prober_port ? SC::L2S(arguments.prober_port) : L"8090");

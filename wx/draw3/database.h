@@ -76,11 +76,10 @@ class DatabaseQueryQueue {
 	/**The queue implementation*/
 	std::list<QueueEntry> queue;
 
-	/**Semaphore counting number of elements in the queue*/
-	wxSemaphore semaphore;
 
-	/**Mutex guarding access to a queue*/
-	wxMutex mutex;
+	/**Mutex + condition_variable guarding access to a queue*/
+	std::mutex queue_mutex;
+	std::condition_variable queue_cv;
 
 	/**Number of elements in the queue preventing queries prioritisation*/
 	int cant_prioritise_entries;
@@ -106,9 +105,8 @@ public:
 	/**Retrieves entry from the queue*/
 	DatabaseQuery* GetQuery();
 
-	/** Removes old queries form queue */
+	/** Removes old queries from queue */
 	void CleanOld(DatabaseQuery* q);
-
 };
 
 DatabaseQuery* CreateDataQuery(DrawInfo* di, PeriodType pt, int draw_no = -1);

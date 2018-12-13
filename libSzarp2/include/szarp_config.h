@@ -524,7 +524,14 @@ enum class ParamType {
 class ParamFormulaInfo: public IPCParamInfo {
 public:
 	ParamFormulaInfo(TUnit *parent, TSzarpConfig *parentSC = NULL, const std::wstring& formula = std::wstring(), FormulaType ftype = FormulaType::NONE, ParamType ptype = ParamType::REAL):
-	    _parentUnit(parent), _parentSzarpConfig(parentSC), _formula(formula), _ftype(ftype), _param_type(ptype) {}
+	    _parentUnit(parent),
+		_parentSzarpConfig(parentSC),
+		_formula(formula),
+		_ftype(ftype),
+		_param_type(ptype),
+		userDefined(false)
+	{}
+
 	virtual ~ParamFormulaInfo();
 
 public:
@@ -582,8 +589,11 @@ public:
 	LuaExec::Param* GetLuaExecParam();
 
 	void SetLuaExecParam(LuaExec::Param *param);
-#endif 
 #endif
+	bool isUserDefined() const { return userDefined; }
+
+	void setUserDefined(bool s) { userDefined = s; }
+#endif // ifndef NO_LUA
 
 // Set by TParam
 protected:
@@ -615,7 +625,8 @@ protected:
 #if LUA_PARAM_OPTIMISE
 	LuaExec::Param* _opt_lua_param{ nullptr };
 #endif
-#endif
+	bool userDefined;
+#endif // ifndef NO_LUA
 
 };
 
@@ -638,15 +649,15 @@ public:
 		FormulaType ftype = FormulaType::NONE,
 		ParamType ptype = ParamType::REAL) :
 		ParamFormulaInfo(parent, parentSC, formula, ftype, ptype),
-	    _shortName(),
-	    _drawName(),
-	    _unit(),
-	    _values(NULL),
-	    _baseInd(-1),
-	    _inbase(0),
-	    _raports(NULL),
-	    _draws(NULL),
-	    _szbase_name()
+		_shortName(),
+		_drawName(),
+		_unit(),
+		_values(NULL),
+		_baseInd(-1),
+		_inbase(0),
+		_raports(NULL),
+		_draws(NULL),
+		_szbase_name()
 	{ }
 
 	/** Deletes whole list. */
@@ -835,6 +846,7 @@ public:
 	void SetConfigId(unsigned configId) { _configId = configId; }
 
 	static bool IsHourSumUnit(const std::wstring& unit);
+
 protected:
 
 	std::wstring _translatedName;	    /**< Full name */

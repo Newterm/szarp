@@ -41,9 +41,6 @@ endif
 doxy:
 	cd @srcdir@ && doxygen
 
-winsetup:
-	${MAKE} -C wx winsetup
-
 EXTRA_DIST = \
 	     Doxyfile
 

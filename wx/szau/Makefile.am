@@ -80,13 +80,6 @@ install-data-local: $(szau_LOCALES)
 	$(INSTALL) -d $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
 	$(INSTALL) $(szau_LOCALES) \
                 $(DESTDIR)@prefix@/resources/locales/pl_PL/LC_MESSAGES
-
-winsetup: ${WIN_APP_NAME}Setup.exe
-
-${WIN_APP_NAME}Setup.exe: szau$(EXEEXT) $(szau_LOCALES)
-	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} szau$(EXEEXT) \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		$(szau_LOCALES) 
         
 update-po:
 	@XGETTEXT@ -o $(szau_LOCALES_TMP) -L C++ --keyword=_ $(szau_SOURCES)

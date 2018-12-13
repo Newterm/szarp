@@ -44,12 +44,17 @@
 Par *globals = NULL;
 Sections *sect = NULL;
 
+namespace {
+	bool libpar_initted = false;
+};
+
 /**lista zmiennych rozpoznanych przez libpar_read_cmdline*/
 static Par* command_line_pars = NULL;
 
 int parse(FILE * stream);
 void parser_reset(void);
 void parser_destroy(void);
+void libpar_reset();
 
 /* Implementacja f. p.*/
 
@@ -380,6 +385,9 @@ void libpar_read_cmdline_w(int *argc, wchar_t *argv[])
 
 int libpar_init_with_filename(const char *filename, int exit_on_error)
 {
+	if( libpar_initted )
+		libpar_reset();
+	libpar_initted = true;
     FILE *desc;
     
     if (!filename) {
@@ -483,6 +491,7 @@ char *libpar_getpar(const char *section, const char *par, int exit_on_error)
 }
 
 void libpar_reset() {
+	libpar_initted = false;
 	int args_count = 0;
 	int i;
 	char** argv = NULL;
@@ -546,6 +555,12 @@ void libpar_hard_reset() {
 void libpar_reinit_with_filename(const char *name, int exit_on_error) {
 	libpar_reset();
 	libpar_init_with_filename(name, exit_on_error);
+}
+
+void libpar_reinit_from_folder(const std::string& folder_path)
+{
+	libpar_reset();
+	libpar_init_from_folder(folder_path);
 }
 
 #ifndef MINGW32

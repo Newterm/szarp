@@ -16,7 +16,7 @@ namespace sz4 {
 
 class connection_mgr;
 
-typedef std::shared_ptr<param_observer_> param_observer_f;
+using param_observer_f = std::shared_ptr<param_observer_>;
 
 class iks : public std::enable_shared_from_this<iks> {
 	std::shared_ptr<boost::asio::io_service> m_io;
@@ -76,6 +76,8 @@ public:
 
 	void deregister_observer(param_observer_f observer, const std::vector<param_info>& params, std::function<void(const boost::system::error_code&) > cb);
 
+public:
+	using ipk_container_type = IPKContainer;
 };
 
 }

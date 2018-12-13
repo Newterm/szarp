@@ -109,6 +109,9 @@ public:
 
 	time_t GetModificationTime() const;
 
+	void setUserDefined(bool s)
+	{ if(m_param) m_param->setUserDefined(s); }
+
 };
 
 class DefinedDrawsSets : public DrawsSets, public ConfigObserver {
@@ -478,6 +481,7 @@ public:
 	time_t GetModificationTime() const;
 
 	void SetModificationTime(time_t modification_time);
+
 protected:
 	/**Object this sets belongs to*/
 	DefinedDrawsSets *m_ds;

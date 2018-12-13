@@ -10,7 +10,7 @@
 class DefinedVerifier {
 public:
 	template <class T>
-	void operator()(const T&, const std::vector<DefinedParam*>&) const;
+	void operator()(T&, const std::vector<DefinedParam*>&);
 
 	DefinedVerifier(const ConfigManager* mgr): cfg_mgr(mgr) {}
 
@@ -50,7 +50,7 @@ bool DefinedVerifier::paramOfNameExists(const std::wstring& param_name, const st
 }
 
 template <>
-void DefinedVerifier::operator()(const DrawInfo& param, const std::vector<DefinedParam*>& defined_params) const {
+void DefinedVerifier::operator()(DrawInfo& param, const std::vector<DefinedParam*>& defined_params) {
 	const std::wstring param_name = getParamGlobalName(param);
 	if (!globalNameIsValid(param_name)) {
 		throw IllFormedParamException(wxString(_("Param ")+param.GetBasePrefix()+_T(":")+param.GetParamName()+_(" is ill-formed.")));
@@ -62,7 +62,7 @@ void DefinedVerifier::operator()(const DrawInfo& param, const std::vector<Define
 }
 
 template <>
-void DefinedVerifier::operator()(const DefinedParam& param, const std::vector<DefinedParam*>&) const {
+void DefinedVerifier::operator()(DefinedParam& param, const std::vector<DefinedParam*>&) {
 	const std::wstring param_name = getParamGlobalName(param);
 	if (!globalNameIsValid(param_name)) {
 		throw IllFormedParamException(wxString(_("Param ")+param.GetBasePrefix()+_T(":")+param.GetParamName()+_(" is ill-formed.")));
@@ -72,12 +72,28 @@ void DefinedVerifier::operator()(const DefinedParam& param, const std::vector<De
 }
 
 template <>
-void DefinedVerifier::operator()(const DefinedDrawSet& ds, const std::vector<DefinedParam*>& defined_params) const {
-	for (DrawInfo* d: *(ds.GetDraws())) {
-		operator()( *d, defined_params );
-	}
+void DefinedVerifier::operator()(DefinedDrawSet& ds, const std::vector<DefinedParam*>& defined_params) {
+	auto draws = ds.GetDraws();
+	auto draw = draws->begin();
+	auto draws_end = draws->end();
 
-	// checks for set: throw IllFormedSetException(wxString(_("Param ")+ds.GetBasePrefix()+_T(":")+ds.GetParamName()+_(" is ill-formed.")));
+	while( draw != draws_end )
+	{
+		try {
+			operator()( **draw, defined_params );
+			std::advance(draw, 1);
+		}
+		catch (const SzException& e) {
+			wxString msg = _("Failed to import defined draw param from configuration file.\n")
+				+ wxString::FromUTF8(e.what())
+				+ _("Do you want to delete invalid param from this configuration?");
+			if( wxMessageBox(msg, _("Operation failed."),
+						wxYES_NO | wxICON_ERROR, wxGetApp().GetTopWindow()) == wxYES )
+				draw = ds.Delete( draw );
+			else
+				throw e;
+		}
+	}
 }
 
 #endif

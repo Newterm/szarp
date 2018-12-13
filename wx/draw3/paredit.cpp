@@ -277,6 +277,7 @@ void ParamEdit::CreateDefinedParam() {
 			m_cfg_mgr->SubstiuteDefinedParams(std::vector<DefinedParam*>(1, m_edited_param), std::vector<DefinedParam*>(1, np));
 			m_edited_param = np;
 		} else {
+			np->setUserDefined(true);
 			m_cfg_mgr->GetDefinedDrawsSets()->AddDefinedParam(np);
 			m_database_manager->AddParams(std::vector<DefinedParam*>(1, np));
 		}

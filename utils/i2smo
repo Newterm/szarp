@@ -28,6 +28,8 @@ import subprocess
 from subprocess import Popen, PIPE
 import pysvn
 import sys
+sys.path.append("/opt/szarp/lib/python/")
+from xmlns import add_xmlns
 import os
 from clint.textui import puts, indent, colored
 from clint.textui.core import STDOUT, STDERR
@@ -36,9 +38,8 @@ import hashlib
 import re
 import glob
 import unicodedata
-
-ns = { "ipk" : "http://www.praterm.com.pl/SZARP/ipk",
-		"extra" : "http://www.praterm.com.pl/SZARP/ipk-extra"}
+import ConfigParser
+import io
 
 error_count = 0
 quiet = False
@@ -59,9 +60,6 @@ note_list = []
 def add_note(msg):
 	note_list.append(msg)
 
-def add_ns(ns, param):
-	return "{" + ns + "}" + param
-
 def print_notes():
 	for note in note_list:
 		printnote(note)
@@ -77,6 +75,16 @@ def unicode_to_ascii(string):
 		return unicodedata.normalize('NFKD', string).replace(u'ł', 'l').replace(u'Ł', 'L').encode('ascii', 'ignore')
 	except TypeError:
 		return string
+
+# truncates long lines for debug prints
+def trunc(s, width=80):
+	long_line_suffix = '...'
+	if len(s)>width:
+		if width>len(long_line_suffix):
+			return s[0:width-len(long_line_suffix)] + long_line_suffix
+		else:
+			return s[0:width]
+	return s
 
 def get_szarp_uncommited():
 	client = pysvn.Client()
@@ -170,7 +178,7 @@ def check_for_daemons():
 
 	ignore_daemon = ['/bin/true', '/dev/null', '/bin/false']
 	daemons_list = []
-	for device in params_root.iter(add_ns(ns['ipk'], "device")):
+	for device in add_xmlns('ipk', params_root.iter)("device"):
 		daemon = device.get("daemon")
 		if daemon in ignore_daemon:
 			continue
@@ -209,7 +217,7 @@ def check_for_daemons():
 def check_daemons_with_base_connection(device, daemon):
 	# check if daemons with base connection got path / extra:tcp-ip / extra:atc-ip
 	daemons_to_check = ("k601dmn", "kamsdmn", "sbusdmn")
-	base_conn_attrs = (add_ns(ns["extra"], "tcp-ip"), add_ns(ns["extra"], "atc-ip"), "path")
+	base_conn_attrs = (add_xmlns("extra")("tcp-ip"), add_xmlns("extra")("atc-ip"), "path")
 	curr_daemon_attrs = []
 	for single_daemon in daemons_to_check:
 		if os.path.basename(daemon).startswith(single_daemon):
@@ -222,7 +230,7 @@ def check_daemons_with_base_connection(device, daemon):
 
 			# throw this code away when sbusdmn has atc-ip handling
 			if os.path.basename(daemon).startswith("sbusdmn"):
-				extra_atc_ip = device.get(add_ns(ns["extra"], "atc-ip"))
+				extra_atc_ip = add_xmlns('extra', device.get)("atc-ip")
 				if extra_atc_ip != None:
 					printerr("sbusdmn can't have extra:atc-ip attribute !")
 
@@ -233,7 +241,7 @@ def check_daemons_with_base_connection(device, daemon):
 
 
 def check_base(param):
-	param_path = param.get(add_ns(ns['extra'], "param"))
+	param_path = add_xmlns('extra', param.get)("param")
 	if param_path is not None:
 		base = re.search(r"(?P<base>[^:]*):", param_path).group("base")
 		base_path = "/opt/szarp/" + base
@@ -298,7 +306,7 @@ def validate_parameter_name(param):
 	valid = True
 	if not len(components) in range(0,4):
 		printerr("Was looking for 1 or 2 separators in param name, found " +
-				str(len(components) - 1) + " (line " + str(param.sourceline) + ")") 
+				str(len(components) - 1) + " (line " + str(param.sourceline) + ")")
 		valid = False
 	for component in components:
 		if not component.strip():
@@ -307,7 +315,7 @@ def validate_parameter_name(param):
 			valid = False
 		elif any(char in invalid_chars for char in component):
 			printerr("Parameter name contains invalid character (line "
-					+ str(param.sourceline) + ")") 
+					+ str(param.sourceline) + ")")
 			valid = False
 
 	return valid
@@ -315,25 +323,25 @@ def validate_parameter_name(param):
 param_device = []
 send_device = []
 def get_parameters_from_device():
-	for device in params_root.iter(add_ns(ns['ipk'], "device")):
-		for unit in device.iter(add_ns(ns['ipk'], "unit")):
-			for param in unit.iter(add_ns(ns['ipk'], "param")):
+	for device in add_xmlns('ipk', params_root.iter)("device"):
+		for unit in add_xmlns('ipk', device.iter)("unit"):
+			for param in add_xmlns('ipk', unit.iter)("param"):
 				if validate_parameter_name(param):
 					param_device.append(param)
-			for send in unit.iter(add_ns(ns['ipk'], "send")):
+			for send in add_xmlns('ipk', unit.iter)("send"):
 				send_device.append(send)
 
 param_defined = []
 def get_parameters_from_defined():
-	for defined in params_root.iter(add_ns(ns['ipk'], "defined")):
-		for param in defined.iter(add_ns(ns['ipk'], "param")):
+	for defined in add_xmlns('ipk', params_root.iter)("defined"):
+		for param in add_xmlns('ipk', defined.iter)("param"):
 			if validate_parameter_name(param):
 				param_defined.append(param)
 
 param_drawdefinable = []
 def get_parameters_from_drawdefinable():
-	for drawdefinable in params_root.iter(add_ns(ns['ipk'], "drawdefinable")):
-		for param in drawdefinable.iter(add_ns(ns['ipk'], "param")):
+	for drawdefinable in add_xmlns('ipk', params_root.iter)("drawdefinable"):
+		for param in add_xmlns('ipk', drawdefinable.iter)("param"):
 			if validate_parameter_name(param):
 				param_drawdefinable.append(param)
 
@@ -369,7 +377,7 @@ def check_under_defined_elements():
 		lua_formula as forbidden attribute in defined parameter
 	"""
 	for param in param_defined:
-		define = param.find(add_ns(ns['ipk'], "define"))
+		define = add_xmlns('ipk', param.find)("define")
 		if define is None:
 			continue
 		for attr, value in define.items():
@@ -387,7 +395,7 @@ def check_under_device_elements():
 	"""
 	for param in param_device:
 
-		draw = param.find(add_ns(ns['ipk'], "draw"))
+		draw = add_xmlns('ipk',param.find)("draw")
 		if draw is None:
 			continue
 		min_value = 0
@@ -490,6 +498,7 @@ def do_tests():
 	check_for_daemons()
 	check_under_defined_elements()
 	check_under_device_elements()
+	check_szarp_cfg()
 
 def test_isl_file():
 	check_if_parameter_exist()
@@ -507,22 +516,177 @@ def run_ipk2szarp(input_file):
 		for error in stream.strip().splitlines():
 			printerr("ipk2szarp: " + error)
 
-parser = argparse.ArgumentParser(description='Parses params.xml and checks for errors.')
+def get_szarp_cfg_path():
+	# libpar searches for files in this order:
+	#	./szarp.cfg
+	#	$HOME/szarp.cfg
+	#	/etc/szarp/szarp.cfg
+	#	/etc/szarp.cfg
+	for f in [
+		args.szarp_cfg_file,
+		"szarp.cfg",
+		os.path.expanduser('~') + '/szarp.cfg',
+		os.path.realpath("/etc/szarp/szarp.cfg"),
+		os.path.realpath("/etc/szarp.cfg")
+		]:
+		if f != None and os.path.exists(f): return f
+
+	return None
+
+def put_breaked_lines_together_the_way_libpar_does(ss):
+	ignoring_hash = False
+	ss = ss.split('\n')
+	val = ss[0]
+	for s in ss[1:]:
+		s = s.strip()
+		if val[-1] == '\\':
+			if s[0] != '#':
+				ignoring_hash = True
+				val = val[:-1] + s
+			else:
+				val = val[:-1] + s[1:].strip()
+		else:
+			val += '\n' + s
+	val += '\n'
+	if ignoring_hash and not quiet: add_note("Beware using line wrapping ('\\' char) in commented lines in szarp.cfg. It leads to  s t r a n g e  behaviour!")
+	return val
+
+def get_item(ss):
+	match = re.search('(MENU|EXEC)[(]', ss)
+	if match is None:
+		return None, ss
+
+	start = match.start()
+	brackets = 0	# points to function name first char, so first opening bracket counts
+	bracket_idxs = [ x.start() for x in re.finditer('(\(|\))', ss[start:]) ]
+	for idx in bracket_idxs:
+		if ss[start + idx] == '(':
+			brackets += 1
+		elif ss[start + idx] == ')':
+			brackets -= 1
+		if brackets == 0:
+			end = start + idx + 1
+			return ss[start:end], ss[0:start] + ss[end:]
+	if brackets != 0:
+		 printerr("Can't find matching ')' for '%s'" % trunc(ss[start:]))
+	return None, ss
+
+def get_item_params(ss):
+	return re.findall('\"([^"]*)\"', ss)
+
+def exec_item(i):
+	p = get_item_params(i)
+	if len(p) != 2:
+		printerr("ERROR: wrong number of EXEC parameters (%s) for '%s'" % (len(p), trunc(i)))
+		return False
+	name = p[0]
+	comm = p[1].split(' ')[0] # doesn't handle whitespaces in path
+	if verbose: print nesting_lvl * '\t' + "Checking for %s ..." % comm,
+	if which(comm) == None:
+		if verbose: print 'no'
+		printerr("Couldn't find '%s' added from %s" % (comm, trunc(i)))
+		return False
+	else:
+		if verbose: print 'yes'
+		return True
+
+def menu_item(menu):
+	status_ok = True
+	global nesting_lvl
+	if verbose: print nesting_lvl*'\t' + "Entering '%s'" % trunc(menu)
+	nesting_lvl += 1
+	if menu.startswidth('MENU'):
+		match = re.findall('^MENU\(\"[^"]*\"(.*)\)', menu)
+		if len(match) > 0:
+			assert len(match) == 1
+			menu = match[0]
+
+	item, menu = get_item(menu)
+	while item != None:
+		if item.startswidth("EXEC"):
+			if not exec_item(item): status_ok = False
+			pass
+		elif item.startswidth("MENU"):
+			if not menu_item(item): status_ok = False
+		else:
+			assert False, 'NONAME:' + item
+		item, menu = get_item(menu)
+	nesting_lvl -= 1
+	return status_ok
+
+def check_szarp_cfg():
+	szarp_cfg_path = get_szarp_cfg_path()
+	if szarp_cfg_path == None:
+		printerr("Cant find szarp.cfg file")
+	with open(szarp_cfg_path) as szarp_cfg_file:
+		if verbose: print "Reading config from '%s'" % os.path.realpath(szarp_cfg_path)
+		data = szarp_cfg_file.read()
+		data = put_breaked_lines_together_the_way_libpar_does(data)
+	data = ':DUMMY_FIRST_HEADER\n' + data
+	data = re.sub('^[:](.*)$', '[\\1]', data, flags=re.MULTILINE)
+	parser = ConfigParser.RawConfigParser(allow_no_value=True)
+	try:
+		parser.readfp(io.BytesIO(data))
+		# Python3: parser.read_string(data)
+	except ConfigParser.ParsingError as e:
+		printnote("File parsing errors - for more info use -v option")
+		if verbose: print e
+
+	try:
+		menu = parser.get('scc', 'menu')
+	except ConfigParser.NoOptionError as e:
+		printnote("%s in '%s'" % (str(e), szarp_cfg_path))
+		return None
+
+	# depending on parsing errors parser returns list or string
+	if type(menu) == list:
+		menu = "\n".join(menu)
+
+	if verbose: print 'Read menu value:\n%s' % menu
+
+	status_ok = menu_item(menu)
+	if not status_ok: add_note("Errors in '%s' found" % szarp_cfg_path)
+
+
+# checks if program exists
+def which(program):
+	def is_exe(fpath):
+		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+	fpath, fname = os.path.split(program)
+	if fpath:
+		if is_exe(program):
+			return program
+	else:
+		for path in os.environ["PATH"].split(os.pathsep):
+			exe_file = os.path.join(path, program)
+			if is_exe(exe_file):
+				return exe_file
+	return None
+
+parser = argparse.ArgumentParser(description='Parses params.xml, szarp.cfg and checks for errors.')
 parser.add_argument('-i', '--input-file',
 	help='XML config file (default is params.xml)')
 parser.add_argument('-a', '--additional-test', action='store_true',
 	help='do additional test, including testing isls stored in ' + os.path.realpath("/etc/szarp/default"))
 parser.add_argument('-q', '--quiet', action='store_true',
 	help="hide not important messages, to be used e.g. in scripts")
+parser.add_argument('-v', '--verbose', action='store_true',
+	help="print debug info")
+parser.add_argument('-j', '--szarp-cfg-file',
+	help='szarp config file path (default are ./szarp.cfg, ~/szarp.cfg, /etc/default/szarp.cfg, /etc/szarp.cfg in given order)')
 
 args = parser.parse_args()
 
 run_ipk2szarp(args.input_file)
 
 quiet = args.quiet
+verbose = args.verbose
+if verbose and not quiet:
+	printnote("verbose mode on")
 
-if not quiet:
-	add_note("if configuration has changed run: systemctl restart szarp-server.target")
+nesting_lvl = 0
+if not quiet: add_note("if configuration has changed run: systemctl restart szarp-server.target")
 szarp_path, params_path = get_szarp_path()
 params = get_params_scheme()
 params_root, elements = parse_config_file()
@@ -538,5 +702,7 @@ if error_count == 0:
 	if not quiet:
 		printok("OK")
 else:
-	printerr("ERROR - params.xml not wellformed, check previous logs!", '')
+	printerr("ERROR - params.xml or szarp.cfg not wellformed, check previous logs!", '')
+
 	sys.exit(1)
+

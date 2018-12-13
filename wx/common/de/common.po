@@ -301,11 +301,11 @@ msgid "Version: "
 msgstr ""
 
 #: aboutdlg.cpp:78
-msgid "This program is distributed under terms of GPLv2."
-msgstr "Dieses Programm ist unter die GPLv2-Lizenz verteil."
+msgid "This program is distributed under terms of GPLv3."
+msgstr "Dieses Programm ist unter die GPLv3-Lizenz verteil."
 
 #: aboutdlg.cpp:83
-msgid "http://www.gnu.org/licenses/gpl-2.0.html#TOC1"
+msgid "http://www.gnu.org/licenses/gpl-3.0.html#TOC1"
 msgstr ""
 
 #: aboutdlg.cpp:91

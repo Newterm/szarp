@@ -89,9 +89,10 @@ case "$1" in
 		fi
 	fi
 
-    	db_get szarp/prefix; 
+    	db_get szarp/prefix;
 	if [ "x$RET" = "x" ]; then
-		exit 10;
+		RET="local";
+		echo "Prefix set to \"local\"";
 	fi;
 	PREFIX=$RET;
 

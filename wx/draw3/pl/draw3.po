@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-14 14:03+0200\n"
+"POT-Creation-Date: 2018-10-16 16:03+0200\n"
 "PO-Revision-Date: 2012-02-17 12:27+0100\n"
 "Last-Translator: a <a@a.pl>\n"
 "Language-Team: \n"
@@ -67,7 +67,7 @@ msgstr "SZARP plik z definicją zestawu (*.xds)|*.xds|All files (*.*)|*.*"
 msgid "Export of set to file: %s failed"
 msgstr "Eksport zestawu do pliku %s nie powiódł się"
 
-#: cfgmgr.cpp:1450 defcfg.cpp:2085 defcfg.cpp:2092 paramslist.cpp:243
+#: cfgmgr.cpp:1450 defcfg.cpp:2094 defcfg.cpp:2101 paramslist.cpp:243
 #: paramslist.cpp:263 paramslist.cpp:298
 msgid "Error!"
 msgstr "Błąd"
@@ -124,8 +124,8 @@ msgstr "Operacja zakończona."
 msgid "Failed to import set from file: %s\n"
 msgstr "Nie udało się zaimportować zestawu z pliku :%s"
 
-#: cfgmgr.cpp:1532 defcfg.cpp:1492 defcfg.cpp:1584 defcfg.cpp:1649
-#: drawapp.cpp:333 drawfrm.cpp:1298 drawpick.cpp:668
+#: cfgmgr.cpp:1532 defcfg.cpp:1502 defcfg.cpp:1593 defcfg.cpp:1658
+#: drawapp.cpp:333 drawfrm.cpp:1298 drawpick.cpp:668 defverifier.h:90
 msgid "Operation failed."
 msgstr "Operacja się nie powiodła."
 
@@ -182,52 +182,48 @@ msgid "Invalid precision attribute"
 msgstr "Niepoprawne wyrażenie %s"
 
 #: defcfg.cpp:1132
-#, fuzzy
 msgid "Invalid title attribute"
 msgstr "Niepoprawna data"
 
-#: defcfg.cpp:1491
-#, fuzzy
+#: defcfg.cpp:1499
 msgid "Param \""
-msgstr "Parametry"
+msgstr "Parametr \""
 
-#: defcfg.cpp:1491
+#: defcfg.cpp:1500
 msgid "\" is not present in draw set \""
 msgstr "\" nie jest zawarty w zestawie \""
 
-#: defcfg.cpp:1491
-#, fuzzy
-msgid "Please remove it from your defined set."
-msgstr "Możesz edytować tylko zestawy zdefiniowane przez użytkownika."
+#: defcfg.cpp:1501
+msgid "Do you want to remove it from your set?"
+msgstr "Czy chcesz usunąć go z tego zestawu?"
 
-#: defcfg.cpp:1583
-#, fuzzy
+#: defcfg.cpp:1592
 msgid "Failed to import defined draw sets from configuration file.\n"
-msgstr "Nie udało się zaimportować zestawu z pliku :%s"
+msgstr "Nie udało się zaimportować zestawu definiowanego z pliku konfiguracyjnego.\n"
 
-#: defcfg.cpp:1648
+#: defcfg.cpp:1657
 msgid "Failed to save file with users sets."
 msgstr "Nie udało się zapisać pliku z zestawami użytkownika."
 
-#: defcfg.cpp:1735
+#: defcfg.cpp:1744
 #, c-format
 msgid "Draw %s removed from set %s, it relates to non-existent configuration"
 msgstr ""
 "Wykres %s został usunięty ze zbioru %s, ponieważ odnosi się do nie "
 "istniejącej konfiguracji"
 
-#: defcfg.cpp:1759
+#: defcfg.cpp:1768
 #, c-format
 msgid "Defined set %s was removed because all draws in this set were removed"
 msgstr ""
 "Zestaw wykresów %s został usnięty ponieważ wszystkie wykresy wchodzące w "
 "jego skład zostały usunięte"
 
-#: defcfg.cpp:2063
+#: defcfg.cpp:2072
 msgid "Choose file to import"
 msgstr "Wybierz plik do zaimportowania"
 
-#: defcfg.cpp:2074
+#: defcfg.cpp:2083
 msgid ""
 "Unable to perform automatic detection of configuration's prefix for this "
 "file. Please enter prefix of this configuration"
@@ -235,25 +231,25 @@ msgstr ""
 "Nie udało się automatycznie wykryć prefiksu konfiguracji. Wprowadź prefiks "
 "ręcznie."
 
-#: defcfg.cpp:2075
+#: defcfg.cpp:2084
 msgid "Unable to detect prefix"
 msgstr "Nie udało się wykryć prefiksu."
 
-#: defcfg.cpp:2085
+#: defcfg.cpp:2094
 #, c-format
 msgid "Failed to load configuration of prefix %s. Unable to import draws."
 msgstr ""
 "Nie udało się załadować konfiguracji %s. Nie mogę zaimportować wykresów."
 
-#: defcfg.cpp:2092
+#: defcfg.cpp:2101
 msgid "Failed to import draws from file."
 msgstr "Import wykresów nie powiódł się."
 
-#: defcfg.cpp:2112
+#: defcfg.cpp:2121
 msgid "Draws imported successfully."
 msgstr "Operacja importu wykresów zakończyła się poprawnie."
 
-#: defcfg.cpp:2112
+#: defcfg.cpp:2121
 msgid "Ok!"
 msgstr "Ok!"
 
@@ -847,98 +843,98 @@ msgstr "Nie udało się pobrać zestawów sieciowych"
 msgid "Find"
 msgstr "Wyszukaj"
 
-#: drawprint.cpp:704
+#: drawprint.cpp:721
 msgid "For period: "
 msgstr "Za okres: "
 
-#: drawprint.cpp:707
+#: drawprint.cpp:724
 msgid "DECADE "
 msgstr "DEKADA"
 
-#: drawprint.cpp:710
+#: drawprint.cpp:727
 msgid "YEAR "
 msgstr "ROK "
 
-#: drawprint.cpp:713
+#: drawprint.cpp:730
 msgid "MONTH "
 msgstr "MIESIAC "
 
-#: drawprint.cpp:716
+#: drawprint.cpp:733
 msgid "WEEK "
 msgstr "TYDZIEŃ "
 
-#: drawprint.cpp:719
+#: drawprint.cpp:736
 msgid "DAY "
 msgstr "DZIEŃ "
 
-#: drawprint.cpp:722
+#: drawprint.cpp:739
 msgid "HOUR "
 msgstr "GODZINA "
 
-#: drawprint.cpp:725
+#: drawprint.cpp:742
 msgid "5MINUTE "
 msgstr "5 MINUT"
 
-#: drawprint.cpp:728
+#: drawprint.cpp:745
 msgid "MINUTE "
 msgstr "MINUTA"
 
-#: drawprint.cpp:731
+#: drawprint.cpp:748
 msgid "30SEC "
 msgstr ""
 
-#: drawprint.cpp:734
+#: drawprint.cpp:751
 msgid "SEASON "
 msgstr "SEZON "
 
-#: drawprint.cpp:748
+#: drawprint.cpp:765
 #, fuzzy
 msgid "Data from:"
 msgstr "Date od:"
 
-#: drawprint.cpp:750 drawprint.cpp:775
+#: drawprint.cpp:767 drawprint.cpp:789
 #, fuzzy
 msgid " to:"
 msgstr " do:"
 
-#: drawprint.cpp:773
+#: drawprint.cpp:787
 #, fuzzy
 msgid "Statistics from:"
 msgstr "Statystki od:"
 
-#: drawprint.cpp:817 drawprint.cpp:1032 drawprint.cpp:1049 infowdg.cpp:297
+#: drawprint.cpp:832 drawprint.cpp:1047 drawprint.cpp:1064 infowdg.cpp:297
 msgid "min.="
 msgstr "min.="
 
-#: drawprint.cpp:818 drawprint.cpp:1033 drawprint.cpp:1050 infowdg.cpp:298
+#: drawprint.cpp:833 drawprint.cpp:1048 drawprint.cpp:1065 infowdg.cpp:298
 msgid "avg.="
 msgstr "śr.="
 
-#: drawprint.cpp:819 drawprint.cpp:1034 drawprint.cpp:1051 infowdg.cpp:300
+#: drawprint.cpp:834 drawprint.cpp:1049 drawprint.cpp:1066 infowdg.cpp:300
 msgid "max.="
 msgstr "max.="
 
-#: drawprint.cpp:1035 drawprint.cpp:1052
+#: drawprint.cpp:1050 drawprint.cpp:1067
 msgid "s.d.="
 msgstr "odchyl. stand.="
 
-#: drawprint.cpp:1059 drawprint.cpp:1299 summwin.cpp:285
+#: drawprint.cpp:1074 drawprint.cpp:1314 summwin.cpp:285
 msgid "From:"
 msgstr "Od:"
 
-#: drawprint.cpp:1068 drawprint.cpp:1308 summwin.cpp:286
+#: drawprint.cpp:1083 drawprint.cpp:1323 summwin.cpp:286
 msgid "To:"
 msgstr "Do:"
 
-#: drawprint.cpp:1081
+#: drawprint.cpp:1096
 msgid "X/Y Correlation:"
 msgstr "Korelacja X/Y:"
 
-#: drawprint.cpp:1093
+#: drawprint.cpp:1108
 msgid "X/Y Rank correlation:"
 msgstr "Korel. rang. X/Y:"
 
-#: drawprint.cpp:1148 drawprint.cpp:1194 drawprint.cpp:1367
+#: drawprint.cpp:1163 drawprint.cpp:1209 drawprint.cpp:1382
 msgid "Print Preview"
 msgstr "Podgląd wydruku"
 
@@ -1830,6 +1826,16 @@ msgstr " ma zły format."
 msgid " does not exist in configuration."
 msgstr "Brak zestawów w konfiguracji:"
 
+#: defverifier.h:87
+#, fuzzy
+msgid "Failed to import defined draw param from configuration file.\n"
+msgstr "Nie udało się zaimportować zestawu z pliku :%s"
+
+#: defverifier.h:89
+#, fuzzy
+msgid "Do you want to delete invalid param from this configuration?"
+msgstr "Czy chcesz usunąć niepoprawny parametr z tej konfiguracji?"
+
 #: incsearch.h:137
 msgid " - Window "
 msgstr " - Zestaw "
@@ -2636,6 +2642,10 @@ msgstr "Adres serwera próbek"
 #: GUI/resources.xrc:1989
 msgid "Probe servers addresses:"
 msgstr "Adres serwera próbek:"
+
+#, fuzzy
+#~ msgid "Please remove it from your defined set."
+#~ msgstr "Możesz edytować tylko zestawy zdefiniowane przez użytkownika."
 
 #~ msgid "From: "
 #~ msgstr "Od:"

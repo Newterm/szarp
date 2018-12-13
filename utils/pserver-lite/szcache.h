@@ -142,7 +142,6 @@ class SzCache {
 
 		/** Data read utils */
 		void		writeFile(std::vector<int16_t>& vals, SzIndex sind, SzIndex eind, SzPath path);
-		void		fillEmpty(std::vector<int16_t>& vals, std::size_t count);
 		
 		static void	logMsg(int level, std::string msg);
 	

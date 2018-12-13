@@ -29,6 +29,10 @@
 #define luaL_reg luaL_Reg
 #endif
 
+#ifndef lua_open
+#define lua_open  luaL_newstate
+#endif
+
 
 namespace sz4 {
 
@@ -68,7 +72,6 @@ template<class base> int lua_sz4(lua_State *lua) {
 
 		if (param)
 		{
-
 			weighted_sum<double, nanosecond_time_t> sum;
 			base_ipk->first->get_weighted_sum(param, time, szb_move_time(time, 1, SZARP_PROBE_TYPE(probe_type), 0), probe_type, sum);
 
@@ -88,7 +91,7 @@ template<class base> int lua_sz4(lua_State *lua) {
 	if (param)
 	{
 		return lua_error(lua);
-	}	
+	}
 	else
 	{
 		return luaL_error(lua, "Param %s not found", param_name);
@@ -159,7 +162,7 @@ template<class base> bool lua_interpreter<base>::prepare_param(TParam* param) {
 template<class base> double lua_interpreter<base>::calculate_value(nanosecond_time_t start, SZARP_PROBE_TYPE probe_type, int custom_length) {
 	double result;
 
-	lua_pushvalue(m_lua, -1);	
+	lua_pushvalue(m_lua, -1);
 	lua_pushnumber(m_lua, start);
 	lua_pushnumber(m_lua, probe_type);
 	lua_pushnumber(m_lua, custom_length);
@@ -193,5 +196,4 @@ template<class base> lua_State* lua_interpreter<base>::lua() {
 }
 
 template<class base> const int lua_interpreter<base>::lua_base_ipk_pair_key = 0;
-
 }

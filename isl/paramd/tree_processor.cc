@@ -156,7 +156,6 @@ char *TreeProcessor::processHTML(xmlNodePtr node, int *code, int last_slash)
 {
 	char *xmlbuffer;
 	char *c;
-	time_t t;
 
 	xmlOutputBufferPtr out_buf = xmlAllocOutputBuffer(NULL);
 	if (out_buf == NULL) {

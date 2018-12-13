@@ -40,7 +40,6 @@
 
 class SzbExtractor;
 
-
 /**Query to the database*/
 struct DatabaseQuery {
 
@@ -349,11 +348,6 @@ namespace sz4 {
 	class connection_mgr;
 }
 
-namespace boost { namespace asio {
-	class io_service;
-}}
-
-
 class Sz4ApiBase : public Draw3Base {
 private:
 	class ObserverWrapper : public sz4::param_observer_ {
@@ -374,18 +368,22 @@ private:
 
 	std::future<void> connection_cv;
 
-	std::map<std::pair<sz4::param_observer*, sz4::param_info>, std::shared_ptr<ObserverWrapper>> observers;
+	class LUAWorker;
+	std::unique_ptr<LUAWorker> lua_worker;
+
+	std::map<std::pair<sz4::param_observer*, sz4::param_info>,
+		std::shared_ptr<ObserverWrapper>> observers;
 
 	sz4::param_info ParamInfoFromParam(TParam* p);
 
 	template<class time_type> void DoGetData(DatabaseQuery *query);
+	using sz4_time = sz4::nanosecond_time_t;
 public:
 
 	Sz4ApiBase(wxEvtHandler* response_receiver,
 			const std::wstring& address, const std::wstring& port,
 			IPKContainer *ipk_conatiner);
-
-	~Sz4ApiBase();	
+	~Sz4ApiBase();
 
 	bool BlockUntilConnected(const unsigned int timeout_s = 10);
 
@@ -413,12 +411,13 @@ public:
 	void ResetBuffer(DatabaseQuery* query);
 
 	void ClearCache(DatabaseQuery* query);
-	
+
 	void StopSearch();
 
 	std::wstring GetType() const;
 
 	void RegisterObserver(DatabaseQuery* query);
+
 };
 
 class BaseHandler {
@@ -429,6 +428,7 @@ public:
 	virtual Draw3Base::ptr GetBaseHandler(const std::wstring& prefix) = 0;
 	virtual std::map<std::wstring, std::wstring> GetBaseHandlers() const = 0;
 	virtual void AddBasePrefix(const wxString&) = 0;
+	virtual void ClearBaseHandlers() = 0;
 	virtual ~BaseHandler() {}
 };
 
@@ -464,6 +464,9 @@ public:
 
 	void UseIksServerOnly()
 	{ use_iks = true; }
+
+	void ClearBaseHandlers() override
+	{ base_handlers.clear(); default_base_handler.reset(); }
 
 private:
 	void ConfigLibpar(const wxString&);

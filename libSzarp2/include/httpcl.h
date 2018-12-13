@@ -50,14 +50,14 @@ public:
 	 * NULL on error - @see GetError(); if response is empty string "\000"
 	 * is returned. Warning - returned buffer may be not 0-terminated.
 	 */
-	virtual char* Get(char *uri, size_t* ret_len, char *userpwd, int timeout = -1) = 0;
+	virtual char* Get(const char *uri, size_t* ret_len, char *userpwd, int timeout = -1) = 0;
 	/** Performs GET operation and tries to parse response as XML
 	 * document.
 	 * @param uri unescaped full uri to resource
 	 * @return pointer to newly created parsed XML Document or NULL on
 	 * error - @see GetError()
 	 */
-	virtual xmlDocPtr GetXML(char* uri, char *userpwd = NULL, int timeout = -1 ) = 0;
+	virtual xmlDocPtr GetXML(const char* uri, char *userpwd = NULL, int timeout = -1 ) = 0;
 	/** Performs PUT operation.
 	 * @param uri unescaped full uri to resource
 	 * @param buffer data to send
@@ -65,16 +65,16 @@ public:
 	 * @param ret_len size of return data if not NULL
 	 * @return pointer to copy of return data or NULL on error
 	 */
-	virtual char* Put(char *uri, char *buffer, size_t len, char *userpw = NULL, size_t* ret_len = NULL) = 0;
+	virtual char* Put(const char *uri, char *buffer, size_t len, char *userpw = NULL, size_t* ret_len = NULL) = 0;
 	/** Performs PUT operation sending XML document.
 	 * @param uri unescaped full uri to resource
 	 * @param doc pointer to document to send
 	 * @param ret_len size of response if not NULL
 	 * @return pointer to copy of response or NULL on error
 	 */
-	virtual char* PutXML(char *uri, xmlDocPtr doc, char *userpw = NULL, size_t* ret_len = NULL) = 0;
+	virtual char* PutXML(const char *uri, xmlDocPtr doc, char *userpw = NULL, size_t* ret_len = NULL) = 0;
 
-	virtual char* PostXML(char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL) = 0;
+	virtual char* PostXML(const char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL) = 0;
 	/** Returns error code. You should check for error code only if error
 	 * occured - successfull operations doesn't clear previous error code.
 	 * 0 means no error, -1 is reserved for XML parsing error; positive
@@ -106,21 +106,21 @@ public:
 	static bool Init();
 	static void Cleanup();
 	szHTTPCurlClient();
-	virtual ~szHTTPCurlClient();
-	virtual int GetError();
-	virtual const char* GetErrorStr();
+	~szHTTPCurlClient() override;
+	int GetError() override;
+	const char* GetErrorStr() override;
 	/** This is write callback function, called by library on data
 	 * received. */
 	static size_t WriteFunction(void* ptr, size_t size, size_t nmemb, void *object);
 	/** This is read callback function, called when library want to send
 	 * data. */
 	static size_t ReadFunction(void* ptr, size_t size, size_t nmemb, void *object);
-	virtual char* Get(char *uri, size_t* ret_len, char *userpwd = NULL, int timeout = -1);
-	virtual xmlDocPtr GetXML(char* uri, char *userpwd, int timeout = -1);
-	virtual char* Put(char *uri, char *buffer, size_t len, char *userpwd = NULL, size_t* ret_len = NULL);
-	virtual char* Post(char *uri, char *buff, size_t len, int timeout, char *userpwd, size_t* ret_len);
-	virtual char* PostXML(char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL);
-	virtual char* PutXML(char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL);
+	char* Get(const char *uri, size_t* ret_len, char *userpwd = NULL, int timeout = -1) override;
+	xmlDocPtr GetXML(const char* uri, char *userpwd, int timeout = -1) override;
+	char* Put(const char *uri, char *buffer, size_t len, char *userpwd = NULL, size_t* ret_len = NULL) override;
+	virtual char* Post(const char *uri, char *buff, size_t len, int timeout, char *userpwd, size_t* ret_len);
+	char* PostXML(const char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL) override;
+	char* PutXML(const char *uri, xmlDocPtr doc, char *userpwd = NULL, size_t* ret_len = NULL) override;
 protected:
 	/** Actual write callback method, saves data in buffer.
 	 * @param data pointer to data to save

@@ -75,7 +75,7 @@ szAboutDlg::szAboutDlg(wxBitmap* bitmap, wxString programName, wxString version,
 	textAttr.SetTextColour(*wxBLACK);
 	textAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
 	m_textCtrl->SetDefaultStyle(textAttr);
-	*m_textCtrl << _("This program is distributed under terms of GPLv2.");
+	*m_textCtrl << _("This program is distributed under terms of GPLv3.");
 	*m_textCtrl <<  _T("\n");
 	textAttr.SetTextColour(*wxBLUE);
 	textAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);

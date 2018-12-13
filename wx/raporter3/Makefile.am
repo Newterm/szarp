@@ -96,22 +96,3 @@ update-po:
 	@MSGMERGE@ -U $(raporter3_LOCALES_SRC) $(raporter3_LOCALES_TMP)
 	rm -f $(raporter3_LOCALES_TMP)
 
-# Target for creating Windows version zip-package.
-windist: raporter3$(EXEEXT) $(raporter3_LOCALES)
-	@srcdir@/../../script/windist.sh raporter3 @srcdir@ 
-	
-winsetup: ${WIN_APP_NAME}Setup.exe
-
-${WIN_APP_NAME}Setup.exe: raporter3$(EXEEXT) $(raporter3_LOCALES)
-	@srcdir@/../../script/nsis/winsetup.sh ${WIN_APP_NAME} raporter3$(EXEEXT) \
-		-d resources/documentation/new/raporter/html \
-		@srcdir@/../../resources/documentation/new/raporter/html/*.h* \
-		-d resources/documentation/new/raporter/html/pics \
-		@srcdir@/../../resources/documentation/new/raporter/html/*.* \
-		-d resources/locales/pl_PL/LC_MESSAGES \
-		$(raporter3_LOCALES) \
-		-d resources/wx/html/raporterabou.html \
-		@srcdir@/../../resources/wx/html/raporterabout.html
-	@echo Make sure docs are generated!!!
-		
-

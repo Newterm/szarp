@@ -208,7 +208,7 @@ TSzarpConfig::parseXML(xmlTextReaderPtr reader)
 				try {
 					td->parseXML(reader);
 				} catch(const std::exception& e) {
-					sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+					sz_log(0, "XML error in device no %zd: %s", device_no, e.what());
 					return 1;
 				}
 			}
@@ -290,7 +290,7 @@ TSzarpConfig::parseXML(xmlDocPtr doc)
 		try {
 			td->parseXML(ch);
 		} catch(const std::exception& e) {
-			sz_log(0, "XML error in device no %d: %s", device_no, e.what());
+			sz_log(0, "XML error in device no %zd: %s", device_no, e.what());
 			return 1;
 		}
 	}
@@ -533,27 +533,26 @@ bool TSzarpConfig::compileLuaFormula(lua_State *lua, const char *formula, const 
 {
 	std::ostringstream paramfunction;
 
-	using std::endl;
-
 	paramfunction <<
-	"return function ()"	<< endl <<
-	"	local p = szbase"	<< endl <<
-	"	local PT_MIN10 = ProbeType.PT_MIN10" << endl <<
-	"	local PT_HOUR = ProbeType.PT_HOUR" << endl <<
-	"	local PT_HOUR8 = ProbeType.PT_HOUR8" << endl <<
-	"	local PT_DAY = ProbeType.PT_DAY"	<< endl <<
-	"	local PT_WEEK = ProbeType.PT_WEEK" << endl <<
-	"	local PT_MONTH = ProbeType.PT_MONTH" << endl <<
-	"	local PT_YEAR = ProbeType.PT_YEAR" << endl <<
-	"	local PT_CUSTOM = ProbeType.PT_CUSTOM"	<< endl <<
-	"	local szb_move_time = szb_move_time" << endl <<
-	"	local state = {}" << endl <<
-	"	return function (t,pt)" << endl <<
-	"		local v = nil" << endl <<
-	formula << endl <<
-	"		return v" << endl <<
-	"	end" << endl <<
-	"end"	<< endl;
+	"return function () " <<
+	"	local p = szbase " <<
+	"	local hs = szbase_hoursum " <<
+	"	local PT_MIN10 = ProbeType.PT_MIN10 " <<
+	"	local PT_HOUR = ProbeType.PT_HOUR " <<
+	"	local PT_HOUR8 = ProbeType.PT_HOUR8 " <<
+	"	local PT_DAY = ProbeType.PT_DAY " <<
+	"	local PT_WEEK = ProbeType.PT_WEEK " <<
+	"	local PT_MONTH = ProbeType.PT_MONTH " <<
+	"	local PT_YEAR = ProbeType.PT_YEAR " <<
+	"	local PT_CUSTOM = ProbeType.PT_CUSTOM " <<
+	"	local szb_move_time = szb_move_time " <<
+	"	local state = {} " <<
+	"	return function (t,pt) " <<
+	"		local v = nil " <<
+	formula  <<
+	"		return v " <<
+	"	end " <<
+	"end" << std::endl;
 
 	std::string str = paramfunction.str();
 

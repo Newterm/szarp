@@ -4,10 +4,10 @@
 if MINGW32_OPT
 INCLUDE_SUBDIRS = nagios
 else
-INCLUDE_SUBDIRS = nagios pserver-lite
+INCLUDE_SUBDIRS = nagios pserver-lite monitoring
 endif
 
-SUBDIRS = $(INCLUDE_SUBDIRS)
+SUBDIRS = $(INCLUDE_SUBDIRS) monitoring
 
 # Source directory
 SOURCE_DIR=@srcdir@

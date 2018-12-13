@@ -8,11 +8,11 @@
  * <pawel@praterm.com.pl>
  */
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 #include <vector>
-#include <time.h>
+#include <ctime>
 
 #ifdef MINGW32
 #undef GetObject
@@ -30,6 +30,7 @@
 #include "conversion.h"
 #include "proberconnection.h"
 #include "szarp_base_common/lua_utils.h"
+#include "integrator.h"
 
 #ifndef NO_LUA
 #if LUA_PARAM_OPTIMISE
@@ -37,6 +38,9 @@
 #endif
 #ifndef luaL_reg
 #define luaL_reg luaL_Reg
+#endif
+#ifndef lua_open
+#define lua_open  luaL_newstate
 #endif
 #endif
 
@@ -516,6 +520,13 @@ static void lua_printstack(const char* a, lua_State *lua) {
 }
 #endif
 
+template<typename... Args> int lua_fail_with_error(lua_State* lua, const char* format_string, Args... args) {
+	luaL_where(lua, 1);
+	lua_pushfstring(lua, format_string, args...);
+	lua_concat(lua, 2);
+	return lua_error(lua);
+}
+
 int lua_szbase(lua_State *lua) {
 		Szbase* szbase = Szbase::GetObject();
 
@@ -539,42 +550,138 @@ int lua_szbase(lua_State *lua) {
 			lua_pushnumber(lua, result);
 			return 1;
 		} else {
-			luaL_where(lua, 1);
-			lua_pushfstring(lua, "%s", SC::S2U(error).c_str());
-			lua_concat(lua, 2);
-			return lua_error(lua);
+			return lua_fail_with_error(lua, "%s", SC::S2U(error).c_str());
 		}
 	
 	}
 
-	int lua_szbase_move_time(lua_State* lua) {
-		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-		int count = lua_tointeger(lua, 2);
-		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
-		int custom_lenght = lua_tointeger(lua, 4);
+static Integrator::Cache integrator_cache_10s;
+static Integrator::Cache integrator_cache_10m;
 
-		time_t result = szb_move_time(time , count, probe_type, custom_lenght);
-		lua_pushnumber(lua, result);
+int lua_szbase_hoursum(lua_State *lua) {
+	Szbase* szbase = Szbase::GetObject();
 
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	time_t start_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	time_t end_time = static_cast<time_t>(lua_tonumber(lua, 3));
+	const SZARP_PROBE_TYPE query_probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 4));
+	const int custom_length = lua_tointeger(lua, 5);
+
+	bool param_found = false;
+	const time_t last_time = szbase->SearchLast(param, param_found);
+	if (!param_found) {
+		return lua_fail_with_error(lua, "Integrated param not found: '%s'", param);
+	}
+	if (end_time > last_time) {
+		end_time = last_time;
+	}
+	start_time = szb_round_time(start_time, query_probe_type, custom_length);
+	end_time = szb_round_time(end_time, query_probe_type, custom_length);
+
+	Integrator::Cache& cache = query_probe_type < PT_MIN10 ? integrator_cache_10s : integrator_cache_10m;
+
+	// time is already rounded, cache selected, and we don't want to operate on
+	// types different than the ones corresponding to data in the database
+	const SZARP_PROBE_TYPE db_probe_type =
+		query_probe_type < PT_MIN10 ? PT_SEC10 : PT_MIN10;
+
+	bool fixed = true;
+	bool ok = true;
+	std::wstring error;
+
+	auto data_provider = [&fixed, &ok, &error, &szbase, &custom_length, &db_probe_type](const std::string& param, time_t probe_time) -> double {
+		return szbase->GetValue((const unsigned char*)param.c_str(), probe_time, db_probe_type, custom_length, &fixed, ok, error);
+	};
+	auto time_mover = [&db_probe_type](time_t start_time, int steps) -> time_t {
+		// here db_probe_type must point to final type (as used by integrator)
+		return szb_move_time(start_time, steps, db_probe_type);
+	};
+	auto is_no_data = [](double value) -> bool {
+		return IS_SZB_NODATA(value);
+	};
+
+	// create integrator with external static cache every time, as data_provider uses local variables
+	Integrator integrator(data_provider, time_mover, is_no_data, SZB_NODATA, cache);
+	const double integral = integrator.GetIntegral((const char*)param, start_time, end_time);
+	const double integral_1h = integral / 3600;	// s -> h
+
+	assert(Lua::fixed.size() > 0);
+	Lua::fixed.top() = Lua::fixed.top() && fixed;
+
+	if (ok) {
+		lua_pushnumber(lua, integral_1h);
 		return 1;
+	} else {
+		return lua_fail_with_error(lua, "%s", SC::S2U(error).c_str());
 	}
 
-	int lua_szbase_round_time(lua_State* lua) {
-		time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
-		SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
-		int custom_length = lua_tointeger(lua, 3);
+}
 
-		time_t result = szb_round_time(time , probe_type, custom_length);
-		lua_pushnumber(lua, result);
+int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param, const time_t reference_time, const time_t limit_time, const int direction);
 
-		return 1;
+int lua_szbase_search_left(lua_State *lua) {
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	bool param_found = false;
+	const time_t first_time = Szbase::GetObject()->SearchFirst(param, param_found);
+	if (!param_found) {
+		return lua_fail_with_error(lua, "Search left param not found: '%s'", param);
 	}
+	time_t end_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	return lua_szbase_search_from_reference(lua, param, end_time, first_time, -1);
+}
 
-	int lua_szbase_isnan(lua_State* lua) {
-		double v = lua_tonumber(lua, 1);
-		lua_pushboolean(lua, std::isnan(v));
-		return 1;
+int lua_szbase_search_right(lua_State *lua) {
+	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
+	bool param_found = false;
+	const time_t last_time = Szbase::GetObject()->SearchLast(param, param_found);
+	if (!param_found) {
+		return lua_fail_with_error(lua, "Search right param not found: '%s'", param);
 	}
+	time_t start_time = static_cast<time_t>(lua_tonumber(lua, 2));
+	return lua_szbase_search_from_reference(lua, param, start_time, last_time, 1);
+}
+
+int lua_szbase_search_from_reference(lua_State *lua, const unsigned char* param, const time_t reference_time, const time_t limit_time, const int direction) {
+	const SZARP_PROBE_TYPE query_probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+	bool probe_time_found = false;
+	std::wstring search_error{};
+	// we delegate timestamp validation to Search(), basing on r_t, l_t and direction
+	const time_t probe_time = Szbase::GetObject()->Search(SC::U2S(param), reference_time, limit_time, direction, query_probe_type, probe_time_found, search_error);
+	if (!probe_time_found) {
+		return lua_fail_with_error(lua, "Search from reference failed on param: '%s', error: '%s'", param, search_error.c_str());
+	}
+	lua_pushnumber(lua, probe_time);
+	return 1;
+}
+
+int lua_szbase_move_time(lua_State* lua) {
+	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+	int count = lua_tointeger(lua, 2);
+	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 3));
+	int custom_lenght = lua_tointeger(lua, 4);
+
+	time_t result = szb_move_time(time , count, probe_type, custom_lenght);
+	lua_pushnumber(lua, result);
+
+	return 1;
+}
+
+int lua_szbase_round_time(lua_State* lua) {
+	time_t time = static_cast<time_t>(lua_tonumber(lua, 1));
+	SZARP_PROBE_TYPE probe_type = static_cast<SZARP_PROBE_TYPE>((int)lua_tonumber(lua, 2));
+	int custom_length = lua_tointeger(lua, 3);
+
+	time_t result = szb_round_time(time , probe_type, custom_length);
+	lua_pushnumber(lua, result);
+
+	return 1;
+}
+
+int lua_szbase_isnan(lua_State* lua) {
+	double v = lua_tonumber(lua, 1);
+	lua_pushboolean(lua, std::isnan(v));
+	return 1;
+}
 
 int lua_szbase_search_first(lua_State *lua) {
 	const unsigned char* param = (unsigned char*) luaL_checkstring(lua, 1);
@@ -630,6 +737,7 @@ int lua_szbase_nan(lua_State* lua) {
 static int RegisterSzbaseFuncs(lua_State *lua) {
 	const struct luaL_reg SzbaseLibFun[] = {
 		{ "szbase", lua_szbase },
+		{ "szbase_hoursum", lua_szbase_hoursum },
 		{ "szb_move_time", lua_szbase_move_time },
 		{ "szb_round_time", lua_szbase_round_time },
 		{ "szb_search_first", lua_szbase_search_first },

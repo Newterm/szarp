@@ -72,6 +72,7 @@
 #include "geometry.h"
 #include "cfgmgr.h"
 #include "frmmgr.h"
+#include "sys.h"
 
 #include "szapp.h"
 #include "szbase/szbbase.h"
@@ -252,6 +253,7 @@ bool DrawApp::OnInit() {
 	//wxLog *logger = new wxLogGui();
 	wxLog::SetActiveTarget(logger);
 
+	SetMaxCoreDumpLimit();
 	InitGL();
 
 	SplashScreen *splash = NULL;
@@ -513,7 +515,9 @@ bool DrawApp::OnCmdLineParsed(wxCmdLineParser &parser) {
 		sz_loginit((int) debug, "draw3", SZ_LIBLOG_FACILITY_APP);
 	else
 		sz_loginit(2, "draw3", SZ_LIBLOG_FACILITY_APP);
-
+	
+	szlog::log().set_logger<szlog::COutLogger>();
+	sz_log(8, "set logger to cout");
 
 	if (parser.Found(_T("i"))) {
 		m_base_type = IKS_BASE;
@@ -536,6 +540,8 @@ void DrawApp::StopThreads() {
 	}
 	if (m_remarks_handler)
 		m_remarks_handler->Stop();
+
+	m_dbmgr->GetBaseHandler()->ClearBaseHandlers();
 #if 0
 	delete m_db_queue;
 	delete m_remarks_handler;

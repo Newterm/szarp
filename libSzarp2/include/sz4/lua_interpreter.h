@@ -23,6 +23,7 @@
 
 #include "sz4/defs.h"
 #include "sz4/time.h"
+#include "iks/client/sz4_iks.h"
 
 namespace sz4 {
 

@@ -20,6 +20,12 @@ TestIPC is a module for testing pythondmn's scripts in SZARP.
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 
+# Not implemented yet:
+# get_ipk_path
+# autoupdate_sz3
+# go_sz4
+# get_line_number
+
 
 __author__    = "Tomasz Pieczerak <tph AT newterm.pl>"
 __copyright__ = "Copyright (C) 2016 Newterm"
@@ -29,16 +35,38 @@ __email__     = "coders AT newterm.pl"
 
 # imports
 import sys
+sys.path.append("/opt/szarp/lib/python/")
+from xmlns import add_xmlns
 from lxml import etree
 from collections import namedtuple
+import numpy
 
 class TestIPC:
 	""" This is a class for testing pythondmn's scripts communication with
 	parcook through IPC.
 	"""
 
-	ParamInfo = namedtuple('ParamInfo', 'name prec')
-	BufInfo = namedtuple('BufInfo', 'index value')
+	ParamInfo = namedtuple('ParamInfo', 'name prec val_type')
+	BufInfo = namedtuple('BufInfo', 'index value val_type')
+
+	FunType2Params = {
+		'sz3' : 'integer',
+		'int' : 'integer',
+		'short' : 'integer',
+		'long' : 'integer',
+		'float' : 'float',
+		'double' : 'float'
+		}
+
+	#https://www.numpy.org/devdocs/user/basics.types.html
+	FunType2numpy = {
+		'sz3':numpy.int16,
+		'int':numpy.intc,
+		'short':numpy.short,
+		'long':numpy.int_,
+		'float':numpy.single,
+		'double':numpy.double
+		}
 
 	def __init__(self, prefix, script_path):
 		""" Construct IPC object.
@@ -47,8 +75,10 @@ class TestIPC:
 			prefix      - database prefix.
 			script_path - full path to your script.
 		"""
+
 		self.read_buffer = []
 		self.param_list = []
+		self.send_list = []
 		self.dmn_config = ''
 
 		# read configuration
@@ -59,7 +89,7 @@ class TestIPC:
 
 		# search root element for <device> with pythondmn and given script
 		dmn_dev = None
-		for dev in root.findall('./{http://www.praterm.com.pl/SZARP/ipk}device'):
+		for dev in add_xmlns(None, root.findall)('device'):
 			if dev.get('daemon') == pythondmn_path and dev.get('path') == script_path:
 				dmn_dev = dev	# save element
 				break
@@ -69,8 +99,11 @@ class TestIPC:
 			sys.exit(1)
 
 		# fetch parameter list (units are merged)
-		for unit in dmn_dev.findall('./{http://www.praterm.com.pl/SZARP/ipk}unit'):
+		for unit in add_xmlns(None, dmn_dev.findall)('unit'):
 			self.param_list += self.fetch_param_list(unit)
+			self.send_list += self.fetch_send_list(unit)
+		print "param:",self.param_list
+		print "send:",self.send_list
 
 		# remove all elements from <params>
 		for i in range(len(root)):
@@ -87,22 +120,33 @@ class TestIPC:
 		if unit is None:
 			return llist
 
-		for par in unit.findall('./{http://www.praterm.com.pl/SZARP/ipk}param'):
-			llist.append(TestIPC.ParamInfo(par.get('draw_name'), float(par.get('prec'))) )
+		for par in add_xmlns(None, unit.findall)('param'):
+			par_name = par.get('draw_name')
+			if par_name == None:
+				par_name = par.get('name').split(':')[-1]
+			llist.append(TestIPC.ParamInfo(par_name, float(par.get('prec')), add_xmlns('extra', par.get)('val_type')))
 
 		return llist
+
+
+	def fetch_send_list(self, unit):
+		""" Extract send list from <unit> element. """
+		llist = []
+		if unit is None:
+			return llist
+
+		for par in add_xmlns(None, unit.findall)('send'):
+			llist.append(par.get('param'))
+
+		return llist
+
 
 	def get_conf_str(self):
 		""" Return configuration string. """
 		return self.dmn_config
 
-	def set_read(self, idx, val):
-		""" Write value to parcook. """
-		self.read_buffer.append(TestIPC.BufInfo(idx, val))
-
-	def set_no_data(self, idx):
-		""" Write NO_DATA to parcook. """
-		self.read_buffer.append(TestIPC.BufInfo(idx, 'NO_DATA'))
+	def go_sender(self):
+		pass
 
 	def go_parcook(self):
 		""" Print all data that were written and clear buffer. """
@@ -115,7 +159,7 @@ class TestIPC:
 				val = "NO_DATA"
 			except ZeroDivisionError:
 				val = v
-			print "%s = %s" % (self.param_list[i].name, val)
+			print "<-- %s(%s,%s) = %s" % (self.param_list[i].name, bentry.val_type, self.param_list[i].val_type, val)
 		self.read_buffer = []
 
 	def sz4_ready(self):
@@ -127,7 +171,61 @@ class TestIPC:
 	def force_sz4(self):
 		return None
 
-	def set_read_sz4_float(self, idx, val):
+	def _set_read(self, idx, val, val_type):
+		""" Write value to parcook. Used only by this script."""
+		params_val_type = self.param_list[idx].val_type
+
+		assert (val_type==None or params_val_type==None or self.FunType2Params[val_type]==params_val_type), "Data type mismatch between params.xml(%s) and function call(%s)" % (params_val_type, val_type)
+		assert (val_type=='float' or val_type=='double' or val == type(val)(self.FunType2numpy[val_type](val))), "Conversion of %s from %s to %s failed" % (str(val),str(type(val)),val_type)
+		self.read_buffer.append(TestIPC.BufInfo(idx, val, val_type))
 		return None
+
+	def set_read(self, idx, val):
+		""" Write value to parcook. For sz3 """
+		self._set_read(idx, val, 'sz3')
+
+	def set_no_data(self, idx):
+		""" Write NO_DATA to parcook. """
+		self._set_read(idx, 'NO_DATA', None)
+
+	def set_read_sz4_short(self, idx, val):
+		return self._set_read(idx, val, 'short')
+
+	def set_read_sz4_int(self, idx, val):
+		return self._set_read(idx, val, 'int')
+
+	def set_read_sz4_long(self, idx, val):
+		return self._set_read(idx, val, 'long')
+
+	def set_read_sz4_float(self, idx, val):
+		return self._set_read(idx, val, 'float')
+
+	def set_read_sz4_double(self, idx, val):
+		return self.set_read_sz4_(idx, val, 'double')
+
+
+	def _get_send(self,idx, val_type):
+		print "--> input %s (%s) =" % (self.send_list[idx],val_type),
+		val = self.FunType2numpy[val_type](input())
+		return val
+
+	def get_send(self,idx):
+		return self._get_send(idx,'sz3')
+
+	def get_send_sz4_short(self,idx):
+		return self._get_send(idx,'short')
+
+	def get_send_sz4_int(self,idx):
+		return self._get_send(idx,'int')
+
+	def get_send_sz4_long(self,idx):
+		return self._get_send(idx,'long')
+
+	def get_send_sz4_float(self,idx):
+		return self._get_send(idx,'float')
+
+	def get_send_sz4_double(self,idx):
+		return self._get_send(idx,'double')
+
 
 # end of class TestIPC

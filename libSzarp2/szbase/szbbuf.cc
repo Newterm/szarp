@@ -149,11 +149,11 @@ szb_find_block(szb_buffer_t * buffer, TParam * param, int year, int month)
 szb_datablock_t *
 szb_get_datablock(szb_buffer_t * buffer, TParam * param, int year, int month)
 {
-    assert(NULL != buffer);
+	assert(NULL != buffer);
 
-    szb_datablock_t *ret = szb_find_block(buffer, param, year, month);
-    if (NULL != ret)
-	return ret;
+	szb_datablock_t *ret = szb_find_block(buffer, param, year, month);
+	if (NULL != ret)
+		return ret;
 
 	try {
 		if( param->IsDefinable() )
